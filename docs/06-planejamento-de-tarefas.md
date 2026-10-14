@@ -6,17 +6,19 @@
 
 ## 6.1 Papéis
 
-| Pessoa | Papel | Entregas |
-|---|---|---|
-| **Arthur** | Líder técnico + especialista do jogo | Motor de análise, regras do Mago Arcano, integração com Warcraft Logs e IA, validação de todo conteúdo de WoW |
-| **Pedro** | Frontend + qualidade | Linters, CI, telas em React ligadas ao backend |
-| **João** | GitBook | Organização e revisão das páginas no GitBook |
-| **Luiz** | Gestão | Quadro no GitHub Projects, checagem de prazos, roteiro dos slides |
-| **Membro 5** | Design | Mockups das 5 telas + planos no Figma |
-| **Membro 6** | Design + teste | Apoio no Figma; teste de usabilidade e nota SUS |
-| **Membro 7** | Pesquisa | Formulário com jogadores brasileiros (evidências do problema) |
-| **Membro 8** | Relatório de IA | Item 9, a partir dos prompts e conversas que Arthur e Pedro passarem |
-| **Membro 9** | Casos de teste | Cenários de erro e validação em linguagem simples (base dos testes Pytest) |
+| Pessoa        | Papel                                | Entregas                                                                                                                                 |
+| ------------- | ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| **Arthur**    | Líder técnico + especialista do jogo | Motor de análise, regras do Mago Arcano, integração com Warcraft Logs e IA, validação de todo conteúdo de WoW                            |
+| **Membro 2**  | Frontend + qualidade                 | Linters, CI, telas em React ligadas ao backend                                                                                           |
+| **João**      | GitBook                              | Organização e revisão das páginas no GitBook                                                                                             |
+| **Luiz**      | Gestão                               | Quadro no GitHub Projects, checagem de prazos, roteiro dos slides                                                                        |
+| **Membro 5**  | Design                               | Mockups das 5 telas + planos no Figma                                                                                                    |
+| **Membro 6**  | Design + teste                       | Apoio no Figma; teste de usabilidade e nota SUS                                                                                          |
+| **Membro 7**  | Pesquisa                             | Formulário com jogadores brasileiros (evidências do problema)                                                                            |
+| **Membro 8**  | Relatório de IA                      | Item 9, a partir dos prompts, interações e relatórios dos membros do grupo.                                                              |
+| **Membro 9**  | Casos de teste                       | Entender o sistema e contexto para criar cenários de erro e validação em linguagem simples (base dos testes Pytest) e manter o anexo 10. |
+| **Membro 10** | Aplicação da Usabilidade             | Entender como os princípios da usabilidade será integrado pela aplicação, atuando junto ao front/backend, e manter o anexo 07.           |
+| **Membro 11** | Qualidade da Apresentação            | Elaborar os slides e garantir que o material estará disponível e correto na hora da apresentação à banca.                                |
 
 ## 6.2 Cronograma
 
@@ -55,10 +57,10 @@ gantt
 
 ## 6.3 Riscos e plano B
 
-| Risco | Plano B |
-|---|---|
-| Arthur é o único que domina o jogo e o motor | Regras documentadas em linguagem simples (item 12); Pedro acompanha o código desde o início |
-| Integração com IA atrasa | Demo usa resposta reserva salva, informando isso ao professor |
-| Internet falha na apresentação | Log de exemplo já processado e salvo |
-| Não dá tempo dos 3 chefes | Alfa entrega só Nek'zali; os outros ficam para a Expo |
-| Membros sem entregar | Luiz cobra no quadro; tarefas sem dono até 16/10 são redistribuídas |
+| Risco                                        | Plano B                                                                   |
+| -------------------------------------------- | ------------------------------------------------------------------------- |
+| Arthur é o único que domina o jogo e o motor | Regras documentadas em linguagem simples (item 12);                       |
+| Integração com IA atrasa                     | Demo usa resposta reserva salva, informando isso ao professor             |
+| Internet falha na apresentação               | Log de exemplo já processado e salvo                                      |
+| Não dá tempo dos 3 chefes                    | Alfa entrega só Nek'zali; os outros serão validados perante o tempo hábil |
+| Membros sem entregar                         | Luiz cobra no quadro; tarefas sem dono até 16/10 são redistribuídas       |
