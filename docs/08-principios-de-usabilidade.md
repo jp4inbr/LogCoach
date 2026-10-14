@@ -11,9 +11,9 @@
 | Controle e liberdade do usuário | Voltar e escolher outra luta sem perder o link | _a adicionar_ |
 | Consistência e padrões | Mesmo padrão de cores para ok / atenção / erro em todas as telas | _a adicionar_ |
 | Prevenção de erros | Validação do link antes de enviar; lutas não suportadas em cinza | _a adicionar_ |
-| Reconhecer em vez de lembrar | Os 3 erros principais já destacados; personagem salvo | _a adicionar_ |
+| Reconhecer em vez de lembrar | Erros principais já destacados no topo; personagem salvo | _a adicionar_ |
 | Flexibilidade e eficiência | Usuário frequente pula a escolha de personagem | _a adicionar_ |
-| Design estético e minimalista | Resumo com 3 erros; detalhes só nas abas | _a adicionar_ |
+| Design estético e minimalista | Resumo só com os erros de maior impacto; detalhes nas abas | _a adicionar_ |
 | Ajudar a reconhecer e corrigir erros | Mensagens claras com o que fazer (ver 8.2) | _a adicionar_ |
 | Ajuda e documentação | Dicas curtas ao lado de cada termo técnico | _a adicionar_ |
 

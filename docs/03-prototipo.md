@@ -10,14 +10,14 @@ Wireframes das telas principais. Os mockups em alta fidelidade (Figma) entram aq
 flowchart LR
     A[Início<br/>cola o link] --> B[Escolhe a luta<br/>e o personagem]
     B --> C[Análise em andamento]
-    C --> D[Resumo do coach<br/>3 erros]
+    C --> D[Resumo do coach<br/>erros principais]
     D --> E[Resultado completo]
     D --> F[Perfil / histórico]
 ```
 
 ## Tela 1 — Início / Login
 - Topo: logo LogCoach e botão "Entrar".
-- Centro: frase de valor ("Descubra os 3 erros que mais custam seu dano") e campo para colar o link do log.
+- Centro: frase de valor ("Descubra os erros que mais custam seu dano") e campo para colar o link do log.
 - Abaixo: "Analisar sem conta" e "Criar conta grátis".
 - Rodapé: chefes e especialização suportados.
 
@@ -29,7 +29,7 @@ flowchart LR
 
 ## Tela 3 — Ação da IA: análise e resumo do coach
 - Barra de progresso em etapas: "Buscando sua luta → Comparando com os melhores → Coach analisando".
-- Ao terminar: card do coach com os 3 erros principais, cada um com título curto, quanto custou (em % de dano) e o que fazer.
+- Ao terminar: card do coach com os erros principais, do maior para o menor impacto, cada um com título curto, quanto custou (em % de dano) e o que fazer.
 - Campo "Pergunte ao coach sobre este erro".
 
 ## Tela 4 — Perfil / Configurações

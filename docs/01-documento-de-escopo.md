@@ -69,7 +69,7 @@ O problema central é de usabilidade: a informação existe, mas está em format
 | Princípio (Nielsen) | Como o problema aparece hoje | O que o LogCoach faz |
 |---|---|---|
 | Correspondência com o mundo real | Termos técnicos e em inglês | Feedback em português, na linguagem do jogador |
-| Design estético e minimalista | Dezenas de tabelas e gráficos | Mostra primeiro os 3 erros que mais custam |
+| Design estético e minimalista | Dezenas de tabelas e gráficos | Mostra primeiro os erros que mais custam |
 | Reconhecer em vez de lembrar | O jogador precisa saber o que procurar | O sistema já diz onde olhar |
 | Visibilidade do status | Sem retorno de "estou melhorando?" | Histórico de análises e evolução |
 
@@ -84,7 +84,7 @@ O jogador cola o link do seu log do Warcraft Logs. O LogCoach:
 
 **Funcionalidades principais:**
 - Análise por link do Warcraft Logs, sem precisar baixar arquivo.
-- Relatório com os 3 erros que mais custaram desempenho.
+- Relatório com os erros que mais custaram desempenho, do maior para o menor impacto.
 - Comparação lado a lado com os melhores jogadores.
 - Explicação da IA em linguagem simples.
 - Histórico e evolução para usuários cadastrados.

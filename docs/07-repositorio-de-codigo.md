@@ -13,7 +13,8 @@ LogCoach/
 │   ├── app/
 │   │   ├── api/      # rotas
 │   │   ├── engine/   # coletor, regras, comparador
-│   │   ├── rules/    # regras do Mago Arcano em YAML
+│   │   ├── rules/    # regras da especialização em YAML (ex.: arcane_mage.yaml)
+│   │   ├── encounters/ # regras de cada chefe em YAML (ex.: nekzali.yaml)
 │   │   └── ai/       # integração com Vertex AI
 │   └── tests/        # Pytest
 ├── frontend/         # React + Vite

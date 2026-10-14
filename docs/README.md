@@ -2,7 +2,7 @@
 
 **Coach de desempenho para jogadores competitivos de World of Warcraft.**
 
-O jogador cola o link do seu log de combate do Warcraft Logs e o LogCoach mostra, em português, os 3 erros que mais estão custando dano, comparando a luta com os melhores jogadores do mundo no mesmo chefe.
+O jogador cola o link do seu log de combate do Warcraft Logs e o LogCoach mostra, em português, os erros que mais estão custando dano, comparando a luta com os melhores jogadores do mundo no mesmo chefe. A proposta é reduzir drasticamente o tempo entre jogar e saber o que corrigir.
 
 | | |
 |---|---|

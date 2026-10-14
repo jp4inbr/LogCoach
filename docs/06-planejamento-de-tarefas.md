@@ -6,9 +6,11 @@
 
 ## 6.1 Papéis
 
+> Cada "Membro" abaixo é uma frente de trabalho. Os integrantes se inscrevem nas frentes de acordo com o que conseguem entregar.
+
 | Pessoa        | Papel                                | Entregas                                                                                                                                 |
 | ------------- | ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| **Arthur**    | Líder técnico + especialista do jogo | Motor de análise, regras do Mago Arcano, integração com Warcraft Logs e IA, validação de todo conteúdo de WoW                            |
+| **Arthur**    | Líder técnico + especialista do jogo | Motor de análise, regras do Mago Arcano e do encontro (mapa do Nek'zali), integração com Warcraft Logs e IA, validação de todo conteúdo de WoW |
 | **Membro 2**  | Frontend + qualidade                 | Linters, CI, telas em React ligadas ao backend                                                                                           |
 | **João**      | GitBook                              | Organização e revisão das páginas no GitBook                                                                                             |
 | **Luiz**      | Gestão                               | Quadro no GitHub Projects, checagem de prazos, roteiro dos slides                                                                        |
@@ -16,9 +18,10 @@
 | **Membro 6**  | Design + teste                       | Apoio no Figma; teste de usabilidade e nota SUS                                                                                          |
 | **Membro 7**  | Pesquisa                             | Formulário com jogadores brasileiros (evidências do problema)                                                                            |
 | **Membro 8**  | Relatório de IA                      | Item 9, a partir dos prompts, interações e relatórios dos membros do grupo.                                                              |
-| **Membro 9**  | Casos de teste                       | Entender o sistema e contexto para criar cenários de erro e validação em linguagem simples (base dos testes Pytest) e manter o anexo 10. |
-| **Membro 10** | Aplicação da Usabilidade             | Entender como os princípios da usabilidade será integrado pela aplicação, atuando junto ao front/backend, e manter o anexo 07.           |
+| **Membro 9**  | Casos de teste                       | Entender o sistema e contexto para criar cenários de erro e validação em linguagem simples (base dos testes Pytest) e manter o item 10. |
+| **Membro 10** | Aplicação da Usabilidade             | Entender como os princípios da usabilidade será integrado pela aplicação, atuando junto ao front/backend, e manter o item 08.           |
 | **Membro 11** | Qualidade da Apresentação            | Elaborar os slides e garantir que o material estará disponível e correto na hora da apresentação à banca.                                |
+| **Membro 12** | Diagramas                            | Converter os fluxogramas em Mermaid (arquitetura, fluxo de telas, motor de análise, cronograma) em diagramas apresentáveis (Figma, draw.io ou Excalidraw) para o GitBook e os slides. |
 
 ## 6.2 Cronograma
 
@@ -32,15 +35,18 @@ gantt
     Docs RT01/RT02 no GitBook         :2026-10-14, 3d
     Chaves WCL + Google Cloud         :2026-10-13, 2d
     Dados de exemplo do Nek'zali      :2026-10-14, 3d
+    Mapa do encontro Nek'zali         :2026-10-14, 3d
     Formulário de pesquisa            :2026-10-14, 2d
     section Construção
     Regras do Mago Arcano             :2026-10-17, 4d
-    Comparador com top logs           :2026-10-19, 3d
+    Regras do encontro + correlação   :2026-10-17, 4d
+    Comparador por fase com top logs  :2026-10-19, 3d
     Integração com IA                 :2026-10-20, 3d
     Telas 1-3 em React                :2026-10-17, 6d
     Telas 4-5                         :2026-10-21, 3d
     Mockups Figma                     :2026-10-15, 5d
     Testes Pytest                     :2026-10-20, 4d
+    Diagramas apresentáveis           :2026-10-20, 5d
     section Validação
     Teste de usabilidade + SUS        :2026-10-24, 2d
     Roteiro da banca                  :2026-10-24, 3d
@@ -50,8 +56,8 @@ gantt
 
 | Fase | Período | Principais tarefas |
 |---|---|---|
-| Base | 13/10 – 16/10 | Repositório e CI, quadro, docs no GitBook, chaves de API, dados de exemplo, formulário, mockups 1–2 |
-| Construção | 17/10 – 23/10 | Regras, comparador, IA, telas React, mockups 3–5, testes, rascunho do relatório de IA |
+| Base | 13/10 – 16/10 | Repositório e CI, quadro, docs no GitBook, chaves de API, dados de exemplo, mapa do encontro Nek'zali, formulário, mockups 1–2 |
+| Construção | 17/10 – 23/10 | Regras da spec e do encontro, correlação, comparador por fase, IA, telas React, mockups 3–5, testes, diagramas apresentáveis, rascunho do relatório de IA |
 | Validação | 24/10 – 27/10 | Teste de usabilidade, roteiro da banca, documentação consolidada, ensaio |
 | Entrega | 28/10 | RT03 |
 
@@ -59,7 +65,7 @@ gantt
 
 | Risco                                        | Plano B                                                                   |
 | -------------------------------------------- | ------------------------------------------------------------------------- |
-| Arthur é o único que domina o jogo e o motor | Regras documentadas em linguagem simples (item 12);                       |
+| Arthur é o único que domina o jogo e o motor | Regras documentadas em linguagem simples (item 12) e código revisado por pelo menos mais um integrante |
 | Integração com IA atrasa                     | Demo usa resposta reserva salva, informando isso ao professor             |
 | Internet falha na apresentação               | Log de exemplo já processado e salvo                                      |
 | Não dá tempo dos 3 chefes                    | Alfa entrega só Nek'zali; os outros serão validados perante o tempo hábil |

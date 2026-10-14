@@ -29,7 +29,7 @@
 |---|---|
 | **Problema** | 1) Log de combate é dado bruto, difícil de interpretar. 2) Ferramentas atuais são rígidas e geram alerta falso. 3) Conteúdo avançado quase todo em inglês |
 | **Segmento de clientes** | Jogadores brasileiros de WoW no nível competitivo (raide Heroica/Mítica, Mítica+ alta). Early adopters: jogadores de Mago Arcano |
-| **Proposta única de valor** | "Cole o link do seu log e saiba, em português, os 3 erros que mais estão te custando dano" |
+| **Proposta única de valor** | "Cole o link do seu log e saiba, em português, os erros que mais estão te custando dano, sem horas de análise manual" |
 | **Solução** | Regras fixas da especialização + comparação com os melhores logs + explicação por IA |
 | **Canais** | Discords de guildas e de classe, fórum oficial em português, criadores de conteúdo brasileiros |
 | **Fontes de receita** | Plano grátis (5 análises/mês) e plano pago (proposta: R$ 14,90/mês, ilimitado) |
