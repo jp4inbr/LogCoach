@@ -4,12 +4,12 @@
 
 Fazer o jogador brasileiro competitivo de World of Warcraft evoluir mais rápido, transformando o log de combate em poucas correções claras, na sua língua.
 
-| Público-alvo | Necessidades | Produto | Objetivos de negócio |
-|---|---|---|---|
-| Jogadores brasileiros de WoW no nível competitivo: raide Heroica/Mítica e Mítica+ alta | Saber **o que** estão errando sem passar horas no Warcraft Logs | Web app: cola o link do log → relatório com os 3 erros de maior impacto | Validar o produto com jogadores de Mago Arcano |
-| Começo: jogadores de **Mago Arcano** | Feedback que considere o contexto da luta, sem alerta falso | Comparação com a média dos 10–20 melhores logs do mesmo chefe | Converter usuários do plano grátis para o pago |
-| Secundário: líderes de raide que revisam o desempenho do grupo | Explicação em português, sem jargão desnecessário | Coach de IA que explica e prioriza | Base para expandir a outras especializações e ao público internacional |
-| | Acompanhar a própria evolução | Histórico e gráfico de evolução por chefe | Nota SUS ≥ 68 no teste de usabilidade |
+| Público-alvo                                                                           | Necessidades                                                    | Produto                                                               | Objetivos de negócio                                                   |
+| -------------------------------------------------------------------------------------- | --------------------------------------------------------------- | --------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| Jogadores brasileiros de WoW no nível competitivo: raide Heroica/Mítica e Mítica+ alta | Saber **o que** estão errando sem passar horas no Warcraft Logs | Web app: cola o link do log → relatório com os erros de maior impacto | Validar o produto com jogadores de Mago Arcano                         |
+| Começo: jogadores de **Mago Arcano**                                                   | Feedback que considere o contexto da luta, sem alerta falso     | Comparação com a média dos 10–20 melhores logs do mesmo chefe         | Converter usuários do plano grátis para o pago                         |
+| Secundário: líderes de raide que revisam o desempenho do grupo                         | Explicação em português, sem jargão desnecessário               | Coach de IA que explica e prioriza                                    | Base para expandir a outras especializações e ao público internacional |
+|                                                                                        | Acompanhar a própria evolução                                   | Histórico e gráfico de evolução por chefe                             | Nota SUS ≥ 68 no teste de usabilidade                                  |
 
 ## Frase de posicionamento
 

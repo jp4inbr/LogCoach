@@ -26,21 +26,21 @@
 
 ## 4.2 Requisitos Não Funcionais (RNF)
 
-| ID | Categoria | Requisito |
-|---|---|---|
-| RNF01 | Desempenho | Páginas devem carregar em menos de 2 s |
-| RNF02 | Desempenho | Uma análise completa (busca + regras + IA) deve levar menos de 30 s, com indicador de progresso |
-| RNF03 | Desempenho | Os melhores logs ficam em cache por 24 h, para economizar o limite da API do Warcraft Logs |
-| RNF04 | Segurança | Toda comunicação por HTTPS |
-| RNF05 | Segurança | Senhas guardadas com hash (bcrypt ou argon2), nunca em texto |
-| RNF06 | Segurança | Chaves de API em variáveis de ambiente, fora do repositório |
-| RNF07 | Privacidade | Seguir a LGPD: só e-mail e senha como dados pessoais, com opção de excluir a conta |
-| RNF08 | Responsividade | Funcionar de 360 px (celular) até desktop |
-| RNF09 | Usabilidade | Um jogador sem treino deve concluir a primeira análise em até 2 minutos |
-| RNF10 | Usabilidade | Nota SUS de pelo menos 68 no teste com usuários |
-| RNF11 | Idioma | Toda a interface e as respostas da IA em português do Brasil |
-| RNF12 | Manutenção | As regras da especialização ficam em arquivo de configuração, para atualizar a cada patch sem mexer no código |
-| RNF13 | Custo | Uso de IA limitado por análise (tamanho máximo de entrada e saída) |
+| ID    | Categoria      | Requisito                                                                                                     |
+| ----- | -------------- | ------------------------------------------------------------------------------------------------------------- |
+| RNF01 | Desempenho     | Páginas devem carregar em menos de 3 s                                                                        |
+| RNF02 | Desempenho     | Uma análise completa (busca + regras + IA) deve levar menos de 2 minutos, com indicador de progresso          |
+| RNF03 | Desempenho     | Os melhores logs ficam em cache por 24 h, para economizar o limite da API do Warcraft Logs                    |
+| RNF04 | Segurança      | Toda comunicação por HTTPS                                                                                    |
+| RNF05 | Segurança      | Senhas guardadas com hash (bcrypt ou argon2), nunca em texto                                                  |
+| RNF06 | Segurança      | Chaves de API em variáveis de ambiente, fora do repositório                                                   |
+| RNF07 | Privacidade    | Seguir a LGPD: só e-mail e senha como dados pessoais, com opção de excluir a conta                            |
+| RNF08 | Responsividade | Funcionar de 360 px (celular) até desktop                                                                     |
+| RNF09 | Usabilidade    | Um jogador sem treino deve concluir a primeira análise em até 5 minutos                                       |
+| RNF10 | Usabilidade    | Nota SUS de pelo menos 68 no teste com usuários                                                               |
+| RNF11 | Idioma         | Toda a interface e as respostas da IA em português do Brasil                                                  |
+| RNF12 | Manutenção     | As regras da especialização ficam em arquivo de configuração, para atualizar a cada patch sem mexer no código |
+| RNF13 | Custo          | Uso de IA limitado por análise (tamanho máximo de entrada e saída)                                            |
 
 ## 4.3 Rastreabilidade com usabilidade
 

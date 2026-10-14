@@ -4,21 +4,21 @@
 
 **Título provisório:** LogCoach — coach de desempenho para jogadores competitivos de World of Warcraft
 
-**Tema:** análise automática de logs de combate com regras determinísticas e Inteligência Artificial, para jogadores brasileiros de alto nível.
+**Tema:** análise automática de registros de combate com regras determinísticas e Inteligência Artificial, para jogadores brasileiros de alto nível.
 
 **Integrantes**
 
-| Nome | RA | E-mail UNA |
-|---|---|---|
-| Arthur Justi Beiral |  |  |
-| Pedro |  |  |
-| João |  |  |
-| Luiz |  |  |
-|  |  |  |
-|  |  |  |
-|  |  |  |
-|  |  |  |
-|  |  |  |
+| Nome                | RA  | E-mail UNA |
+| ------------------- | --- | ---------- |
+| Arthur Justi Beiral |     |            |
+| Pedro               |     |            |
+| João                |     |            |
+| Luiz                |     |            |
+|                     |     |            |
+|                     |     |            |
+|                     |     |            |
+|                     |     |            |
+|                     |     |            |
 
 > Este documento é público (sincronizado com o GitHub). Não incluir e-mail pessoal, telefone ou outros dados pessoais.
 
@@ -28,15 +28,15 @@
 
 **Setor:** Entretenimento e Esportes Eletrônicos (e-sports).
 
-World of Warcraft (WoW) é um jogo online em que grupos de 5 a 20 jogadores enfrentam chefes difíceis. No nível mais alto, isso virou competição de verdade, com torneios oficiais e premiação em dinheiro:
+World of Warcraft (WoW) é um jogo online em que grupos de 5 a 30 jogadores enfrentam chefes difíceis. No nível mais alto, isso virou competição de verdade, com torneios oficiais e premiação em dinheiro:
 
 - **Mythic Dungeon International (MDI) 2026:** a final global aconteceu na BlizzCon 2026, nos EUA, com **US$ 300 mil** em prêmios.
 - **Arena World Championship (AWC) 2026:** o lado JxJ do jogo também tem **US$ 300 mil** em prêmios na temporada.
-- **Race to World First:** corrida entre as melhores guildas do mundo para derrotar primeiro o chefe final de cada raide nova, acompanhada ao vivo pela comunidade. Na raide atual (The Venomous Abyss), a Team Liquid venceu pela quinta vez seguida.
+- **Race to World First:** corrida entre as melhores guildas do mundo para derrotar primeiro o chefe final de cada raide nova, patrocinada por diversas grandes empresas de tecnologia e acompanhada ao vivo pela comunidade. Na raide atual (The Venomous Abyss), a Team Liquid venceu pela quinta vez seguida.
 
-Para chegar nesse nível, o jogador precisa estudar o próprio desempenho. Toda luta pode ser gravada num **log de combate**, enviado ao site Warcraft Logs. O log registra cada habilidade usada, cada segundo parado, cada morte. O problema é que ele é um dado bruto: tabelas e gráficos que exigem horas e muito conhecimento para virar aprendizado.
+Para chegar nesse nível, o jogador precisa estudar o próprio desempenho. Toda luta pode ser gravada num **log de combate**, enviado ao site Warcraft Logs. O log registra cada habilidade usada, cada segundo parado, cada morte. O problema é que ele é um dado bruto: tabelas e gráficos que exigem horas e muito conhecimento para virar informação útil.
 
-O Brasil tem comunidade própria no jogo desde 2011, com servidores nacionais (Azralon, Nemesis, Gallywix, Goldrinn, Tol Barad) e fórum oficial em português. Mesmo assim, quase todo o conteúdo avançado (guias, ferramentas, análises) está em inglês.
+O Brasil tem comunidade própria no jogo desde 2011, com servidores nacionais e fórum oficial em português. Mesmo assim, quase todo o conteúdo avançado (guias, ferramentas, análises) está em inglês.
 
 ## 1.3 Identificação e Descrição do Problema
 
@@ -52,13 +52,13 @@ O jogador competitivo que quer melhorar tem três caminhos hoje, e todos têm cu
 
 **Impacto:**
 - **Tempo:** horas de análise manual que poderiam ser horas de prática.
-- **Desempenho:** erros finos (usar um cooldown 3 segundos atrasado, ficar parado sem lançar magia) passam despercebidos e se repetem semana após semana.
-- **Acesso:** o jogador brasileiro que não domina inglês técnico fica para trás.
+- **Desempenho:** erros finos (usar habilidade no momento errado do encontro, ficar parado sem lançar magia) passam despercebidos e se repetem semana após semana.
+- **Acesso:** o jogador brasileiro que não domina inglês técnico fica para trás devido à não ter acesso a massiva parte do material avançado do jogo, que é em inglês.
 
 ### Evidências do problema
 
-- **Relato de especialista do grupo:** Arthur joga de Mago Arcano, tem 3.780 de pontuação em Mítica+ e o Ahead of the Curve nesta temporada, e já derrotou os 3 primeiros chefes da raide no modo Mítico. Ele relata não encontrar conteúdo avançado específico da sua especialização e que o WoWAnalyzer aponta erros que, no contexto da luta, não são erros.
-- **Mercado:** já existem ferramentas de análise (WoWAnalyzer, Warcraft Logs, Raider.IO) e algumas com IA, mas são em inglês e genéricas para todas as classes. Nenhuma é focada no jogador brasileiro.
+- **Relato de especialista do grupo:** Arthur joga de Mago Arcano, está entre os 1% da base de jogadores. Ele relata não encontrar conteúdo avançado específico da sua especialização e que o WoWAnalyzer aponta erros que, no contexto da luta, não são erros. Seus colegas de jogo também apontam a dificuldade de analisar o registro e conseguir extrair informação útil do mesmo, fazendo com que a evolução exija além de tempo, uma quantidade bem maior de repetições.
+- **Mercado:** já existem ferramentas de análise (WoWAnalyzer, Warcraft Logs, WipeFest), mas são em inglês e genéricas para todas as classes. Nenhuma é focada no jogador brasileiro e as que trazem informações avançadas, não fazem de forma intuitiva e facilmente digerível.
 - **Premiações:** torneios com US$ 300 mil em prêmios mostram que desempenho no WoW tem valor real, não é só lazer.
 - **A coletar (até a RT03):** formulário com jogadores brasileiros em Discords e grupos de guilda, perguntando quanto tempo gastam analisando logs e quais ferramentas usam.
 

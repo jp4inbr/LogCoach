@@ -39,8 +39,8 @@
 
 ## 2.4 Roadmap
 
-| Fase | Quando | Entrega |
-|---|---|---|
-| Alfa | RT03 (28/10/2026) | Nek'zali, análise completa, IA, histórico |
-| Beta | Banca / Expo Una (nov/2026) | + Entombed Sentinels e The Lost Explorers, teste com jogadores |
-| Pós-MVP | 2027 | Mais especializações, Mítica+, versão em inglês, pagamento real |
+| Fase    | Quando                      | Entrega                                                         |
+| ------- | --------------------------- | --------------------------------------------------------------- |
+| Alfa    | RT03 (28/10/2026)           | Nek'zali, análise elaborada, IA, histórico                      |
+| Beta    | Banca / Expo Una (nov/2026) | + Entombed Sentinels e The Lost Explorers, teste com jogadores  |
+| Pós-MVP | 2027                        | Mais especializações, Mítica+, versão em inglês, pagamento real |
