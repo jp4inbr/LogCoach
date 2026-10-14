@@ -1,0 +1,64 @@
+# 6. Planejamento de Tarefas (Cronograma)
+
+**Quadro oficial:** GitHub Projects do repositório (_link a adicionar_), com colunas *Backlog → A fazer → Fazendo → Revisão → Feito*.
+
+**Meta da RT03 (28/10/2026):** versão alfa rodando com o 1º chefe (Nek'zali), documentação consolidada, relatório de IA, testes e roteiro da banca.
+
+## 6.1 Papéis
+
+| Pessoa | Papel | Entregas |
+|---|---|---|
+| **Arthur** | Líder técnico + especialista do jogo | Motor de análise, regras do Mago Arcano, integração com Warcraft Logs e IA, validação de todo conteúdo de WoW |
+| **Pedro** | Frontend + qualidade | Linters, CI, telas em React ligadas ao backend |
+| **João** | GitBook | Organização e revisão das páginas no GitBook |
+| **Luiz** | Gestão | Quadro no GitHub Projects, checagem de prazos, roteiro dos slides |
+| **Membro 5** | Design | Mockups das 5 telas + planos no Figma |
+| **Membro 6** | Design + teste | Apoio no Figma; teste de usabilidade e nota SUS |
+| **Membro 7** | Pesquisa | Formulário com jogadores brasileiros (evidências do problema) |
+| **Membro 8** | Relatório de IA | Item 9, a partir dos prompts e conversas que Arthur e Pedro passarem |
+| **Membro 9** | Casos de teste | Cenários de erro e validação em linguagem simples (base dos testes Pytest) |
+
+## 6.2 Cronograma
+
+```mermaid
+gantt
+    dateFormat  YYYY-MM-DD
+    title RT03 — LogCoach
+    section Base
+    Repositório, linters, CI          :2026-10-13, 2d
+    GitHub Projects                   :2026-10-13, 2d
+    Docs RT01/RT02 no GitBook         :2026-10-14, 3d
+    Chaves WCL + Google Cloud         :2026-10-13, 2d
+    Dados de exemplo do Nek'zali      :2026-10-14, 3d
+    Formulário de pesquisa            :2026-10-14, 2d
+    section Construção
+    Regras do Mago Arcano             :2026-10-17, 4d
+    Comparador com top logs           :2026-10-19, 3d
+    Integração com IA                 :2026-10-20, 3d
+    Telas 1-3 em React                :2026-10-17, 6d
+    Telas 4-5                         :2026-10-21, 3d
+    Mockups Figma                     :2026-10-15, 5d
+    Testes Pytest                     :2026-10-20, 4d
+    section Validação
+    Teste de usabilidade + SUS        :2026-10-24, 2d
+    Roteiro da banca                  :2026-10-24, 3d
+    Docs consolidadas                 :2026-10-24, 4d
+    Ensaio                            :2026-10-27, 1d
+```
+
+| Fase | Período | Principais tarefas |
+|---|---|---|
+| Base | 13/10 – 16/10 | Repositório e CI, quadro, docs no GitBook, chaves de API, dados de exemplo, formulário, mockups 1–2 |
+| Construção | 17/10 – 23/10 | Regras, comparador, IA, telas React, mockups 3–5, testes, rascunho do relatório de IA |
+| Validação | 24/10 – 27/10 | Teste de usabilidade, roteiro da banca, documentação consolidada, ensaio |
+| Entrega | 28/10 | RT03 |
+
+## 6.3 Riscos e plano B
+
+| Risco | Plano B |
+|---|---|
+| Arthur é o único que domina o jogo e o motor | Regras documentadas em linguagem simples (item 12); Pedro acompanha o código desde o início |
+| Integração com IA atrasa | Demo usa resposta reserva salva, informando isso ao professor |
+| Internet falha na apresentação | Log de exemplo já processado e salvo |
+| Não dá tempo dos 3 chefes | Alfa entrega só Nek'zali; os outros ficam para a Expo |
+| Membros sem entregar | Luiz cobra no quadro; tarefas sem dono até 16/10 são redistribuídas |

@@ -1,0 +1,26 @@
+# Segredos — nunca commitar
+.env
+.env.*
+!.env.example
+*.pem
+*-credentials.json
+service-account*.json
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.ruff_cache/
+*.sqlite3
+*.db
+
+# Node
+node_modules/
+dist/
+
+# SO / editores
+.DS_Store
+.vscode/
+.idea/
+.obsidian/
