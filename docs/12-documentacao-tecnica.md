@@ -7,15 +7,16 @@
 ```bash
 # Backend
 cd backend
-python -m venv .venv && source .venv/bin/activate
+python -m venv .venv && source .venv/bin/activate   # Linux/macOS
+.venv\Scripts\Activate.ps1                          # Windows (PowerShell)
 pip install -e ".[dev]"
-cp .env.example .env   # preencher as chaves
-uvicorn app.main:app --reload
+cp .env.example .env   # preencher as chaves (no PowerShell: Copy-Item .env.example .env)
+uvicorn app.main:app --reload   # http://localhost:8000/health e /docs
 
 # Frontend
 cd frontend
 npm install
-npm run dev
+npm run dev   # http://localhost:5173 (precisa do backend rodando)
 ```
 
 ## 12.2 Variáveis de ambiente
