@@ -1,0 +1,72 @@
+# Regras do encontro: Nek'zali the Soulcoiler (The Venomous Abyss)
+# Fonte: kill Mítico de referência, report XhrmBaYkGCAQjH2D, luta 34 (6:55).
+# Tempos em segundos desde o início da luta, só como referência; o motor usa as
+# transições de fase que vêm do próprio log (fights[].phases na API do WCL).
+
+encounter: Nek'zali the Soulcoiler
+encounter_id: 3470            # ID do encontro no Warcraft Logs
+boss_npc_id: 259927           # Nek'zali
+
+phases:                       # IDs e nomes como o Warcraft Logs devolve
+  - id: 1
+    name: "Stage One: Soulcoiler Initiation"
+    reference_start_s: 0.0
+  - id: 2
+    name: "Intermission: Ritual of Awakening"
+    intermission: true
+    reference_start_s: 166.7
+  - id: 3
+    name: "Stage Two: Uncoiling"
+    reference_start_s: 267.4
+
+# Na intermissão o chefe não recebe dano (confirmado no log: 0 de dano no
+# Nek'zali na fase 2). O dano tem que ir para o Echo of Jawae, então isso NÃO
+# é tempo parado: é troca de alvo.
+untargetable:
+  - name: Intermissão (Ritual of Awakening)
+    phase: 2
+    npc_id: 259927
+    priority_targets:
+      - { name: Echo of Jawae, npc_id: 263050 }
+
+adds:
+  - { name: Restless Amani, npc_id: 261509 }      # vão até o poço e dão energia ao chefe
+  - { name: Echo of Jawae, npc_id: 263050 }       # alvo da intermissão
+  - { name: Drowned Echo, npc_id: 268204 }        # Mítico (Grasping Depths)
+  - { name: Summoner Jawae, npc_id: 263473 }
+  - { name: Soulcoil Well, npc_id: 266756 }
+
+# Janelas onde se espera cooldown ofensivo.
+# TODO (Arthur): confirmar janelas e duração para o Mago Arcano.
+burst_windows:
+  - name: Pull
+    phase: 1
+    offset_s: 0
+    duration_s: 20
+  - name: Echo of Jawae (intermissão)
+    phase: 2
+    offset_s: 0
+    duration_s: 20
+  - name: Volta do chefe (Stage Two)
+    phase: 3
+    offset_s: 0
+    duration_s: 20
+
+# Habilidades do chefe que marcam a linha do tempo (IDs de feitiço do Wowhead/WCL).
+boss_abilities:
+  - { name: Soulcoil Ignition, ability_id: 1293664, phase: 1 }   # aplica o DoT Soulcoil Rite
+  - { name: Possession Barrage, ability_id: 1284103 }            # ~a cada 35 s nas fases 1 e 3
+  - { name: Soulcoiler's Curse, ability_id: 1300238 }
+  - { name: Ritual of Awakening, ability_id: 1295124, phase: 1 } # anuncia a intermissão (~22 s antes)
+  - { name: Soul Transfer, ability_id: 1293211 }                 # invoca os Echoes of Jawae
+  - { name: Hungering Pyre, ability_id: 1289855, phase: 2 }
+  - { name: Invoke, ability_id: 1299673, phase: 3 }              # dano de raide que cresce a cada cast
+
+# Golpes de raide onde se espera defensivo.
+# IDs do DANO recebido (diferente do ID do cast acima).
+# TODO (Arthur): escolher quais pedem defensivo pessoal do Mago.
+raid_hits:
+  - { name: Possession Barrage, ability_id: 1292034, cast_ability_id: 1284103 }
+  - { name: Invoke, cast_ability_id: 1299673, phase: 3 }         # TODO: ID do dano (Ritual Burn?)
+  - { name: Soulcoil Rite, ability_id: 1288772 }                 # DoT, maior fonte de dano recebido
+  - { name: Grasping Depths, ability_id: 1293214, difficulty: mythic }
