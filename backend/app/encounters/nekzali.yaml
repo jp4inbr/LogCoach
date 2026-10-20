@@ -36,21 +36,17 @@ adds:
   - { name: Summoner Jawae, npc_id: 263473 }
   - { name: Soulcoil Well, npc_id: 266756 }
 
-# Janelas onde se espera cooldown ofensivo.
-# TODO (Arthur): confirmar janelas e duração para o Mago Arcano.
+# Cooldowns ofensivos nesta luta: usar assim que voltarem (on_cooldown).
+# Os top 10 Arcanos no Mítico (rankings de 20/10/2026) não seguram Surge para
+# fase: todos usam no pull e depois a cada ~93 s, inclusive na intermissão.
+# Segurar Surge aqui não é erro automático, mas também não é o padrão dos tops;
+# o motor deve marcar como "atenção" e a IA julga (camada 3).
+burst_policy: on_cooldown
 burst_windows:
   - name: Pull
     phase: 1
     offset_s: 0
-    duration_s: 20
-  - name: Echo of Jawae (intermissão)
-    phase: 2
-    offset_s: 0
-    duration_s: 20
-  - name: Volta do chefe (Stage Two)
-    phase: 3
-    offset_s: 0
-    duration_s: 20
+    duration_s: 10
 
 # Habilidades do chefe que marcam a linha do tempo (IDs de feitiço do Wowhead/WCL).
 boss_abilities:
@@ -62,11 +58,25 @@ boss_abilities:
   - { name: Hungering Pyre, ability_id: 1289855, phase: 2 }
   - { name: Invoke, ability_id: 1299673, phase: 3 }              # dano de raide que cresce a cada cast
 
-# Golpes de raide onde se espera defensivo.
-# IDs do DANO recebido (diferente do ID do cast acima).
-# TODO (Arthur): escolher quais pedem defensivo pessoal do Mago.
-raid_hits:
+# Fontes de dano recebido (IDs do DANO, diferentes do ID do cast acima).
+damage_sources:
   - { name: Possession Barrage, ability_id: 1292034, cast_ability_id: 1284103 }
-  - { name: Invoke, cast_ability_id: 1299673, phase: 3 }         # TODO: ID do dano (Ritual Burn?)
-  - { name: Soulcoil Rite, ability_id: 1288772 }                 # DoT, maior fonte de dano recebido
+  - { name: Soulcoil Rite, ability_id: 1288772 }      # DoT: muito dano total, mas curável
   - { name: Grasping Depths, ability_id: 1293214, difficulty: mythic }
+  - { name: Uncoiling, ability_id: 1292315, phase: 3 }
+  - { name: Corpse Blight, ability_id: 1307939 }
+
+# Overlaps: onde se espera defensivo pessoal. Medidos em janelas de 4 s no kill
+# de referência (média da luta: ~5 m de dano na raide por janela).
+overlaps:
+  - name: Possession Barrage + Grasping Depths (Stage Two)
+    phase: 3
+    abilities: [1292034, 1293214]
+    peak_vs_avg: 2.1          # 10,0–10,8 m em 4 s (aos 5:48 e 6:40 do kill)
+    expect_defensive: true
+  - name: Possession Barrage + aplicação do Soulcoil Rite (Stage One)
+    phase: 1
+    abilities: [1292034, 1288772]
+    peak_vs_avg: 2.0          # 9,9 m em 4 s (aos 0:36)
+    expect_defensive: true
+  # TODO (Arthur): confirmar se o golpe isolado de Possession Barrage pede defensivo.

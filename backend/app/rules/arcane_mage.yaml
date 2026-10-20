@@ -1,0 +1,54 @@
+# Regras da especialização: Mago Arcano (Midnight, temporada 2)
+# Regras do Arthur (jogador de referência) + padrão medido nos top 10 Arcanos
+# do Nek'zali Mítico (rankings do Warcraft Logs em 20/10/2026).
+
+spec: Arcane Mage
+
+cooldowns:
+  - name: Arcane Surge
+    ability_id: 365350
+    cooldown_s: 90            # tops: ~93 s entre usos, contando atraso de GCD
+    pair_with: touch_of_the_magi
+  - name: Touch of the Magi
+    ability_id: 321507
+    cooldown_s: 45            # tops: ~46–47 s entre usos
+    use_on_cooldown: true     # atrasar quebra o alinhamento com o próximo Surge
+    pair_with: arcane_surge
+
+# Combo principal: Surge e Touch juntos.
+combos:
+  - name: Surge + Touch
+    first: arcane_surge
+    then: touch_of_the_magi
+    max_gap_s: 3.5            # tops: Touch de 0,1 a 3,2 s depois do Surge
+    # Pode atrasar o Touch um pouco para soltar antes um Prismatic Bolt ou um
+    # Arcane Barrage (tops fazem Barrage logo antes do Touch quase sempre).
+    allowed_before: [arcane_barrage, prismatic_bolt]
+  # Regra do Arthur: se o Touch atrasar e dessincronizar, segurar o Surge para o
+  # próximo Touch perde dano. Isso conta como erro de execução no Touch, não no Surge.
+
+abilities:
+  arcane_surge: 365350
+  touch_of_the_magi: 321507
+  arcane_missiles: 5143
+  arcane_barrage: 44425
+  arcane_blast: 30451
+  arcane_orb: 153626
+  prismatic_bolt: 1295924
+  shimmer: 212653
+  time_warp: 80353
+
+defensives:
+  - { name: Prismatic Barrier, ability_id: 235450 }   # tops: 3 a 6 usos por kill
+  - { name: Ice Cold, ability_id: 414658 }
+
+consumables:
+  - name: Light's Potential (poção)
+    ability_id: 1236616
+    cooldown_s: 300
+    # Tops usam a 2ª poção assim que volta (~5:00), sem esperar o Surge.
+
+thresholds:
+  downtime_pct: { warn: 2, error: 4 }   # tops e Arthur: ~99% de tempo ativo
+  touch_drift_s: { warn: 3, error: 6 }  # atraso médio do Touch em relação ao CD
+  surge_drift_s: { warn: 5, error: 10 } # atraso do Surge em relação ao CD
