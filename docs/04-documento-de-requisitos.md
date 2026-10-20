@@ -12,7 +12,7 @@
 | RF06 | O sistema deve buscar e guardar em cache os melhores logs de Mago Arcano do mesmo chefe, dificuldade e faixa de item level do jogador (bracket do Warcraft Logs) | Alta |
 | RF07 | O sistema deve aplicar as regras da especialização, válidas em qualquer luta (tempo parado, uso de cooldowns, recurso desperdiçado, procs perdidos, mortes) | Alta |
 | RF08 | O sistema deve calcular a diferença entre o jogador e a média dos melhores logs em cada regra | Alta |
-| RF09 | O sistema deve enviar à IA só os fatos calculados pelas regras (não o log bruto), junto com as perguntas de julgamento definidas, e receber a explicação em português | Alta |
+| RF09 | O sistema deve enviar à IA, sem o log bruto: os fatos calculados pelas regras, o guia da luta e da especialização, a tabela comparativa por habilidade (RF22) e as perguntas de julgamento; e receber a explicação em português | Alta |
 | RF10 | O sistema deve mostrar um relatório com os erros ordenados do maior para o menor impacto | Alta |
 | RF11 | O sistema deve mostrar uma linha do tempo comparando o uso de cooldowns do jogador com o dos melhores | Média |
 | RF12 | O sistema deve salvar o histórico de análises do usuário cadastrado | Média |
@@ -25,6 +25,9 @@
 | RF19 | O sistema deve montar uma linha do tempo única da luta e cruzar os eventos do chefe com os cooldowns e defensivos do jogador | Alta |
 | RF20 | A comparação com os melhores logs deve ser feita por fase (tempo relativo ao início de cada fase), não pelo tempo absoluto da luta | Alta |
 | RF21 | Se o jogador já estiver entre os 10 melhores da sua faixa de item level, o sistema deve reconhecer isso no relatório e comparar com o 1º colocado geral do chefe | Média |
+| RF22 | O sistema deve montar, por fase, uma tabela com casts por minuto e % do dano de cada habilidade do jogador, ao lado da média dos 10 melhores da mesma faixa de item level, mesmo para habilidades sem regra própria | Alta |
+| RF23 | O sistema deve marcar a diferença de dano por fase que as regras não explicam ("diferença não explicada"), para a IA investigar na tabela do RF22 | Média |
+| RF24 | O que a IA apontar fora das regras deve aparecer no relatório como hipótese, com os números do código ao lado, e ficar registrado para revisão (possível regra nova) | Média |
 
 > As regras funcionam em três camadas (especialização, encontro e perguntas de julgamento da IA). Detalhes no item 12.
 

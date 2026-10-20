@@ -58,7 +58,37 @@ A camada 2 **ajusta** a camada 1. Exemplo: tempo parado durante uma intermissão
 5. **Comparação por fase.** Como cada luta tem duração diferente, o sistema compara "X segundos após o início da fase" do jogador com o mesmo ponto nos melhores logs, e não o tempo absoluto.
 6. **Saída.** Um JSON de fatos (ex.: "CD principal usado 2 de 4 vezes possíveis; 1 fora de janela de burst na fase 2") vai para a IA, junto com as perguntas da camada 3.
 
-## 12.6 Formato dos arquivos de regras (rascunho)
+## 12.6 O que a IA recebe
+
+A IA não consulta o Warcraft Logs nem faz conta. O backend monta um pacote com três partes:
+
+| Parte | O que é | Quem produz |
+|---|---|---|
+| **Fatos das regras** | Erros conhecidos, com certeza (ex.: "4º Surge 4,5 s depois do Touch") | Motor, a partir dos YAML |
+| **Guia da luta e da spec** | Texto curto: como o chefe funciona, como o Arcano joga, o que não é erro | Arthur (um por chefe e um por spec) |
+| **Tabela por habilidade** | Por fase: casts por minuto e % do dano de cada habilidade, jogador vs. média dos top 10 do mesmo bracket | Motor (RF22), genérico para qualquer spec |
+
+Com isso a IA ordena os erros, explica em português e aponta como **hipótese** o que destoar na tabela sem ter regra (RF24). A tabela usa casts **por minuto** porque a duração das fases muda entre kills.
+
+**Diferença não explicada (RF23).** Se o jogador fez, por exemplo, 25% menos dano que os tops no Stage Two e as regras só explicam parte disso, o motor marca a sobra. É um sinal para a IA olhar a tabela daquela fase com mais atenção.
+
+**Do achado à regra.** As hipóteses da IA ficam registradas. O Arthur revisa e, se for um padrão de verdade, ele vira regra no YAML e passa a ser checado de graça em toda análise.
+
+**Fora do MVP:** dar à IA ferramentas para consultar o log por conta própria. Fica para depois da banca, se o custo e o limite da API permitirem.
+
+### Métricas da comparação (Mago Arcano)
+
+| Métrica | Exemplo no kill de referência |
+|---|---|
+| Cadência do Arcane Surge | Tops do bracket: ~93 s entre usos |
+| Distância Touch → Surge | Tops: 0,1 a 3,2 s |
+| Momento da 2ª poção | 9 de 10 tops: entre 4:59 e 5:29 |
+| Defensivo nos overlaps | Ver `overlaps` em `nekzali.yaml` |
+| DPS por fase | Stage Two é onde a diferença costuma aparecer |
+
+**Cache por bracket (RNF03):** a referência dos top 10 é a mesma para todos do mesmo chefe, dificuldade e bracket, então é calculada uma vez a cada 24 h e reaproveitada.
+
+## 12.7 Formato dos arquivos de regras (rascunho)
 
 ```yaml
 # backend/app/encounters/nekzali.yaml
