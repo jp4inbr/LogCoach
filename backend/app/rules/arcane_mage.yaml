@@ -1,6 +1,6 @@
 # Regras da especialização: Mago Arcano (Midnight, temporada 2)
 # Regras do Arthur (jogador de referência) + padrão medido nos top 10 Arcanos
-# do Nek'zali Mítico (rankings do Warcraft Logs em 20/10/2026).
+# do Nek'zali Mítico no mesmo bracket de item level (326–328), em 20/10/2026.
 
 spec: Arcane Mage
 
@@ -26,6 +26,8 @@ combos:
     allowed_before: [arcane_barrage, prismatic_bolt]
   # Regra do Arthur: se o Touch atrasar e dessincronizar, segurar o Surge para o
   # próximo Touch perde dano. Isso conta como erro de execução no Touch, não no Surge.
+  # Segurar o Surge até ~15 s não é erro quando é para casar com a poção ou com
+  # uma fase definida em allowed_holds do encontro.
 
 abilities:
   arcane_surge: 365350
@@ -39,14 +41,15 @@ abilities:
   time_warp: 80353
 
 defensives:
-  - { name: Prismatic Barrier, ability_id: 235450 }   # tops: 3 a 6 usos por kill
+  - { name: Prismatic Barrier, ability_id: 235450 }   # tops do bracket: de 0 a 6 usos por kill
   - { name: Ice Cold, ability_id: 414658 }
 
 consumables:
   - name: Light's Potential (poção)
     ability_id: 1236616
     cooldown_s: 300
-    # Tops usam a 2ª poção assim que volta (~5:00), sem esperar o Surge.
+    # Tops usam a 2ª poção assim que volta (~5:00). Quando o Surge está perto,
+    # seguram o Surge para casar com a poção, e não o contrário.
 
 thresholds:
   downtime_pct: { warn: 2, error: 4 }   # tops e Arthur: ~99% de tempo ativo

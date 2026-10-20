@@ -54,8 +54,9 @@ A camada 2 **ajusta** a camada 1. Exemplo: tempo parado durante uma intermissão
 1. **Relógio único.** Pela API do Warcraft Logs são buscados os eventos da luta: casts do chefe, casts e buffs do jogador, dano recebido, mortes e transições de fase. Todo horário vira "segundos desde o início da luta".
 2. **Linha do tempo do encontro.** Com o YAML do chefe, o sistema marca as fases, as janelas de burst e os golpes de raide, identificando cada habilidade do chefe pelo seu ID.
 3. **Cruzamento.** Para cada janela, verifica se o cooldown do jogador caiu dentro dela (com tolerância de alguns segundos). Para cada golpe de raide, verifica se havia defensivo ativo.
-4. **Comparação por fase.** Como cada luta tem duração diferente, o sistema compara "X segundos após o início da fase" do jogador com o mesmo ponto nos melhores logs, e não o tempo absoluto.
-5. **Saída.** Um JSON de fatos (ex.: "CD principal usado 2 de 4 vezes possíveis; 1 fora de janela de burst na fase 2") vai para a IA, junto com as perguntas da camada 3.
+4. **Com quem comparar.** Os 10 melhores logs da mesma especialização, chefe e dificuldade **dentro da faixa de item level do jogador** (o "bracket" do Warcraft Logs, de 3 em 3 níveis: 326–328, 329–331…). Assim a diferença mostrada é de execução, não de equipamento. Se o jogador já estiver nesse top 10, o relatório reconhece e compara com o 1º colocado geral.
+5. **Comparação por fase.** Como cada luta tem duração diferente, o sistema compara "X segundos após o início da fase" do jogador com o mesmo ponto nos melhores logs, e não o tempo absoluto.
+6. **Saída.** Um JSON de fatos (ex.: "CD principal usado 2 de 4 vezes possíveis; 1 fora de janela de burst na fase 2") vai para a IA, junto com as perguntas da camada 3.
 
 ## 12.6 Formato dos arquivos de regras (rascunho)
 

@@ -17,7 +17,7 @@
 | Chefes | 1º Nek'zali the Soulcoiler (obrigatório na demo), 2º Entombed Sentinels, 3º The Lost Explorers |
 | Dificuldades | Heroico e Mítico |
 | Entrada | Link do relatório no Warcraft Logs |
-| Comparação | Média dos 10 a 20 melhores logs de Mago Arcano no mesmo chefe e dificuldade |
+| Comparação | Média dos 10 melhores logs de Mago Arcano no mesmo chefe e dificuldade, na mesma faixa de item level do jogador |
 | IA | Gemini via Vertex AI (Google Cloud) |
 | Idioma | Português |
 

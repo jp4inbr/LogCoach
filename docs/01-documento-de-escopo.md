@@ -78,7 +78,7 @@ O problema central é de usabilidade: a informação existe, mas está em format
 O jogador cola o link do seu log do Warcraft Logs. O LogCoach:
 
 1. **Busca os dados** pela API oficial do Warcraft Logs.
-2. **Compara** a luta com a média dos 10 a 20 melhores logs do mesmo chefe e dificuldade.
+2. **Compara** a luta com a média dos 10 melhores logs do mesmo chefe e dificuldade, na mesma faixa de item level do jogador.
 3. **Aplica regras fixas** da especialização (tempo parado, uso de cooldowns, uso de defensivos, mortes).
 4. **A IA explica** os erros em português simples e diz o que corrigir primeiro.
 
