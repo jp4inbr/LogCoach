@@ -55,11 +55,12 @@ allowed_holds:
 boss_abilities:
   - { name: Soulcoil Ignition, ability_id: 1293664, phase: 1 }   # aplica o DoT Soulcoil Rite
   - { name: Possession Barrage, ability_id: 1284103 }            # ~a cada 35 s nas fases 1 e 3
-  - { name: Soulcoiler's Curse, ability_id: 1300238 }
+  - { name: Essence Rend, ability_id: 1287434, phase: 1 }        # debuff dissipável; vira poça (Latent Cultist)
+  - { name: Soulcoiler's Curse, ability_id: 1300238, difficulty: mythic }  # conjurada pelo Drowned Echo: interromper
   - { name: Ritual of Awakening, ability_id: 1295124, phase: 1 } # anuncia a intermissão (~22 s antes)
   - { name: Soul Transfer, ability_id: 1293211 }                 # invoca os Echoes of Jawae
   - { name: Hungering Pyre, ability_id: 1289855, phase: 2 }
-  - { name: Invoke, ability_id: 1299673, phase: 3 }              # dano de raide que cresce a cada cast
+  - { name: Invoke, ability_id: 1299673, phase: 3, cast_s: 5 }   # ao terminar, interrompe e silencia 3 s quem estiver conjurando
 
 # Fontes de dano recebido (IDs do DANO, diferentes do ID do cast acima).
 damage_sources:
@@ -85,3 +86,12 @@ overlaps:
     abilities: [1292034, 1288772]
     peak_vs_avg: 2.0          # 9,9 m em 4 s (aos 0:36)
     expect_defensive: true
+  - name: Essence Rend no jogador + um dos picos acima
+    personal: true            # só vale para quem está com o debuff
+    abilities: [1287434]
+    expect_defensive: true    # TODO: medir no log em quais pulls isso coincidiu
+
+# Candidata a regra (TODO: medir): estar conjurando quando o Invoke termina
+# = interrupção + 3 s de silêncio, perda direta de dano na Fase 2.
+cast_traps:
+  - { name: Invoke, ability_id: 1299673, phase: 3, silence_s: 3 }

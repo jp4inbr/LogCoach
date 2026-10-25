@@ -1,0 +1,57 @@
+# Nomes em português do Brasil, como aparecem no cliente do jogo.
+# Fonte: Wowhead (locale ptBR), conferido em 25/10/2026.
+# O motor usa isto para escrever o relatório em português (RNF11).
+
+spells:
+  # Mago Arcano
+  365350: Surto Arcano            # Arcane Surge
+  321507: Toque dos Magos         # Touch of the Magi
+  5143: Mísseis Arcanos           # Arcane Missiles
+  44425: Salva Arcana             # Arcane Barrage
+  30451: Impacto Arcano           # Arcane Blast
+  153626: Orbe Arcano             # Arcane Orb
+  1295924: Seta Prismática        # Prismatic Bolt
+  212653: Cintilação              # Shimmer
+  80353: Distorção Temporal       # Time Warp
+  235450: Barreira Prismática     # Prismatic Barrier
+  414658: Frio Enregelante        # Ice Cold
+  45438: Bloco de Gelo            # Ice Block
+  342245: Alterar Tempo           # Alter Time
+  1236616: Potencial da Luz       # Light's Potential (poção)
+
+  # Nek'zali, a Enrosca-almas
+  1293664: Ignição dos Enrosca-almas   # Soulcoil Ignition
+  1284103: Barragem de Possessão       # Possession Barrage (cast)
+  1292034: Barragem de Possessão       # Possession Barrage (dano)
+  1287434: Dilaceração de Essência     # Essence Rend
+  1288554: Sectário Latente            # Latent Cultist (poça)
+  1288772: Rito dos Enrosca-almas      # Soulcoil Rite
+  1287533: Avanço Rumo ao Túmulo       # Gravebound Advance (escudo dos Amani)
+  1307939: Praga dos Corpos            # Corpse Blight
+  1294846: Ecos Angustiados            # Anguished Echoes
+  1295124: Ritual de Despertar         # Ritual of Awakening
+  1293211: Transferência de Alma       # Soul Transfer
+  1289855: Pira Voraz                  # Hungering Pyre
+  1294933: Chama Serpeante             # Slithering Flame
+  1289875: Cremação                    # Cremation
+  1299673: Invocar                     # Invoke
+  1297624: Queimadura do Ritual        # Ritual Burn
+  1292315: Desemaranhando              # Uncoiling
+  1293214: Profundezas Constritoras    # Grasping Depths (Mítico)
+  1300238: Maldição do Enrosca-almas   # Soulcoiler's Curse (Mítico, interromper)
+  1300239: Espírito Turbilhante        # Swirling Spirit
+  1308227: Espiral Imortal             # Immortal Coil
+  1284109: Golpes Exaurientes          # Hollowing Strikes (tank)
+
+npcs:
+  259927: Nek'zali, a Enrosca-almas
+  261509: Amani Indócil
+  263050: Eco de Jawae
+  263473: Evocadora Jawae
+  266756: Poço dos Enrosca-almas
+  268204: Eco Afogado              # TODO: ainda sem tradução oficial no Wowhead
+
+phases:
+  1: Fase 1
+  2: Intermissão
+  3: Fase 2
