@@ -7,8 +7,10 @@
 1. **Surto Arcano e Toque dos Magos juntos.** É o burst principal. O Toque entra até ~3 s depois do Surto, quase sempre logo depois de uma Salva Arcana. Soltar uma Seta Prismática antes do Toque também vale.
 2. **Toque sozinho entre os Surtos.** O Toque tem metade da recarga do Surto (cerca de 45 s), então aparece uma vez sozinho entre um Surto e outro. Não atrasar: um Toque atrasado empurra o próximo Surto e desencaixa o combo.
 3. **Surto em recarga.** Na prática, os melhores usam a cada ~93 s. Segurar demais custa mais do que usar em hora ruim.
-4. **Seta Prismática é prioridade.** Quando aparecer depois de uma Salva Arcana, usar logo: gera 4 cargas e bate forte.
-5. **Ficar conjurando o tempo todo.** Os melhores ficam ~99% da luta lançando magia. Se o tempo ativo cair, o resto não compensa.
+4. **Seta Prismática é prioridade.** Quando aparecer depois de uma Salva Arcana, usar logo: gera 4 cargas e bate forte. Nos melhores logs ela é cerca de **6 por minuto e quase 1/4 do dano**. A Salva Arcana gera mais Setas quando é lançada com o Arcane Salvo alto (12+ acúmulos) e com Orbe Arcano ou Clareza Mental disponível. Lançar Salva "a qualquer hora" mantém o número de Salvas, mas derruba o de Setas.
+5. **Mísseis e Salva são o loop principal; Impacto é complemento.** Os melhores lançam ~17 Mísseis e ~15 Salvas por minuto, e só ~3 Impactos Arcanos (para completar o Arcane Salvo antes da Salva). Muito Impacto Arcano costuma ser sinal de Mísseis ou Setas perdidos.
+6. **Orbe Arcano é raro.** Cerca de 3 por luta nos melhores logs (0,5 por minuto), usado para gerar cargas e ajudar a gerar Setas, não como magia de rotação.
+7. **Ficar conjurando o tempo todo.** Os melhores ficam ~99% da luta lançando magia. Se o tempo ativo cair, o resto não compensa.
 
 ## Esperas que são escolha, não erro
 

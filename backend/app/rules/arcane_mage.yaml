@@ -51,6 +51,20 @@ consumables:
     # Tops usam a 2ª poção assim que volta (~5:00). Quando o Surge está perto,
     # seguram o Surge para casar com a poção, e não o contrário.
 
+# Referência de casts por minuto e % do dano (Archon, top 10 geral do Nek'zali
+# Mítico, 25/10/2026, talentos de herói Sunfury). Usada na tabela do RF22 até o
+# motor calcular a do bracket. Não é limite fixo: serve para apontar o que destoa.
+reference_throughput:
+  source: archon.gg (top 10 Nek'zali Mítico, 25/10/2026)
+  hero_tree: Sunfury
+  abilities:
+    arcane_missiles: { cpm: 16.6, dmg_pct: 35.7 }
+    prismatic_bolt:  { cpm: 6.0,  dmg_pct: 23.8 }
+    arcane_barrage:  { cpm: 14.6, dmg_pct: 20.8 }
+    arcane_blast:    { cpm: 3.2,  dmg_pct: 2.2 }
+    arcane_orb:      { cpm: 0.5,  dmg_pct: 3.8 }
+    touch_of_the_magi: { dmg_pct: 5.4 }
+
 thresholds:
   downtime_pct: { warn: 2, error: 4 }   # tops e Arthur: ~99% de tempo ativo
   touch_drift_s: { warn: 3, error: 6 }  # atraso médio do Touch em relação ao CD
