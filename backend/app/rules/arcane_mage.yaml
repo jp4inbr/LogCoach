@@ -40,6 +40,22 @@ abilities:
   shimmer: 212653
   time_warp: 80353
 
+# Buffs lidos do log (stacks vêm nos eventos applybuffstack/removebuffstack).
+buffs:
+  arcane_salvo: 1242974       # stacks gastos pelo Arcane Barrage (cap 25 no Sunfury)
+  clearcasting: 263725        # máximo de 3 cargas
+  prismatic_bolt_proc: 1295942
+  arcane_soul: 451038         # janela pós-Surge (Sunfury)
+
+# Barrage e Salvo (regra do Arthur, medida no top 10 do bracket 326–328).
+barrage:
+  min_salvo: 12               # Barrage abaixo disso é erro quando vira hábito
+  pct_below_min: { warn: 8, error: 12 }   # tops: 4–11% (mediana ~6%); Arthur no kill: 15%
+  # Tops soltam ~65% dos Barrages com Salvo no cap (25). Chegar no cap não é erro.
+  # 1 Missiles + Prismatic Bolt antes do Barrage é o padrão sugerido pelo Arthur;
+  # nos tops os dois padrões (1 ou 2 Missiles + Bolt) aparecem, então fica para a IA julgar.
+  clearcasting_max: 3         # com 3 cargas, gastar 2 Missiles antes do Barrage evita perder proc
+
 defensives:
   - { name: Prismatic Barrier, ability_id: 235450 }   # tops do bracket: de 0 a 6 usos por kill
   - { name: Ice Cold, ability_id: 414658 }
