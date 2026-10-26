@@ -25,7 +25,11 @@ Trabalho A3 de Usabilidade de Software (Engenharia de Software, UNA). Web app qu
 | `backend/app/encounters/nekzali.yaml` | Regras do chefe (fases, intermissão, overlaps de dano, esperas aceitas) |
 | `backend/app/guides/*.md` | Guias em português que vão para a IA como contexto |
 | `backend/app/i18n/pt_br.yaml` | Nome em português de cada magia/NPC por ID |
-| `backend/app/engine/`, `ai/`, `api/` | **Vazios — é o que falta construir** |
+| `backend/app/api/` | Rotas: contas (`/auth`, `/me`), `/reports/resolve` e `/analyses` (item 12.3) |
+| `backend/app/schemas.py` | `AnalysisResult`: formato que o motor devolve e as telas leem (item 12.8) |
+| `backend/app/services/sources.py` | Interfaces `ReportSource` e `Analyzer`; hoje leem `app/samples/`. É aqui que o motor e o cliente do WCL entram |
+| `backend/app/engine/`, `ai/` | **Vazios — é o que falta construir** |
+| `frontend/src/pages/` | Telas: início, login, escolher luta, resultado, perfil, planos |
 
 ## Fluxo do motor (o que construir)
 
@@ -57,9 +61,8 @@ Trabalho A3 de Usabilidade de Software (Engenharia de Software, UNA). Web app qu
 1. Cliente da API do Warcraft Logs + script que salva fixtures do kill de referência e do top 10.
 2. Motor: leitura dos YAML, regras (Surge/Touch, poção, tempo ativo, Salvo no Barrage), tabela por habilidade.
 3. Pacote da IA + chamada ao Gemini + resposta reserva.
-4. Endpoints `POST /reports/resolve` e `POST /analyses` (ver item 12.3).
-5. Frontend com 3 telas: colar link → escolher luta/personagem → relatório.
-6. Testes Pytest com as fixtures (casos no item 10).
+4. Ligar o cliente do WCL e o motor nas interfaces de `services/sources.py` (rotas e telas já existem, com dados de exemplo).
+5. Testes Pytest com as fixtures (casos no item 10).
 
 ## Como trabalhar neste repo
 

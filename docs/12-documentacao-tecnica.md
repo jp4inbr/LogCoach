@@ -12,6 +12,7 @@ python -m venv .venv && source .venv/bin/activate   # Linux/macOS
 pip install -e ".[dev]"
 cp .env.example .env   # preencher as chaves (no PowerShell: Copy-Item .env.example .env)
 uvicorn app.main:app --reload   # http://localhost:8000/health e /docs
+# Depois de um git pull que mude o pyproject.toml, rode o pip install de novo.
 
 # Frontend
 cd frontend
@@ -25,19 +26,41 @@ npm run dev   # http://localhost:5173 (precisa do backend rodando)
 |---|---|
 | `WCL_CLIENT_ID` / `WCL_CLIENT_SECRET` | Acesso à API do Warcraft Logs |
 | `GOOGLE_CLOUD_PROJECT` | Projeto do Google Cloud (Vertex AI) |
-| `DATABASE_URL` | Banco (SQLite em dev, PostgreSQL em produção) |
-| `JWT_SECRET` | Assinatura do login |
+| `DATABASE_URL` | Banco (SQLite em dev, PostgreSQL em produção). O arquivo `logcoach.db` é criado sozinho na primeira subida |
+| `JWT_SECRET` | Assinatura do login. Vazio em dev = chave temporária (o login cai a cada reinício); obrigatório em produção |
 
-## 12.3 Endpoints da API (previstos)
+## 12.3 Endpoints da API
 
-| Método | Rota | Descrição |
+Documentação interativa em http://localhost:8000/docs (botão **Authorize** recebe o token do login).
+
+| Método | Rota | Login | Descrição |
+|---|---|---|---|
+| POST | `/auth/register` | — | Cadastro com e-mail e senha (mín. 8 caracteres). Devolve o token |
+| POST | `/auth/login` | — | Login. Devolve o token (JWT, vale 7 dias) |
+| GET | `/me` | sim | E-mail, plano e análises usadas no mês |
+| PUT | `/me/password` | sim | Troca a senha |
+| DELETE | `/me` | sim | Exclui a conta e todas as análises (RNF07) |
+| GET | `/me/analyses` | sim | Histórico, da mais recente para a mais antiga (RF12) |
+| POST | `/reports/resolve` | — | Recebe o link, valida (RF03) e devolve as lutas e os Magos Arcanos (RF04) |
+| POST | `/analyses` | opcional | Roda a análise de uma luta. Com login, guarda no histórico e conta no limite de 5/mês (RF14) |
+| GET | `/analyses/{id}` | opcional | Resultado de uma análise. Análise de uma conta só abre para o dono |
+
+**Erros.** Toda resposta de erro vem como `{"detail": {"code": "...", "message": "..."}}`. O `code` é fixo (o frontend decide o que fazer por ele) e a `message` já é o texto do item 8.2, pronto para mostrar ao usuário. Códigos: `invalid_link`, `report_not_available`, `fight_not_found`, `fight_too_short`, `unsupported_fight`, `no_arcane_mage`, `plan_limit`, `analysis_not_available`, `email_taken`, `invalid_credentials`, `wrong_password`, `login_required`, `invalid_token`, `analysis_not_found`.
+
+**Análise sem conta (RF01).** O backend aceita a análise sem login, mas não a coloca em histórico nenhum. O limite de 1 análise de demonstração é controlado no navegador; controlar no servidor fica para a publicação (item 13).
+
+**Limite do plano.** Conta por mês do calendário em UTC: as análises feitas desde o dia 1º às 00:00 UTC.
+
+### De onde vêm os dados hoje (alfa)
+
+As rotas não falam direto com o Warcraft Logs nem com o motor. Elas dependem de duas interfaces em `backend/app/services/sources.py`:
+
+| Interface | O que faz | Implementação atual |
 |---|---|---|
-| POST | `/auth/register` | Cadastro |
-| POST | `/auth/login` | Login |
-| POST | `/reports/resolve` | Recebe o link e devolve as lutas e personagens |
-| POST | `/analyses` | Roda a análise de uma luta |
-| GET | `/analyses/{id}` | Resultado de uma análise |
-| GET | `/me/analyses` | Histórico do usuário |
+| `ReportSource.get_report(code)` | Lista as lutas e os Magos Arcanos de um relatório | `SampleReportSource`: lê `app/samples/report_<código>.json` (só o kill de referência) |
+| `Analyzer.analyze(report, fight, player)` | Devolve o resultado da análise | `SampleAnalyzer`: lê `app/samples/analysis_<código>_<luta>.json` |
+
+Os arquivos de exemplo são montados à mão e marcados como exemplo (`"sample": true` e `"source": "exemplo"`); a interface mostra um aviso amarelo enquanto for assim. Para ligar o sistema de verdade, basta criar `WclReportSource` (frente B) e o analisador do motor (frente C) com esses mesmos métodos e trocar o que `get_report_source()` e `get_analyzer()` devolvem. Nenhuma rota nem tela muda.
 
 ## 12.4 Motor de análise: as três camadas de regras
 
@@ -131,3 +154,23 @@ thresholds:
 ```
 
 > Feitiços, IDs, janelas e limites: definidos e validados pelo Arthur.
+
+## 12.8 Formato do resultado da análise (contrato motor ↔ telas)
+
+O motor devolve um `AnalysisResult` (`backend/app/schemas.py`); o frontend só lê desse objeto. Exemplo completo em `backend/app/samples/analysis_XhrmBaYkGCAQjH2D_34.json`.
+
+| Campo | O que é | Requisito |
+|---|---|---|
+| `source` | `"exemplo"` ou `"motor"` | — |
+| `fight`, `player` | Chefe, dificuldade, kill/wipe, duração; nome, spec e item level | — |
+| `comparison` | Com quem comparou (`label`, `bracket`, `size`) e se o jogador já está no top 10 | RF21 |
+| `summary` | DPS do jogador, média dos tops, diferença em %, tempo ativo | RF08 |
+| `coach` | `available` falso quando a IA falhou; `headline` é o resumo do coach | RF17 |
+| `mistakes` | Erros **já ordenados** do maior para o menor impacto. Cada um: `title`, `impact_pct` (ou `null` se é risco, não dano), `severity` (`atencao`/`erro`), `kind` (`regra` ou `hipotese`), `phase`, `explanation`, `what_to_do` e `numbers` (você × melhores) | RF10, RF24 |
+| `rules` | Todas as regras checadas, com valor do jogador, dos melhores e `status` (`ok`/`atencao`/`erro`) | RF07, RF18 |
+| `phases` | Fases com início e fim em segundos e se é intermissão | RF20 |
+| `timeline` | Por cooldown: segundos de cada uso do jogador (`player_s`) e do log de referência dos tops (`top_s`) | RF11 |
+| `abilities` | Por fase: casts por minuto e % do dano, jogador × tops | RF22 |
+
+Os textos (`title`, `explanation`, `what_to_do`) saem em português, com os nomes de `pt_br.yaml`.
+
