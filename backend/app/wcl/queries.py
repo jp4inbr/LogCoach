@@ -47,3 +47,23 @@ query Rankings(
   }
 }
 """
+
+# Report inteiro numa consulta só (limite de 1000 pontos/h): lutas de chefe, jogadores e
+# specs/item level. O playerDetails soma todas as lutas de chefe do report.
+REPORT_FIGHTS = """
+query ReportFights($code: String!) {
+  reportData {
+    report(code: $code) {
+      code
+      title
+      fights(killType: Encounters) {
+        id encounterID name difficulty kill startTime endTime friendlyPlayers
+      }
+      masterData {
+        actors(type: "Player") { id name server type subType }
+      }
+      playerDetails(killType: Encounters)
+    }
+  }
+}
+"""
