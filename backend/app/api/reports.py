@@ -11,6 +11,7 @@ from app.services.sources import (
     SAMPLE_REPORT_CODE,
     ReportNotAvailableError,
     ReportSource,
+    SampleReportSource,
     get_report_source,
 )
 
@@ -23,12 +24,16 @@ def load_report(source: ReportSource, code: str) -> ReportResolved:
     try:
         return source.get_report(code)
     except ReportNotAvailableError:
-        raise api_error(
-            404,
-            "report_not_available",
-            "Não conseguimos abrir esse relatório. Confira se ele está público no Warcraft Logs. "
-            f"Nesta versão alfa, só o relatório de exemplo ({SAMPLE_REPORT_CODE}) está disponível.",
-        ) from None
+        message = (
+            "Não conseguimos abrir esse relatório. Confira se ele está público no Warcraft Logs."
+        )
+        if isinstance(source, SampleReportSource):
+            # Modo offline (DATA_SOURCE=exemplo): só o relatório de exemplo existe.
+            message += (
+                " Sem conexão com o Warcraft Logs, só o relatório de exemplo "
+                f"({SAMPLE_REPORT_CODE}) está disponível."
+            )
+        raise api_error(404, "report_not_available", message) from None
 
 
 @router.post("/resolve")

@@ -125,6 +125,9 @@ def test_players_keep_their_realm():
         ("arcano_a", "Norte"),
         ("arcano_a", "Sul"),
     ]
+    # E o reino chega no contrato (PlayerOption.server), que é o que a tela e /analyses usam.
+    fights = {f.id: f for f in source_for(REPORT).get_report("TESTE123").fights}
+    assert [p.server for p in fights[2].players] == ["Norte", "Sul"]
 
 
 def test_short_fight_is_not_supported():

@@ -6,6 +6,7 @@ Os tempos ficam em ms do report, como vêm da API. Quem converte para
 
 from typing import Any
 
+from app.services.players import normalize_server
 from app.wcl import queries
 from app.wcl.client import WclClient, WclError
 
@@ -22,16 +23,10 @@ def bracket_range(index: int, bracket_min: int, bucket: int) -> tuple[int, int]:
     return low, low + bucket - 1
 
 
-def _normalize_server(server: str | None) -> str:
-    return (server or "").replace(" ", "").replace("-", "").lower()
-
-
 def find_player(actors: list[dict[str, Any]], name: str, server: str | None = None) -> dict:
     players = [a for a in actors if a["type"] == "Player" and a["name"] == name]
     if len(players) > 1 and server:
-        players = [
-            a for a in players if _normalize_server(a["server"]) == _normalize_server(server)
-        ]
+        players = [a for a in players if normalize_server(a["server"]) == normalize_server(server)]
     if len(players) != 1:
         raise WclError(f"Jogador {name!r} não encontrado (ou ambíguo) no report.")
     return players[0]

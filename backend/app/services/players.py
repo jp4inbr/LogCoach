@@ -12,7 +12,7 @@ class AmbiguousPlayerError(Exception):
 
 
 def normalize_server(server: str | None) -> str:
-    """Mesma regra de `wcl/fetch.py`: "Area 52", "area-52" e "Area52" são o mesmo reino."""
+    """ "Area 52", "area-52" e "Area52" são o mesmo reino. Usado também em `wcl/fetch.py`."""
     return (server or "").replace(" ", "").replace("-", "").lower()
 
 
