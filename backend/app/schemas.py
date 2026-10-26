@@ -103,7 +103,7 @@ class ComparedPlayer(BaseModel):
     """Um dos tops da comparação. RF25: a tela mostra `display_name` por padrão."""
 
     rank: int
-    display_name: str  # "Top 1", "Top 2"…
+    display_name: str  # "top01"…, igual às fixtures (anonymize.py); a tela mostra "Top 1"
     # Nome real, só para o botão de mostrar nomes; nulo quando não há (ex.: exemplo).
     name: str | None = None
     server: str | None = None

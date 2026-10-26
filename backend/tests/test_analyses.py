@@ -28,7 +28,7 @@ def test_rf25_player_is_never_hidden_and_tops_come_without_real_names(client):
     assert result["player"]["display_name"] == result["player"]["name"] == "Harmonist"
     tops = result["comparison"]["players"]
     assert len(tops) == 10
-    assert [t["display_name"] for t in tops] == [f"Top {n}" for n in range(1, 11)]
+    assert [t["display_name"] for t in tops] == [f"top{n:02d}" for n in range(1, 11)]
     # No exemplo não há nome real: o botão de mostrar nomes fica desabilitado.
     assert all(t["name"] is None for t in tops)
     avg = sum(t["dps"] for t in tops) / len(tops)

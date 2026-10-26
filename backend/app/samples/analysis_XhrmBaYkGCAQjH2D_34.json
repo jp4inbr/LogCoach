@@ -22,16 +22,16 @@
     "size": 10,
     "player_in_top": false,
     "players": [
-      { "rank": 1, "display_name": "Top 1", "name": null, "server": null, "item_level": 328, "dps": 278699.1 },
-      { "rank": 2, "display_name": "Top 2", "name": null, "server": null, "item_level": 328, "dps": 273205.9 },
-      { "rank": 3, "display_name": "Top 3", "name": null, "server": null, "item_level": 328, "dps": 271421.6 },
-      { "rank": 4, "display_name": "Top 4", "name": null, "server": null, "item_level": 326, "dps": 265041.2 },
-      { "rank": 5, "display_name": "Top 5", "name": null, "server": null, "item_level": 327, "dps": 264982.8 },
-      { "rank": 6, "display_name": "Top 6", "name": null, "server": null, "item_level": 328, "dps": 260777.1 },
-      { "rank": 7, "display_name": "Top 7", "name": null, "server": null, "item_level": 326, "dps": 259656.9 },
-      { "rank": 8, "display_name": "Top 8", "name": null, "server": null, "item_level": 326, "dps": 259378.4 },
-      { "rank": 9, "display_name": "Top 9", "name": null, "server": null, "item_level": 327, "dps": 259120.4 },
-      { "rank": 10, "display_name": "Top 10", "name": null, "server": null, "item_level": 328, "dps": 257919.7 }
+      { "rank": 1, "display_name": "top01", "name": null, "server": null, "item_level": 328, "dps": 278699.1 },
+      { "rank": 2, "display_name": "top02", "name": null, "server": null, "item_level": 328, "dps": 273205.9 },
+      { "rank": 3, "display_name": "top03", "name": null, "server": null, "item_level": 328, "dps": 271421.6 },
+      { "rank": 4, "display_name": "top04", "name": null, "server": null, "item_level": 326, "dps": 265041.2 },
+      { "rank": 5, "display_name": "top05", "name": null, "server": null, "item_level": 327, "dps": 264982.8 },
+      { "rank": 6, "display_name": "top06", "name": null, "server": null, "item_level": 328, "dps": 260777.1 },
+      { "rank": 7, "display_name": "top07", "name": null, "server": null, "item_level": 326, "dps": 259656.9 },
+      { "rank": 8, "display_name": "top08", "name": null, "server": null, "item_level": 326, "dps": 259378.4 },
+      { "rank": 9, "display_name": "top09", "name": null, "server": null, "item_level": 327, "dps": 259120.4 },
+      { "rank": 10, "display_name": "top10", "name": null, "server": null, "item_level": 328, "dps": 257919.7 }
     ]
   },
   "summary": {
