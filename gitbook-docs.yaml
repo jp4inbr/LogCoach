@@ -1,0 +1,12 @@
+$schema: https://api.gitbook.com/gitbook-docs.yaml
+site:
+  title: A3 - LogCoach
+  structure:
+    - type: space
+      key: logcoach-docs
+      title: Docs
+      path: docs
+      default: true
+      content:
+        directory: ./docs
+        language: pt
