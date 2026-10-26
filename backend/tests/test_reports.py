@@ -6,7 +6,7 @@ from app.services.links import parse_report_code
 @pytest.mark.parametrize(
     "url",
     [
-        "https://www.warcraftlogs.com/reports/AbC123xyZ",  # T01
+        "https://www.warcraftlogs.com/reports/AbC123",  # T01 (entrada do item 10)
         "https://www.warcraftlogs.com/reports/XhrmBaYkGCAQjH2D#fight=34&type=damage-done",
         "warcraftlogs.com/reports/XhrmBaYkGCAQjH2D",
         "  https://classic.warcraftlogs.com/reports/XhrmBaYkGCAQjH2D/  ",

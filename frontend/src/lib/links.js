@@ -1,6 +1,6 @@
 // Mesma regra do backend (backend/app/services/links.py), para avisar antes de enviar (RF03).
 const REPORT_LINK =
-  /^(?:https?:\/\/)?(?:[a-z]+\.)?warcraftlogs\.com\/reports\/([A-Za-z0-9]{8,40})(?:[/?#].*)?$/;
+  /^(?:https?:\/\/)?(?:[a-z]+\.)?warcraftlogs\.com\/reports\/([A-Za-z0-9]{6,40})(?:[/?#].*)?$/;
 
 export function parseReportCode(url) {
   const match = REPORT_LINK.exec(url.trim());
