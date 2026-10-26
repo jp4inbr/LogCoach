@@ -5,6 +5,7 @@ from pathlib import Path
 import httpx
 import pytest
 
+from app.config import Settings
 from app.wcl.anonymize import anonymize_fight
 from app.wcl.client import API_URL, TOKEN_URL, WclClient, WclError
 from app.wcl.fetch import bracket_index, bracket_range
@@ -99,9 +100,9 @@ def test_events_follow_pagination():
 
 
 def test_missing_credentials_message(monkeypatch):
-    monkeypatch.setattr("app.wcl.client.ENV_FILE", Path("/nao/existe/.env"))
-    monkeypatch.delenv("WCL_CLIENT_ID", raising=False)
-    monkeypatch.delenv("WCL_CLIENT_SECRET", raising=False)
+    # Sem ler o backend/.env do desenvolvedor, que pode ter as chaves de verdade.
+    empty = Settings(_env_file=None, wcl_client_id="", wcl_client_secret="")
+    monkeypatch.setattr("app.wcl.client.get_settings", lambda: empty)
 
     with pytest.raises(WclError, match="WCL_CLIENT_ID"):
         WclClient.from_env()

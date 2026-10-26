@@ -7,7 +7,6 @@ dependencies = [
     "fastapi",
     "uvicorn[standard]",
     "httpx",
-    "python-dotenv",
     "pyyaml",
     "sqlmodel",
     "pydantic-settings",
