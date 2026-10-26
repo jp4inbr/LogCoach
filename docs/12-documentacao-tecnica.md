@@ -131,3 +131,34 @@ thresholds:
 ```
 
 > Feitiços, IDs, janelas e limites: definidos e validados pelo Arthur.
+
+## 12.8 Cliente do Warcraft Logs e fixtures
+
+Código em `backend/app/wcl/`.
+
+| Arquivo | O que faz |
+|---|---|
+| `client.py` | `WclClient`: troca `WCL_CLIENT_ID` + `WCL_CLIENT_SECRET` por um token (fluxo *client credentials*), guarda o token e renova sozinho quando vence ou quando a API responde 401. `query()` faz o POST GraphQL; `events()` segue a paginação (`nextPageTimestamp`). |
+| `queries.py` | Consultas GraphQL: dados da luta, brackets do encontro, rankings. |
+| `fetch.py` | `fetch_fight()` devolve uma luta pronta para o motor; `fetch_rankings()` e `bracket_index()` acham os top N do bracket. |
+| `anonymize.py` | Troca os nomes de jogadores por pseudônimos antes de salvar. |
+
+**Limite da API:** 1000 pontos por hora. Uma luta completa custa ~12 pontos; o kill de referência + top 10 custa ~130.
+
+**Formato de uma luta** (`fetch_fight`). Os tempos ficam em **ms do report**, como vêm da API. A conversão para "segundos desde o início da fase" é do motor, usando `meta.fight.phaseTransitions`.
+
+| Chave | Conteúdo |
+|---|---|
+| `meta` | Código do report, `fight` (id, encontro, dificuldade, kill, início/fim, `phaseTransitions`), `duration_ms` |
+| `phases` | Nomes das fases do encontro (`id`, `name`, `isIntermission`) |
+| `actors`, `abilities` | Só os que aparecem nos eventos desta luta |
+| `player` | Ator do jogador + `details` (spec, `minItemLevel`/`maxItemLevel`) |
+| `events.casts` | Casts do jogador (`begincast` e `cast`) |
+| `events.buffs` | Buffs no jogador, com stacks (`applybuffstack`/`removebuffstack` trazem `stack`) |
+| `events.damage_done` | Dano do jogador (sem a lista de buffs por golpe, que já está em `buffs`) |
+| `events.damage_taken`, `events.deaths` | Dano recebido e mortes do jogador (defensivo nos overlaps) |
+| `events.boss_casts` | Casts dos inimigos (habilidades do chefe e dos adds do `nekzali.yaml`) |
+
+**Fixtures.** `cd backend && python scripts/save_fixtures.py` baixa o kill de referência e os top 10 do mesmo bracket para `tests/fixtures/nekzali_mythic_<min>_<max>/` (`--only-reference` só a referência, `--force` para sobrescrever). Cada luta é um `.json.gz`; o `index.json` lista o bracket e o DPS/duração de cada top. Servem para os testes, para desenvolver sem internet e como plano B da demo.
+
+**Nomes ocultos por padrão.** O repositório é público, então os arquivos versionados não têm nome, reino, GUID, guilda nem código de report dos outros jogadores: o analisado vira `top01`…`top10` e o resto da raide `raid_01`…. Cada ator ganha `display_name`. O mapa com os dados reais fica em `tests/fixtures/names.local.json` (no `.gitignore`), para a demo poder "mostrar os nomes", como o ocultar saldo de um app de banco. O botão é do frontend.

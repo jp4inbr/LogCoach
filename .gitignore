@@ -5,6 +5,8 @@
 *.pem
 *-credentials.json
 service-account*.json
+# Nomes reais dos jogadores nos fixtures (o repo só guarda pseudônimos)
+backend/tests/fixtures/names.local.json
 
 # Python
 __pycache__/
