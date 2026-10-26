@@ -19,12 +19,14 @@ Trabalho A3 de Usabilidade de Software (Engenharia de Software, UNA). Web app qu
 | Caminho | O que é |
 |---|---|
 | `docs/01..14-*.md` | Documentação do GitBook (escopo, requisitos, arquitetura, plano, IA, testes…) |
-| `docs/04-documento-de-requisitos.md` | RF01–RF24 e RNFs |
+| `docs/04-documento-de-requisitos.md` | RF01–RF25 e RNFs |
 | `docs/12-documentacao-tecnica.md` | Arquitetura do motor e o que a IA recebe |
 | `backend/app/rules/arcane_mage.yaml` | Regras do Arcano (Surge/Touch, Salvo no Barrage, poção, limites, IDs de magias e buffs) |
 | `backend/app/encounters/nekzali.yaml` | Regras do chefe (fases, intermissão, overlaps de dano, esperas aceitas) |
 | `backend/app/guides/*.md` | Guias em português que vão para a IA como contexto |
 | `backend/app/i18n/pt_br.yaml` | Nome em português de cada magia/NPC por ID |
+| `backend/app/wcl/` | Cliente da API do Warcraft Logs, busca de luta/rankings e anonimização (item 12.8) |
+| `backend/scripts/save_fixtures.py` | Baixa o kill de referência + top 10 para `backend/tests/fixtures/` |
 | `backend/app/engine/`, `ai/`, `api/` | **Vazios — é o que falta construir** |
 
 ## Fluxo do motor (o que construir)
@@ -45,6 +47,7 @@ Trabalho A3 de Usabilidade de Software (Engenharia de Software, UNA). Web app qu
 - **Barrage com menos de 12 stacks de Arcane Salvo** é erro quando vira hábito (limites no YAML). Chegar no cap (25) não é erro.
 - A IA **não** consulta o Warcraft Logs nem faz contas; todo número vem do código.
 - Relatório e interface em português (nomes do cliente pt-BR). Conversas com o Arthur sobre o jogo podem usar os nomes em inglês.
+- **Nomes dos outros jogadores ocultos por padrão (RF25)**, com botão para exibir (como "ocultar saldo" de banco). O jogador analisado **nunca** é ocultado. Fixtures no repo só com pseudônimos; nomes reais nunca vão para a IA.
 
 ## Dados de referência para testes e demo
 
@@ -54,11 +57,11 @@ Trabalho A3 de Usabilidade de Software (Engenharia de Software, UNA). Web app qu
 
 ## Próximos passos (ordem)
 
-1. Cliente da API do Warcraft Logs + script que salva fixtures do kill de referência e do top 10.
+1. ~~Cliente da API do Warcraft Logs + script que salva fixtures do kill de referência e do top 10.~~ Feito.
 2. Motor: leitura dos YAML, regras (Surge/Touch, poção, tempo ativo, Salvo no Barrage), tabela por habilidade.
 3. Pacote da IA + chamada ao Gemini + resposta reserva.
-4. Endpoints `POST /reports/resolve` e `POST /analyses` (ver item 12.3).
-5. Frontend com 3 telas: colar link → escolher luta/personagem → relatório.
+4. Endpoints `POST /reports/resolve` e `POST /analyses` (ver item 12.3). Cada jogador comparado sai com `display_name` (pseudônimo) e `name` (real); o analisado com os dois iguais (RF25).
+5. Frontend com 3 telas: colar link → escolher luta/personagem → relatório. No relatório, botão de olho que mostra/oculta os nomes dos outros jogadores (oculto por padrão, escolha salva no navegador; desabilitado se `name` vier nulo) — RF25.
 6. Testes Pytest com as fixtures (casos no item 10).
 
 ## Como trabalhar neste repo

@@ -28,6 +28,7 @@
 | RF22 | O sistema deve montar, por fase, uma tabela com casts por minuto e % do dano de cada habilidade do jogador, ao lado da média dos 10 melhores da mesma faixa de item level, mesmo para habilidades sem regra própria | Alta |
 | RF23 | O sistema deve marcar a diferença de dano por fase que as regras não explicam ("diferença não explicada"), para a IA investigar na tabela do RF22 | Média |
 | RF24 | O que a IA apontar fora das regras deve aparecer no relatório como hipótese, com os números do código ao lado, e ficar registrado para revisão (possível regra nova) | Média |
+| RF25 | Os nomes dos outros jogadores no relatório (os melhores logs comparados e o resto da raide) devem vir ocultos por padrão, com pseudônimos ("Top 1", "Top 2"…), e o usuário deve poder exibi-los com um botão, como o "ocultar saldo" de um app de banco. O jogador analisado aparece sempre com o próprio nome | Média |
 
 > As regras funcionam em três camadas (especialização, encontro e perguntas de julgamento da IA). Detalhes no item 12.
 
@@ -61,3 +62,4 @@
 | Reconhecer em vez de lembrar | RF10, RF11, RF19 |
 | Design estético e minimalista | RF10 (erros de maior impacto primeiro) |
 | Ajudar a reconhecer e corrigir erros | RF17 e mensagens de erro (item 10) |
+| Controle e liberdade do usuário | RF25 (o usuário escolhe mostrar ou ocultar os nomes) |

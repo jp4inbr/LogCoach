@@ -39,6 +39,8 @@ npm run dev   # http://localhost:5173 (precisa do backend rodando)
 | GET | `/analyses/{id}` | Resultado de uma análise |
 | GET | `/me/analyses` | Histórico do usuário |
 
+**Nomes na resposta (RF25).** Em `POST /analyses` e `GET /analyses/{id}`, cada jogador comparado (top 10, 1º geral do RF21, colegas de raide) vem com `display_name` (pseudônimo estável: `top01`… pela posição no ranking, `raid_01`… pela ordem de ID; a tela mostra "Top 1", "Raide 1") e `name` (nome real). O jogador analisado vem com `display_name` = `name`. Quem decide o que mostrar é o frontend. A IA recebe só os pseudônimos: os nomes reais nunca entram no pacote da IA.
+
 ## 12.4 Motor de análise: as três camadas de regras
 
 | Camada | O que é | Exemplos | Onde fica |
@@ -161,4 +163,6 @@ Código em `backend/app/wcl/`.
 
 **Fixtures.** `cd backend && python scripts/save_fixtures.py` baixa o kill de referência e os top 10 do mesmo bracket para `tests/fixtures/nekzali_mythic_<min>_<max>/` (`--only-reference` só a referência, `--force` para sobrescrever). Cada luta é um `.json.gz`; o `index.json` lista o bracket e o DPS/duração de cada top. Servem para os testes, para desenvolver sem internet e como plano B da demo.
 
-**Nomes ocultos por padrão.** O repositório é público, então os arquivos versionados não têm nome, reino, GUID, guilda nem código de report dos outros jogadores: o analisado vira `top01`…`top10` e o resto da raide `raid_01`…. Cada ator ganha `display_name`. O mapa com os dados reais fica em `tests/fixtures/names.local.json` (no `.gitignore`), para a demo poder "mostrar os nomes", como o ocultar saldo de um app de banco. O botão é do frontend.
+**Nomes ocultos por padrão.** O repositório é público, então os arquivos versionados não têm nome, reino, GUID, guilda nem código de report dos outros jogadores: o analisado vira `top01`…`top10` e o resto da raide `raid_01`…. Cada ator ganha `display_name`. O mapa com os dados reais fica em `tests/fixtures/names.local.json` (no `.gitignore`).
+
+**Na aplicação (RF25).** Os pseudônimos dos fixtures são os mesmos que a API devolve em `display_name` (ver 12.3), gerados pela mesma função de `anonymize.py`. Com dados ao vivo, o `name` real vem direto do Warcraft Logs. No modo demo (sem internet, lendo os fixtures), o `name` vem do `names.local.json` se ele existir na máquina; se não existir, `name` vem nulo e o botão de mostrar nomes fica desabilitado. O jogador analisado nunca é ocultado.
