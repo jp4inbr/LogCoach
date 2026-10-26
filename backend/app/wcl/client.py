@@ -1,16 +1,14 @@
 """Cliente da API v2 do Warcraft Logs (GraphQL, fluxo client credentials)."""
 
-import os
 import time
-from pathlib import Path
 from typing import Any
 
 import httpx
-from dotenv import load_dotenv
+
+from app.config import get_settings
 
 TOKEN_URL = "https://www.warcraftlogs.com/oauth/token"
 API_URL = "https://www.warcraftlogs.com/api/v2/client"
-ENV_FILE = Path(__file__).resolve().parents[2] / ".env"
 
 # Renova o token um pouco antes de expirar, para não falhar no meio de uma busca.
 TOKEN_MARGIN_S = 60
@@ -54,9 +52,9 @@ class WclClient:
 
     @classmethod
     def from_env(cls, **kwargs: Any) -> "WclClient":
-        load_dotenv(ENV_FILE)
-        client_id = os.getenv("WCL_CLIENT_ID")
-        client_secret = os.getenv("WCL_CLIENT_SECRET")
+        # Mesmas configurações do resto do backend (variáveis de ambiente + backend/.env).
+        settings = get_settings()
+        client_id, client_secret = settings.wcl_client_id, settings.wcl_client_secret
         if not client_id or not client_secret:
             raise WclError(
                 "WCL_CLIENT_ID e WCL_CLIENT_SECRET não definidos. "

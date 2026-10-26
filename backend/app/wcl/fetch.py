@@ -37,12 +37,38 @@ def find_player(actors: list[dict[str, Any]], name: str, server: str | None = No
     return players[0]
 
 
+def _details_by_id(details: dict[str, Any] | None) -> dict[int, dict[str, Any]]:
+    """playerDetails vem separado por função (dps, healers, tanks); aqui fica por id do ator."""
+    by_role = ((details or {}).get("data") or {}).get("playerDetails") or {}
+    return {
+        entry["id"]: {**entry, "role": role}
+        for role in ("dps", "healers", "tanks")
+        for entry in by_role.get(role) or []
+    }
+
+
 def _player_details(details: dict[str, Any], actor_id: int) -> dict[str, Any] | None:
-    for role in ("dps", "healers", "tanks"):
-        for entry in details.get("data", {}).get("playerDetails", {}).get(role, []):
-            if entry["id"] == actor_id:
-                return {**entry, "role": role}
-    return None
+    return _details_by_id(details).get(actor_id)
+
+
+def fetch_report(client: WclClient, code: str) -> dict[str, Any]:
+    """Lutas de chefe e jogadores de um report inteiro (uma consulta só).
+
+    Os tempos ficam em ms do report. `details` é o playerDetails somado de todas as
+    lutas de chefe (specs com contagem, minItemLevel/maxItemLevel), por id do ator.
+    """
+    report = client.query(queries.REPORT_FIGHTS, {"code": code})["reportData"]["report"]
+    if report is None:
+        raise WclError(f"Report {code} não encontrado.")
+    return {
+        "code": report["code"],
+        "title": report["title"],
+        "fights": report["fights"] or [],
+        "actors": [
+            a for a in (report["masterData"] or {}).get("actors") or [] if a["type"] == "Player"
+        ],
+        "details": _details_by_id(report.get("playerDetails")),
+    }
 
 
 def fetch_fight(
