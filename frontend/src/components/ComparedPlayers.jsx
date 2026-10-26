@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { formatDps } from "../lib/format.js";
+import { formatDps, formatPseudonym } from "../lib/format.js";
 import { load, save } from "../lib/storage.js";
 
 const SHOW_NAMES_KEY = "logcoach.showNames";
@@ -81,7 +81,7 @@ export default function ComparedPlayers({ comparison }) {
                         {player.server && <span className="muted"> ({player.server})</span>}
                       </>
                     ) : (
-                      player.display_name
+                      formatPseudonym(player.display_name)
                     )}
                   </th>
                   <td>{player.item_level ?? "—"}</td>

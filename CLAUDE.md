@@ -30,7 +30,8 @@ Trabalho A3 de Usabilidade de Software (Engenharia de Software, UNA). Web app qu
 | `backend/scripts/save_fixtures.py` | Baixa o kill de referência + top 10 para `backend/tests/fixtures/` |
 | `backend/app/api/` | Rotas: contas (`/auth`, `/me`), `/reports/resolve` e `/analyses` (item 12.3) |
 | `backend/app/schemas.py` | `AnalysisResult`: formato que o motor devolve e as telas leem (item 12.9) |
-| `backend/app/services/sources.py` | Interfaces `ReportSource` e `Analyzer`; hoje leem `app/samples/` (exemplo montado à mão). É aqui que o motor e o cliente do WCL entram |
+| `backend/app/services/sources.py` | Interfaces `ReportSource` e `Analyzer`. Relatório: `WclReportSource` (real) ou `SampleReportSource` (`app/samples/`), escolhido por `DATA_SOURCE`. Análise: ainda `SampleAnalyzer`; é aqui que o motor entra |
+| `backend/app/services/players.py` | Escolha do jogador na luta por nome + reino (`match_player`, `normalize_server`) |
 | `backend/app/models.py`, `db.py`, `config.py`, `security.py` | Tabelas (`User`, `Analysis`), conexão, configurações do `.env` e login |
 | `backend/app/engine/`, `ai/` | **Vazios — é o que falta construir** |
 | `frontend/src/pages/` | Telas: início, login, escolher luta, resultado, perfil, planos (roteamento por hash em `lib/router.js`, chamadas em `lib/api.js`) |
@@ -61,23 +62,19 @@ O motor entra como um `Analyzer` em `services/sources.py` e devolve um `Analysis
 
 - Kill de referência: report `XhrmBaYkGCAQjH2D`, luta 34 (Nek'zali Mítico, 6:55), jogador **Harmonist** (Arcano, ilvl 327, bracket 326–328).
 - IDs: encontro 3470, zona de ranking 53. Buffs: Arcane Salvo 1242974, Clearcasting 263725, Prismatic Bolt (proc) 1295942.
-- Plano B da demo: guardar esse kill e os top 10 do bracket em arquivo (fixtures) para rodar sem internet.
+- Plano B da demo: guardar esse kill e os top 10 do bracket em arquivo (fixtures) para rodar sem internet. Na aplicação, `DATA_SOURCE=exemplo` usa os arquivos de `app/samples/`.
 
 ## Próximos passos (ordem)
 
 1. ~~Cliente da API do Warcraft Logs + script que salva fixtures do kill de referência e do top 10.~~ Feito.
-2. **Alinhar a PR #2 (contas e telas, Pedro) ao contrato atual.** Ela foi feita antes do cliente do WCL e do RF25; nos conflitos, vale o que está neste arquivo. Fazer antes do motor plugar, para o contrato mudar uma vez só.
-   - **RF25 no contrato.** *Onde:* `backend/app/schemas.py` (`PlayerOption`, `PlayerInfo` e uma lista dos jogadores comparados em `Comparison`) e `backend/app/samples/analysis_*.json`. *O quê:* cada jogador com `display_name` (pseudônimo, mesma função de `wcl/anonymize.py`) e `name` (real, ou nulo no modo demo sem `names.local.json`); o analisado com os dois iguais. *Por quê:* hoje só existe `name`, e o RF25 pede nomes dos outros ocultos por padrão.
-   - **Botão de olho.** *Onde:* `frontend/src/pages/Result.jsx` (escolha salva com `lib/storage.js`). *O quê:* mostra/oculta os nomes dos comparados; oculto por padrão; desabilitado se `name` vier nulo; o analisado nunca é ocultado. *Por quê:* RF25; a tela de resultado ainda não lista os comparados.
-   - **Jogador por nome + reino.** *Onde:* `schemas.py` (`PlayerOption`, `AnalysisRequest`), `api/analyses.py` (busca do jogador na luta) e `pages/ChooseFight.jsx`. *O quê:* enviar e casar o reino (ou o id do ator do WCL) além do nome. *Por quê:* hoje casa só pelo nome; `wcl/fetch.find_player` usa nome + reino porque o mesmo nome se repete entre reinos.
-   - **Configuração única.** *Onde:* `app/config.py` e `app/wcl/client.py`. *O quê:* `WCL_CLIENT_ID`/`WCL_CLIENT_SECRET` em `Settings`, `env_file` com caminho absoluto (`backend/.env`), `WclClient.from_env` lendo `get_settings()` e sair o `python-dotenv`. *Por quê:* hoje dois códigos leem o `.env`, e o `Settings` depende da pasta de onde o uvicorn sobe.
-   - **`WclReportSource`.** *Onde:* `app/wcl/queries.py` e `app/services/sources.py`. *O quê:* consulta das lutas e dos Magos Arcanos do report inteiro, mapeada para `ReportResolved`; trocar `get_report_source()` e apagar `samples/report_*.json`. *Por quê:* `FIGHT_META` busca uma luta só, e o `/reports/resolve` precisa do report inteiro; o exemplo atual é montado à mão.
-   - **Eixo do tempo.** *Onde:* `docs/12` (12.9) e `schemas.py` (`TimelineTrack`). *O quê:* manter a `timeline` em segundos desde o início da luta e documentar a conversão a partir da fase. *Por quê:* o motor trabalha por fase (passo 2 do fluxo); sem isso, motor e telas podem usar eixos diferentes.
-   - **Ajustes menores.** *Onde:* `api/deps.py`, `pages/Result.jsx`, `config.py`. *O quê:* token vencido não dá 401 em rota pública (tratar como sem login); `Result.jsx` chama `logout()` no `invalid_token`; `JWT_SECRET` obrigatório em produção. *Por quê:* hoje um token vencido bloqueia até a análise sem conta, e sem a chave o backend sobe com uma temporária.
+2. ~~Alinhar a PR #2 (contas e telas, Pedro) ao contrato atual.~~ Feito: RF25 no contrato (`display_name`/`name`, `comparison.players`) e botão de olho no resultado, jogador por nome + reino (`player_ambiguous`), configuração única em `app/config.py` (`DATA_SOURCE`, `APP_ENV`), `WclReportSource`, `timeline` em segundos da luta e ajustes de login. Ficou:
+   - **Conferir a consulta `REPORT_FIGHTS` contra a API real.** *Onde:* `app/wcl/queries.py`. *O quê:* rodar `fetch_report` com as chaves e confirmar `fights(killType: Encounters)`, `friendlyPlayers`, `masterData.actors(type: "Player")` e `playerDetails(killType: Encounters)`. *Por quê:* foi escrita sem acesso à documentação e só testada com respostas falsas.
+   - **Lint e build do frontend.** *Onde:* `frontend/`. *O quê:* `npm ci && npm run lint && npm run build` (ou o CI da PR). *Por quê:* o npm desta máquina não alcança o registro; o código do botão de olho e da escolha por reino não foi compilado ainda.
+   - `samples/report_*.json` **fica** como fonte offline (`DATA_SOURCE=exemplo`): plano B da demo e fonte do CI.
 3. Motor: leitura dos YAML, regras (Surge/Touch, poção, tempo ativo, Salvo no Barrage), tabela por habilidade. Entra como `Analyzer` em `services/sources.py`.
 4. Pacote da IA + chamada ao Gemini + resposta reserva.
-5. ~~Endpoints `POST /reports/resolve` e `POST /analyses`~~ Feitos na PR #2 (mais contas, histórico e limite de 5 análises/mês), ainda com dados de exemplo. O que falta (RF25, fonte real) está no passo 2.
-6. ~~Frontend~~ Feito na PR #2: início → login → escolher luta/personagem → resultado, mais perfil e planos. Falta o botão de olho (passo 2).
+5. ~~Endpoints `POST /reports/resolve` e `POST /analyses`~~ Feitos (PR #2 + passo 2). `/reports/resolve` já lê relatórios reais; `/analyses` só tem resultado da luta de referência até o motor entrar.
+6. ~~Frontend~~ Feito: início → login → escolher luta/personagem → resultado (com a lista dos comparados e o botão de olho), mais perfil e planos.
 7. Testes Pytest com as fixtures (casos no item 10): faltam T03–T05, T07 e T11–T14; T01, T02, T06 e T08–T10 já passam com os dados de exemplo.
 
 ## Como trabalhar neste repo

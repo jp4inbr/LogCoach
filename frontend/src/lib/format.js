@@ -39,3 +39,10 @@ export function formatDateTime(iso) {
     minute: "2-digit",
   });
 }
+
+// Pseudônimo da API (RF25) para a tela: "top01" -> "Top 1", "raid_03" -> "Raide 3".
+export function formatPseudonym(displayName) {
+  const match = /^(top|raid_)(\d+)$/.exec(displayName ?? "");
+  if (!match) return displayName;
+  return `${match[1] === "top" ? "Top" : "Raide"} ${Number(match[2])}`;
+}
