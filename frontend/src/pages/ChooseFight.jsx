@@ -12,6 +12,23 @@ const DEMO_KEY = "logcoach.demoUsed";
 const CHARACTER_KEY = "logcoach.character";
 const STEP_MS = 900;
 
+// O mesmo nome pode existir em reinos diferentes: o personagem é sempre nome + reino.
+function playerKey(player) {
+  return `${player.name}|${player.server ?? ""}`;
+}
+
+// Personagem salvo: { name, server }. Versões antigas guardavam só o nome (string).
+function loadCharacter() {
+  const saved = load(CHARACTER_KEY);
+  if (typeof saved === "string") return { name: saved, server: null };
+  return saved?.name ? { name: saved.name, server: saved.server ?? null } : null;
+}
+
+// Sem reino salvo (formato antigo), casa só pelo nome; o reino entra quando existir.
+function matchesCharacter(player, saved) {
+  return player.name === saved.name && (!saved.server || player.server === saved.server);
+}
+
 // Tela 2: escolher a luta e o personagem (RF04). Depois do clique, a mesma tela mostra o
 // andamento em etapas (Tela 3) e abre o resultado quando termina.
 export default function ChooseFight({ code }) {
@@ -70,22 +87,32 @@ export default function ChooseFight({ code }) {
   const { data } = report;
   const fight = data.fights.find((item) => item.id === fightId) ?? null;
   const players = fight?.players ?? [];
-  const savedCharacter = load(CHARACTER_KEY);
+  const savedCharacter = loadCharacter();
+  const savedMatches = savedCharacter
+    ? players.filter((p) => matchesCharacter(p, savedCharacter))
+    : [];
   // Personagem salvo ou único da luta já vem marcado (heurística "flexibilidade e eficiência").
-  const playerName =
+  // Se o nome salvo bater com mais de um reino, nada vem marcado: o usuário escolhe.
+  const selectedKey =
     chosenPlayer ??
-    (players.some((p) => p.name === savedCharacter) ? savedCharacter : null) ??
-    (players.length === 1 ? players[0].name : null);
+    (savedMatches.length === 1 ? playerKey(savedMatches[0]) : null) ??
+    (players.length === 1 ? playerKey(players[0]) : null);
+  const player = players.find((p) => playerKey(p) === selectedKey) ?? null;
   const demoBlocked = !token && load(DEMO_KEY, false);
 
   function startAnalysis() {
     setRun({ status: "running" });
     setStep(0);
-    save(CHARACTER_KEY, playerName);
+    save(CHARACTER_KEY, { name: player.name, server: player.server ?? null });
     api
       .post(
         "/analyses",
-        { report_code: data.code, fight_id: fight.id, player_name: playerName },
+        {
+          report_code: data.code,
+          fight_id: fight.id,
+          player_name: player.name,
+          server: player.server ?? null,
+        },
         token,
       )
       .then((analysis) => {
@@ -103,7 +130,7 @@ export default function ChooseFight({ code }) {
       <div className="card analyzing" aria-live="polite">
         <h1>Analisando sua luta</h1>
         <p className="muted">
-          {fight.boss} · {fight.difficulty} · {playerName}
+          {fight.boss} · {fight.difficulty} · {player.name}
         </p>
         <Steps current={resultId && step === ANALYSIS_STEPS.length - 1 ? step + 1 : step} />
         <p className="field-hint">Leva menos de 2 minutos. Você pode deixar esta aba aberta.</p>
@@ -169,20 +196,23 @@ export default function ChooseFight({ code }) {
             <Notice tone="atencao">Não achamos nenhum Mago Arcano nessa luta.</Notice>
           ) : (
             <div className="player-list" role="radiogroup" aria-labelledby="players-title">
-              {players.map((player) => (
-                <label key={player.name} className="player">
+              {players.map((option) => (
+                <label key={playerKey(option)} className="player">
                   <input
                     type="radio"
                     name="player"
-                    value={player.name}
-                    checked={playerName === player.name}
-                    onChange={() => setChosenPlayer(player.name)}
+                    value={playerKey(option)}
+                    checked={selectedKey === playerKey(option)}
+                    onChange={() => setChosenPlayer(playerKey(option))}
                   />
                   <span>
-                    <strong>{player.name}</strong>
+                    <span className="player-name">
+                      <strong>{option.name}</strong>
+                      {option.server && <span className="muted">{option.server}</span>}
+                    </span>
                     <span className="muted">
-                      {player.spec}
-                      {player.item_level ? ` · item level ${player.item_level}` : ""}
+                      {option.spec}
+                      {option.item_level ? ` · item level ${option.item_level}` : ""}
                     </span>
                   </span>
                 </label>
@@ -232,7 +262,7 @@ export default function ChooseFight({ code }) {
           <button
             type="button"
             className="button primary"
-            disabled={!fight || !playerName}
+            disabled={!fight || !player}
             onClick={startAnalysis}
           >
             Analisar

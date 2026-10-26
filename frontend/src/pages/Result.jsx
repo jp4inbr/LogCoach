@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import ComparedPlayers from "../components/ComparedPlayers.jsx";
 import MistakeCard from "../components/MistakeCard.jsx";
 import Notice from "../components/Notice.jsx";
 import StatusBadge from "../components/StatusBadge.jsx";
@@ -17,16 +18,42 @@ const TABS = [
 
 // Telas 3 e 5: resumo do coach e resultado completo em abas (RF10, RF11, RF17, RF22).
 export default function Result({ id }) {
-  const { token } = useAuth();
+  const { token, logout } = useAuth();
   const request = useRequest(`/analyses/${id}`, token);
   const [tab, setTab] = useState("resumo");
+  const [hadToken] = useState(Boolean(token));
+  const errorCode = request.status === "error" ? request.error.code : null;
+  // Entrou com sessão e ela caiu nesta tela: o token venceu (o "Sair" do topo troca de página).
+  const expired = errorCode === "invalid_token" || (hadToken && !token);
+
+  // Sessão vencida: sai da conta num efeito (nunca durante o render). Sem o token, a busca
+  // roda de novo e uma análise sem dono abre normalmente.
+  useEffect(() => {
+    if (errorCode === "invalid_token") logout();
+  }, [errorCode, logout]);
 
   if (request.status === "loading") return <p className="loading">Carregando a análise…</p>;
   if (request.status === "error") {
     return (
       <div className="stack">
-        <Notice tone="erro" title="Não deu para abrir essa análise">
+        <Notice
+          tone="erro"
+          title="Não deu para abrir essa análise"
+          action={
+            expired ? (
+              <a
+                className="button ghost"
+                href={href(`/entrar?modo=login&depois=${encodeURIComponent(`/analise/${id}`)}`)}
+              >
+                Entrar de novo
+              </a>
+            ) : null
+          }
+        >
           {request.error.message}
+          {expired &&
+            errorCode !== "invalid_token" &&
+            " Sua sessão expirou: entre de novo para ver as análises guardadas na sua conta."}
         </Notice>
         <a className="button ghost" href={href("/")}>
           ← Fazer uma nova análise
@@ -47,7 +74,9 @@ export default function Result({ id }) {
           </p>
           <h1>{fight.boss}</h1>
           <p className="muted">
-            {player.name} · {player.spec} · item level {player.item_level}
+            {player.name}
+            {player.server && ` (${player.server})`} · {player.spec} · item level{" "}
+            {player.item_level}
           </p>
         </div>
         <a className="button ghost" href={href(`/relatorio/${result.report_code}`)}>
@@ -98,6 +127,9 @@ export default function Result({ id }) {
           Por isso a comparação abaixo é com o 1º colocado geral do chefe.
         </Notice>
       )}
+
+      {/* Logo abaixo da "Média do bracket", que é a média desses jogadores (proximidade). */}
+      <ComparedPlayers comparison={comparison} />
 
       <div className="tabs" role="tablist" aria-label="Partes do relatório">
         {TABS.map((item) => (
