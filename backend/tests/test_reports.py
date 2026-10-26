@@ -41,6 +41,7 @@ def test_resolve_lists_fights_and_marks_unsupported(client):
     assert body["sample"] is True
     assert fights[34]["supported"] is True
     assert fights[34]["players"][0]["name"] == "Harmonist"
+    assert "server" in fights[34]["players"][0]
     assert fights[41]["supported"] is False
     assert fights[41]["unsupported_reason"] == "Chefe ainda não suportado"
 

@@ -1,10 +1,14 @@
 from datetime import UTC, datetime, timedelta
 
+import pytest
 from conftest import ANALYSIS
 from sqlmodel import Session
 
+from app.main import app
 from app.models import Analysis
+from app.schemas import FightOption, PlayerOption, ReportResolved
 from app.services.plan import month_start
+from app.services.sources import SAMPLE_REPORT_CODE, get_report_source
 
 
 def test_analysis_without_account_is_not_saved_to_history(client):
@@ -16,6 +20,28 @@ def test_analysis_without_account_is_not_saved_to_history(client):
     assert body["result"]["player"]["name"] == "Harmonist"
     # A análise sem conta ainda abre pelo id (link da tela de resultado).
     assert client.get(f"/analyses/{body['id']}").status_code == 200
+
+
+def test_rf25_player_is_never_hidden_and_tops_come_without_real_names(client):
+    result = client.post("/analyses", json=ANALYSIS).json()["result"]
+
+    assert result["player"]["display_name"] == result["player"]["name"] == "Harmonist"
+    tops = result["comparison"]["players"]
+    assert len(tops) == 10
+    assert [t["display_name"] for t in tops] == [f"Top {n}" for n in range(1, 11)]
+    # No exemplo não há nome real: o botão de mostrar nomes fica desabilitado.
+    assert all(t["name"] is None for t in tops)
+    avg = sum(t["dps"] for t in tops) / len(tops)
+    assert result["summary"]["top_avg_dps"] == pytest.approx(avg, abs=0.1)
+
+
+def test_invalid_token_on_public_route_counts_as_no_login(client):
+    response = client.post(
+        "/analyses", json=ANALYSIS, headers={"Authorization": "Bearer token-vencido"}
+    )
+
+    assert response.status_code == 201
+    assert response.json()["saved"] is False
 
 
 def test_t06_mistakes_come_sorted_by_impact(client):
@@ -106,6 +132,42 @@ def test_delete_account_removes_analyses(client, auth_headers, engine):
     assert client.get("/me", headers=auth_headers).status_code == 401
     with Session(engine) as session:
         assert session.get(Analysis, created["id"]) is None
+
+
+class TwoSombrasSource:
+    """Relatório sintético com dois Magos Arcanos de mesmo nome em reinos diferentes."""
+
+    def get_report(self, code: str) -> ReportResolved:
+        players = [
+            PlayerOption(name="Sombra", server="Area 52", spec="Mago Arcano", item_level=327),
+            PlayerOption(name="Sombra", server="Tichondrius", spec="Mago Arcano", item_level=327),
+        ]
+        fight = FightOption(
+            id=34,
+            boss="Nek'zali, a Enrosca-almas",
+            difficulty="Mítico",
+            kill=True,
+            duration_s=415.0,
+            supported=True,
+            players=players,
+        )
+        return ReportResolved(
+            code=SAMPLE_REPORT_CODE, title="Sintético", sample=True, fights=[fight]
+        )
+
+
+def test_repeated_name_without_server_is_ambiguous(client):
+    app.dependency_overrides[get_report_source] = TwoSombrasSource
+    request = {**ANALYSIS, "player_name": "Sombra"}
+
+    without_server = client.post("/analyses", json=request)
+    wrong_server = client.post("/analyses", json={**request, "server": "Azralon"})
+    with_server = client.post("/analyses", json={**request, "server": "area-52"})
+
+    assert without_server.status_code == 422
+    assert without_server.json()["detail"]["code"] == "player_ambiguous"
+    assert wrong_server.json()["detail"]["code"] == "player_ambiguous"
+    assert with_server.status_code == 201
 
 
 def test_month_start():
