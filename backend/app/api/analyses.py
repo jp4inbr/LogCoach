@@ -11,6 +11,7 @@ from app.errors import api_error
 from app.models import Analysis
 from app.schemas import AnalysisOut, AnalysisRequest, AnalysisResult
 from app.services.plan import analyses_this_month
+from app.services.players import AmbiguousPlayerError, PlayerNotFoundError, match_player
 from app.services.sources import (
     MIN_FIGHT_S,
     AnalysisNotAvailableError,
@@ -52,9 +53,18 @@ def create_analysis(
         raise api_error(
             422, "unsupported_fight", fight.unsupported_reason or "Chefe ainda não suportado."
         )
-    player = next((p for p in fight.players if p.name == data.player_name), None)
-    if player is None:
-        raise api_error(422, "no_arcane_mage", "Não achamos nenhum Mago Arcano com esse nome.")
+    try:
+        player = match_player(fight.players, data.player_name, data.server)
+    except PlayerNotFoundError:
+        raise api_error(
+            422, "no_arcane_mage", "Não achamos nenhum Mago Arcano com esse nome."
+        ) from None
+    except AmbiguousPlayerError:
+        raise api_error(
+            422,
+            "player_ambiguous",
+            "Há mais de um Mago Arcano com esse nome nessa luta. Escolha pelo reino.",
+        ) from None
 
     limit = get_settings().free_monthly_limit
     if user is not None and analyses_this_month(session, user.id) >= limit:

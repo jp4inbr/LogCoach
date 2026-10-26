@@ -1,8 +1,10 @@
 import os
 
-# Antes de importar o app: chave fixa e banco em memória, sem tocar no logcoach.db.
+# Antes de importar o app: chave fixa, banco em memória (sem tocar no logcoach.db)
+# e dados de exemplo, para os testes não dependerem da API do Warcraft Logs.
 os.environ.setdefault("JWT_SECRET", "chave-so-para-testes")
 os.environ["DATABASE_URL"] = "sqlite://"
+os.environ["DATA_SOURCE"] = "exemplo"
 
 import pytest  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402

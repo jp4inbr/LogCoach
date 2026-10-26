@@ -63,7 +63,9 @@ def test_me_requires_valid_token(client, auth_headers):
     assert me.json()["analyses_this_month"] == 0
     assert me.json()["monthly_limit"] == 5
     assert no_token.status_code == 401
+    assert no_token.json()["detail"]["code"] == "login_required"
     assert bad_token.status_code == 401
+    assert bad_token.json()["detail"]["code"] == "invalid_token"
 
 
 def test_change_password(client, auth_headers):

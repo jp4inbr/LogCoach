@@ -51,7 +51,10 @@ class ReportResolveRequest(BaseModel):
 
 
 class PlayerOption(BaseModel):
+    # Na escolha da luta o nome não é ocultado: o usuário está escolhendo a si mesmo.
     name: str
+    # O mesmo nome se repete entre reinos; o reino desempata (services/players.py).
+    server: str | None = None
     spec: str
     item_level: int | None = None
 
@@ -89,8 +92,23 @@ class FightInfo(BaseModel):
 
 class PlayerInfo(BaseModel):
     name: str
+    server: str | None = None
+    # RF25: o jogador analisado nunca é ocultado, então é sempre igual a `name`.
+    display_name: str
     spec: str
     item_level: int
+
+
+class ComparedPlayer(BaseModel):
+    """Um dos tops da comparação. RF25: a tela mostra `display_name` por padrão."""
+
+    rank: int
+    display_name: str  # "Top 1", "Top 2"…
+    # Nome real, só para o botão de mostrar nomes; nulo quando não há (ex.: exemplo).
+    name: str | None = None
+    server: str | None = None
+    item_level: int | None = None
+    dps: float
 
 
 class Comparison(BaseModel):
@@ -98,6 +116,7 @@ class Comparison(BaseModel):
     bracket: str
     size: int
     player_in_top: bool  # RF21
+    players: list[ComparedPlayer] = []  # em ordem de rank
 
 
 class Summary(BaseModel):
@@ -152,6 +171,12 @@ class Phase(BaseModel):
 
 
 class TimelineTrack(BaseModel):
+    """Usos de uma habilidade no tempo (RF11).
+
+    Eixo: segundos desde o início da LUTA. O motor calcula por fase e converte
+    somando `phases[].start_s`, para as telas não precisarem saber das fases.
+    """
+
     ability_id: int
     name: str
     player_s: list[float]  # segundos desde o início da luta
@@ -193,6 +218,8 @@ class AnalysisRequest(BaseModel):
     report_code: str = Field(min_length=1, max_length=40)
     fight_id: int
     player_name: str = Field(min_length=1, max_length=40)
+    # Reino do jogador; só é preciso quando o nome se repete na luta.
+    server: str | None = Field(default=None, max_length=40)
 
 
 class AnalysisOut(BaseModel):
