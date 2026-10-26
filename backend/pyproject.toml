@@ -6,6 +6,11 @@ requires-python = ">=3.12"
 dependencies = [
     "fastapi",
     "uvicorn[standard]",
+    "sqlmodel",
+    "pydantic-settings",
+    "email-validator",
+    "argon2-cffi",
+    "pyjwt",
 ]
 
 [project.optional-dependencies]
@@ -22,6 +27,9 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 include = ["app*"]
+
+[tool.setuptools.package-data]
+app = ["samples/*.json", "rules/*.yaml", "encounters/*.yaml", "i18n/*.yaml", "guides/*.md"]
 
 [tool.ruff]
 line-length = 100
