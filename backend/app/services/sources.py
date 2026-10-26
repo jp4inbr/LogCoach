@@ -9,6 +9,7 @@ demo sem internet e fonte do CI). O analisador ainda é o de exemplo até o moto
 
 import json
 import logging
+import re
 from collections.abc import Callable
 from functools import lru_cache
 from pathlib import Path
@@ -36,9 +37,10 @@ SAMPLE_REPORT_CODE = "XhrmBaYkGCAQjH2D"
 MIN_FIGHT_S = 60
 SHORT_FIGHT_REASON = "A luta tem menos de 60 s. Escolha uma tentativa mais longa"
 UNSUPPORTED_BOSS_REASON = "Chefe ainda não suportado"
+UNSUPPORTED_DIFFICULTY_REASON = "Dificuldade ainda não suportada para esse chefe"
 
 # Dificuldades de raide no Warcraft Logs, com os nomes do cliente pt-BR.
-DIFFICULTIES = {3: "Normal", 4: "Heroico", 5: "Mítico"}
+DIFFICULTIES = {1: "Localizador", 3: "Normal", 4: "Heroico", 5: "Mítico", 10: "Mítica+"}
 ARCANE = ("Mage", "Arcane")
 ARCANE_LABEL = "Mago Arcano"
 
@@ -78,12 +80,18 @@ class SampleReportSource:
 
 
 @lru_cache
-def supported_encounters() -> dict[int, int | None]:
-    """Encontros com regras em app/encounters/: id do encontro → NPC do chefe."""
-    encounters: dict[int, int | None] = {}
+def supported_encounters() -> dict[int, dict[str, Any]]:
+    """Encontros com regras em app/encounters/: id do encontro → NPC do chefe e dificuldades.
+
+    Sem `difficulties` no YAML, vale qualquer dificuldade.
+    """
+    encounters: dict[int, dict[str, Any]] = {}
     for path in sorted(ENCOUNTERS_DIR.glob("*.yaml")):
         data = yaml.safe_load(path.read_text(encoding="utf-8"))
-        encounters[int(data["encounter_id"])] = data.get("boss_npc_id")
+        encounters[int(data["encounter_id"])] = {
+            "boss_npc_id": data.get("boss_npc_id"),
+            "difficulties": data.get("difficulties"),
+        }
     return encounters
 
 
@@ -101,7 +109,7 @@ def _is_arcane_mage(actor: dict[str, Any], details: dict[str, Any] | None) -> bo
 
 def build_report(
     raw: dict[str, Any],
-    encounters: dict[int, int | None] | None = None,
+    encounters: dict[int, dict[str, Any]] | None = None,
     npc_names: dict[int, str] | None = None,
 ) -> dict[str, Any]:
     """Converte a saída de `wcl.fetch.fetch_report` no formato de `ReportResolved`.
@@ -128,20 +136,22 @@ def build_report(
     for fight in raw["fights"]:
         duration_s = round((fight["endTime"] - fight["startTime"]) / 1000, 1)
         encounter_id = fight["encounterID"]
-        boss_npc = encounters.get(encounter_id)
+        encounter = encounters.get(encounter_id)
+        difficulty = fight.get("difficulty")
         # Mesma ordem da rota /analyses: primeiro a duração, depois o chefe.
         if duration_s < MIN_FIGHT_S:
             reason = SHORT_FIGHT_REASON
-        elif encounter_id not in encounters:
+        elif encounter is None:
             reason = UNSUPPORTED_BOSS_REASON
+        elif encounter["difficulties"] and difficulty not in encounter["difficulties"]:
+            reason = UNSUPPORTED_DIFFICULTY_REASON
         else:
             reason = None
         players = [arcanes[pid] for pid in fight.get("friendlyPlayers") or [] if pid in arcanes]
-        difficulty = fight.get("difficulty")
         fights.append(
             {
                 "id": fight["id"],
-                "boss": npc_names.get(boss_npc, fight["name"]),
+                "boss": npc_names.get((encounter or {}).get("boss_npc_id"), fight["name"]),
                 "difficulty": DIFFICULTIES.get(difficulty, f"Dificuldade {difficulty}"),
                 "kill": bool(fight.get("kill")),
                 "duration_s": duration_s,
@@ -165,8 +175,11 @@ class WclReportSource:
             with self._client_factory() as client:
                 raw = fetch_report(client, code)
         except (WclError, httpx.HTTPError) as exc:
-            # Privado, inexistente, sem credenciais ou API fora do ar: para o usuário é igual.
             logger.warning("Report %s indisponível no Warcraft Logs: %s", code, exc)
+            # Plano B da demo: sem internet, o link de exemplo continua abrindo.
+            if code == SAMPLE_REPORT_CODE:
+                return SampleReportSource().get_report(code)
+            # Privado, inexistente ou API fora do ar: para o usuário é igual.
             raise ReportNotAvailableError(code) from exc
         return ReportResolved.model_validate(build_report(raw))
 
@@ -183,7 +196,27 @@ class SampleAnalyzer:
         path = SAMPLES_DIR / f"analysis_{report.code}_{fight.id}.json"
         if not path.exists():
             raise AnalysisNotAvailableError(f"{report.code}/{fight.id}")
-        return AnalysisResult.model_validate(_load(path.name))
+        result = AnalysisResult.model_validate(_load(path.name))
+        fill_real_names(result, get_settings().names_file)
+        return result
+
+
+def fill_real_names(result: AnalysisResult, names_file: Path) -> None:
+    """Põe o nome real dos tops a partir do names.local.json, se ele existir na máquina (RF25).
+
+    O arquivo é um mapa por bracket e por fixture: `{"nekzali_mythic_326_328":
+    {"top01.json.gz": {"top01": {"name", "server"}}}}`. Nunca vai para o git nem para a IA.
+    """
+    if not names_file.exists():
+        return
+    names = json.loads(names_file.read_text(encoding="utf-8"))
+    low, high = re.findall(r"\d+", result.comparison.bracket)[:2]
+    bracket = next((v for k, v in names.items() if k.endswith(f"_{low}_{high}")), {})
+    for player in result.comparison.players:
+        real = bracket.get(f"{player.display_name}.json.gz", {}).get(player.display_name)
+        if real:
+            player.name = real.get("name")
+            player.server = real.get("server")
 
 
 def get_report_source() -> ReportSource:

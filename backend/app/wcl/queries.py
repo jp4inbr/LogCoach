@@ -49,7 +49,8 @@ query Rankings(
 """
 
 # Report inteiro numa consulta só (limite de 1000 pontos/h): lutas de chefe, jogadores e
-# specs/item level. O playerDetails soma todas as lutas de chefe do report.
+# specs/item level. O playerDetails soma todas as lutas de chefe do report; a API exige
+# fightIDs ou um intervalo, então vai o intervalo do report inteiro (tempos relativos ao início).
 REPORT_FIGHTS = """
 query ReportFights($code: String!) {
   reportData {
@@ -62,7 +63,7 @@ query ReportFights($code: String!) {
       masterData {
         actors(type: "Player") { id name server type subType }
       }
-      playerDetails(killType: Encounters)
+      playerDetails(killType: Encounters, startTime: 0, endTime: 1e12)
     }
   }
 }

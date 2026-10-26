@@ -29,8 +29,12 @@ def match_player(players: list[PlayerOption], name: str, server: str | None) -> 
             raise PlayerNotFoundError(name)
         return player
 
-    if server:
-        same_name = [p for p in same_name if normalize_server(p.server) == normalize_server(server)]
-    if len(same_name) != 1:
+    if not server:
         raise AmbiguousPlayerError(name)
-    return same_name[0]
+    same_server = [p for p in same_name if normalize_server(p.server) == normalize_server(server)]
+    if not same_server:
+        # Reino informado que não existe entre os homônimos: é outro personagem.
+        raise PlayerNotFoundError(name)
+    if len(same_server) != 1:
+        raise AmbiguousPlayerError(name)
+    return same_server[0]

@@ -7,7 +7,7 @@
 from datetime import datetime
 from typing import Literal
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, model_validator
 
 Status = Literal["ok", "atencao", "erro"]
 
@@ -94,9 +94,15 @@ class PlayerInfo(BaseModel):
     name: str
     server: str | None = None
     # RF25: o jogador analisado nunca é ocultado, então é sempre igual a `name`.
-    display_name: str
+    # Preenchido sozinho, inclusive em análises gravadas antes deste campo existir.
+    display_name: str = ""
     spec: str
     item_level: int
+
+    @model_validator(mode="after")
+    def _display_name_is_name(self) -> "PlayerInfo":
+        self.display_name = self.name
+        return self
 
 
 class ComparedPlayer(BaseModel):

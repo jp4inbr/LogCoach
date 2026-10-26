@@ -6,6 +6,7 @@
 encounter: Nek'zali the Soulcoiler
 encounter_id: 3470            # ID do encontro no Warcraft Logs
 boss_npc_id: 259927           # Nek'zali
+difficulties: [5]             # só Mítico na alfa (regras calibradas no kill Mítico)
 
 phases:                       # IDs e nomes como o Warcraft Logs devolve
   - id: 1

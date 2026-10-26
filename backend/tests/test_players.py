@@ -45,8 +45,8 @@ def test_repeated_name_without_server_is_ambiguous():
         match_player(PLAYERS, "Sombra", None)
 
 
-def test_repeated_name_with_unknown_server_is_ambiguous():
-    with pytest.raises(AmbiguousPlayerError):
+def test_repeated_name_with_unknown_server_is_not_found():
+    with pytest.raises(PlayerNotFoundError):
         match_player(PLAYERS, "Sombra", "Azralon")
 
 

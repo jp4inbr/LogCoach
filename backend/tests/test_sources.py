@@ -1,14 +1,17 @@
 """WclReportSource com respostas falsas da API (nada aqui acessa a internet)."""
 
 import copy
+import json
 
 import httpx
 import pytest
 
 from app.config import Settings, get_settings
 from app.services.sources import (
+    SAMPLE_REPORT_CODE,
     SHORT_FIGHT_REASON,
     UNSUPPORTED_BOSS_REASON,
+    UNSUPPORTED_DIFFICULTY_REASON,
     ReportNotAvailableError,
     SampleReportSource,
     WclReportSource,
@@ -154,9 +157,24 @@ def test_difficulty_in_portuguese():
 
 def test_unknown_difficulty_keeps_wcl_value():
     raw = raw_report()
-    raw["fights"] = [copy.deepcopy(raw["fights"][1]) | {"difficulty": 1}]
+    raw["fights"] = [copy.deepcopy(raw["fights"][1]) | {"difficulty": 99}]
 
-    assert build_report(raw)["fights"][0]["difficulty"] == "Dificuldade 1"
+    assert build_report(raw)["fights"][0]["difficulty"] == "Dificuldade 99"
+
+
+def test_only_mythic_nekzali_is_supported():
+    fights = {f.id: f for f in source_for(REPORT).get_report("TESTE123").fights}
+
+    # Luta 4: Nek'zali no Normal, com mais de 60 s. O YAML só traz regras do Mítico.
+    assert fights[4].supported is False
+    assert fights[4].unsupported_reason == UNSUPPORTED_DIFFICULTY_REASON
+
+
+def test_sample_report_opens_when_wcl_is_down():
+    # Plano B da demo: o link de exemplo abre mesmo com o Warcraft Logs fora do ar.
+    report = source_for(REPORT, status=500).get_report(SAMPLE_REPORT_CODE)
+
+    assert report.sample is True
 
 
 @pytest.mark.parametrize(
@@ -198,7 +216,7 @@ def clean_settings(monkeypatch):
 @pytest.mark.parametrize(
     ("env", "expected"),
     [
-        ({"DATA_SOURCE": "wcl"}, WclReportSource),
+        ({"DATA_SOURCE": "wcl", "WCL_CLIENT_ID": "a", "WCL_CLIENT_SECRET": "b"}, WclReportSource),
         ({"DATA_SOURCE": "exemplo", "WCL_CLIENT_ID": "a", "WCL_CLIENT_SECRET": "b"},
          SampleReportSource),
         ({"WCL_CLIENT_ID": "a", "WCL_CLIENT_SECRET": "b"}, WclReportSource),
@@ -214,6 +232,13 @@ def test_get_report_source_follows_data_source(clean_settings, env, expected):
     assert isinstance(get_report_source(), expected)
 
 
+def test_wcl_without_credentials_fails_at_startup(clean_settings):
+    clean_settings.setenv("DATA_SOURCE", "wcl")
+
+    with pytest.raises(ValueError, match="WCL_CLIENT_ID"):
+        get_settings()
+
+
 def test_prod_requires_jwt_secret(clean_settings):
     clean_settings.setenv("APP_ENV", "prod")
     clean_settings.delenv("JWT_SECRET", raising=False)
@@ -226,3 +251,45 @@ def test_dev_without_jwt_secret_uses_temporary_key(clean_settings):
     clean_settings.delenv("JWT_SECRET", raising=False)
 
     assert get_settings().jwt_secret
+
+
+# --- Nomes reais no modo exemplo (RF25) ----------------------------------------
+
+
+def test_sample_analysis_gets_real_names_from_local_file(tmp_path):
+    from app.schemas import AnalysisResult
+    from app.services.sources import SAMPLES_DIR, fill_real_names
+
+    result = AnalysisResult.model_validate(
+        json.loads((SAMPLES_DIR / "analysis_XhrmBaYkGCAQjH2D_34.json").read_text(encoding="utf-8"))
+    )
+    names = tmp_path / "names.local.json"
+    names.write_text(
+        json.dumps(
+            {
+                "nekzali_mythic_326_328": {
+                    "top01.json.gz": {"top01": {"name": "Primeiro", "server": "Norte"}}
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    fill_real_names(result, names)
+
+    top1, top2 = result.comparison.players[:2]
+    assert (top1.display_name, top1.name, top1.server) == ("top01", "Primeiro", "Norte")
+    assert top2.name is None  # sem entrada no arquivo, continua oculto
+
+
+def test_sample_analysis_without_local_file_keeps_names_hidden(tmp_path):
+    from app.schemas import AnalysisResult
+    from app.services.sources import SAMPLES_DIR, fill_real_names
+
+    result = AnalysisResult.model_validate(
+        json.loads((SAMPLES_DIR / "analysis_XhrmBaYkGCAQjH2D_34.json").read_text(encoding="utf-8"))
+    )
+
+    fill_real_names(result, tmp_path / "nao-existe.json")
+
+    assert all(p.name is None for p in result.comparison.players)

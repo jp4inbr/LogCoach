@@ -166,7 +166,7 @@ def test_repeated_name_without_server_is_ambiguous(client):
 
     assert without_server.status_code == 422
     assert without_server.json()["detail"]["code"] == "player_ambiguous"
-    assert wrong_server.json()["detail"]["code"] == "player_ambiguous"
+    assert wrong_server.json()["detail"]["code"] == "no_arcane_mage"  # reino que não existe
     assert with_server.status_code == 201
 
 

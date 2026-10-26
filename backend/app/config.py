@@ -12,7 +12,8 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 logger = logging.getLogger(__name__)
 
 # Caminho absoluto: o .env é lido igual, não importa de que pasta o uvicorn sobe.
-ENV_FILE = Path(__file__).resolve().parents[1] / ".env"
+BACKEND_DIR = Path(__file__).resolve().parents[1]
+ENV_FILE = BACKEND_DIR / ".env"
 
 
 class Settings(BaseSettings):
@@ -32,12 +33,18 @@ class Settings(BaseSettings):
     # De onde vêm os relatórios: "wcl" (API real) ou "exemplo" (app/samples, sem internet).
     # Sem valor: "wcl" quando há as duas credenciais do Warcraft Logs, senão "exemplo".
     data_source: Literal["wcl", "exemplo"] | None = None
+    # RF25 no modo exemplo: mapa pseudônimo → nome real gerado pelo save_fixtures.py.
+    # Fica fora do git; sem ele, os nomes vêm nulos e o botão de mostrar fica desabilitado.
+    names_file: Path = BACKEND_DIR / "tests" / "fixtures" / "names.local.json"
 
     @model_validator(mode="after")
     def _default_data_source(self) -> "Settings":
+        has_wcl = bool(self.wcl_client_id and self.wcl_client_secret)
         if self.data_source is None:
-            has_wcl = bool(self.wcl_client_id and self.wcl_client_secret)
             self.data_source = "wcl" if has_wcl else "exemplo"
+        elif self.data_source == "wcl" and not has_wcl:
+            # Falha na subida em vez de cada busca virar "relatório privado" para o usuário.
+            raise ValueError("DATA_SOURCE=wcl exige WCL_CLIENT_ID e WCL_CLIENT_SECRET.")
         return self
 
 
