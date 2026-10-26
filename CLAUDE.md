@@ -27,7 +27,11 @@ Trabalho A3 de Usabilidade de Software (Engenharia de Software, UNA). Web app qu
 | `backend/app/i18n/pt_br.yaml` | Nome em português de cada magia/NPC por ID |
 | `backend/app/wcl/` | Cliente da API do Warcraft Logs, busca de luta/rankings e anonimização (item 12.8) |
 | `backend/scripts/save_fixtures.py` | Baixa o kill de referência + top 10 para `backend/tests/fixtures/` |
-| `backend/app/engine/`, `ai/`, `api/` | **Vazios — é o que falta construir** |
+| `backend/app/api/` | Rotas: contas (`/auth`, `/me`), `/reports/resolve` e `/analyses` (item 12.3) |
+| `backend/app/schemas.py` | `AnalysisResult`: formato que o motor devolve e as telas leem (item 12.9) |
+| `backend/app/services/sources.py` | Interfaces `ReportSource` e `Analyzer`; hoje leem `app/samples/`. É aqui que o motor e o cliente do WCL entram |
+| `backend/app/engine/`, `ai/` | **Vazios — é o que falta construir** |
+| `frontend/src/pages/` | Telas: início, login, escolher luta, resultado, perfil, planos |
 
 ## Fluxo do motor (o que construir)
 

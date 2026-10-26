@@ -1,0 +1,48 @@
+{
+  "_nota": "Exemplo montado à mão para a alfa. A luta 34 e o jogador Harmonist são o kill de referência do CLAUDE.md; as outras lutas existem só para mostrar os estados da tela (luta curta e chefe não suportado). Trocar pelas fixtures reais da frente B.",
+  "code": "XhrmBaYkGCAQjH2D",
+  "title": "The Venomous Abyss — Mítico",
+  "sample": true,
+  "fights": [
+    {
+      "id": 33,
+      "boss": "Nek'zali, a Enrosca-almas",
+      "difficulty": "Mítico",
+      "kill": false,
+      "duration_s": 41.0,
+      "supported": false,
+      "unsupported_reason": "A luta tem menos de 60 s. Escolha uma tentativa mais longa",
+      "players": [{ "name": "Harmonist", "spec": "Mago Arcano", "item_level": 327 }]
+    },
+    {
+      "id": 34,
+      "boss": "Nek'zali, a Enrosca-almas",
+      "difficulty": "Mítico",
+      "kill": true,
+      "duration_s": 415.0,
+      "supported": true,
+      "unsupported_reason": null,
+      "players": [{ "name": "Harmonist", "spec": "Mago Arcano", "item_level": 327 }]
+    },
+    {
+      "id": 41,
+      "boss": "Entombed Sentinels",
+      "difficulty": "Mítico",
+      "kill": false,
+      "duration_s": 238.0,
+      "supported": false,
+      "unsupported_reason": "Chefe ainda não suportado",
+      "players": [{ "name": "Harmonist", "spec": "Mago Arcano", "item_level": 327 }]
+    },
+    {
+      "id": 47,
+      "boss": "The Lost Explorers",
+      "difficulty": "Mítico",
+      "kill": true,
+      "duration_s": 312.0,
+      "supported": false,
+      "unsupported_reason": "Chefe ainda não suportado",
+      "players": [{ "name": "Harmonist", "spec": "Mago Arcano", "item_level": 327 }]
+    }
+  ]
+}
