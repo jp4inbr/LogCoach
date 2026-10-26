@@ -116,13 +116,14 @@ export default function ChooseFight({ code }) {
         token,
       )
       .then((analysis) => {
-        if (!token) save(DEMO_KEY, true);
+        if (!analysis.saved) {
+          save(DEMO_KEY, true);
+          // Tinha token e mesmo assim não foi guardada: a sessão venceu no meio do uso.
+          if (token) logout();
+        }
         setResultId(analysis.id);
       })
-      .catch((error) => {
-        if (error.code === "invalid_token") logout();
-        setRun({ status: "error", error });
-      });
+      .catch((error) => setRun({ status: "error", error }));
   }
 
   if (run.status === "running") {
@@ -152,8 +153,8 @@ export default function ChooseFight({ code }) {
 
       {data.sample && (
         <Notice tone="atencao" title="Relatório de exemplo">
-          Nesta versão alfa, a lista de lutas vem de um arquivo de exemplo. A busca real no Warcraft
-          Logs entra na próxima etapa.
+          Sem conexão com o Warcraft Logs, a lista de lutas vem de um arquivo de exemplo. Os
+          outros relatórios abrem quando a conexão voltar.
         </Notice>
       )}
 
@@ -230,10 +231,6 @@ export default function ChooseFight({ code }) {
             run.error.code === "plan_limit" ? (
               <a className="button ghost" href={href("/planos")}>
                 Ver planos
-              </a>
-            ) : run.error.code === "invalid_token" ? (
-              <a className="button ghost" href={href("/entrar?modo=login")}>
-                Entrar de novo
               </a>
             ) : null
           }

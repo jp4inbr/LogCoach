@@ -1,5 +1,5 @@
 {
-  "_nota": "Exemplo montado à mão para a alfa. A luta 34 e o jogador Harmonist são o kill de referência do CLAUDE.md; as outras lutas existem só para mostrar os estados da tela (luta curta e chefe não suportado). O reino fica nulo porque as fixtures não guardam reino (anonimização). Sai quando o WclReportSource entrar.",
+  "_nota": "Exemplo montado à mão para a alfa. A luta 34 e o jogador Harmonist são o kill de referência do CLAUDE.md; as outras lutas existem só para mostrar os estados da tela (luta curta e chefe não suportado). O reino fica nulo porque as fixtures não guardam reino (anonimização). Fica como fonte offline (DATA_SOURCE=exemplo e WCL fora do ar): plano B da demo e fonte do CI.",
   "code": "XhrmBaYkGCAQjH2D",
   "title": "The Venomous Abyss — Mítico",
   "sample": true,

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import ComparedPlayers from "../components/ComparedPlayers.jsx";
 import MistakeCard from "../components/MistakeCard.jsx";
 import Notice from "../components/Notice.jsx";
@@ -18,19 +18,9 @@ const TABS = [
 
 // Telas 3 e 5: resumo do coach e resultado completo em abas (RF10, RF11, RF17, RF22).
 export default function Result({ id }) {
-  const { token, logout } = useAuth();
+  const { token } = useAuth();
   const request = useRequest(`/analyses/${id}`, token);
   const [tab, setTab] = useState("resumo");
-  const [hadToken] = useState(Boolean(token));
-  const errorCode = request.status === "error" ? request.error.code : null;
-  // Entrou com sessão e ela caiu nesta tela: o token venceu (o "Sair" do topo troca de página).
-  const expired = errorCode === "invalid_token" || (hadToken && !token);
-
-  // Sessão vencida: sai da conta num efeito (nunca durante o render). Sem o token, a busca
-  // roda de novo e uma análise sem dono abre normalmente.
-  useEffect(() => {
-    if (errorCode === "invalid_token") logout();
-  }, [errorCode, logout]);
 
   if (request.status === "loading") return <p className="loading">Carregando a análise…</p>;
   if (request.status === "error") {
@@ -40,20 +30,19 @@ export default function Result({ id }) {
           tone="erro"
           title="Não deu para abrir essa análise"
           action={
-            expired ? (
+            // Análise de uma conta só abre para o dono: sem login, oferece entrar e voltar aqui.
+            !token ? (
               <a
                 className="button ghost"
                 href={href(`/entrar?modo=login&depois=${encodeURIComponent(`/analise/${id}`)}`)}
               >
-                Entrar de novo
+                Entrar
               </a>
             ) : null
           }
         >
           {request.error.message}
-          {expired &&
-            errorCode !== "invalid_token" &&
-            " Sua sessão expirou: entre de novo para ver as análises guardadas na sua conta."}
+          {!token && " Se ela é da sua conta, entre para abrir."}
         </Notice>
         <a className="button ghost" href={href("/")}>
           ← Fazer uma nova análise

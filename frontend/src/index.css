@@ -978,6 +978,8 @@ caption {
 
 .compared summary::before {
   content: "▸";
+  /* Texto alternativo vazio: a seta é decorativa e não deve ser lida pelo leitor de tela. */
+  content: "▸" / "";
   color: var(--accent);
   transition: transform 0.15s;
 }

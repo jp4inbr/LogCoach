@@ -25,8 +25,9 @@ npm run dev   # http://localhost:5173 (precisa do backend rodando)
 | Variável | Para quê |
 |---|---|
 | `WCL_CLIENT_ID` / `WCL_CLIENT_SECRET` | Acesso à API do Warcraft Logs |
-| `DATA_SOURCE` | `wcl` (relatórios reais) ou `exemplo` (arquivos de `app/samples/`, sem internet: plano B da demo e CI). Vazio = `wcl` se houver as chaves do WCL, senão `exemplo` |
+| `DATA_SOURCE` | `wcl` (relatórios reais) ou `exemplo` (arquivos de `app/samples/`, sem internet: plano B da demo e CI). Vazio = `wcl` se houver as chaves do WCL, senão `exemplo`. `wcl` sem as chaves não sobe |
 | `APP_ENV` | `dev` (padrão) ou `prod`. Em `prod` o backend não sobe sem `JWT_SECRET` |
+| `NAMES_FILE` | Mapa pseudônimo → nome real do modo exemplo (RF25). Padrão: `tests/fixtures/names.local.json`, fora do git |
 | `GOOGLE_CLOUD_PROJECT` | Projeto do Google Cloud (Vertex AI) |
 | `DATABASE_URL` | Banco (SQLite em dev, PostgreSQL em produção). O arquivo `logcoach.db` é criado sozinho na primeira subida |
 | `JWT_SECRET` | Assinatura do login. Vazio em dev = chave temporária (o login cai a cada reinício); obrigatório com `APP_ENV=prod` |
@@ -53,7 +54,7 @@ Documentação interativa em http://localhost:8000/docs (botão **Authorize** re
 
 **Escolha do jogador.** `POST /analyses` recebe `player_name` e `server` (reino, pode ser nulo). Nome único na luta basta; com reino informado e diferente do conhecido, é outro personagem (`no_arcane_mage`). Nome repetido sem reino que desempate dá `player_ambiguous`. Regra em `services/players.py` (`match_player`), com a mesma normalização de reino do `wcl/fetch.find_player`.
 
-**Login em rota pública.** Em rotas com login opcional, token inválido ou vencido vale como "sem login". Só as rotas que exigem login respondem `invalid_token`.
+**Login em rota pública.** Em rotas com login opcional, token inválido ou vencido vale como "sem login". Só as rotas que exigem login respondem `invalid_token`. Por isso o frontend confere a sessão salva com `GET /me` ao abrir o site e sai da conta se o token venceu; se uma análise feita com login volta com `saved: false`, ele também sai da conta.
 
 **Limite do plano.** Conta por mês do calendário em UTC: as análises feitas desde o dia 1º às 00:00 UTC.
 
@@ -63,14 +64,14 @@ As rotas não falam direto com o Warcraft Logs nem com o motor. Elas dependem de
 
 | Interface | O que faz | Implementação atual |
 |---|---|---|
-| `ReportSource.get_report(code)` | Lista as lutas e os Magos Arcanos de um relatório | `WclReportSource` (`DATA_SOURCE=wcl`): uma consulta `REPORT_FIGHTS` por report. `SampleReportSource` (`DATA_SOURCE=exemplo`): lê `app/samples/report_<código>.json` (só o kill de referência) |
+| `ReportSource.get_report(code)` | Lista as lutas e os Magos Arcanos de um relatório | `WclReportSource` (`DATA_SOURCE=wcl`): uma consulta `REPORT_FIGHTS` (~2 pontos) a cada chamada; ainda sem cache. `SampleReportSource` (`DATA_SOURCE=exemplo`): lê `app/samples/report_<código>.json` (só o kill de referência) |
 | `Analyzer.analyze(report, fight, player)` | Devolve o resultado da análise | `SampleAnalyzer`: lê `app/samples/analysis_<código>_<luta>.json` |
 
 Os arquivos de exemplo são marcados como exemplo (`"sample": true` e `"source": "exemplo"`) e a interface mostra um aviso amarelo. O `WclReportSource` já lê relatórios reais; o analisador ainda é o de exemplo, então só a luta de referência tem resultado (as outras dão `analysis_not_available`). Quando o motor ficar pronto, basta trocar o que `get_analyzer()` devolve. Nenhuma rota nem tela muda.
 
-No `WclReportSource`: entram só Magos com spec Arcano; spec e item level vêm do `playerDetails` da noite inteira (o motor confere a spec na luta escolhida); chefe suportado = encontro com YAML em `encounters/` e luta de 60 s ou mais; chefe e dificuldade em pt-BR (`pt_br.yaml`). Erro do WCL, report privado ou sem chaves viram `report_not_available`.
+No `WclReportSource`: entram só Magos com spec Arcano; spec e item level vêm do `playerDetails` da noite inteira (o motor confere a spec na luta escolhida); chefe suportado = encontro com YAML em `encounters/`, dificuldade listada em `difficulties` do YAML (Nek'zali: só Mítico) e luta de 60 s ou mais; chefe e dificuldade em pt-BR (`pt_br.yaml`). Erro do WCL ou report privado viram `report_not_available`; o link de exemplo (`XhrmBaYkGCAQjH2D`) abre mesmo com o WCL fora do ar (plano B da demo). Consulta conferida no report de referência.
 
-**Nomes na resposta (RF25).** Em `POST /analyses` e `GET /analyses/{id}`, cada jogador comparado (top 10, 1º geral do RF21, colegas de raide) vem com `display_name` (pseudônimo estável: `top01`… pela posição no ranking, `raid_01`… pela ordem de ID; a tela mostra "Top 1", "Raide 1") e `name` (nome real). O jogador analisado vem com `display_name` = `name`. Quem decide o que mostrar é o frontend. A IA recebe só os pseudônimos: os nomes reais nunca entram no pacote da IA.
+**Nomes na resposta (RF25).** Em `POST /analyses` e `GET /analyses/{id}`, cada jogador comparado vem em `comparison.players` (hoje o top 10; o 1º geral do RF21 e os colegas de raide entram com o motor) com `display_name` (pseudônimo estável: `top01`… pela posição no ranking, `raid_01`… pela ordem de ID; a tela mostra "Top 1", "Raide 1") e `name` (nome real, ou nulo quando não há). O jogador analisado vem com `display_name` = `name`. Quem decide o que mostrar é o frontend. A IA recebe só os pseudônimos: os nomes reais nunca entram no pacote da IA.
 
 ## 12.4 Motor de análise: as três camadas de regras
 
@@ -196,7 +197,7 @@ Código em `backend/app/wcl/`.
 
 **Nomes ocultos por padrão.** O repositório é público, então os arquivos versionados não têm nome, reino, GUID, guilda nem código de report dos outros jogadores: o analisado vira `top01`…`top10` e o resto da raide `raid_01`…. Cada ator ganha `display_name`. O mapa com os dados reais fica em `tests/fixtures/names.local.json` (no `.gitignore`).
 
-**Na aplicação (RF25).** Os pseudônimos dos fixtures são os mesmos que a API devolve em `display_name` (ver 12.3 e 12.9), gerados pela mesma função de `anonymize.py`. Com dados ao vivo, o `name` real vem direto do Warcraft Logs. No modo demo (sem internet, lendo os fixtures), o `name` vem do `names.local.json` se ele existir na máquina; se não existir, `name` vem nulo e o botão de mostrar nomes fica desabilitado. O jogador analisado nunca é ocultado.
+**Na aplicação (RF25).** Os pseudônimos dos fixtures são os mesmos que a API devolve em `display_name` (ver 12.3 e 12.9), gerados pela mesma função de `anonymize.py`. Com dados ao vivo, o `name` real vem direto do Warcraft Logs. No modo demo (sem internet, lendo os fixtures), o `name` vem do `names.local.json` se ele existir na máquina (caminho em `NAMES_FILE`; `SampleAnalyzer` usa `fill_real_names`); se não existir, `name` vem nulo e o botão de mostrar nomes fica desabilitado. O jogador analisado nunca é ocultado.
 
 ## 12.9 Formato do resultado da análise (contrato motor ↔ telas)
 
