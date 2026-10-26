@@ -23,5 +23,9 @@ export default defineConfig([
       globals: globals.browser,
       parserOptions: { ecmaFeatures: { jsx: true } },
     },
+    rules: {
+      // Sem TypeScript nem prop-types no projeto: as props ficam documentadas no próprio componente.
+      "react/prop-types": "off",
+    },
   },
 ]);
