@@ -8,6 +8,7 @@ from typing import Literal
 
 from pydantic import field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from sqlalchemy.engine import make_url
 
 logger = logging.getLogger(__name__)
 
@@ -22,16 +23,23 @@ def resolve_sqlite_url(url: str) -> str:
     """Resolve a partir de backend/ o caminho relativo de uma URL SQLite.
 
     Sem isso, "sqlite:///./logcoach.db" cria um banco em cada pasta de onde o
-    uvicorn sobe. Memória, caminho absoluto e outros bancos ficam como estão.
+    uvicorn sobe. Memória, caminho absoluto, URI `file:` e outros bancos ficam como estão.
     """
-    if not url.startswith(SQLITE_FILE):  # "sqlite://" (memória), postgresql://...
+    parsed = make_url(url)  # entende drivers (sqlite+pysqlite://) e query string
+    path = parsed.database
+    if (
+        parsed.get_backend_name() != "sqlite"
+        or not path
+        or path == ":memory:"
+        or parsed.query.get("uri")
+        # Absoluto no Unix ("/abs/x.db") ou no Windows ("C:/x.db"); PureWindowsPath decide
+        # igual em qualquer sistema, então o caso do Windows também é testado no Mac/Linux.
+        or path.startswith("/")
+        or PureWindowsPath(path).is_absolute()
+    ):
         return url
-    path, sep, query = url.removeprefix(SQLITE_FILE).partition("?")
-    # Absoluto no Unix ("/abs/x.db") ou no Windows ("C:/x.db"); PureWindowsPath decide
-    # igual em qualquer sistema, então o caso do Windows também é testado no Mac/Linux.
-    if path in ("", ":memory:") or path.startswith("/") or PureWindowsPath(path).is_absolute():
-        return url
-    return f"{SQLITE_FILE}{(BACKEND_DIR / path).resolve().as_posix()}{sep}{query}"
+    absolute = (BACKEND_DIR / path).resolve().as_posix()
+    return parsed.set(database=absolute).render_as_string(hide_password=False)
 
 
 class Settings(BaseSettings):

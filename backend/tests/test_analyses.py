@@ -134,13 +134,15 @@ def test_delete_account_removes_analyses(client, auth_headers, engine):
         assert session.get(Analysis, created["id"]) is None
 
 
-class TwoSombrasSource:
+class TwoHarmonistsSource:
     """Relatório sintético com dois Magos Arcanos de mesmo nome em reinos diferentes."""
 
     def get_report(self, code: str) -> ReportResolved:
         players = [
-            PlayerOption(name="Sombra", server="Area 52", spec="Mago Arcano", item_level=327),
-            PlayerOption(name="Sombra", server="Tichondrius", spec="Mago Arcano", item_level=327),
+            PlayerOption(name="Harmonist", server="Area 52", spec="Mago Arcano", item_level=327),
+            PlayerOption(
+                name="Harmonist", server="Tichondrius", spec="Mago Arcano", item_level=327
+            ),
         ]
         fight = FightOption(
             id=34,
@@ -157,8 +159,8 @@ class TwoSombrasSource:
 
 
 def test_repeated_name_without_server_is_ambiguous(client):
-    app.dependency_overrides[get_report_source] = TwoSombrasSource
-    request = {**ANALYSIS, "player_name": "Sombra"}
+    app.dependency_overrides[get_report_source] = TwoHarmonistsSource
+    request = {**ANALYSIS, "player_name": "Harmonist"}
 
     without_server = client.post("/analyses", json=request)
     wrong_server = client.post("/analyses", json={**request, "server": "Azralon"})
@@ -167,9 +169,7 @@ def test_repeated_name_without_server_is_ambiguous(client):
     assert without_server.status_code == 422
     assert without_server.json()["detail"]["code"] == "player_ambiguous"
     assert wrong_server.json()["detail"]["code"] == "no_arcane_mage"  # reino que não existe
-    # Reino desempatou; quem recusa é o analisador de exemplo (não é o Harmonist).
-    assert with_server.status_code == 503
-    assert with_server.json()["detail"]["code"] == "analysis_not_available"
+    assert with_server.status_code == 201  # o reino desempatou
 
 
 class HarmonistAndOtherSource:
@@ -177,7 +177,8 @@ class HarmonistAndOtherSource:
 
     def get_report(self, code: str) -> ReportResolved:
         players = [
-            PlayerOption(name="Harmonist", spec="Mago Arcano", item_level=327),
+            # Com DATA_SOURCE=wcl o Harmonist chega com reino; o exemplo não tem reino.
+            PlayerOption(name="Harmonist", server="Azralon", spec="Mago Arcano", item_level=327),
             PlayerOption(name="Outroarcano", server="Area 52", spec="Mago Arcano", item_level=327),
         ]
         fight = FightOption(
@@ -211,7 +212,7 @@ def test_other_arcane_in_sample_fight_does_not_get_harmonist_result(client, auth
 def test_harmonist_in_sample_fight_still_gets_the_result(client):
     app.dependency_overrides[get_report_source] = HarmonistAndOtherSource
 
-    response = client.post("/analyses", json=ANALYSIS)
+    response = client.post("/analyses", json={**ANALYSIS, "server": "Azralon"})
 
     assert response.status_code == 201
     assert response.json()["result"]["player"]["name"] == "Harmonist"

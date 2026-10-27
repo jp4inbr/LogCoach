@@ -20,7 +20,6 @@ import yaml
 
 from app.config import get_settings
 from app.schemas import AnalysisResult, FightOption, PlayerOption, ReportResolved
-from app.services.players import normalize_server
 from app.wcl.client import WclClient, WclError
 from app.wcl.fetch import fetch_report
 
@@ -51,7 +50,7 @@ class ReportNotAvailableError(Exception):
 
 
 class AnalysisNotAvailableError(Exception):
-    """Ainda não há como analisar essa luta (sem dados de exemplo para ela)."""
+    """Ainda não há análise para essa luta ou esse jogador (hoje: só o exemplo do Harmonist)."""
 
 
 class ReportSource(Protocol):
@@ -198,15 +197,10 @@ class SampleAnalyzer:
         if not path.exists():
             raise AnalysisNotAvailableError(f"{report.code}/{fight.id}")
         result = AnalysisResult.model_validate(_load(path.name))
-        # Outro Arcano da mesma luta não pode receber a análise do Harmonist.
-        # Sem reino de um dos lados (o exemplo tem server nulo), vale só o nome.
-        sample = result.player
-        same_server = (
-            not player.server
-            or not sample.server
-            or normalize_server(player.server) == normalize_server(sample.server)
-        )
-        if player.name != sample.name or not same_server:
+        # Outro Arcano da mesma luta não pode receber a análise do Harmonist. O exemplo não
+        # guarda reino (anonimização), então compara só o nome; o reino já foi conferido
+        # pelo match_player na rota.
+        if player.name != result.player.name:
             raise AnalysisNotAvailableError(f"{report.code}/{fight.id}/{player.name}")
         fill_real_names(result, get_settings().names_file)
         return result

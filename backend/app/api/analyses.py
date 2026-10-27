@@ -80,8 +80,8 @@ def create_analysis(
         raise api_error(
             503,
             "analysis_not_available",
-            "Nesta versão alfa, só a luta de exemplo do Harmonist tem análise. "
-            "Tente o log de exemplo.",
+            "Ainda não conseguimos analisar essa luta com esse personagem. Nesta versão alfa, "
+            "só há análise do Harmonist no Nek'zali Mítico (luta 34 do log de exemplo).",
         ) from None
 
     analysis = Analysis(

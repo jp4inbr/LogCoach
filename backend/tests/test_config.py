@@ -60,6 +60,15 @@ def test_memoria_absoluto_e_outros_bancos_intactos(url):
     assert database_url(url) == url
 
 
+def test_relativo_com_driver_tambem_e_resolvido():
+    assert database_url("sqlite+pysqlite:///./logcoach.db") == f"sqlite+pysqlite:///{DB}"
+
+
+def test_uri_file_fica_intacta():
+    url = "sqlite:///file:logcoach.db?mode=ro&uri=true"
+    assert database_url(url) == url
+
+
 def test_query_string_preservada():
     assert database_url("sqlite:///./logcoach.db?timeout=10") == f"sqlite:///{DB}?timeout=10"
     assert database_url("sqlite:///:memory:?cache=shared") == "sqlite:///:memory:?cache=shared"
