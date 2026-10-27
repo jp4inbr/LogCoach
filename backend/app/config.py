@@ -3,10 +3,10 @@
 import logging
 import secrets
 from functools import lru_cache
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 from typing import Literal
 
-from pydantic import model_validator
+from pydantic import field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 logger = logging.getLogger(__name__)
@@ -14,6 +14,24 @@ logger = logging.getLogger(__name__)
 # Caminho absoluto: o .env é lido igual, não importa de que pasta o uvicorn sobe.
 BACKEND_DIR = Path(__file__).resolve().parents[1]
 ENV_FILE = BACKEND_DIR / ".env"
+DEFAULT_DB = BACKEND_DIR / "logcoach.db"
+SQLITE_FILE = "sqlite:///"
+
+
+def resolve_sqlite_url(url: str) -> str:
+    """Resolve a partir de backend/ o caminho relativo de uma URL SQLite.
+
+    Sem isso, "sqlite:///./logcoach.db" cria um banco em cada pasta de onde o
+    uvicorn sobe. Memória, caminho absoluto e outros bancos ficam como estão.
+    """
+    if not url.startswith(SQLITE_FILE):  # "sqlite://" (memória), postgresql://...
+        return url
+    path, sep, query = url.removeprefix(SQLITE_FILE).partition("?")
+    # Absoluto no Unix ("/abs/x.db") ou no Windows ("C:/x.db"); PureWindowsPath decide
+    # igual em qualquer sistema, então o caso do Windows também é testado no Mac/Linux.
+    if path in ("", ":memory:") or path.startswith("/") or PureWindowsPath(path).is_absolute():
+        return url
+    return f"{SQLITE_FILE}{(BACKEND_DIR / path).resolve().as_posix()}{sep}{query}"
 
 
 class Settings(BaseSettings):
@@ -21,7 +39,8 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=ENV_FILE, extra="ignore", env_ignore_empty=True)
 
     app_env: Literal["dev", "prod"] = "dev"
-    database_url: str = "sqlite:///./logcoach.db"
+    # Vazio = backend/logcoach.db; caminho relativo vale a partir de backend/.
+    database_url: str = f"{SQLITE_FILE}{DEFAULT_DB.as_posix()}"
     jwt_secret: str = ""
     jwt_expire_days: int = 7
     # RF14: limite de análises por mês no plano grátis.
@@ -36,6 +55,11 @@ class Settings(BaseSettings):
     # RF25 no modo exemplo: mapa pseudônimo → nome real gerado pelo save_fixtures.py.
     # Fica fora do git; sem ele, os nomes vêm nulos e o botão de mostrar fica desabilitado.
     names_file: Path = BACKEND_DIR / "tests" / "fixtures" / "names.local.json"
+
+    @field_validator("database_url")
+    @classmethod
+    def _absolute_sqlite(cls, url: str) -> str:
+        return resolve_sqlite_url(url)
 
     @model_validator(mode="after")
     def _default_data_source(self) -> "Settings":
