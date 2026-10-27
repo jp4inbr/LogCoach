@@ -14,7 +14,7 @@
 | Pedro               |     |            |
 | João                |     |            |
 | Luiz                |     |            |
-|                     |     |            |
+| Matheus Santos Damasceno |     |            |
 |                     |     |            |
 |                     |     |            |
 |                     |     |            |
