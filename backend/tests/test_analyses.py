@@ -167,7 +167,54 @@ def test_repeated_name_without_server_is_ambiguous(client):
     assert without_server.status_code == 422
     assert without_server.json()["detail"]["code"] == "player_ambiguous"
     assert wrong_server.json()["detail"]["code"] == "no_arcane_mage"  # reino que não existe
-    assert with_server.status_code == 201
+    # Reino desempatou; quem recusa é o analisador de exemplo (não é o Harmonist).
+    assert with_server.status_code == 503
+    assert with_server.json()["detail"]["code"] == "analysis_not_available"
+
+
+class HarmonistAndOtherSource:
+    """Luta 34 sintética com o Harmonist e outro Arcano (pseudônimo)."""
+
+    def get_report(self, code: str) -> ReportResolved:
+        players = [
+            PlayerOption(name="Harmonist", spec="Mago Arcano", item_level=327),
+            PlayerOption(name="Outroarcano", server="Area 52", spec="Mago Arcano", item_level=327),
+        ]
+        fight = FightOption(
+            id=34,
+            boss="Nek'zali, a Enrosca-almas",
+            difficulty="Mítico",
+            kill=True,
+            duration_s=415.0,
+            supported=True,
+            players=players,
+        )
+        return ReportResolved(
+            code=SAMPLE_REPORT_CODE, title="Sintético", sample=True, fights=[fight]
+        )
+
+
+def test_other_arcane_in_sample_fight_does_not_get_harmonist_result(client, auth_headers):
+    app.dependency_overrides[get_report_source] = HarmonistAndOtherSource
+
+    response = client.post(
+        "/analyses", json={**ANALYSIS, "player_name": "Outroarcano"}, headers=auth_headers
+    )
+
+    assert response.status_code == 503
+    assert response.json()["detail"]["code"] == "analysis_not_available"
+    # Recusada antes de gravar: não entra no histórico nem conta no limite do plano.
+    assert client.get("/me", headers=auth_headers).json()["analyses_this_month"] == 0
+    assert client.get("/me/analyses", headers=auth_headers).json() == []
+
+
+def test_harmonist_in_sample_fight_still_gets_the_result(client):
+    app.dependency_overrides[get_report_source] = HarmonistAndOtherSource
+
+    response = client.post("/analyses", json=ANALYSIS)
+
+    assert response.status_code == 201
+    assert response.json()["result"]["player"]["name"] == "Harmonist"
 
 
 def test_month_start():

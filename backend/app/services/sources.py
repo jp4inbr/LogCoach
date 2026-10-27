@@ -20,6 +20,7 @@ import yaml
 
 from app.config import get_settings
 from app.schemas import AnalysisResult, FightOption, PlayerOption, ReportResolved
+from app.services.players import normalize_server
 from app.wcl.client import WclClient, WclError
 from app.wcl.fetch import fetch_report
 
@@ -188,7 +189,7 @@ class WclReportSource:
 
 
 class SampleAnalyzer:
-    """Devolve o resultado de exemplo da luta de referência."""
+    """Devolve o resultado de exemplo da luta de referência, só para o jogador do exemplo."""
 
     def analyze(
         self, report: ReportResolved, fight: FightOption, player: PlayerOption
@@ -197,6 +198,16 @@ class SampleAnalyzer:
         if not path.exists():
             raise AnalysisNotAvailableError(f"{report.code}/{fight.id}")
         result = AnalysisResult.model_validate(_load(path.name))
+        # Outro Arcano da mesma luta não pode receber a análise do Harmonist.
+        # Sem reino de um dos lados (o exemplo tem server nulo), vale só o nome.
+        sample = result.player
+        same_server = (
+            not player.server
+            or not sample.server
+            or normalize_server(player.server) == normalize_server(sample.server)
+        )
+        if player.name != sample.name or not same_server:
+            raise AnalysisNotAvailableError(f"{report.code}/{fight.id}/{player.name}")
         fill_real_names(result, get_settings().names_file)
         return result
 
