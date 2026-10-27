@@ -29,7 +29,7 @@ npm run dev   # http://localhost:5173 (precisa do backend rodando)
 | `APP_ENV` | `dev` (padrão) ou `prod`. Em `prod` o backend não sobe sem `JWT_SECRET` |
 | `NAMES_FILE` | Mapa pseudônimo → nome real do modo exemplo (RF25). Padrão: `tests/fixtures/names.local.json`, fora do git |
 | `GOOGLE_CLOUD_PROJECT` | Projeto do Google Cloud (Vertex AI) |
-| `DATABASE_URL` | Banco (SQLite em dev, PostgreSQL em produção). O arquivo `logcoach.db` é criado sozinho na primeira subida |
+| `DATABASE_URL` | Banco (SQLite em dev, PostgreSQL em produção). Vazio = `backend/logcoach.db`; caminho SQLite relativo (`sqlite:///./x.db`) é resolvido a partir de `backend/`, não da pasta de onde o uvicorn sobe. O arquivo é criado sozinho na primeira subida |
 | `JWT_SECRET` | Assinatura do login. Vazio em dev = chave temporária (o login cai a cada reinício); obrigatório com `APP_ENV=prod` |
 
 ## 12.3 Endpoints da API
@@ -67,7 +67,7 @@ As rotas não falam direto com o Warcraft Logs nem com o motor. Elas dependem de
 | `ReportSource.get_report(code)` | Lista as lutas e os Magos Arcanos de um relatório | `WclReportSource` (`DATA_SOURCE=wcl`): uma consulta `REPORT_FIGHTS` (~2 pontos) a cada chamada; ainda sem cache. `SampleReportSource` (`DATA_SOURCE=exemplo`): lê `app/samples/report_<código>.json` (só o kill de referência) |
 | `Analyzer.analyze(report, fight, player)` | Devolve o resultado da análise | `SampleAnalyzer`: lê `app/samples/analysis_<código>_<luta>.json` |
 
-Os arquivos de exemplo são marcados como exemplo (`"sample": true` e `"source": "exemplo"`) e a interface mostra um aviso amarelo. O `WclReportSource` já lê relatórios reais; o analisador ainda é o de exemplo, então só a luta de referência tem resultado (as outras dão `analysis_not_available`). Quando o motor ficar pronto, basta trocar o que `get_analyzer()` devolve. Nenhuma rota nem tela muda.
+Os arquivos de exemplo são marcados como exemplo (`"sample": true` e `"source": "exemplo"`) e a interface mostra um aviso amarelo. O `WclReportSource` já lê relatórios reais; o analisador ainda é o de exemplo, então só a luta de referência, e só para o Harmonist, tem resultado (outras lutas ou outros Magos dão `analysis_not_available`, sem gravar no histórico). No exemplo, a soma dos `impact_pct` dos erros fecha com a diferença de DPS: o que as regras não explicam fica no erro `hipotese` (RF23), e `tests/test_samples.py` confere isso. Quando o motor ficar pronto, basta trocar o que `get_analyzer()` devolve. Nenhuma rota nem tela muda.
 
 No `WclReportSource`: entram só Magos com spec Arcano; spec e item level vêm do `playerDetails` da noite inteira (o motor confere a spec na luta escolhida); chefe suportado = encontro com YAML em `encounters/`, dificuldade listada em `difficulties` do YAML (Nek'zali: só Mítico) e luta de 60 s ou mais; chefe e dificuldade em pt-BR (`pt_br.yaml`). Erro do WCL ou report privado viram `report_not_available`; o link de exemplo (`XhrmBaYkGCAQjH2D`) abre mesmo com o WCL fora do ar (plano B da demo). Consulta conferida no report de referência.
 
