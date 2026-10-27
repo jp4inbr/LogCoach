@@ -1,5 +1,5 @@
 {
-  "_nota": "Resultado de EXEMPLO no formato AnalysisResult (app/schemas.py), para as telas funcionarem antes do motor. O DPS do jogador (dano + absorvido ÷ duração do reference_harmonist.json.gz) e o dos tops (index.json das fixtures de 326–328, sem nomes reais) vêm das fixtures; o resto é ilustrativo, baseado nos limites de arcane_mage.yaml e nekzali.yaml, e não foi calculado do log. O motor do Arthur substitui este arquivo.",
+  "_nota": "Resultado de EXEMPLO no formato AnalysisResult (app/schemas.py), para as telas funcionarem antes do motor. Vêm das fixtures: o DPS do jogador (dano + absorvido ÷ duração do reference_harmonist.json.gz), o DPS, o item level e a duração da luta dos tops (index.json das fixtures de 326–328, sem nomes reais) e, com isso, a diferença de 14,8%. O resto é ilustrativo, baseado nos limites de arcane_mage.yaml e nekzali.yaml, e não foi calculado do log, inclusive os impactos dos erros de regra (3,1 + 2,4 + 1,2 = 6,7). A hipótese fica com a sobra (14,8 − 6,7 = 8,1), como o motor fará no RF23, e a soma dos impactos fecha com a diferença (conferido em tests/test_samples.py). O motor do Arthur substitui este arquivo.",
   "source": "exemplo",
   "report_code": "XhrmBaYkGCAQjH2D",
   "fight": {
@@ -43,9 +43,25 @@
   },
   "coach": {
     "available": true,
-    "headline": "Você ficou 14,8% abaixo da média dos melhores do seu bracket. Entre os erros que dá para medir, a maior perda está nas Salvas Arcanas soltas com poucos acúmulos e no Toque dos Magos atrasando, que na Fase 2 deixa o Surto Arcano fora da janela do Toque."
+    "headline": "Você ficou 14,8% abaixo da média dos melhores do seu bracket. As regras explicam 6,7 pontos, a maior parte nas Salvas Arcanas soltas com poucos acúmulos e no Toque dos Magos atrasado, que na Fase 2 deixa o Surto Arcano fora da janela do Toque. Os outros 8,1 pontos ficam como hipótese: menos Mísseis Arcanos na Fase 2, uma luta mais longa que a da maioria dos melhores e item level um pouco abaixo dos primeiros."
   },
   "mistakes": [
+    {
+      "id": "unexplained_missiles_p2",
+      "title": "Diferença que as regras não explicam (hipótese do coach)",
+      "impact_pct": 8.1,
+      "severity": "atencao",
+      "kind": "hipotese",
+      "phase": null,
+      "explanation": "As regras explicam 6,7 dos 14,8 pontos que você ficou abaixo dos melhores; os outros 8,1 nenhuma regra mede. Há três pistas, nenhuma confirmada. Na Fase 2 você fez 14,1 Mísseis Arcanos por minuto, contra 16,9 dos melhores, o que pode ser movimento no Desemaranhando ou Clarividência expirando sem uso; como a Fase 2 é pouco mais de um terço da luta, isso sozinho dificilmente cobre tudo. Sua luta durou 6:55 e 9 dos 10 melhores mataram mais rápido (média de 6:08): o burst da abertura, com Surto Arcano, Toque dos Magos e a 1ª poção, pesa menos no DPS de uma luta mais longa. E 5 dos 10 melhores, entre eles os 3 primeiros, estão no item level 328, contra o seu 327. Quanto cada pista pesa, os números do log não mostram.",
+      "what_to_do": "Reveja a Fase 2 do log: procure Clarividência que caiu sem uso e movimentos que poderiam ter sido feitos com Cintilação. A duração da luta e o item level não dependem só de você; compare de novo num kill mais curto ou depois de subir de item level para ver quanto da diferença continua.",
+      "numbers": [
+        { "label": "Mísseis por minuto na Fase 2", "player": "14,1", "top": "16,9" },
+        { "label": "Duração da luta", "player": "6:55", "top": "6:08 (média)" },
+        { "label": "Item level", "player": "327", "top": "327,2 (média; 5 de 10 no 328)" },
+        { "label": "Diferença de dano não explicada", "player": "−8,1%", "top": "—" }
+      ]
+    },
     {
       "id": "barrage_low_salvo",
       "title": "Salva Arcana com poucos acúmulos de Salvo",
@@ -72,20 +88,6 @@
       "numbers": [
         { "label": "Atraso médio do Toque", "player": "4,2 s", "top": "1,1 s" },
         { "label": "Surto → Toque (pior caso)", "player": "6,5 s", "top": "3,2 s" }
-      ]
-    },
-    {
-      "id": "unexplained_missiles_p2",
-      "title": "Menos Mísseis Arcanos na Fase 2 (hipótese do coach)",
-      "impact_pct": 1.5,
-      "severity": "atencao",
-      "kind": "hipotese",
-      "phase": "Fase 2",
-      "explanation": "Na Fase 2 você fez 14,1 Mísseis Arcanos por minuto, contra 16,9 dos melhores, e nenhuma regra explica essa diferença. Pode ser movimento no Desemaranhando ou Clarividência expirando sem uso.",
-      "what_to_do": "Reveja a Fase 2 do log: procure Clarividência que caiu sem uso e movimentos que poderiam ter sido feitos com Cintilação.",
-      "numbers": [
-        { "label": "Mísseis por minuto na Fase 2", "player": "14,1", "top": "16,9" },
-        { "label": "Diferença de dano não explicada", "player": "−1,5%", "top": "—" }
       ]
     },
     {
