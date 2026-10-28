@@ -8,6 +8,8 @@ import pytest
 
 from app.config import Settings, get_settings
 from app.services.sources import (
+    IN_PROGRESS_REASON,
+    REFRESH_MIN_INTERVAL_S,
     SAMPLE_REPORT_CODE,
     SHORT_FIGHT_REASON,
     UNSUPPORTED_BOSS_REASON,
@@ -19,6 +21,7 @@ from app.services.sources import (
     WclReportSource,
     build_report,
     get_report_source,
+    players_cache,
     report_cache,
 )
 from app.wcl.client import TOKEN_URL, WclClient, WclUnavailableError, close_shared_client
@@ -29,65 +32,95 @@ NEKZALI = 3470
 
 @pytest.fixture(autouse=True)
 def fresh_wcl_state():
-    """Cache de reports e cliente do processo zerados: nada vaza de um teste para outro."""
+    """Caches e cliente do processo zerados: nada vaza de um teste para outro."""
     report_cache.clear()
+    players_cache.clear()
     close_shared_client()
     yield
     report_cache.clear()
+    players_cache.clear()
     close_shared_client()
 
 
-def details(actor_id: int, spec: str, item_level: int) -> dict:
-    return {
-        "id": actor_id,
-        "type": "Mage",
-        "specs": [{"spec": spec, "count": 1}],
-        "minItemLevel": item_level - 1,
-        "maxItemLevel": item_level,
-    }
+def nekzali(fight_id: int, start: int, end: int, **extra) -> dict:
+    return {"id": fight_id, "encounterID": NEKZALI, "name": "Nek'zali the Soulcoiler",
+            "difficulty": 5, "kill": False, "startTime": start, "endTime": end,
+            "inProgress": False} | extra  # fmt: skip
 
 
-# Resposta do REPORT_FIGHTS só com pseudônimos.
+# Resposta do REPORT_FIGHTS (só a lista de lutas), com pseudônimos.
 REPORT = {
     "code": "TESTE123",
     "title": "Raide de teste",
     "fights": [
-        # Tentativa curta no Nek'zali.
-        {"id": 1, "encounterID": NEKZALI, "name": "Nek'zali the Soulcoiler", "difficulty": 5,
-         "kill": False, "startTime": 0, "endTime": 41_000, "friendlyPlayers": [10, 11, 12]},
-        {"id": 2, "encounterID": NEKZALI, "name": "Nek'zali the Soulcoiler", "difficulty": 5,
-         "kill": True, "startTime": 100_000, "endTime": 515_641,
-         "friendlyPlayers": [10, 11, 12, 13]},
-        {"id": 3, "encounterID": 9999, "name": "Outro Chefe", "difficulty": 4,
-         "kill": True, "startTime": 600_000, "endTime": 900_000, "friendlyPlayers": [10]},
-        {"id": 4, "encounterID": NEKZALI, "name": "Nek'zali the Soulcoiler", "difficulty": 3,
-         "kill": True, "startTime": 1_000_000, "endTime": 1_200_000, "friendlyPlayers": [13]},
+        nekzali(1, 0, 41_000),  # tentativa curta
+        nekzali(2, 100_000, 515_641, kill=True),
+        {"id": 3, "encounterID": 9999, "name": "Outro Chefe", "difficulty": 4, "kill": True,
+         "startTime": 600_000, "endTime": 900_000, "inProgress": False},
+        nekzali(4, 1_000_000, 1_200_000, kill=True, difficulty=3),
     ],
-    "masterData": {
-        "actors": [
-            {"id": 10, "name": "arcano_a", "server": "Norte", "type": "Player", "subType": "Mage"},
-            {"id": 11, "name": "fogo_a", "server": "Norte", "type": "Player", "subType": "Mage"},
-            {"id": 12, "name": "guerreiro_a", "server": "Norte", "type": "Player",
-             "subType": "Warrior"},
-            # Mesmo nome, outro reino: os dois aparecem, com o reino para diferenciar.
-            {"id": 13, "name": "arcano_a", "server": "Sul", "type": "Player", "subType": "Mage"},
-        ]
-    },
-    "playerDetails": {
-        "data": {
-            "playerDetails": {
-                "dps": [
-                    details(10, "Arcane", 327),
-                    details(11, "Fire", 330),
-                    {"id": 12, "type": "Warrior", "specs": [{"spec": "Arms", "count": 1}]},
-                    details(13, "Arcane", 324),
-                ],
-                "healers": [],
-                "tanks": [],
-            }
-        }
-    },
 }  # fmt: skip
+
+# Magos do report (masterData.actors com subType Mage), como o FIGHT_PLAYERS traz.
+MAGES = [
+    {"id": 10, "name": "arcano_a", "server": "Norte", "type": "Player", "subType": "Mage"},
+    {"id": 11, "name": "fogo_a", "server": "Norte", "type": "Player", "subType": "Mage"},
+    # Mesmo nome, outro reino: os dois aparecem, com o reino para diferenciar.
+    {"id": 13, "name": "arcano_a", "server": "Sul", "type": "Player", "subType": "Mage"},
+]
+
+# Jogadores de cada luta (friendlyPlayers/Specs/ItemLevels). O 12 é um Guerreiro; o 13
+# joga Arcano na luta 2 e Fogo na luta 4.
+FIGHT_PLAYERS = {
+    2: ([10, 11, 12, 13], ["Arcane", "Fire", "Arms", "Arcane"], [327, 330, 325, 324]),
+    4: ([13], ["Fire"], [324]),
+}
+
+
+class FakeWcl:
+    """API falsa que responde cada consulta pelo nome e conta as chamadas."""
+
+    def __init__(self, report: dict | None = None, status: int = 200) -> None:
+        self.report = copy.deepcopy(REPORT if report is None else report)
+        self.mages = copy.deepcopy(MAGES)
+        self.fight_players = copy.deepcopy(FIGHT_PLAYERS)
+        self.details: dict = {}
+        self.status = status
+        self.calls: list[str] = []
+
+    def handler(self, request: httpx.Request) -> httpx.Response:
+        if str(request.url) == TOKEN_URL:
+            return httpx.Response(200, json={"access_token": "tok", "expires_in": 3600})
+        body = json.loads(request.content)
+        name = body["query"].split("(")[0].split()[-1]
+        self.calls.append(name)
+        if self.status != 200:
+            return httpx.Response(self.status, json={})
+        if name == "ReportFights":
+            return httpx.Response(200, json=report_body(self.report))
+        fight_id = body["variables"]["fightID"]
+        if name == "FightPlayerDetails":
+            details = {"data": {"playerDetails": {"dps": self.details.get(fight_id, [])}}}
+            return httpx.Response(200, json=report_body({"playerDetails": details}))
+        ids, specs, item_levels = self.fight_players.get(fight_id, ([], [], []))
+        fight = {"id": fight_id, "friendlyPlayers": ids, "friendlySpecs": specs,
+                 "friendlyItemLevels": item_levels}  # fmt: skip
+        fights = [fight] if any(f["id"] == fight_id for f in self.report["fights"]) else []
+        return httpx.Response(
+            200, json=report_body({"fights": fights, "masterData": {"actors": self.mages}})
+        )
+
+    def client(self) -> WclClient:
+        return WclClient("id", "secret", transport=httpx.MockTransport(self.handler))
+
+    def source(self, cache: ReportCache | None = None) -> WclReportSource:
+        # Caches próprios por padrão: cada FakeWcl é uma API nova.
+        client = self.client()
+        return WclReportSource(
+            client_factory=lambda: client,
+            cache=ReportCache() if cache is None else cache,
+            players=ReportCache(),
+        )
 
 
 def fake_client(body: dict, status: int = 200, calls: list | None = None) -> WclClient:
@@ -111,7 +144,9 @@ def report_body(report: dict | None, errors: list | None = None) -> dict:
 def source_for(report: dict | None, errors: list | None = None, status: int = 200):
     # Cache próprio: cada chamada aqui é uma API nova, sem reaproveitar a de outro teste.
     body = report_body(report, errors)
-    return WclReportSource(client_factory=lambda: fake_client(body, status), cache=ReportCache())
+    return WclReportSource(
+        client_factory=lambda: fake_client(body, status), cache=ReportCache(), players=ReportCache()
+    )
 
 
 def raw_report() -> dict:
@@ -124,6 +159,7 @@ def test_report_is_mapped_from_wcl():
     assert report.code == "TESTE123"
     assert report.title == "Raide de teste"
     assert report.sample is False
+    assert report.fetched_at.tzinfo is not None
     assert [f.id for f in report.fights] == [1, 2, 3, 4]
     fight = report.fights[1]
     assert fight.boss == "Nek'zali, a Enrosca-almas"  # nome em pt-BR do i18n
@@ -133,25 +169,52 @@ def test_report_is_mapped_from_wcl():
     assert fight.unsupported_reason is None
 
 
-def test_only_arcane_mages_are_listed():
-    fights = {f.id: f for f in source_for(REPORT).get_report("TESTE123").fights}
+def test_fight_list_has_no_players():
+    # Ao colar o link só vem a lista de lutas; os Magos vêm por luta.
+    wcl = FakeWcl()
+    report = wcl.source().get_report("TESTE123")
 
-    assert [(p.name, p.spec, p.item_level) for p in fights[1].players] == [
-        ("arcano_a", "Mago Arcano", 327)
+    assert wcl.calls == ["ReportFights"]
+    assert "players" not in report.fights[1].model_dump()
+
+
+def test_only_arcane_mages_of_the_fight_are_listed():
+    players = FakeWcl().source().get_fight_players("TESTE123", 2)
+
+    # Fogo (11) e Guerreiro (12) ficam de fora; spec e item level são os da luta.
+    assert [(p.actor_id, p.name, p.spec, p.item_level) for p in players] == [
+        (10, "arcano_a", "Mago Arcano", 327),
+        (13, "arcano_a", "Mago Arcano", 324),
     ]
-    assert [p.item_level for p in fights[2].players] == [327, 324]
+
+
+def test_mage_that_played_fire_in_this_fight_is_not_listed():
+    # O 13 é Arcano na luta 2, mas jogou Fogo na luta 4: a spec é a da luta.
+    assert FakeWcl().source().get_fight_players("TESTE123", 4) == []
 
 
 def test_players_keep_their_realm():
-    fight = build_report(raw_report())["fights"][1]
+    players = FakeWcl().source().get_fight_players("TESTE123", 2)
 
-    assert [(p["name"], p["server"]) for p in fight["players"]] == [
-        ("arcano_a", "Norte"),
-        ("arcano_a", "Sul"),
-    ]
-    # E o reino chega no contrato (PlayerOption.server), que é o que a tela e /analyses usam.
-    fights = {f.id: f for f in source_for(REPORT).get_report("TESTE123").fights}
-    assert [p.server for p in fights[2].players] == ["Norte", "Sul"]
+    assert [(p.name, p.server) for p in players] == [("arcano_a", "Norte"), ("arcano_a", "Sul")]
+
+
+def test_missing_spec_is_completed_with_player_details():
+    wcl = FakeWcl()
+    wcl.fight_players[2] = ([10, 11], [None, "Fire"], [None, 330])
+    wcl.details[2] = [{"id": 10, "specs": [{"spec": "Arcane", "count": 1}], "maxItemLevel": 328}]
+
+    players = wcl.source().get_fight_players("TESTE123", 2)
+
+    assert [(p.actor_id, p.item_level) for p in players] == [(10, 328)]
+    assert wcl.calls == ["FightPlayers", "FightPlayerDetails"]
+
+
+def test_player_details_only_when_a_spec_is_missing():
+    wcl = FakeWcl()
+    wcl.source().get_fight_players("TESTE123", 2)
+
+    assert wcl.calls == ["FightPlayers"]
 
 
 def test_short_fight_is_not_supported():
@@ -160,6 +223,17 @@ def test_short_fight_is_not_supported():
     assert fight.duration_s == 41.0
     assert fight.supported is False
     assert fight.unsupported_reason == SHORT_FIGHT_REASON
+
+
+def test_fight_still_uploading_is_not_supported():
+    # Log ao vivo: a luta em andamento ainda vai crescer. Atualizar as lutas libera ela.
+    report = copy.deepcopy(REPORT)
+    report["fights"][1]["inProgress"] = True
+
+    fight = source_for(report).get_report("TESTE123").fights[1]
+
+    assert fight.supported is False
+    assert fight.unsupported_reason == IN_PROGRESS_REASON
 
 
 def test_boss_without_rules_is_not_supported():
@@ -193,9 +267,10 @@ def test_only_mythic_nekzali_is_supported():
 
 def test_sample_report_opens_when_wcl_is_down():
     # Plano B da demo: o link de exemplo abre mesmo com o Warcraft Logs fora do ar.
-    report = source_for(REPORT, status=500).get_report(SAMPLE_REPORT_CODE)
+    source = source_for(REPORT, status=500)
 
-    assert report.sample is True
+    assert source.get_report(SAMPLE_REPORT_CODE).sample is True
+    assert [p.name for p in source.get_fight_players(SAMPLE_REPORT_CODE, 34)] == ["Harmonist"]
 
 
 @pytest.mark.parametrize(
@@ -209,6 +284,8 @@ def test_sample_report_opens_when_wcl_is_down():
 def test_unavailable_report_raises(report, errors):
     with pytest.raises(ReportNotAvailableError):
         source_for(report, errors).get_report("NAOEXISTE")
+    with pytest.raises(ReportNotAvailableError):
+        source_for(report, errors).get_fight_players("NAOEXISTE", 2)
 
 
 @pytest.mark.parametrize("status", [429, 500, 502, 503])
@@ -216,6 +293,8 @@ def test_wcl_down_is_not_report_not_available(status):
     # Limite de pontos ou API fora do ar: o report pode estar certo.
     with pytest.raises(SourceUnavailableError):
         source_for(REPORT, status=status).get_report("TESTE123")
+    with pytest.raises(SourceUnavailableError):
+        source_for(REPORT, status=status).get_fight_players("TESTE123", 2)
 
 
 def test_network_error_is_source_unavailable():
@@ -247,7 +326,36 @@ def test_sample_report_opens_with_missing_credentials():
     assert source.get_report(SAMPLE_REPORT_CODE).sample is True
 
 
-# --- Cache de reports ----------------------------------------------------------
+# --- Modo exemplo ---------------------------------------------------------------
+
+
+def test_sample_source_lists_fights_without_players():
+    report = SampleReportSource().get_report(SAMPLE_REPORT_CODE)
+
+    assert report.sample is True
+    assert [f.id for f in report.fights] == [33, 34, 41, 47]
+
+
+def test_sample_source_has_harmonist_in_fight_34():
+    players = SampleReportSource().get_fight_players(SAMPLE_REPORT_CODE, 34)
+
+    assert [(p.actor_id, p.name) for p in players] == [(455, "Harmonist")]
+
+
+def test_sample_source_refresh_brings_the_same_fights():
+    source = SampleReportSource()
+
+    refreshed = source.get_report(SAMPLE_REPORT_CODE, refresh=True)
+
+    assert refreshed.fights == source.get_report(SAMPLE_REPORT_CODE).fights
+
+
+def test_sample_source_has_only_the_sample_report():
+    with pytest.raises(ReportNotAvailableError):
+        SampleReportSource().get_fight_players("OUTRO", 34)
+
+
+# --- Cache e "Atualizar lutas" ----------------------------------------------------
 
 
 def counting_source(calls: list, status: int = 200, cache: ReportCache | None = None):
@@ -266,12 +374,37 @@ def test_report_is_fetched_once_while_cached():
     assert second == first
 
 
+def test_fight_players_are_fetched_once_per_fight():
+    wcl = FakeWcl()
+    source = wcl.source()
+
+    first = source.get_fight_players("TESTE123", 2)
+    assert source.get_fight_players("TESTE123", 2) == first
+    source.get_fight_players("TESTE123", 4)
+
+    assert wcl.calls == ["FightPlayers", "FightPlayers"]
+
+
 def test_cache_is_shared_between_sources():
     # A rota cria um WclReportSource por pedido; o cache é do processo.
     calls: list = []
 
     counting_source(calls).get_report("TESTE123")
     counting_source(calls).get_report("TESTE123")
+
+    assert len(calls) == 1
+
+
+def test_cache_lasts_a_raid_night():
+    # Luta que já subiu não muda: a lista fica no cache por horas, não minutos.
+    now = [0.0]
+    cache = ReportCache(clock=lambda: now[0])
+    calls: list = []
+    source = counting_source(calls, cache=cache)
+
+    source.get_report("TESTE123")
+    now[0] = 3 * 60 * 60
+    source.get_report("TESTE123")
 
     assert len(calls) == 1
 
@@ -291,6 +424,81 @@ def test_cache_expires():
     assert len(calls) == 2
 
 
+def test_refresh_brings_new_fights_of_a_live_log():
+    now = [0.0]
+    wcl = FakeWcl()
+    wcl.report["fights"] = REPORT["fights"][:2]
+    source = wcl.source(cache=ReportCache(clock=lambda: now[0]))
+    first = source.get_report("TESTE123")
+    assert [f.id for f in first.fights] == [1, 2]
+
+    # Novo pull na progressão: sem atualizar, a lista guardada continua valendo.
+    wcl.report["fights"].append(nekzali(5, 1_300_000, 1_450_000))
+    now[0] = 120
+    assert [f.id for f in source.get_report("TESTE123").fights] == [1, 2]
+
+    refreshed = source.get_report("TESTE123", refresh=True)
+
+    assert [f.id for f in refreshed.fights] == [1, 2, 5]
+    assert refreshed.fetched_at >= first.fetched_at  # a tela mostra a hora da lista nova
+    # E o cache passa a ter a lista nova.
+    assert [f.id for f in source.get_report("TESTE123").fights] == [1, 2, 5]
+    assert wcl.calls == ["ReportFights", "ReportFights"]
+
+
+def test_player_who_joined_in_the_middle_of_the_night():
+    # Jogador que entrou na raide depois da lista guardada: aparece na luta nova.
+    now = [0.0]
+    wcl = FakeWcl()
+    source = wcl.source(cache=ReportCache(clock=lambda: now[0]))
+    source.get_report("TESTE123")
+
+    wcl.mages.append(
+        {"id": 20, "name": "arcano_novo", "server": "Norte", "type": "Player", "subType": "Mage"}
+    )
+    wcl.report["fights"].append(nekzali(5, 1_300_000, 1_450_000))
+    wcl.fight_players[5] = ([10, 20], ["Arcane", "Arcane"], [327, 321])
+    now[0] = 120
+    source.get_report("TESTE123", refresh=True)
+
+    players = source.get_fight_players("TESTE123", 5)
+
+    assert [(p.actor_id, p.name, p.item_level) for p in players] == [
+        (10, "arcano_a", 327),
+        (20, "arcano_novo", 321),
+    ]
+
+
+def test_refresh_right_after_a_fetch_uses_the_cache():
+    # Cliques repetidos (ou dois magos da raide) não gastam pontos à toa.
+    now = [0.0]
+    wcl = FakeWcl()
+    source = wcl.source(cache=ReportCache(clock=lambda: now[0]))
+    source.get_report("TESTE123")
+
+    now[0] = REFRESH_MIN_INTERVAL_S - 1
+    source.get_report("TESTE123", refresh=True)
+    now[0] = REFRESH_MIN_INTERVAL_S + 1
+    source.get_report("TESTE123", refresh=True)
+
+    assert wcl.calls == ["ReportFights", "ReportFights"]
+
+
+def test_failed_refresh_keeps_the_cached_list():
+    now = [0.0]
+    wcl = FakeWcl()
+    source = wcl.source(cache=ReportCache(clock=lambda: now[0]))
+    source.get_report("TESTE123")
+
+    wcl.status = 503
+    now[0] = 120
+    with pytest.raises(SourceUnavailableError):
+        source.get_report("TESTE123", refresh=True)
+
+    assert [f.id for f in source.get_report("TESTE123").fights] == [1, 2, 3, 4]
+    assert wcl.calls == ["ReportFights", "ReportFights"]
+
+
 def test_cache_keeps_only_the_newest_reports():
     cache = ReportCache(max_items=2)
     report = SampleReportSource().get_report(SAMPLE_REPORT_CODE)
@@ -308,6 +516,14 @@ def test_cached_report_is_a_copy():
     source.get_report("TESTE123").fights.clear()
 
     assert len(source.get_report("TESTE123").fights) == 4
+
+
+def test_cached_players_are_a_copy():
+    source = FakeWcl().source()
+
+    source.get_fight_players("TESTE123", 2).clear()
+
+    assert len(source.get_fight_players("TESTE123", 2)) == 2
 
 
 def test_failures_are_not_cached():

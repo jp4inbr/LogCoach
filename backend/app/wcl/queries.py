@@ -48,9 +48,9 @@ query Rankings(
 }
 """
 
-# Report inteiro numa consulta só (limite de 1000 pontos/h): lutas de chefe, jogadores e
-# specs/item level. O playerDetails soma todas as lutas de chefe do report; a API exige
-# fightIDs ou um intervalo, então vai o intervalo do report inteiro (tempos relativos ao início).
+# Lista de lutas de chefe ao colar o link (1 ponto no report de referência): só o que decide
+# se a luta é suportada. Nada de jogadores: o log pode ter o dia inteiro (outras raides,
+# masmorras) e os Magos só são buscados na luta escolhida (FIGHT_PLAYERS).
 REPORT_FIGHTS = """
 query ReportFights($code: String!) {
   reportData {
@@ -58,12 +58,36 @@ query ReportFights($code: String!) {
       code
       title
       fights(killType: Encounters) {
-        id encounterID name difficulty kill startTime endTime friendlyPlayers
+        id encounterID name difficulty kill startTime endTime inProgress
+      }
+    }
+  }
+}
+"""
+
+# Magos de uma luta (2 pontos): spec e item level vêm da própria luta (friendlySpecs e
+# friendlyItemLevels seguem a ordem de friendlyPlayers). Atores só os Magos do report.
+FIGHT_PLAYERS = """
+query FightPlayers($code: String!, $fightID: Int!) {
+  reportData {
+    report(code: $code) {
+      fights(fightIDs: [$fightID]) {
+        id friendlyPlayers friendlySpecs friendlyItemLevels
       }
       masterData {
-        actors(type: "Player") { id name server type subType }
+        actors(type: "Player", subType: "Mage") { id name server type subType }
       }
-      playerDetails(killType: Encounters, startTime: 0, endTime: 1e12)
+    }
+  }
+}
+"""
+
+# Reserva do FIGHT_PLAYERS quando a luta vem sem spec de algum jogador (1 ponto a mais).
+FIGHT_PLAYER_DETAILS = """
+query FightPlayerDetails($code: String!, $fightID: Int!) {
+  reportData {
+    report(code: $code) {
+      playerDetails(fightIDs: [$fightID])
     }
   }
 }

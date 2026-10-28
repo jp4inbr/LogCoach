@@ -4,7 +4,7 @@
 (frente do Arthur) devolve um objeto nesse formato, e as telas só leem dele.
 """
 
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Literal
 
 from pydantic import BaseModel, EmailStr, Field, model_validator
@@ -48,6 +48,8 @@ class Me(BaseModel):
 
 class ReportResolveRequest(BaseModel):
     url: str
+    # "Atualizar lutas": busca a lista de novo no Warcraft Logs em vez de usar o cache.
+    refresh: bool = False
 
 
 class PlayerOption(BaseModel):
@@ -70,7 +72,7 @@ class FightOption(BaseModel):
     supported: bool
     # Motivo para a luta aparecer em cinza (item 8.2), quando supported é falso.
     unsupported_reason: str | None = None
-    players: list[PlayerOption] = []
+    # Sem jogadores: os Magos Arcanos vêm por luta, em GET /reports/{code}/fights/{id}/players.
 
 
 class ReportResolved(BaseModel):
@@ -78,7 +80,17 @@ class ReportResolved(BaseModel):
     title: str
     # Verdadeiro enquanto os dados vêm do arquivo de exemplo e não da API real.
     sample: bool
+    # Quando a lista foi lida do Warcraft Logs (UTC); a tela mostra "lista de 21:04".
+    fetched_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     fights: list[FightOption]
+
+
+class FightPlayers(BaseModel):
+    """Magos Arcanos de uma luta, com spec e item level dessa luta (RF04)."""
+
+    report_code: str
+    fight_id: int
+    players: list[PlayerOption]
 
 
 # --- Resultado da análise --------------------------------------------------

@@ -38,23 +38,48 @@ def _player_details(details: dict[str, Any], actor_id: int) -> dict[str, Any] | 
 
 
 def fetch_report(client: WclClient, code: str) -> dict[str, Any]:
-    """Lutas de chefe e jogadores de um report inteiro (uma consulta só).
-
-    Os tempos ficam em ms do report. `details` é o playerDetails somado de todas as
-    lutas de chefe (specs com contagem, minItemLevel/maxItemLevel), por id do ator.
-    """
+    """Lutas de chefe de um report (consulta leve, sem jogadores). Tempos em ms do report."""
     report = client.query(queries.REPORT_FIGHTS, {"code": code})["reportData"]["report"]
     if report is None:
         raise WclError(f"Report {code} não encontrado.")
-    return {
-        "code": report["code"],
-        "title": report["title"],
-        "fights": report["fights"] or [],
-        "actors": [
-            a for a in (report["masterData"] or {}).get("actors") or [] if a["type"] == "Player"
-        ],
-        "details": _details_by_id(report.get("playerDetails")),
-    }
+    return {"code": report["code"], "title": report["title"], "fights": report["fights"] or []}
+
+
+def fetch_fight_players(client: WclClient, code: str, fight_id: int) -> dict[str, Any]:
+    """Magos de uma luta: `players` traz id, spec e item level de cada jogador da luta e
+    `actors` os Magos do report (nome, reino). A spec é a da luta, não a da noite.
+
+    Se a luta vier sem spec de algum jogador, completa com o playerDetails da luta.
+    """
+    variables = {"code": code, "fightID": fight_id}
+    report = client.query(queries.FIGHT_PLAYERS, variables)["reportData"]["report"]
+    if report is None:
+        raise WclError(f"Report {code} não encontrado.")
+    if not report["fights"]:
+        raise WclError(f"Luta {fight_id} não existe no report {code}.")
+    fight = report["fights"][0]
+    ids = fight.get("friendlyPlayers") or []
+    specs = fight.get("friendlySpecs") or []
+    item_levels = fight.get("friendlyItemLevels") or []
+    players = [
+        {
+            "id": pid,
+            "spec": specs[i] if i < len(specs) else None,
+            "item_level": item_levels[i] if i < len(item_levels) else None,
+        }
+        for i, pid in enumerate(ids)
+    ]
+    actors = [a for a in (report["masterData"] or {}).get("actors") or [] if a["type"] == "Player"]
+    mages = {a["id"] for a in actors}
+    if any(p["spec"] is None for p in players if p["id"] in mages):
+        data = client.query(queries.FIGHT_PLAYER_DETAILS, variables)["reportData"]["report"]
+        details = _details_by_id((data or {}).get("playerDetails"))
+        for player in players:
+            entry = details.get(player["id"])
+            if player["spec"] is None and entry:
+                player["spec"] = next((s["spec"] for s in entry.get("specs") or []), None)
+                player["item_level"] = player["item_level"] or entry.get("maxItemLevel")
+    return {"fight_id": fight["id"], "players": players, "actors": actors}
 
 
 def fetch_fight(

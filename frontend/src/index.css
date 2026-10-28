@@ -612,6 +612,22 @@ label {
   gap: 12px;
 }
 
+/* Título da lista com "Atualizar lutas" e a hora da lista (log ao vivo). */
+.fights-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px var(--gap);
+  flex-wrap: wrap;
+}
+
+.fights-refresh {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
 .fight-list {
   list-style: none;
   padding: 0;

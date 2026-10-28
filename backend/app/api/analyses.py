@@ -5,18 +5,13 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 
 from app.api.deps import OptionalUserDep, SessionDep
-from app.api.reports import ReportSourceDep, load_report
+from app.api.reports import ReportSourceDep, load_fight, load_fight_players
 from app.config import get_settings
 from app.errors import api_error
 from app.models import Analysis
 from app.schemas import AnalysisOut, AnalysisRequest, AnalysisResult
 from app.services.plan import analyses_this_month
-from app.services.sources import (
-    MIN_FIGHT_S,
-    AnalysisNotAvailableError,
-    Analyzer,
-    get_analyzer,
-)
+from app.services.sources import AnalysisNotAvailableError, Analyzer, get_analyzer
 
 router = APIRouter(prefix="/analyses", tags=["análises"])
 
@@ -40,20 +35,11 @@ def create_analysis(
     source: ReportSourceDep,
     analyzer: AnalyzerDep,
 ) -> AnalysisOut:
-    report = load_report(source, data.report_code)
-    fight = next((f for f in report.fights if f.id == data.fight_id), None)
-    if fight is None:
-        raise api_error(404, "fight_not_found", "Essa luta não existe nesse relatório.")
-    if fight.duration_s < MIN_FIGHT_S:
-        raise api_error(
-            422, "fight_too_short", "A luta tem menos de 60 s. Escolha uma tentativa mais longa."
-        )
-    if not fight.supported:
-        raise api_error(
-            422, "unsupported_fight", fight.unsupported_reason or "Chefe ainda não suportado."
-        )
-    # fight.players só tem os Magos Arcanos da luta: id de fora dela ou de outra spec cai aqui.
-    player = next((p for p in fight.players if p.actor_id == data.actor_id), None)
+    # Lista e Magos da luta saem do cache que a tela de escolher a luta já encheu.
+    report, fight = load_fight(source, data.report_code, data.fight_id)
+    players = load_fight_players(source, report.code, fight.id)
+    # Só os Magos Arcanos da luta: id de fora dela ou de outra spec cai aqui.
+    player = next((p for p in players if p.actor_id == data.actor_id), None)
     if player is None:
         raise api_error(
             422, "no_arcane_mage", "Não achamos esse personagem entre os Magos Arcanos da luta."

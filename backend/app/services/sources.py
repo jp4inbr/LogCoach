@@ -3,18 +3,21 @@
 O resto do backend depende só das duas interfaces abaixo (o "D" do SOLID, item 7).
 `get_report_source()` escolhe pela variável DATA_SOURCE: "wcl" lê o report da API do
 Warcraft Logs; "exemplo" lê os arquivos montados à mão em `app/samples/` (plano B da
-demo sem internet e fonte do CI). O "wcl" usa um cliente só por processo e guarda cada
-report por alguns minutos (`ReportCache`). O analisador ainda é o de exemplo até o motor
-(frente C) ficar pronto; aí basta trocá-lo em `get_analyzer`.
+demo sem internet e fonte do CI). O "wcl" usa um cliente só por processo: ao colar o link
+busca só a lista de lutas (consulta leve) e, na luta escolhida, os Magos Arcanos dela; os
+dois ficam em cache (`ReportCache`), e "Atualizar lutas" busca a lista de novo. O
+analisador ainda é o de exemplo até o motor (frente C) ficar pronto; aí basta trocá-lo em
+`get_analyzer`.
 """
 
+import copy
 import json
 import logging
 import re
 import threading
 import time
 from collections import OrderedDict
-from collections.abc import Callable
+from collections.abc import Callable, Hashable
 from functools import lru_cache
 from pathlib import Path
 from typing import Any, Protocol
@@ -31,7 +34,7 @@ from app.wcl.client import (
     WclUnavailableError,
     shared_client,
 )
-from app.wcl.fetch import fetch_report
+from app.wcl.fetch import fetch_fight_players, fetch_report
 
 logger = logging.getLogger(__name__)
 
@@ -49,6 +52,9 @@ MIN_FIGHT_S = 60
 SHORT_FIGHT_REASON = "A luta tem menos de 60 s. Escolha uma tentativa mais longa"
 UNSUPPORTED_BOSS_REASON = "Chefe ainda não suportado"
 UNSUPPORTED_DIFFICULTY_REASON = "Dificuldade ainda não suportada para esse chefe"
+IN_PROGRESS_REASON = (
+    "A luta ainda está subindo para o Warcraft Logs. Atualize as lutas em instantes"
+)
 
 # Dificuldades de raide no Warcraft Logs, com os nomes do cliente pt-BR.
 DIFFICULTIES = {1: "Localizador", 3: "Normal", 4: "Heroico", 5: "Mítico", 10: "Mítica+"}
@@ -76,7 +82,9 @@ class AnalysisNotAvailableError(Exception):
 
 
 class ReportSource(Protocol):
-    def get_report(self, code: str) -> ReportResolved: ...
+    def get_report(self, code: str, refresh: bool = False) -> ReportResolved: ...
+
+    def get_fight_players(self, code: str, fight_id: int) -> list[PlayerOption]: ...
 
 
 class Analyzer(Protocol):
@@ -90,12 +98,23 @@ def _load(name: str) -> dict:
 
 
 class SampleReportSource:
-    """Devolve só o relatório de exemplo; qualquer outro código não está disponível."""
+    """Devolve só o relatório de exemplo; qualquer outro código não está disponível.
 
-    def get_report(self, code: str) -> ReportResolved:
+    O arquivo traz as lutas e, à parte, os Magos de cada luta suportada (`players`, por id
+    da luta), como as duas consultas do Warcraft Logs. Atualizar não traz luta nova.
+    """
+
+    def _data(self, code: str) -> dict:
         if code != SAMPLE_REPORT_CODE:
             raise ReportNotAvailableError(code)
-        return ReportResolved.model_validate(_load(f"report_{code}.json"))
+        return _load(f"report_{code}.json")
+
+    def get_report(self, code: str, refresh: bool = False) -> ReportResolved:
+        return ReportResolved.model_validate(self._data(code))
+
+    def get_fight_players(self, code: str, fight_id: int) -> list[PlayerOption]:
+        players = self._data(code).get("players", {}).get(str(fight_id), [])
+        return [PlayerOption.model_validate(p) for p in players]
 
 
 # --- Warcraft Logs ----------------------------------------------------------
@@ -123,10 +142,18 @@ def npc_names_pt() -> dict[int, str]:
     return {int(k): v for k, v in (data.get("npcs") or {}).items()}
 
 
-def _is_arcane_mage(actor: dict[str, Any], details: dict[str, Any] | None) -> bool:
-    if actor.get("subType") != ARCANE[0] or not details:
-        return False
-    return any(s.get("spec") == ARCANE[1] for s in details.get("specs") or [])
+def _fight_reason(fight: dict[str, Any], duration_s: float, encounter: dict | None) -> str | None:
+    # Luta ainda subindo (log ao vivo): a duração ainda vai mudar.
+    if fight.get("inProgress"):
+        return IN_PROGRESS_REASON
+    # Mesma ordem da rota /analyses: primeiro a duração, depois o chefe.
+    if duration_s < MIN_FIGHT_S:
+        return SHORT_FIGHT_REASON
+    if encounter is None:
+        return UNSUPPORTED_BOSS_REASON
+    if encounter["difficulties"] and fight.get("difficulty") not in encounter["difficulties"]:
+        return UNSUPPORTED_DIFFICULTY_REASON
+    return None
 
 
 def build_report(
@@ -134,43 +161,17 @@ def build_report(
     encounters: dict[int, dict[str, Any]] | None = None,
     npc_names: dict[int, str] | None = None,
 ) -> dict[str, Any]:
-    """Converte a saída de `wcl.fetch.fetch_report` no formato de `ReportResolved`.
-
-    Só entram Magos Arcanos. O playerDetails é do report inteiro, então spec e item
-    level são os da noite (maxItemLevel); o motor confere de novo na luta escolhida.
-    """
+    """Converte a saída de `wcl.fetch.fetch_report` no formato de `ReportResolved` (sem
+    jogadores: eles vêm por luta, em `build_players`)."""
     encounters = supported_encounters() if encounters is None else encounters
     npc_names = npc_names_pt() if npc_names is None else npc_names
-
-    arcanes: dict[int, dict[str, Any]] = {}
-    for actor in raw["actors"]:
-        details = raw["details"].get(actor["id"])
-        if _is_arcane_mage(actor, details):
-            item_level = details.get("maxItemLevel")
-            arcanes[actor["id"]] = {
-                "actor_id": actor["id"],
-                "name": actor["name"],
-                "server": actor.get("server"),
-                "spec": ARCANE_LABEL,
-                "item_level": int(item_level) if item_level is not None else None,
-            }
 
     fights = []
     for fight in raw["fights"]:
         duration_s = round((fight["endTime"] - fight["startTime"]) / 1000, 1)
-        encounter_id = fight["encounterID"]
-        encounter = encounters.get(encounter_id)
+        encounter = encounters.get(fight["encounterID"])
         difficulty = fight.get("difficulty")
-        # Mesma ordem da rota /analyses: primeiro a duração, depois o chefe.
-        if duration_s < MIN_FIGHT_S:
-            reason = SHORT_FIGHT_REASON
-        elif encounter is None:
-            reason = UNSUPPORTED_BOSS_REASON
-        elif encounter["difficulties"] and difficulty not in encounter["difficulties"]:
-            reason = UNSUPPORTED_DIFFICULTY_REASON
-        else:
-            reason = None
-        players = [arcanes[pid] for pid in fight.get("friendlyPlayers") or [] if pid in arcanes]
+        reason = _fight_reason(fight, duration_s, encounter)
         fights.append(
             {
                 "id": fight["id"],
@@ -180,22 +181,56 @@ def build_report(
                 "duration_s": duration_s,
                 "supported": reason is None,
                 "unsupported_reason": reason,
-                "players": sorted(players, key=lambda p: (p["name"], p["server"] or "")),
             }
         )
 
-    return {"code": raw["code"], "title": raw["title"], "sample": False, "fights": fights}
+    return {
+        "code": raw["code"],
+        "title": raw["title"],
+        "sample": False,
+        "fights": fights,
+    }
 
 
-# Validade do report guardado: cobre o caminho /reports/resolve → /analyses sem esconder
-# por muito tempo as lutas novas de um log ao vivo.
-REPORT_CACHE_TTL_S = 5 * 60
+def build_players(raw: dict[str, Any]) -> list[dict[str, Any]]:
+    """Converte a saída de `wcl.fetch.fetch_fight_players` nos `PlayerOption` da luta.
+
+    Só entram Magos com spec Arcano nesta luta (quem jogou Fogo nesse chefe fica de fora).
+    """
+    actors = {a["id"]: a for a in raw["actors"] if a.get("subType") == ARCANE[0]}
+    players = []
+    for entry in raw["players"]:
+        actor = actors.get(entry["id"])
+        if actor is None or entry.get("spec") != ARCANE[1]:
+            continue
+        item_level = entry.get("item_level")
+        players.append(
+            {
+                "actor_id": actor["id"],
+                "name": actor["name"],
+                "server": actor.get("server"),
+                "spec": ARCANE_LABEL,
+                "item_level": int(item_level) if item_level else None,
+            }
+        )
+    return sorted(players, key=lambda p: (p["name"], p["server"] or ""))
+
+
+# Validade longa: luta que já subiu para o Warcraft Logs não muda; o que muda num log ao
+# vivo é só a chegada de lutas novas, e essas vêm pelo botão "Atualizar lutas" (ou pelo
+# /analyses, quando a luta pedida não está na lista). 6 h cobrem uma noite de raide.
+REPORT_CACHE_TTL_S = 6 * 60 * 60
 REPORT_CACHE_MAX = 128
+PLAYERS_CACHE_MAX = 1024
+# "Atualizar lutas" com a lista de agora há pouco devolve a mesma lista, sem gastar pontos
+# (cliques repetidos, ou dois usuários da mesma raide ao mesmo tempo).
+REFRESH_MIN_INTERVAL_S = 15
 
 
 class ReportCache:
-    """Reports já lidos do Warcraft Logs, por código, com validade curta (seguro entre threads).
+    """O que já foi lido do Warcraft Logs, por chave, com validade (seguro entre threads).
 
+    Serve para a lista de lutas (por código) e para os Magos de cada luta (código, luta).
     Só guarda o que veio da API; falhas e o plano B do exemplo não entram.
     """
 
@@ -208,24 +243,28 @@ class ReportCache:
         self._ttl_s = ttl_s
         self._max_items = max_items
         self._clock = clock
-        self._items: OrderedDict[str, tuple[float, ReportResolved]] = OrderedDict()
+        self._items: OrderedDict[Hashable, tuple[float, Any]] = OrderedDict()
         self._lock = threading.Lock()
 
-    def get(self, code: str) -> ReportResolved | None:
+    def get(self, key: Hashable, max_age_s: float | None = None) -> Any:
+        """O valor guardado, ou None se não há, venceu ou é mais velho que `max_age_s`."""
         with self._lock:
-            item = self._items.get(code)
+            item = self._items.get(key)
             if item is None:
                 return None
-            if self._clock() >= item[0]:
-                del self._items[code]
+            age = self._clock() - item[0]
+            if age >= self._ttl_s:
+                del self._items[key]
+                return None
+            if max_age_s is not None and age >= max_age_s:
                 return None
             # Cópia: quem recebe pode mexer no objeto sem estragar o que está guardado.
-            return item[1].model_copy(deep=True)
+            return copy.deepcopy(item[1])
 
-    def put(self, code: str, report: ReportResolved) -> None:
+    def put(self, key: Hashable, value: Any) -> None:
         with self._lock:
-            self._items.pop(code, None)
-            self._items[code] = (self._clock() + self._ttl_s, report.model_copy(deep=True))
+            self._items.pop(key, None)
+            self._items[key] = (self._clock(), copy.deepcopy(value))
             while len(self._items) > self._max_items:
                 self._items.popitem(last=False)  # o mais antigo
 
@@ -234,28 +273,65 @@ class ReportCache:
             self._items.clear()
 
 
-# Um por processo, como o cliente do WCL. Os testes limpam com `report_cache.clear()`.
+# Um de cada por processo, como o cliente do WCL. Os testes limpam com `.clear()`.
 report_cache = ReportCache()
+players_cache = ReportCache(max_items=PLAYERS_CACHE_MAX)
 
 
 class WclReportSource:
-    """Lê o report da API do Warcraft Logs (uma consulta por report, depois o cache)."""
+    """Lê do Warcraft Logs a lista de lutas (consulta leve) e os Magos de cada luta
+    escolhida: cada um uma vez, depois do cache."""
 
     def __init__(
         self,
         client_factory: Callable[[], WclClient] = shared_client,
         cache: ReportCache | None = None,
+        players: ReportCache | None = None,
     ) -> None:
         self._client_factory = client_factory
         self._cache = report_cache if cache is None else cache
+        self._players = players_cache if players is None else players
 
-    def get_report(self, code: str) -> ReportResolved:
-        cached = self._cache.get(code)
+    def get_report(self, code: str, refresh: bool = False) -> ReportResolved:
+        """Lista de lutas. `refresh` busca de novo (lutas novas de um log ao vivo); se a
+        busca falhar, o que estava no cache continua lá."""
+        cached = self._cache.get(code, REFRESH_MIN_INTERVAL_S if refresh else None)
         if cached is not None:
             return cached
+        report, from_api = self._ask(
+            code,
+            lambda client: ReportResolved.model_validate(build_report(fetch_report(client, code))),
+            lambda: SampleReportSource().get_report(code),
+        )
+        if from_api:
+            self._cache.put(code, report)
+        return report
+
+    def get_fight_players(self, code: str, fight_id: int) -> list[PlayerOption]:
+        """Magos Arcanos de uma luta, com spec e item level dessa luta."""
+        cached = self._players.get((code, fight_id))
+        if cached is not None:
+            return cached
+        players, from_api = self._ask(
+            code,
+            lambda client: [
+                PlayerOption.model_validate(p)
+                for p in build_players(fetch_fight_players(client, code, fight_id))
+            ],
+            lambda: SampleReportSource().get_fight_players(code, fight_id),
+        )
+        if from_api:
+            self._players.put((code, fight_id), players)
+        return players
+
+    def _ask(
+        self, code: str, fetch: Callable[[WclClient], Any], sample: Callable[[], Any]
+    ) -> tuple[Any, bool]:
+        """Uma consulta ao WCL com os erros da fonte. Devolve (valor, veio da API?): o plano
+        B do exemplo não entra no cache, para não "grudar" quando a API voltar."""
         try:
             # O cliente é do processo: não fecha aqui.
-            raw = fetch_report(self._client_factory(), code)
+            return fetch(self._client_factory()), True
         except (WclError, httpx.HTTPError) as exc:
             unavailable = isinstance(exc, (WclUnavailableError, httpx.HTTPError))
             logger.warning(
@@ -266,15 +342,12 @@ class WclReportSource:
             )
             # Plano B da demo: sem internet, o link de exemplo continua abrindo.
             if code == SAMPLE_REPORT_CODE:
-                return SampleReportSource().get_report(code)
+                return sample(), False
             if unavailable:
                 message = getattr(exc, "user_message", UNAVAILABLE_MESSAGE)
                 raise SourceUnavailableError(code, message) from exc
             # Privado ou inexistente: a API respondeu, mas sem o report.
             raise ReportNotAvailableError(code) from exc
-        report = ReportResolved.model_validate(build_report(raw))
-        self._cache.put(code, report)
-        return report
 
 
 # --- Análise ------------------------------------------------------------------
