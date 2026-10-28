@@ -90,7 +90,10 @@ def fetch_fight(
     pid = player["id"]
     fight_events = {
         "casts": events("Casts", source_id=pid),
-        "buffs": events("Buffs", target_id=pid),
+        # Em buffs, o WCL trata o dono da aura como "source": com targetID só viriam os buffs
+        # que o próprio jogador lança. Com sourceID vêm também os externos (Power Infusion,
+        # Bloodlust...); o filtro garante que são buffs no jogador.
+        "buffs": [e for e in events("Buffs", source_id=pid) if e.get("targetID") == pid],
         "damage_done": events("DamageDone", source_id=pid),
         "damage_taken": events("DamageTaken", target_id=pid),
         "deaths": events("Deaths", target_id=pid),

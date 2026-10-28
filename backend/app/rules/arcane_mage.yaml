@@ -47,6 +47,11 @@ buffs:
   prismatic_bolt_proc: 1295942
   arcane_soul: 451038         # janela pós-Surge (Sunfury)
 
+# Buffs de outros jogadores. Não são erro do Mago: entram como contexto na comparação
+# (ex.: o top que recebe Power Infusion em todo Surge tem vantagem).
+external_buffs:
+  power_infusion: 10060       # Priest; no kill de referência, 2 no Harmonist (2:12 e 6:22)
+
 # Barrage e Salvo (regra do Arthur, medida no top 10 do bracket 326–328).
 barrage:
   min_salvo: 12               # Barrage abaixo disso é erro quando vira hábito
