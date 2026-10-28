@@ -64,8 +64,10 @@ consumables:
   - name: Light's Potential (poção)
     ability_id: 1236616
     cooldown_s: 300
-    # Tops usam a 2ª poção assim que volta (~5:00). Quando o Surge está perto,
-    # seguram o Surge para casar com a poção, e não o contrário.
+    # Tops usam a 2ª poção por volta de 5:00 porque o 4º Surge deles cai ali. Segurar a
+    # 2ª poção para casar com um Surge é o recomendado (poção + Surge rende mais que a
+    # poção no CD), se a luta durar o bastante para esse Surge. Não é erro; o erro é
+    # atrasar o Surge e dessincronizar o Touch.
 
 # Referência de casts por minuto e % do dano (Archon, top 10 geral do Nek'zali
 # Mítico, 25/10/2026, talentos de herói Sunfury). Usada na tabela do RF22 até o

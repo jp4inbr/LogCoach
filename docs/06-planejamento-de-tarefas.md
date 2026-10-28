@@ -61,7 +61,23 @@ gantt
 | Validação | 24/10 – 27/10 | Teste de usabilidade, roteiro da banca, documentação consolidada, ensaio |
 | Entrega | 28/10 | RT03 |
 
-## 6.3 Riscos e plano B
+## 6.3 Tarefas abertas depois da RT03 (para o cronograma)
+
+Levantadas no review técnico de 26–28/10. O detalhe (onde mexer e por quê) está no `CLAUDE.md`, "Próximos passos". Falta definir dono e data no quadro.
+
+| Tarefa | Por quê | Dono |
+|---|---|---|
+| Buffs externos nas fixtures e no motor (Power Infusion, Bloodlust etc.) | A busca de buffs só trazia os que o próprio jogador lança; um top com PI de um Priest a cada Surge tem vantagem que o relatório precisa mostrar como contexto | |
+| Conferir no Wowhead todos os nomes em pt-BR (magias, buffs, talentos) | Há nomes divergentes entre guia, exemplo e cliente (ex.: Clearcasting = "Abstração" no Warcraft Logs em português) | |
+| Refazer o resultado de exemplo a partir do log real | O exemplo da alfa foi montado à mão e contradiz o log de referência | |
+| Motor de análise (regras, tabela por habilidade) | Hoje só o exemplo do Harmonist tem resultado | Arthur |
+| Pacote da IA (Gemini) + resposta reserva | RF17, RF24 | |
+| Cache e cliente único do Warcraft Logs | Cada busca pede token e baixa o relatório de novo (limite de 1000 pontos/h) | |
+| Jogador pelo id do ator do Warcraft Logs | Hoje há duas regras de nome + reino | |
+| Código de erro próprio para "Warcraft Logs fora do ar" | Hoje aparece como "relatório privado" | |
+| Testes T03–T05, T07, T11–T14 | Dependem do motor e da IA | |
+
+## 6.4 Riscos e plano B
 
 | Risco                                        | Plano B                                                                   |
 | -------------------------------------------- | ------------------------------------------------------------------------- |
