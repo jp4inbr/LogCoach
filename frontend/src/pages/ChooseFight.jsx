@@ -31,12 +31,27 @@ function matchesCharacter(player, saved) {
   return player.name === saved.name && (!saved.server || player.server === saved.server);
 }
 
-// Tela 2: escolher a luta e o personagem (RF04). Depois do clique, a mesma tela mostra o
+// Hora em que a lista foi lida do Warcraft Logs: "21:04".
+function formatTime(iso) {
+  return new Date(iso).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+}
+
+function newFightsText(count) {
+  if (count === 0) return "Nenhuma luta nova";
+  return count === 1 ? "1 luta nova" : `${count} lutas novas`;
+}
+
+// Tela 2: escolher a luta e o personagem (RF04). A lista de lutas vem leve, sem jogadores;
+// os Magos Arcanos são buscados quando o usuário escolhe a luta. "Atualizar lutas" traz os
+// pulls novos de um log ao vivo. Depois do clique em Analisar, a mesma tela mostra o
 // andamento em etapas (Tela 3) e abre o resultado quando termina.
 export default function ChooseFight({ code }) {
   const { token, logout } = useAuth();
   const [report, setReport] = useState({ status: "loading" });
+  const [refresh, setRefresh] = useState({ status: "idle" });
   const [fightId, setFightId] = useState(null);
+  // Magos de cada luta já buscada: { [id]: { status, players | error } }.
+  const [playersByFight, setPlayersByFight] = useState({});
   const [chosenPlayer, setChosenPlayer] = useState(null);
   const [run, setRun] = useState({ status: "idle" });
   const [step, setStep] = useState(0);
@@ -88,7 +103,8 @@ export default function ChooseFight({ code }) {
 
   const { data } = report;
   const fight = data.fights.find((item) => item.id === fightId) ?? null;
-  const players = fight?.players ?? [];
+  const fightPlayers = (fight && playersByFight[fight.id]) ?? { status: "loading" };
+  const players = fightPlayers.players ?? [];
   const savedCharacter = loadCharacter();
   const savedMatches = savedCharacter
     ? players.filter((p) => matchesCharacter(p, savedCharacter))
@@ -101,6 +117,40 @@ export default function ChooseFight({ code }) {
     (players.length === 1 ? playerKey(players[0]) : null);
   const player = players.find((p) => playerKey(p) === selectedKey) ?? null;
   const demoBlocked = !token && load(DEMO_KEY, false);
+
+  function loadPlayers(id) {
+    const setFor = (state) => setPlayersByFight((current) => ({ ...current, [id]: state }));
+    setFor({ status: "loading" });
+    api
+      .get(`/reports/${encodeURIComponent(data.code)}/fights/${id}/players`)
+      .then((body) => setFor({ status: "ok", players: body.players }))
+      .catch((error) => setFor({ status: "error", error }));
+  }
+
+  function chooseFight(id) {
+    setFightId(id);
+    setChosenPlayer(null);
+    setRun({ status: "idle" });
+    if (!["ok", "loading"].includes(playersByFight[id]?.status)) loadPlayers(id);
+  }
+
+  // Busca a lista de novo no Warcraft Logs (pulls novos de um log ao vivo). Se falhar, a
+  // lista que já está na tela continua.
+  function refreshFights() {
+    const known = new Set(data.fights.map((item) => item.id));
+    setRefresh({ status: "loading" });
+    api
+      .post("/reports/resolve", {
+        url: `https://www.warcraftlogs.com/reports/${data.code}`,
+        refresh: true,
+      })
+      .then((fresh) => {
+        setReport({ status: "ok", data: fresh });
+        const added = fresh.fights.filter((item) => !known.has(item.id)).length;
+        setRefresh({ status: "ok", added });
+      })
+      .catch((error) => setRefresh({ status: "error", error }));
+  }
 
   function startAnalysis() {
     setRun({ status: "running" });
@@ -160,7 +210,28 @@ export default function ChooseFight({ code }) {
       )}
 
       <section aria-labelledby="fights-title">
-        <h2 id="fights-title">1. Escolha a luta</h2>
+        <div className="fights-head">
+          <h2 id="fights-title">1. Escolha a luta</h2>
+          <div className="fights-refresh">
+            <span className="field-hint" aria-live="polite">
+              Lista de {formatTime(data.fetched_at)}
+              {refresh.status === "ok" && ` · ${newFightsText(refresh.added)}`}
+            </span>
+            <button
+              type="button"
+              className="button ghost small"
+              disabled={refresh.status === "loading"}
+              onClick={refreshFights}
+            >
+              {refresh.status === "loading" ? "Atualizando…" : "Atualizar lutas"}
+            </button>
+          </div>
+        </div>
+        {refresh.status === "error" && (
+          <Notice tone="erro" title="Não deu para atualizar as lutas">
+            {refresh.error.message}
+          </Notice>
+        )}
         <ul className="fight-list">
           {data.fights.map((item) => (
             <li key={item.id}>
@@ -169,11 +240,7 @@ export default function ChooseFight({ code }) {
                 className={`fight ${item.id === fightId ? "fight-selected" : ""}`}
                 disabled={!item.supported}
                 aria-pressed={item.id === fightId}
-                onClick={() => {
-                  setFightId(item.id);
-                  setChosenPlayer(null);
-                  setRun({ status: "idle" });
-                }}
+                onClick={() => chooseFight(item.id)}
               >
                 <span className="fight-main">
                   <strong>{item.boss}</strong>
@@ -194,7 +261,27 @@ export default function ChooseFight({ code }) {
       {fight && (
         <section aria-labelledby="players-title">
           <h2 id="players-title">2. Escolha seu Mago Arcano</h2>
-          {players.length === 0 ? (
+          {fightPlayers.status === "loading" ? (
+            <p className="field-hint" aria-live="polite">
+              Buscando os Magos Arcanos da luta…
+            </p>
+          ) : fightPlayers.status === "error" ? (
+            <Notice
+              tone="erro"
+              title="Não deu para buscar os personagens da luta"
+              action={
+                <button
+                  type="button"
+                  className="button ghost small"
+                  onClick={() => loadPlayers(fight.id)}
+                >
+                  Tentar de novo
+                </button>
+              }
+            >
+              {fightPlayers.error.message}
+            </Notice>
+          ) : players.length === 0 ? (
             <Notice tone="atencao">Não achamos nenhum Mago Arcano nessa luta.</Notice>
           ) : (
             <div className="player-list" role="radiogroup" aria-labelledby="players-title">
