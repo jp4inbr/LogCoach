@@ -119,7 +119,8 @@ consumables:
     # Tops usam a 2ª poção por volta de 5:00 porque o 4º Surge deles cai ali. Segurar a
     # 2ª poção para casar com um Surge é o recomendado (poção + Surge rende mais que a
     # poção no CD), se a luta durar o bastante para esse Surge. Não é erro; o erro é
-    # atrasar o Surge e dessincronizar o Touch.
+    # atrasar o Surge e dessincronizar o Touch. Medido: +695 de intelecto (~+19% de dano no
+    # Harmonist) e DPS 37% maior nos 30 s pós-Surge → alinhar rende ~0,5% do dano da luta.
 
 # Referência de casts por minuto e % do dano (Archon, top 10 geral do Nek'zali
 # Mítico, 25/10/2026, talentos de herói Sunfury). Usada na tabela do RF22 até o
