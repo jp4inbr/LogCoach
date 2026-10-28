@@ -218,15 +218,34 @@ O motor devolve um `AnalysisResult` (`backend/app/schemas.py`); o frontend só l
 
 Os textos (`title`, `explanation`, `what_to_do`) saem em português, com os nomes de `pt_br.yaml`.
 
-## 12.10 Motor: Prismatic Bolt, decisão × sorte
+## 12.10 Motor: Salvo, Arcane Soul e Prismatic Bolt
 
-A spec do Arcano depende muito de RNG: a Prismatic Bolt (Seta Prismática) vem de procs do Arcane Barrage. Para não cobrar azar como erro, o motor separa as duas coisas (`backend/app/engine/prismatic_bolt.py`, regra `prismatic_bolt_rng` em `arcane_mage.yaml`).
+Regras do Arthur (28/10/2026), conferidas nas 11 fixtures. Código em `backend/app/engine/` (`rules.py` lê os YAML; `timeline.py` lê janelas e acúmulos de buffs; `prismatic_bolt.py` e `arcane_soul.py` fazem as contas). Regras em `arcane_mage.yaml` (`barrage`, `prismatic_bolt_rng`, `arcane_soul`, `surge_window`).
+
+**Por que Barrage com 12 ou mais.** O Barrage derruba 1 Meteorite a cada 5 acúmulos de Salvo (15 → 3, 20 → 4, 25 → 5), e cada meteoro pode devolver Clearcasting → Missiles → mais Salvo (snowball). A chance de Prismatic Bolt é linear (2% por acúmulo): duas Salvas com 11 dão quase a mesma chance que uma com 22. Então o erro de soltar cedo está no ciclo de meteoros, não na Seta.
+
+**Arcane Soul (Sunfury).** Começa quando o Surge acaba (~17,4 s). Dentro dele o Barrage não gasta Salvo (medido: 20 dos 21 Barrages sem consumo do Harmonist), então cada Barrage rola Seta e meteoros de graça. Regra: entrar com 25 de Salvo; os 2 últimos GCDs antes do Soul não podem ser Barrage, salvo se vier Overpowered Missiles (sobe o Salvo para 25 na hora). `soul_entries()` devolve, por entrada, o Salvo, se houve Barrage nos últimos GCDs e se houve a exceção.
+
+**Janela do Surge.** Chegar com Clearcasting suficiente para não encher o burst de Arcane Blast. `surge_windows()` devolve, por janela, as cargas de Clearcasting no começo e os Blasts dentro. Fora o Surge de abertura, os tops soltam 0,5 Blast por janela.
+
+**Prismatic Bolt: decisão × sorte.** A spec depende muito de RNG, e o relatório não pode cobrar azar como erro.
 
 | Medida | Como é calculada | O que mostra |
 |---|---|---|
-| Esperado | Soma, em cada Barrage, de 2% × acúmulos de Salvo naquele instante | A **decisão**: soltar Barrage com poucos acúmulos baixa a chance |
+| Esperado | Soma, em cada Barrage, de 2% × acúmulos de Salvo naquele instante | A **decisão** |
 | Recebidos | Barrages seguidos de proc em até 0,5 s | O que aconteceu |
 | Sorte (z) | (recebidos − esperado) ÷ √Σ p(1 − p) | O **RNG**: abaixo de −2 é azar, acima de +2 é sorte |
 
-**Validação (28/10/2026).** Nos 1.015 Barrages das 11 fixtures, a taxa de proc por faixa de Salvo bate com 2% por acúmulo (10–14: 26%; 15–19: 35%; 20–24: 45%; 25: 53%); o ajuste dá 2,1% por acúmulo. No kill de referência, o Harmonist esperava ~41 procs (5,9 por minuto, contra 6,2 dos tops) e recebeu 28: z = −2,8. Os tops tiveram z +0,9 em média, e um deles +3,5. As Salvas soltas cedo explicam só cerca de 10% da falta de Seta; o resto foi azar. Um ranking de melhores logs tende a escolher lutas com sorte, e o relatório precisa dizer isso.
+`bolt_procs(fight, soul=None|True|False)` faz a conta para a luta inteira, só dentro do Soul ou só fora.
 
+**Validação.** Nos 1.015 Barrages das fixtures, a taxa de proc por faixa de Salvo bate com 2% por acúmulo (10–14: 26%; 15–19: 35%; 20–24: 45%; 25: 53%); o ajuste dá 2,1%. No kill de referência:
+
+| | Harmonist | Tops (média) |
+|---|---|---|
+| Salvo ao entrar no Soul | 12,2 (0, 20, 1, 18, 22) | 18,1 |
+| Entradas com Barrage nos 2 últimos GCDs (sem Overpowered) | 1 de 5 | 6 de 43 |
+| Arcane Blast por janela de Surge (fora a de abertura) | 2,8 | 0,5 |
+| Procs de Seta: recebidos ÷ esperados na luta | 28 ÷ ~41 (z −2,8) | z +0,9 |
+| Procs esperados por minuto no Soul (decisão) | 1,0 | 1,2 |
+
+A falta de Seta do Harmonist é em parte decisão (entrar no Soul com pouco Salvo) e em grande parte azar. Um ranking de melhores logs tende a escolher lutas com sorte, e o relatório precisa dizer isso.

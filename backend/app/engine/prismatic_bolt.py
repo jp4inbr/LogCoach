@@ -3,6 +3,8 @@
 Cada Salvo no Barrage dá uma chance fixa de proc (2% no YAML). Com os acúmulos de cada
 Barrage dá para saber quantos procs o jogador deveria esperar; a diferença para os que
 ele recebeu, medida em desvios (z), é sorte. Assim o relatório não cobra azar como erro.
+Dentro do Arcane Soul o Barrage não gasta Salvo, então é ali que a decisão mais pesa: o
+cálculo sai para a luta inteira, só dentro do Soul e só fora.
 Lê uma luta no formato de `wcl.fetch.fetch_fight` (tempos em ms do report).
 """
 
@@ -11,6 +13,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from app.engine.rules import load_spec_rules
+from app.engine.timeline import buff_windows, inside, stacks_before
 
 
 @dataclass(frozen=True)
@@ -19,7 +22,7 @@ class BoltProcs:
     mean_salvo: float
     below_min_pct: float  # % de Barrages abaixo do mínimo de Salvo (12)
     expected: float  # procs esperados pelos acúmulos: mede a decisão
-    received: int  # procs que vieram logo após um Barrage
+    received: int  # Barrages seguidos de proc
     luck_z: float  # (recebidos − esperado) ÷ desvio: mede o RNG
     expected_per_min: float
     received_per_min: float
@@ -35,48 +38,38 @@ class BoltProcs:
         return "normal"
 
 
+def barrage_casts(fight: dict[str, Any], rules: dict[str, Any]) -> list[float]:
+    barrage = rules["abilities"]["arcane_barrage"]
+    return sorted(
+        e["timestamp"]
+        for e in fight["events"]["casts"]
+        if e["type"] == "cast" and e["abilityGameID"] == barrage
+    )
+
+
 def salvo_at_barrages(fight: dict[str, Any], rules: dict[str, Any] | None = None) -> list[int]:
     """Acúmulos de Salvo no instante de cada Barrage, na ordem dos casts."""
     rules = rules or load_spec_rules()
-    barrage, salvo = rules["abilities"]["arcane_barrage"], rules["buffs"]["arcane_salvo"]
-    casts = sorted(
-        e["timestamp"]
-        for e in fight["events"]["casts"]
-        if e["type"] == "cast" and e["abilityGameID"] == barrage
-    )
-    changes = sorted(
-        (e for e in fight["events"]["buffs"] if e["abilityGameID"] == salvo),
-        key=lambda e: e["timestamp"],
-    )
-
-    stacks, current, i = [], 0, 0
-    for cast in casts:
-        # Só o que aconteceu antes do cast: o próprio Barrage consome os acúmulos.
-        while i < len(changes) and changes[i]["timestamp"] < cast:
-            event = changes[i]
-            if event["type"] == "applybuff":
-                current = event.get("stack", 1)
-            elif event["type"] in ("applybuffstack", "removebuffstack"):
-                current = event["stack"]
-            elif event["type"] == "removebuff":
-                current = 0
-            i += 1
-        stacks.append(current)
-    return stacks
+    # Só o que aconteceu antes do cast: o próprio Barrage consome os acúmulos.
+    return stacks_before(fight, rules["buffs"]["arcane_salvo"], barrage_casts(fight, rules))
 
 
-def bolt_procs(fight: dict[str, Any], rules: dict[str, Any] | None = None) -> BoltProcs:
+def bolt_procs(
+    fight: dict[str, Any], rules: dict[str, Any] | None = None, soul: bool | None = None
+) -> BoltProcs:
+    """Procs da luta inteira (soul=None), só dentro do Arcane Soul (True) ou só fora (False)."""
     rules = rules or load_spec_rules()
     rng = rules["prismatic_bolt_rng"]
     chance, window_ms = rng["proc_per_salvo"], rng["proc_window_s"] * 1000
-    proc_buff, barrage = rules["buffs"]["prismatic_bolt_proc"], rules["abilities"]["arcane_barrage"]
 
+    casts = barrage_casts(fight, rules)
     stacks = salvo_at_barrages(fight, rules)
-    casts = sorted(
-        e["timestamp"]
-        for e in fight["events"]["casts"]
-        if e["type"] == "cast" and e["abilityGameID"] == barrage
-    )
+    if soul is not None:
+        windows = buff_windows(fight, rules["arcane_soul"]["buff_id"])
+        kept = [(c, s) for c, s in zip(casts, stacks, strict=True) if inside(c, windows) == soul]
+        casts, stacks = [c for c, _ in kept], [s for _, s in kept]
+
+    proc_buff = rules["buffs"]["prismatic_bolt_proc"]
     procs = [
         e["timestamp"]
         for e in fight["events"]["buffs"]

@@ -33,7 +33,7 @@ Trabalho A3 de Usabilidade de Software (Engenharia de Software, UNA). Web app qu
 | `backend/app/services/sources.py` | Interfaces `ReportSource` e `Analyzer`. Relatório: `WclReportSource` (real) ou `SampleReportSource` (`app/samples/`), escolhido por `DATA_SOURCE`. Análise: ainda `SampleAnalyzer`; é aqui que o motor entra |
 | `backend/app/services/players.py` | Escolha do jogador na luta por nome + reino (`match_player`, `normalize_server`) |
 | `backend/app/models.py`, `db.py`, `config.py`, `security.py` | Tabelas (`User`, `Analysis`), conexão, configurações do `.env` e login |
-| `backend/app/engine/` | Motor, começando: `rules.py` (lê os YAML) e `prismatic_bolt.py` (Prismatic Bolt: decisão × sorte, item 12.10). O resto das regras falta |
+| `backend/app/engine/` | Motor, começando: `rules.py` (lê os YAML), `timeline.py` (janelas e acúmulos de buffs), `prismatic_bolt.py` (Prismatic Bolt: decisão × sorte) e `arcane_soul.py` (entrada no Arcane Soul e Blast no Surge), item 12.10. O resto das regras falta |
 | `backend/app/ai/` | **Vazio — é o que falta construir** |
 | `frontend/src/pages/` | Telas: início, login, escolher luta, resultado, perfil, planos (roteamento por hash em `lib/router.js`, chamadas em `lib/api.js`) |
 
@@ -55,7 +55,10 @@ O motor entra como um `Analyzer` em `services/sources.py` e devolve um `Analysis
 - **Defensivo só é cobrado em overlap** de mecânicas; mecânica isolada não pede defensivo.
 - Surge em recarga; segurar até ~15 s só para casar com poção, Time Warp ou fase do chefe.
 - **Segurar a 2ª poção para casar com o Surge é o recomendado**, não erro (Light's Potential junto do Surge rende mais que a poção no CD aos 5:00), desde que a luta dure o bastante para esse Surge. O erro é **atrasar o Surge** e dessincronizar o Touch.
-- **Barrage com menos de 12 stacks de Arcane Salvo** é erro quando vira hábito (limites no YAML). Chegar no cap (25) não é erro.
+- **Barrage com menos de 12 stacks de Arcane Salvo** é erro quando vira hábito (limites no YAML). Chegar no cap (25) não é erro. O motivo é o snowball de Meteorite (1 a cada 5 Salvo → Clearcasting → Missiles → Salvo), não a chance de Prismatic Bolt, que é linear (2% por Salvo).
+- **Entrar no Arcane Soul com 25 de Salvo**: nada de Barrage nos 2 últimos GCDs antes do Soul, exceto com Overpowered Missiles (sobe para 25 na hora). No Soul o Barrage não gasta Salvo.
+- **Clearcasting guardada para o Surge**, para não encher o burst de Arcane Blast.
+- **Prismatic Bolt é RNG**: o relatório separa decisão (procs esperados pelos acúmulos) de sorte (desvios do esperado) e não cobra azar como erro.
 - A IA **não** consulta o Warcraft Logs nem faz contas; todo número vem do código.
 - Relatório e interface em português (nomes do cliente pt-BR). Conversas com o Arthur sobre o jogo podem usar os nomes em inglês.
 - **Nomes dos outros jogadores ocultos por padrão (RF25)**, com botão para exibir (como "ocultar saldo" de banco). O jogador analisado **nunca** é ocultado. Fixtures no repo só com pseudônimos; nomes reais nunca vão para a IA.
@@ -76,7 +79,7 @@ O motor entra como um `Analyzer` em `services/sources.py` e devolve um `Analysis
    - **Buffs externos no motor.** *Onde:* `app/rules/arcane_mage.yaml` (`external_buffs`) e o motor. *O quê:* contar Power Infusion e outros buffs de outros jogadores no jogador e em cada top e mostrar como contexto. *Por quê:* a busca já traz os externos (corrigida em 28/10; fixtures baixadas de novo). No kill de referência: Harmonist 2 PIs, tops 1,4 em média, o 1º colocado nenhum, ou seja, o PI não explica a diferença dele.
    - **Nomes em pt-BR conferidos no Wowhead.** *Onde:* `app/i18n/pt_br.yaml`, `app/guides/*.md`, `app/samples/*.json`. *O quê:* cruzar cada magia, buff e talento do inglês com o nome do cliente pt-BR no Wowhead (trocando o idioma da página) e padronizar. *Por quê:* há divergências; ex.: Clearcasting (263725) aparece como "Clarividência" no exemplo e "Clareza Mental" no guia, e no Warcraft Logs em português aparece "Abstração". "Abstração" e "Infusão de Poder" já entraram no `pt_br.yaml`, marcados para conferir.
    - `samples/report_*.json` **fica** como fonte offline (`DATA_SOURCE=exemplo` ou WCL fora do ar): plano B da demo e fonte do CI.
-3. Motor: leitura dos YAML, regras (Surge/Touch, poção, tempo ativo, Salvo no Barrage), tabela por habilidade. Entra como `Analyzer` em `services/sources.py`. Já existe a peça de Prismatic Bolt (decisão × sorte, `engine/prismatic_bolt.py`); os cálculos usados para refazer o exemplo em 28/10 (Salvo na Salva, atrasos, Surge→Touch, poção com Surge, picos com defensivo, tabela por habilidade) servem de base para as outras.
+3. Motor: leitura dos YAML, regras (Surge/Touch, poção, tempo ativo, Salvo no Barrage), tabela por habilidade. Entra como `Analyzer` em `services/sources.py`. Já existem as peças de Prismatic Bolt (decisão × sorte) e de Arcane Soul/janela do Surge (`engine/`, item 12.10); os cálculos usados para refazer o exemplo em 28/10 (Salvo na Salva, atrasos, Surge→Touch, poção com Surge, picos com defensivo, tabela por habilidade) servem de base para as outras.
 4. Pacote da IA + chamada ao Gemini + resposta reserva.
 5. ~~Endpoints `POST /reports/resolve` e `POST /analyses`~~ Feitos (PR #2 + passo 2). `/reports/resolve` já lê relatórios reais; `/analyses` só tem resultado da luta de referência até o motor entrar.
 6. ~~Frontend~~ Feito: início → login → escolher luta/personagem → resultado (com a lista dos comparados e o botão de olho), mais perfil e planos.

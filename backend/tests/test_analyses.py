@@ -64,7 +64,7 @@ def test_analysis_with_account_goes_to_history(client, auth_headers):
     assert created["saved"] is True
     assert [item["id"] for item in history] == [created["id"]]
     assert history[0]["boss"] == "Nek'zali, a Enrosca-almas"
-    assert history[0]["mistakes_count"] == 4
+    assert history[0]["mistakes_count"] == 6
     assert me["analyses_this_month"] == 1
 
 

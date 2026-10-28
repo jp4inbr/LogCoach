@@ -1,5 +1,5 @@
 {
-  "_nota": "Resultado de EXEMPLO (formato AnalysisResult, app/schemas.py) refeito a partir do log real: reference_harmonist.json.gz e os 10 tops de tests/fixtures/nekzali_mythic_326_328 (baixados com os buffs externos em 28/10/2026). Vêm do log: DPS, horários de Surto, Toque, poção, Barreira e Infusão de Poder, acúmulos de Salvo na Salva, atrasos, combinação Surto→Toque, picos com defensivo, procs e usos de Seta Prismática e a tabela por habilidade. Ilustrativos até o motor: o impacto em % das duas regras (3,1 e 2,0) e o tempo ativo. A diferença que as regras não explicam é a sobra (RF23); decisão × sorte na Seta Prismática vêm de app/engine/prismatic_bolt.py.",
+  "_nota": "Resultado de EXEMPLO (formato AnalysisResult, app/schemas.py) refeito a partir do log real: reference_harmonist.json.gz e os 10 tops de tests/fixtures/nekzali_mythic_326_328 (baixados com os buffs externos em 28/10/2026). Vêm do log: DPS, horários de Surto, Toque, poção, Barreira e Infusão de Poder, acúmulos de Salvo na Salva, atrasos, combinação Surto→Toque, picos com defensivo, procs e usos de Seta Prismática e a tabela por habilidade. Ilustrativos até o motor: o impacto em % das regras (3,1; 2,5; 2,0; 1,5) e o tempo ativo. Alma Arcana e janela do Surto vêm de app/engine/arcane_soul.py. A diferença que as regras não explicam é a sobra (RF23); decisão × sorte na Seta Prismática vêm de app/engine/prismatic_bolt.py.",
   "source": "exemplo",
   "report_code": "XhrmBaYkGCAQjH2D",
   "fight": {
@@ -113,7 +113,7 @@
   },
   "coach": {
     "available": true,
-    "headline": "Você ficou 15,2% abaixo da média dos 10 melhores do seu bracket. As regras confirmam dois erros: Salvas Arcanas soltas com poucos acúmulos de Salvo e o 4º Surto Arcano atrasado, que saiu depois do Toque dos Magos. A maior parte do resto foi azar na Seta Prismática: pelos seus acúmulos, você deveria ter recebido uns 41 procs e recebeu 28."
+    "headline": "Você ficou 15,2% abaixo da média dos 10 melhores do seu bracket. O que mais pesou foi o Salvo: Salvas soltas com poucos acúmulos e entradas na Alma Arcana com Salvo baixo. Também entraram Impactos Arcanos demais dentro do Surto e o 4º Surto saiu atrasado, depois do Toque. O resto foi azar na Seta Prismática."
   },
   "mistakes": [
     {
@@ -123,7 +123,7 @@
       "severity": "erro",
       "kind": "regra",
       "phase": null,
-      "explanation": "14,9% das suas Salvas Arcanas saíram com menos de 12 acúmulos de Salvo Arcano. Nos melhores do seu bracket isso acontece em 9,2% das vezes, em média. Cada Salva gasta cedo demais perde duas vezes: o dano que os acúmulos dariam e a chance de Seta Prismática, que é de 2% por acúmulo (25 acúmulos dão 50%; 11 dão 22%).",
+      "explanation": "14,9% das suas Salvas Arcanas saíram com menos de 12 acúmulos de Salvo Arcano. Nos melhores do seu bracket isso acontece em 9,2% das vezes, em média. A Salva derruba 1 Meteorito a cada 5 acúmulos (15 → 3, 20 → 4, 25 → 5), e cada meteoro pode devolver Abstração, que vira Mísseis, que geram mais Salvo. Soltar cedo quebra esse ciclo.",
       "what_to_do": "Segure a Salva até ter pelo menos 12 acúmulos. Antes de soltar, gaste 1 Mísseis Arcanos e a Seta Prismática; com 3 cargas de Abstração, gaste 2 Mísseis para não perder carga nova.",
       "numbers": [
         {
@@ -135,6 +135,28 @@
           "label": "Salvas com o máximo (25)",
           "player": "49,5%",
           "top": "60,6%"
+        }
+      ]
+    },
+    {
+      "id": "soul_entry",
+      "title": "Entrada na Alma Arcana com pouco Salvo",
+      "impact_pct": 2.5,
+      "severity": "atencao",
+      "kind": "regra",
+      "phase": null,
+      "explanation": "Depois do Surto vem a Alma Arcana: ali a Salva não gasta o Salvo, então cada Salva rola Seta Prismática e meteoros de graça. A regra é entrar com 25. Você entrou com 0, 20, 1, 18 e 22 acúmulos (média 12,2); os melhores entram, em média, com 18,1. Na primeira, uma Salva nos dois últimos GCDs antes da Alma zerou o Salvo; na terceira você entrou com 1 acúmulo.",
+      "what_to_do": "Nos dois últimos GCDs antes da Alma Arcana (uns 2,5 s), não lance Salva. Exceção: se vier Mísseis Sobrecarregados, o Salvo sobe para 25 na hora.",
+      "numbers": [
+        {
+          "label": "Salvo ao entrar na Alma (média)",
+          "player": "12,2",
+          "top": "18,1"
+        },
+        {
+          "label": "Entradas com Salva nos 2 últimos GCDs",
+          "player": "1 de 5",
+          "top": "6 de 43"
         }
       ]
     },
@@ -161,6 +183,28 @@
       ]
     },
     {
+      "id": "surge_blasts",
+      "title": "Impactos Arcanos demais dentro do Surto",
+      "impact_pct": 1.5,
+      "severity": "atencao",
+      "kind": "regra",
+      "phase": null,
+      "explanation": "Fora o Surto de abertura, você lançou 11 Impactos Arcanos em 4 janelas de Surto (2,8 por janela); os melhores, 0,5. Você chegou ao Surto com Abstração parecida com a deles (1,8 contra 1,7 cargas), então a diferença está em como ela foi gasta e reposta dentro da janela. Impacto no burst é dano perdido.",
+      "what_to_do": "Guarde Abstração para o Surto e, dentro dele, mantenha o ciclo de Mísseis e Salvas cheias; o Impacto Arcano fica para completar o Salvo fora do burst.",
+      "numbers": [
+        {
+          "label": "Impactos Arcanos por janela de Surto",
+          "player": "2,8",
+          "top": "0,5"
+        },
+        {
+          "label": "Abstração no início do Surto",
+          "player": "1,8",
+          "top": "1,7"
+        }
+      ]
+    },
+    {
       "id": "overlap_no_defensive",
       "title": "Sem defensivo nos picos de dano",
       "impact_pct": null,
@@ -180,12 +224,12 @@
     {
       "id": "unexplained_gap",
       "title": "O que as regras não explicam (hipótese do coach)",
-      "impact_pct": 10.1,
+      "impact_pct": 6.1,
       "severity": "atencao",
       "kind": "hipotese",
       "phase": null,
-      "explanation": "As regras explicam cerca de 5,1 dos 15,2 pontos; os outros 10,1 nenhuma regra mede. A maior pista está na Seta Prismática: você recebeu 4,0 procs por minuto, contra 6,9 dos melhores. O código separa decisão de sorte. Cada acúmulo de Salvo na Salva dá 2% de chance de Seta, e pelos seus acúmulos (20,4 em média por Salva) o esperado era 5,9 procs por minuto; nos melhores, 6,2. Ou seja, suas Salvas explicam só uns 10% da falta de Seta. O resto foi azar: você recebeu 28 dos ~41 esperados, 2,8 desvios abaixo (algo como 1 luta em 400), enquanto os melhores do ranking tiveram, em média, 0,9 desvio acima. É esperado: um ranking dos melhores logs escolhe lutas com sorte. No lugar das Setas, entraram mais Impactos Arcanos (10,5 por minuto na Fase 2, contra 3,8).",
-      "what_to_do": "Não há o que corrigir no azar: compare seu DPS com o desta luta em outros kills. O que depende de você é seguir soltando a Salva com 12 acúmulos ou mais, porque cada acúmulo é mais 2% de chance de Seta.",
+      "explanation": "As regras explicam cerca de 9,1 dos 15,2 pontos; os outros 6,1 nenhuma regra mede. A maior pista está na Seta Prismática: você recebeu 4,0 procs por minuto, contra 6,9 dos melhores. O código separa decisão de sorte (2% de chance por acúmulo de Salvo em cada Salva). Na decisão, a diferença está na Alma Arcana: você esperava 1,0 proc por minuto ali, contra 1,2 dos melhores, por entrar com pouco Salvo. O resto foi azar: 2,1 desvios abaixo do esperado dentro e fora da Alma, enquanto os melhores do ranking ficaram na média ou acima. É esperado: um ranking dos melhores logs escolhe lutas com sorte.",
+      "what_to_do": "Não há o que corrigir no azar. O que depende de você é entrar na Alma Arcana com 25 de Salvo e soltar as Salvas com 12 acúmulos ou mais.",
       "numbers": [
         {
           "label": "Procs de Seta por minuto (recebidos)",
@@ -193,9 +237,9 @@
           "top": "6,9"
         },
         {
-          "label": "Procs por minuto esperados pelos acúmulos (decisão)",
-          "player": "5,9",
-          "top": "6,2"
+          "label": "Procs por minuto esperados na Alma Arcana (decisão)",
+          "player": "1,0",
+          "top": "1,2"
         },
         {
           "label": "Sorte nos procs (desvios do esperado)",
@@ -204,7 +248,7 @@
         },
         {
           "label": "Diferença que as regras não explicam",
-          "player": "−10,1 pts",
+          "player": "−6,1 pts",
           "top": "—"
         }
       ]
@@ -248,6 +292,22 @@
       "name": "Surto → Toque em até 3,5 s",
       "player_value": "4 de 5",
       "top_value": "82%",
+      "status": "atencao",
+      "note": null
+    },
+    {
+      "id": "soul_entry",
+      "name": "Salvo ao entrar na Alma Arcana",
+      "player_value": "12,2",
+      "top_value": "18,1",
+      "status": "atencao",
+      "note": "Meta: 25. Sem Salva nos 2 últimos GCDs antes da Alma."
+    },
+    {
+      "id": "surge_blasts",
+      "name": "Impactos Arcanos dentro do Surto (fora o de abertura)",
+      "player_value": "2,8 por janela",
+      "top_value": "0,5 por janela",
       "status": "atencao",
       "note": null
     },
