@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useEffectEvent, useRef, useState } from "react";
 import Notice from "../components/Notice.jsx";
 import Steps from "../components/Steps.jsx";
 import { api } from "../lib/api.js";
@@ -11,6 +11,11 @@ import { load, save } from "../lib/storage.js";
 const DEMO_KEY = "logcoach.demoUsed";
 const CHARACTER_KEY = "logcoach.character";
 const STEP_MS = 900;
+// Enquanto alguma luta ainda está subindo para o Warcraft Logs, a lista se refaz sozinha.
+const AUTO_REFRESH_MS = 30_000;
+// Falhas passageiras (Warcraft Logs ou LogCoach fora do ar, sem conexão): vale tentar de novo
+// sem mexer no link.
+const TEMPORARY_ERRORS = new Set(["wcl_unavailable", "unexpected_error", "network", "unknown"]);
 
 // Dentro do relatório o personagem é o id do ator do WCL (homônimos de reinos diferentes
 // têm ids diferentes). É esse id que vai no POST /analyses.
@@ -36,18 +41,62 @@ function formatTime(iso) {
   return new Date(iso).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
 }
 
-function newFightsText(count) {
-  if (count === 0) return "Nenhuma luta nova";
-  return count === 1 ? "1 luta nova" : `${count} lutas novas`;
+// O servidor sempre consulta o Warcraft Logs de novo (com uma trava de 15 s: dentro dela
+// devolve a mesma lista, com o mesmo fetched_at). Serve para abrir, atualizar e para a
+// atualização automática.
+function resolveReport(code) {
+  return api.post("/reports/resolve", {
+    url: `https://www.warcraftlogs.com/reports/${code}`,
+    refresh: true,
+  });
+}
+
+// O que mudou entre duas listas: lutas com id novo e lutas que passaram a poder ser
+// analisadas (ex.: terminaram de subir para o Warcraft Logs).
+function compareFights(before, after) {
+  const known = new Map(before.map((item) => [item.id, item]));
+  let added = 0;
+  let unlocked = 0;
+  for (const item of after) {
+    const previous = known.get(item.id);
+    if (!previous) added += 1;
+    else if (!previous.supported && item.supported) unlocked += 1;
+  }
+  return { added, unlocked };
+}
+
+function hasNews(news) {
+  return news.added + news.unlocked > 0;
+}
+
+// "2 lutas novas", "1 luta liberada para análise", "2 lutas novas e 1 liberada para análise".
+function newsText({ added, unlocked }) {
+  const parts = [];
+  if (added) parts.push(added === 1 ? "1 luta nova" : `${added} lutas novas`);
+  if (unlocked) {
+    const what = unlocked === 1 ? "liberada" : "liberadas";
+    const noun = added ? "" : unlocked === 1 ? " luta" : " lutas";
+    parts.push(`${unlocked}${noun} ${what} para análise`);
+  }
+  return parts.length ? parts.join(" e ") : "Nenhuma luta nova";
+}
+
+function refreshText(refresh) {
+  // Mesmo fetched_at: o servidor devolveu a lista que tinha acabado de ler, sem consultar.
+  if (refresh.unchanged) return "A lista já está atualizada";
+  return newsText(refresh);
 }
 
 // Tela 2: escolher a luta e o personagem (RF04). A lista de lutas vem leve, sem jogadores;
 // os Magos Arcanos são buscados quando o usuário escolhe a luta. "Atualizar lutas" traz os
-// pulls novos de um log ao vivo. Depois do clique em Analisar, a mesma tela mostra o
-// andamento em etapas (Tela 3) e abre o resultado quando termina.
+// pulls novos de um log ao vivo, e a lista se refaz sozinha enquanto houver luta subindo.
+// Com luta e jogador definidos, os eventos são pré-buscados em segundo plano. Depois do
+// clique em Analisar, a mesma tela mostra o andamento em etapas (Tela 3) e abre o resultado
+// quando termina.
 export default function ChooseFight({ code }) {
   const { token, logout } = useAuth();
   const [report, setReport] = useState({ status: "loading" });
+  const [attempt, setAttempt] = useState(0);
   const [refresh, setRefresh] = useState({ status: "idle" });
   const [fightId, setFightId] = useState(null);
   // Magos de cada luta já buscada: { [id]: { status, players | error } }.
@@ -56,17 +105,112 @@ export default function ChooseFight({ code }) {
   const [run, setRun] = useState({ status: "idle" });
   const [step, setStep] = useState(0);
   const [resultId, setResultId] = useState(null);
+  // Atualização da lista em andamento (manual ou automática), para não pedir duas vezes.
+  const refreshing = useRef(false);
+  const lastFetch = useRef(0);
+  // Pré-buscas já pedidas nesta tela, por "luta:ator".
+  const prefetched = useRef(new Set());
 
   useEffect(() => {
     let active = true;
-    api
-      .post("/reports/resolve", { url: `https://www.warcraftlogs.com/reports/${code}` })
+    lastFetch.current = Date.now();
+    resolveReport(code)
       .then((data) => active && setReport({ status: "ok", data }))
       .catch((error) => active && setReport({ status: "error", error }));
     return () => {
       active = false;
     };
-  }, [code]);
+  }, [code, attempt]);
+
+  const data = report.status === "ok" ? report.data : null;
+  const fight = data?.fights.find((item) => item.id === fightId) ?? null;
+  const fightPlayers = (fight && playersByFight[fight.id]) ?? { status: "loading" };
+  const players = fightPlayers.players ?? [];
+  const savedCharacter = loadCharacter();
+  const savedMatches = savedCharacter
+    ? players.filter((p) => matchesCharacter(p, savedCharacter))
+    : [];
+  // Personagem salvo ou único da luta já vem marcado (heurística "flexibilidade e eficiência").
+  // Se o nome salvo bater com mais de um reino, nada vem marcado: o usuário escolhe.
+  const selectedKey =
+    chosenPlayer ??
+    (savedMatches.length === 1 ? playerKey(savedMatches[0]) : null) ??
+    (players.length === 1 ? playerKey(players[0]) : null);
+  const player = players.find((p) => playerKey(p) === selectedKey) ?? null;
+  const demoBlocked = !token && load(DEMO_KEY, false);
+  const uploading = Boolean(data?.fights.some((item) => item.in_progress));
+
+  // Busca a lista de novo no Warcraft Logs. Se falhar, a lista que já está na tela continua.
+  // A manual sempre diz o resultado; a automática só fala quando há novidade.
+  function refreshFights(mode) {
+    if (!data || refreshing.current) return;
+    const before = data;
+    refreshing.current = true;
+    lastFetch.current = Date.now();
+    if (mode === "manual") setRefresh({ status: "loading" });
+    resolveReport(before.code)
+      .then((fresh) => {
+        setReport({ status: "ok", data: fresh });
+        const news = compareFights(before.fights, fresh.fights);
+        const unchanged = fresh.fetched_at === before.fetched_at;
+        if (mode === "manual" || hasNews(news)) {
+          setRefresh({ status: "ok", unchanged: unchanged && !hasNews(news), ...news });
+        } else {
+          // Automática sem novidade: mantém o último aviso de luta nova e apaga o resto
+          // (um erro ou um "Nenhuma luta nova" que já não vale para a lista atual).
+          setRefresh((current) =>
+            current.status === "ok" && !current.unchanged && hasNews(current)
+              ? current
+              : { status: "idle" },
+          );
+        }
+      })
+      .catch((error) => {
+        if (mode === "manual") setRefresh({ status: "error", error });
+      })
+      .finally(() => {
+        refreshing.current = false;
+      });
+  }
+
+  const autoRefresh = useEffectEvent(() => {
+    if (document.visibilityState === "visible") refreshFights("auto");
+  });
+
+  // Enquanto houver luta subindo, refaz a lista a cada 30 s, só com a aba visível. Ao voltar
+  // para a aba depois desse tempo, atualiza na hora. O intervalo recomeça a cada lista nova.
+  useEffect(() => {
+    if (!uploading) return undefined;
+    const timer = setInterval(autoRefresh, AUTO_REFRESH_MS);
+    function onVisibility() {
+      if (Date.now() - lastFetch.current >= AUTO_REFRESH_MS) autoRefresh();
+    }
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      clearInterval(timer);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
+  }, [uploading, data?.fetched_at]);
+
+  // Pré-busca dos eventos assim que luta e jogador estão definidos (clicado, único Arcano ou
+  // personagem lembrado), para a análise sair mais rápido. É só otimização: falha em
+  // silêncio, porque o erro de verdade aparece no /analyses. Uma vez por luta e jogador.
+  const prefetchCode = data?.code ?? null;
+  const prefetchFight = fight && player ? fight.id : null;
+  const prefetchActor = fight && player ? player.actor_id : null;
+  useEffect(() => {
+    if (!prefetchCode || prefetchFight === null || prefetchActor === null || demoBlocked) return;
+    const key = `${prefetchFight}:${prefetchActor}`;
+    if (prefetched.current.has(key)) return;
+    prefetched.current.add(key);
+    api
+      .post(
+        `/reports/${encodeURIComponent(prefetchCode)}/fights/${prefetchFight}/prefetch`,
+        { actor_id: prefetchActor },
+        token,
+      )
+      .catch(() => {});
+  }, [prefetchCode, prefetchFight, prefetchActor, demoBlocked, token]);
 
   // Avança as etapas enquanto a análise roda; a última espera o resultado chegar.
   useEffect(() => {
@@ -89,34 +233,34 @@ export default function ChooseFight({ code }) {
   }
 
   if (report.status === "error") {
+    // Falha passageira: o principal é tentar de novo. Link errado ou relatório privado: o
+    // usuário precisa mexer no link, então "Trocar o link" continua sendo o caminho.
+    const temporary = TEMPORARY_ERRORS.has(report.error.code);
     return (
       <div className="stack">
         <Notice tone="erro" title="Não deu para abrir esse relatório">
           {report.error.message}
         </Notice>
-        <a className="button ghost" href={href("/")}>
-          ← Trocar o link
-        </a>
+        <div className="actions">
+          {temporary && (
+            <button
+              type="button"
+              className="button primary"
+              onClick={() => {
+                setReport({ status: "loading" });
+                setAttempt((current) => current + 1);
+              }}
+            >
+              Tentar de novo
+            </button>
+          )}
+          <a className="button ghost" href={href("/")}>
+            ← Trocar o link
+          </a>
+        </div>
       </div>
     );
   }
-
-  const { data } = report;
-  const fight = data.fights.find((item) => item.id === fightId) ?? null;
-  const fightPlayers = (fight && playersByFight[fight.id]) ?? { status: "loading" };
-  const players = fightPlayers.players ?? [];
-  const savedCharacter = loadCharacter();
-  const savedMatches = savedCharacter
-    ? players.filter((p) => matchesCharacter(p, savedCharacter))
-    : [];
-  // Personagem salvo ou único da luta já vem marcado (heurística "flexibilidade e eficiência").
-  // Se o nome salvo bater com mais de um reino, nada vem marcado: o usuário escolhe.
-  const selectedKey =
-    chosenPlayer ??
-    (savedMatches.length === 1 ? playerKey(savedMatches[0]) : null) ??
-    (players.length === 1 ? playerKey(players[0]) : null);
-  const player = players.find((p) => playerKey(p) === selectedKey) ?? null;
-  const demoBlocked = !token && load(DEMO_KEY, false);
 
   function loadPlayers(id) {
     const setFor = (state) => setPlayersByFight((current) => ({ ...current, [id]: state }));
@@ -127,29 +271,12 @@ export default function ChooseFight({ code }) {
       .catch((error) => setFor({ status: "error", error }));
   }
 
-  function chooseFight(id) {
-    setFightId(id);
+  function chooseFight(item) {
+    if (!item.supported) return;
+    setFightId(item.id);
     setChosenPlayer(null);
     setRun({ status: "idle" });
-    if (!["ok", "loading"].includes(playersByFight[id]?.status)) loadPlayers(id);
-  }
-
-  // Busca a lista de novo no Warcraft Logs (pulls novos de um log ao vivo). Se falhar, a
-  // lista que já está na tela continua.
-  function refreshFights() {
-    const known = new Set(data.fights.map((item) => item.id));
-    setRefresh({ status: "loading" });
-    api
-      .post("/reports/resolve", {
-        url: `https://www.warcraftlogs.com/reports/${data.code}`,
-        refresh: true,
-      })
-      .then((fresh) => {
-        setReport({ status: "ok", data: fresh });
-        const added = fresh.fights.filter((item) => !known.has(item.id)).length;
-        setRefresh({ status: "ok", added });
-      })
-      .catch((error) => setRefresh({ status: "error", error }));
+    if (!["ok", "loading"].includes(playersByFight[item.id]?.status)) loadPlayers(item.id);
   }
 
   function startAnalysis() {
@@ -215,18 +342,24 @@ export default function ChooseFight({ code }) {
           <div className="fights-refresh">
             <span className="field-hint" aria-live="polite">
               Lista de {formatTime(data.fetched_at)}
-              {refresh.status === "ok" && ` · ${newFightsText(refresh.added)}`}
+              {refresh.status === "ok" && ` · ${refreshText(refresh)}`}
             </span>
             <button
               type="button"
               className="button ghost small"
               disabled={refresh.status === "loading"}
-              onClick={refreshFights}
+              onClick={() => refreshFights("manual")}
             >
               {refresh.status === "loading" ? "Atualizando…" : "Atualizar lutas"}
             </button>
           </div>
         </div>
+        {uploading && (
+          <p className="field-hint">
+            Tem luta subindo para o Warcraft Logs. A lista se atualiza sozinha a cada 30 segundos
+            até ela ficar disponível.
+          </p>
+        )}
         {refresh.status === "error" && (
           <Notice tone="erro" title="Não deu para atualizar as lutas">
             {refresh.error.message}
@@ -235,24 +368,46 @@ export default function ChooseFight({ code }) {
         <ul className="fight-list">
           {data.fights.map((item) => (
             <li key={item.id}>
-              <button
-                type="button"
-                className={`fight ${item.id === fightId ? "fight-selected" : ""}`}
-                disabled={!item.supported}
-                aria-pressed={item.id === fightId}
-                onClick={() => chooseFight(item.id)}
-              >
-                <span className="fight-main">
-                  <strong>{item.boss}</strong>
-                  <span className="muted">
-                    {item.difficulty} · luta {item.id} · {formatClock(item.duration_s)}
+              {item.in_progress ? (
+                // Luta subindo: ainda não dá para escolher, mas vai dar. Fica focável
+                // (aria-disabled em vez de disabled) para o leitor de tela ler o motivo.
+                <button
+                  type="button"
+                  className="fight fight-uploading"
+                  aria-disabled="true"
+                  onClick={() => chooseFight(item)}
+                >
+                  <span className="fight-main">
+                    <strong>{item.boss}</strong>
+                    <span className="muted">
+                      {item.difficulty} · luta {item.id}
+                    </span>
                   </span>
-                </span>
-                <span className={`pill ${item.kill ? "pill-kill" : "pill-wipe"}`}>
-                  {item.kill ? "Kill" : "Wipe"}
-                </span>
-                {!item.supported && <span className="fight-reason">{item.unsupported_reason}</span>}
-              </button>
+                  <span className="pill pill-uploading">Subindo…</span>
+                  <span className="fight-reason">{item.unsupported_reason}</span>
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className={`fight ${item.id === fightId ? "fight-selected" : ""}`}
+                  disabled={!item.supported}
+                  aria-pressed={item.id === fightId}
+                  onClick={() => chooseFight(item)}
+                >
+                  <span className="fight-main">
+                    <strong>{item.boss}</strong>
+                    <span className="muted">
+                      {item.difficulty} · luta {item.id} · {formatClock(item.duration_s)}
+                    </span>
+                  </span>
+                  <span className={`pill ${item.kill ? "pill-kill" : "pill-wipe"}`}>
+                    {item.kill ? "Kill" : "Wipe"}
+                  </span>
+                  {!item.supported && (
+                    <span className="fight-reason">{item.unsupported_reason}</span>
+                  )}
+                </button>
+              )}
             </li>
           ))}
         </ul>
