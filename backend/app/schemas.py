@@ -52,6 +52,8 @@ class ReportResolveRequest(BaseModel):
 
 class PlayerOption(BaseModel):
     # Na escolha da luta o nome não é ocultado: o usuário está escolhendo a si mesmo.
+    # Id do ator no report do WCL (masterData.actors): chave do jogador do resolve até o motor.
+    actor_id: int | None = None
     name: str
     # O mesmo nome se repete entre reinos; o reino desempata (services/players.py).
     server: str | None = None

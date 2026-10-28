@@ -12,7 +12,7 @@
       "duration_s": 41.0,
       "supported": false,
       "unsupported_reason": "A luta tem menos de 60 s. Escolha uma tentativa mais longa",
-      "players": [{ "name": "Harmonist", "server": null, "spec": "Mago Arcano", "item_level": 327 }]
+      "players": [{ "actor_id": 455, "name": "Harmonist", "server": null, "spec": "Mago Arcano", "item_level": 327 }]
     },
     {
       "id": 34,
@@ -22,7 +22,7 @@
       "duration_s": 415.6,
       "supported": true,
       "unsupported_reason": null,
-      "players": [{ "name": "Harmonist", "server": null, "spec": "Mago Arcano", "item_level": 327 }]
+      "players": [{ "actor_id": 455, "name": "Harmonist", "server": null, "spec": "Mago Arcano", "item_level": 327 }]
     },
     {
       "id": 41,
@@ -32,7 +32,7 @@
       "duration_s": 238.0,
       "supported": false,
       "unsupported_reason": "Chefe ainda não suportado",
-      "players": [{ "name": "Harmonist", "server": null, "spec": "Mago Arcano", "item_level": 327 }]
+      "players": [{ "actor_id": 455, "name": "Harmonist", "server": null, "spec": "Mago Arcano", "item_level": 327 }]
     },
     {
       "id": 47,
@@ -42,7 +42,7 @@
       "duration_s": 312.0,
       "supported": false,
       "unsupported_reason": "Chefe ainda não suportado",
-      "players": [{ "name": "Harmonist", "server": null, "spec": "Mago Arcano", "item_level": 327 }]
+      "players": [{ "actor_id": 455, "name": "Harmonist", "server": null, "spec": "Mago Arcano", "item_level": 327 }]
     }
   ]
 }

@@ -126,6 +126,7 @@ def build_report(
         if _is_arcane_mage(actor, details):
             item_level = details.get("maxItemLevel")
             arcanes[actor["id"]] = {
+                "actor_id": actor["id"],
                 "name": actor["name"],
                 "server": actor.get("server"),
                 "spec": ARCANE_LABEL,
