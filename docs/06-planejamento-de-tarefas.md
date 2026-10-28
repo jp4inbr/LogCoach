@@ -13,7 +13,7 @@
 | Pessoa        | Papel                                | Entregas                                                                                                                                 |
 | ------------- | ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
 | **Arthur**    | Líder técnico + especialista do jogo | Motor de análise, regras do Mago Arcano e do encontro (mapa do Nek'zali), integração com Warcraft Logs e IA, validação de todo conteúdo de WoW |
-| **Membro 2**  | Frontend + qualidade                 | Linters, CI, telas em React ligadas ao backend                                                                                           |
+| **Pedro**     | Frontend, backend de contas e qualidade | Base técnica (linters, CI), telas em React ligadas ao backend, contas, histórico e limite do plano; evidências de usabilidade (8.1) e métricas (11) |
 | **João**      | GitBook                              | Organização e revisão das páginas no GitBook                                                                                             |
 | **Luiz**      | Gestão                               | Quadro no GitHub Projects, checagem de prazos, roteiro dos slides                                                                        |
 | **Membro 5**  | Design                               | Mockups das 5 telas + planos no Figma                                                                                                    |
