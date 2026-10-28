@@ -26,7 +26,7 @@ description: Organização das tarefas e prazos do time.
 | **Luiz** | Gestão | Planilha de entregas, quadro no GitHub Projects, checagem de prazos |
 | **Danilo** | Design | Mockups das telas no Figma (item 3) |
 | **Matheus Damasceno** | Planejamento estratégico | Product Vision Board (item 2.B) |
-| **Matheus Barreto** | Qualidade da Apresentação | Elaborar os slides e garantir que o material estará disponível e correto na hora da apresentação à banca |
+| **Matheus Morgado** | Qualidade da Apresentação | Elaborar os slides e garantir que o material estará disponível e correto na hora da apresentação à banca |
 | **Arthur** | Relatório de IA | Item 9, a partir dos prompts, interações e relatórios dos membros do grupo |
 | **Arthur** | Casos de teste | Cenários de erro e validação em linguagem simples (base dos testes Pytest) e item 10 |
 | _a definir_ | Teste de usabilidade | Aplicar o roteiro e o questionário SUS (8.3) e registrar os resultados |

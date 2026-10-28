@@ -22,21 +22,21 @@ O jogador cola o link do seu log de combate do Warcraft Logs e o LogCoach mostra
 ## Ficha de Inscrição
 
 **Projeto A3 · UC Usabilidade e Desenvolvimento Web (UDS)**\
-**Professor:** Mário Sergio Caldas Teixeira\
+**Professor:** Mário Teixeira\
 **Campus:** Center Minas · **Turma:** 439 · **Turno:** Noite\
 **Tema do projeto:** coach de desempenho para jogadores competitivos de World of Warcraft · **Título provisório:** LogCoach
 
 | Integrantes |
 |---|
-| Arthur Justi Beiral |
-| Danilo Rubens da Silva Félix |
-| João Vitor Paim Nicacio |
-| Luís Henrique Ferreira Carneiro |
-| Matheus Barreto Morgado |
-| Matheus Santos Damasceno |
-| Pedro Augusto Santos Nogueira |
-| Thales Teichmann Valadares de Almeida |
-| Yohanan Aguilar Amaral |
+| Arthur Beiral |
+| Danilo Félix |
+| João Nicacio |
+| Luís Carneiro |
+| Matheus Morgado |
+| Matheus Damasceno |
+| Pedro Nogueira |
+| Thales Almeida |
+| Yohanan Amaral |
 
 > Esta documentação é pública (sincronizada com o GitHub). RA, e-mail e outros dados pessoais ficam só na ficha entregue ao professor.
 
