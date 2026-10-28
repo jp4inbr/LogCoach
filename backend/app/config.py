@@ -5,7 +5,6 @@ import secrets
 from functools import lru_cache
 from pathlib import Path, PureWindowsPath
 from typing import Literal
-from urllib.parse import urlparse
 
 from pydantic import field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -23,38 +22,24 @@ SQLITE_FILE = "sqlite:///"
 def resolve_sqlite_url(url: str) -> str:
     """Resolve a partir de backend/ o caminho relativo de uma URL SQLite.
 
-    Garante que URLs relativas do SQLite sejam resolvidas corretamente
-    a partir da pasta backend/ do projeto, evitando que o banco seja
-    criado em pastas diferentes dependendo de onde o uvicorn é executado.
+    Sem isso, "sqlite:///./logcoach.db" cria um banco em cada pasta de onde o
+    uvicorn sobe. Memória, caminho absoluto, URI `file:` e outros bancos ficam como estão.
     """
-    parsed = make_url(url)
+    parsed = make_url(url)  # entende drivers (sqlite+pysqlite://) e query string
     path = parsed.database
-
-    # Verifica se a URL NÃO deve ser alterada:
-    # 1. Se não for SQLite (ex: PostgreSQL)
-    # 2. Se não houver caminho definido
-    # 3. Se for banco em memória (:memory:)
-    # 4. Se contiver query string de URI especial
-    # 5. Se já for um caminho absoluto no Unix ou Windows
     if (
         parsed.get_backend_name() != "sqlite"
         or not path
         or path == ":memory:"
         or parsed.query.get("uri")
+        # Absoluto no Unix ("/abs/x.db") ou no Windows ("C:/x.db"); PureWindowsPath decide
+        # igual em qualquer sistema, então o caso do Windows também é testado no Mac/Linux.
         or path.startswith("/")
         or PureWindowsPath(path).is_absolute()
     ):
         return url
-
-    # Se for relativo, resolve o caminho absoluto combinando com 'backend/'
-    absolute = (BACKEND_DIR / path).resolve()
-
-    # Extrai o driver e preserva eventuais parâmetros de query string
-    driver = url.split("://")[0]
-    parsed_full = urlparse(url)
-    query_part = f"?{parsed_full.query}" if parsed_full.query else ""
-
-    return f"{driver}:///{absolute.as_posix()}{query_part}"
+    absolute = (BACKEND_DIR / path).resolve().as_posix()
+    return parsed.set(database=absolute).render_as_string(hide_password=False)
 
 
 class Settings(BaseSettings):
