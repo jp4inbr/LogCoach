@@ -24,7 +24,13 @@ import yaml
 
 from app.config import get_settings
 from app.schemas import AnalysisResult, FightOption, PlayerOption, ReportResolved
-from app.wcl.client import WclClient, WclError, WclUnavailableError, shared_client
+from app.wcl.client import (
+    UNAVAILABLE_MESSAGE,
+    WclClient,
+    WclError,
+    WclUnavailableError,
+    shared_client,
+)
 from app.wcl.fetch import fetch_report
 
 logger = logging.getLogger(__name__)
@@ -59,6 +65,10 @@ class SourceUnavailableError(Exception):
 
     Problema nosso ou da API, não do relatório: o usuário só precisa tentar de novo depois.
     """
+
+    def __init__(self, code: str, user_message: str = UNAVAILABLE_MESSAGE) -> None:
+        super().__init__(code)
+        self.user_message = user_message
 
 
 class AnalysisNotAvailableError(Exception):
@@ -258,7 +268,8 @@ class WclReportSource:
             if code == SAMPLE_REPORT_CODE:
                 return SampleReportSource().get_report(code)
             if unavailable:
-                raise SourceUnavailableError(code) from exc
+                message = getattr(exc, "user_message", UNAVAILABLE_MESSAGE)
+                raise SourceUnavailableError(code, message) from exc
             # Privado ou inexistente: a API respondeu, mas sem o report.
             raise ReportNotAvailableError(code) from exc
         report = ReportResolved.model_validate(build_report(raw))

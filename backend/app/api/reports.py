@@ -35,14 +35,11 @@ def load_report(source: ReportSource, code: str) -> ReportResolved:
                 f"({SAMPLE_REPORT_CODE}) está disponível."
             )
         raise api_error(404, "report_not_available", message) from None
-    except SourceUnavailableError:
+    except SourceUnavailableError as exc:
         # Limite de pontos, API fora do ar ou credencial do servidor: o relatório pode estar
-        # certo, então não mandamos o usuário conferir se ele é público.
-        raise api_error(
-            503,
-            "wcl_unavailable",
-            "O Warcraft Logs não respondeu agora. Tente de novo em alguns minutos.",
-        ) from None
+        # certo, então não mandamos o usuário conferir se ele é público. A mensagem vem do
+        # cliente do WCL, que sabe a causa.
+        raise api_error(503, "wcl_unavailable", exc.user_message) from None
 
 
 @router.post("/resolve")

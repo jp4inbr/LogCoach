@@ -34,6 +34,9 @@ query Events(
 """
 
 
+UNAVAILABLE_MESSAGE = "O Warcraft Logs não respondeu agora. Tente de novo em alguns minutos."
+
+
 class WclError(RuntimeError):
     """Erro devolvido pela API do Warcraft Logs."""
 
@@ -42,8 +45,13 @@ class WclUnavailableError(WclError):
     """A API não atendeu por motivo nosso ou dela, não do report.
 
     Limite de pontos (429), fora do ar (5xx), timeout/erro de rede, resposta que não é
-    JSON ou credenciais do servidor ausentes/recusadas.
+    JSON ou credenciais do servidor ausentes/recusadas. `user_message` é o texto pronto
+    para o usuário (item 8.2); a rota só repassa.
     """
+
+    def __init__(self, detail: str, user_message: str = UNAVAILABLE_MESSAGE) -> None:
+        super().__init__(detail)
+        self.user_message = user_message
 
 
 # Status em que a culpa é da API (ou do limite de pontos), não do report pedido.
