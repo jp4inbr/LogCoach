@@ -1,49 +1,13 @@
-# 8. Relatório de Princípios de Usabilidade Aplicados
+---
+description: Os 8 princípios de usabilidade aplicados e onde aparecem no sistema.
+---
 
-> Entrega da RT03. Preencher as evidências (prints e resultados) conforme a alfa ficar pronta.
+# 8. Relatório de Princípios de Usabilidade Aplicados
 
 ## 8.1 Heurísticas de Nielsen aplicadas
 
-| Heurística | Onde aparece no LogCoach | Evidência (print) |
-|---|---|---|
-| Visibilidade do status do sistema | Barra de progresso em etapas durante a análise | _a adicionar_ |
-| Correspondência com o mundo real | Relatório e IA em português, na linguagem do jogador | _a adicionar_ |
-| Controle e liberdade do usuário | Voltar e escolher outra luta sem perder o link | _a adicionar_ |
-| Consistência e padrões | Mesmo padrão de cores para ok / atenção / erro em todas as telas | _a adicionar_ |
-| Prevenção de erros | Validação do link antes de enviar; lutas não suportadas em cinza | _a adicionar_ |
-| Reconhecer em vez de lembrar | Erros principais já destacados no topo; personagem salvo | _a adicionar_ |
-| Flexibilidade e eficiência | Usuário frequente pula a escolha de personagem | _a adicionar_ |
-| Design estético e minimalista | Resumo só com os erros de maior impacto; detalhes nas abas | _a adicionar_ |
-| Ajudar a reconhecer e corrigir erros | Mensagens claras com o que fazer (ver 8.2) | _a adicionar_ |
-| Ajuda e documentação | Dicas curtas ao lado de cada termo técnico | _a adicionar_ |
+<table data-search="false"><thead><tr><th>Heurística</th><th>Onde aparece no LogCoach</th><th>Evidência</th></tr></thead><tbody><tr><td>Visibilidade do status do sistema</td><td>Barra de progresso em etapas durante a análise; feedbacks de uso de analise e identificação do plano</td><td>Telas 4, 8 e 9</td></tr><tr><td>Correspondência com o mundo real</td><td>Relatório e IA em linguagem simples e em português</td><td>Telas 2, 4 e 5</td></tr><tr><td>Controle e liberdade do usuário</td><td>Voltar e escolher outra luta sem perder o link; trocar o link a qualquer momento; possibilidade do jogador alterar a senha e poder excluir a conta</td><td>Telas 3, 5 e 8</td></tr><tr><td>Consistência e padrões</td><td>Mesmo padrão de cores para ok / atenção / erro em todas as telas; login (e-mail/senha) e padrão de cores na linha do tempo</td><td>Telas 1, 6 e 7</td></tr><tr><td>Prevenção de erros</td><td>Validação do link antes de enviar; lutas não suportadas em cinza; a exclusão fica em área vermelha e avisa que não dá para desfazer e  indisponibilidade do plano pro (evita a contratação de um serviço que ainda não existe)</td><td>Telas 2, 3, 8 e 9</td></tr><tr><td>Reconhecer em vez de lembrar</td><td>Identificação da luta (chefe, numero, duração e resultado) evita a necessidade de lembrar dos dados do log; jogador e melhores aparecem lado a lado, no mesmo eixo, sem precisar comparar números de memória.</td><td>Telas 3 e 6</td></tr><tr><td>Flexibilidade e eficiência</td><td>Possibilidade de testar mesmo sem o log em mãos; conteúdos completos ou rápidos/práticos a escolha do usuário; "Nova análise" fica a um clique, direto do perfil.</td><td>Telas 2, 7 e 8</td></tr><tr><td>Design estético e minimalista</td><td>Resumo só com os erros de maior impacto, detalhes nas abas; login somente com o essencial, e-mail e senha; planos em dois cartões, lado a lado, fáceis de comparar</td><td>Telas 1, 5 e 9</td></tr><tr><td>Ajudar a reconhecer e corrigir erros</td><td>Cada bloqueio de luta explica o motivo e, quando possível, o que fazer. O aviso de conexão também explica o que está acontecendo.</td><td>Tela 3</td></tr><tr><td>Ajuda e documentação</td><td>Dicas curtas ao lado de cada termo técnico; o "Como funciona" resume o uso em três passos; cada regra explica o próprio critério; quando a evolução ainda não pode ser exibida, a tela explica o que fazer.</td><td>Telas 2, 7 e 8</td></tr></tbody></table>
 
 ## 8.2 Validação de entradas e tratamento de erros
 
-| Situação | Mensagem ao usuário |
-|---|---|
-| Link não é do Warcraft Logs | "Esse link não parece ser do Warcraft Logs. Ele deve começar com warcraftlogs.com/reports/" |
-| Relatório privado ou inexistente | "Não conseguimos abrir esse relatório. Confira se ele está público no Warcraft Logs" |
-| Luta de chefe não suportado | Luta aparece cinza: "Chefe ainda não suportado" |
-| Nenhum Mago Arcano na luta | "Não achamos nenhum Mago Arcano nessa luta" |
-| Luta curta demais | "A luta tem menos de 60 s. Escolha uma tentativa mais longa" |
-| Limite do plano grátis | "Você usou suas 5 análises do mês. Veja o plano Pro" |
-| API do Warcraft Logs fora do ar | "O Warcraft Logs não respondeu. Tente de novo em alguns minutos" |
-| IA falhou | Relatório só com as regras + aviso "Explicação do coach indisponível agora" |
-| E-mail ou senha inválidos | Aviso no próprio campo, antes de enviar |
-
-## 8.3 Teste de usabilidade
-
-- **Participantes:** 5 pessoas — 3 jogadores de WoW e 2 leigos.
-- **Tarefas:** 1) analisar um log a partir do link; 2) achar o erro mais grave; 3) achar a evolução no histórico.
-- **Medidas:** tempo para concluir, se precisou de ajuda, nota SUS (meta ≥ 68).
-
-| Participante | Perfil | Tarefa 1 | Tarefa 2 | Tarefa 3 | SUS |
-|---|---|---|---|---|---|
-| P1 |  |  |  |  |  |
-| P2 |  |  |  |  |  |
-| P3 |  |  |  |  |  |
-| P4 |  |  |  |  |  |
-| P5 |  |  |  |  |  |
-| **Média** |  |  |  |  |  |
-
-**Problemas encontrados e correções:** _a preencher após o teste_.
+<table data-search="false"><thead><tr><th>Situação</th><th>Mensagem ao usuário</th></tr></thead><tbody><tr><td>Link não é do Warcraft Logs</td><td>"Esse link não parece ser do Warcraft Logs. Ele deve começar com warcraftlogs.com/reports/"</td></tr><tr><td>Relatório privado ou inexistente</td><td>"Não conseguimos abrir esse relatório. Confira se ele está público no Warcraft Logs"</td></tr><tr><td>Luta de chefe não suportado</td><td>Luta aparece cinza: "Chefe ainda não suportado"</td></tr><tr><td>Nenhum Mago Arcano na luta</td><td>"Não achamos nenhum Mago Arcano nessa luta"</td></tr><tr><td>Luta curta demais</td><td>"A luta tem menos de 60 s. Escolha uma tentativa mais longa"</td></tr><tr><td>Limite do plano grátis</td><td>"Você usou suas 5 análises do mês. Veja o plano Pro"</td></tr><tr><td>API do Warcraft Logs fora do ar</td><td>"O Warcraft Logs não respondeu. Tente de novo em alguns minutos"</td></tr><tr><td>IA falhou</td><td>Relatório só com as regras + aviso "Explicação do coach indisponível agora"</td></tr><tr><td>E-mail ou senha inválidos</td><td>Aviso no próprio campo, antes de enviar</td></tr></tbody></table>

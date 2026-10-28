@@ -1,25 +1,20 @@
+---
+description: Página inicial do projeto.
+---
+
 # LogCoach
 
-**Coach de desempenho para jogadores competitivos de World of Warcraft.**
+<p align="center"><img src=".gitbook/assets/image.png" alt="" data-size="original"></p>
 
-O jogador cola o link do seu log de combate do Warcraft Logs e o LogCoach mostra, em português, os erros que mais estão custando dano, comparando a luta com os melhores jogadores do mundo no mesmo chefe. A proposta é reduzir drasticamente o tempo entre jogar e saber o que corrigir.
+## Ficha de Inscrição
 
-| | |
-|---|---|
-| **Curso** | Engenharia de Software — UNA |
-| **Trabalho** | A3 — Usabilidade de Software |
-| **Tipo** | Aplicação Web responsiva |
-| **Setor** | Entretenimento e Esportes Eletrônicos |
-| **Recorte do MVP** | Mago Arcano · raide The Venomous Abyss (Midnight T2) · português |
-| **Repositório** | [github.com/jp4inbr/LogCoach](https://github.com/jp4inbr/LogCoach) |
+#### **Projeto A3 UC - Usabilidade e Desenvolvimento WEB**
 
-## Entregas
+**Professor: Mário Sergio Caldas Teixeira| E-mail: mariosct@prof.una.br / mariossct@ulife.com.br**\
+**Campus: Center Minas | Turma: 439 | Turno: Noite | UC: UDS**\
+**Tema do Projeto: Coach de desempenho para jogadores competitivos de World of Warcraft | Título Provisório: LogCoach |**
 
-| Entrega | Data | Itens desta documentação |
-|---|---|---|
-| RT01 — Ficha, ideia e escopo inicial | 09/09/2026 | 1, 2, 2.B |
-| RT02 — Requisitos, arquitetura e protótipo | 30/09/2026 | 2 (revisão), 3, 4, 5, 6, 7 |
-| RT03 — Consolidação, usabilidade e IA | 28/10/2026 | 8, 9, 10, 11, 12 + protótipo final |
-| Banca final | fim de nov/2026 | 13, 14 |
+<table data-header-hidden data-search="false"><thead><tr><th></th><th data-hidden></th><th data-hidden></th></tr></thead><tbody><tr><td>Nome</td><td>RA</td><td>E-Mail</td></tr><tr><td>Arthur Justi Beiral</td><td>324122343</td><td>arthurbeiral@proton.me</td></tr><tr><td>Danilo Rubens da Silva Félix</td><td>325143953</td><td>rsdanillo13@gmail.com</td></tr><tr><td>João Vitor Paim Nicacio</td><td>32416402</td><td>joaovpaim2@gmail.com</td></tr><tr><td>Luís Henrique Ferreira Carneiro</td><td>324116351</td><td>luishenriquecarneiro20@gmail.com</td></tr><tr><td>Matheus Barreto Morgado</td><td>32420276</td><td>matheusbarretomorgado@gmail.com</td></tr><tr><td>Matheus Santos Damasceno</td><td>325115791</td><td>matheusdamasceno950@hotmail.com</td></tr><tr><td>Pedro Augusto Santos Nogueira</td><td>325128342</td><td>pedro.anogueira18@gmail.com</td></tr><tr><td>Thales Teichmann Valadares de Almeida</td><td>324133404</td><td>thales.teichmann@gmail.com</td></tr><tr><td>Yohanan Aguilar Amaral</td><td>324263860</td><td>yohan007aguilar@gmail.com</td></tr></tbody></table>
 
-> **Nota:** em 12/10/2026 o professor aprovou a troca do tema original (Central de Rotinas) pelo LogCoach. Os itens 1 a 7 foram refeitos para o novo tema.
+
+

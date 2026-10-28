@@ -1,3 +1,7 @@
+---
+description: Como instalar, usar e relatar problemas no LogCoach.
+---
+
 # 12. Documentação de Desenvolvimento (Técnica)
 
 > Em construção junto com o código.
@@ -22,31 +26,31 @@ npm run dev   # http://localhost:5173 (precisa do backend rodando)
 
 ## 12.2 Variáveis de ambiente
 
-| Variável | Para quê |
-|---|---|
-| `WCL_CLIENT_ID` / `WCL_CLIENT_SECRET` | Acesso à API do Warcraft Logs |
-| `DATA_SOURCE` | `wcl` (relatórios reais) ou `exemplo` (arquivos de `app/samples/`, sem internet: plano B da demo e CI). Vazio = `wcl` se houver as chaves do WCL, senão `exemplo`. `wcl` sem as chaves não sobe |
-| `APP_ENV` | `dev` (padrão) ou `prod`. Em `prod` o backend não sobe sem `JWT_SECRET` |
-| `NAMES_FILE` | Mapa pseudônimo → nome real do modo exemplo (RF25). Padrão: `tests/fixtures/names.local.json`, fora do git |
-| `GOOGLE_CLOUD_PROJECT` | Projeto do Google Cloud (Vertex AI) |
-| `DATABASE_URL` | Banco (SQLite em dev, PostgreSQL em produção). O arquivo `logcoach.db` é criado sozinho na primeira subida |
-| `JWT_SECRET` | Assinatura do login. Vazio em dev = chave temporária (o login cai a cada reinício); obrigatório com `APP_ENV=prod` |
+| Variável                              | Para quê                                                                                                                                                                                        |
+| ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `WCL_CLIENT_ID` / `WCL_CLIENT_SECRET` | Acesso à API do Warcraft Logs                                                                                                                                                                   |
+| `DATA_SOURCE`                         | `wcl` (relatórios reais) ou `exemplo` (arquivos de `app/samples/`, sem internet: plano B da demo e CI). Vazio = `wcl` se houver as chaves do WCL, senão `exemplo`. `wcl` sem as chaves não sobe |
+| `APP_ENV`                             | `dev` (padrão) ou `prod`. Em `prod` o backend não sobe sem `JWT_SECRET`                                                                                                                         |
+| `NAMES_FILE`                          | Mapa pseudônimo → nome real do modo exemplo (RF25). Padrão: `tests/fixtures/names.local.json`, fora do git                                                                                      |
+| `GOOGLE_CLOUD_PROJECT`                | Projeto do Google Cloud (Vertex AI)                                                                                                                                                             |
+| `DATABASE_URL`                        | Banco (SQLite em dev, PostgreSQL em produção). O arquivo `logcoach.db` é criado sozinho na primeira subida                                                                                      |
+| `JWT_SECRET`                          | Assinatura do login. Vazio em dev = chave temporária (o login cai a cada reinício); obrigatório com `APP_ENV=prod`                                                                              |
 
 ## 12.3 Endpoints da API
 
 Documentação interativa em http://localhost:8000/docs (botão **Authorize** recebe o token do login).
 
-| Método | Rota | Login | Descrição |
-|---|---|---|---|
-| POST | `/auth/register` | — | Cadastro com e-mail e senha (mín. 8 caracteres). Devolve o token |
-| POST | `/auth/login` | — | Login. Devolve o token (JWT, vale 7 dias) |
-| GET | `/me` | sim | E-mail, plano e análises usadas no mês |
-| PUT | `/me/password` | sim | Troca a senha |
-| DELETE | `/me` | sim | Exclui a conta e todas as análises (RNF07) |
-| GET | `/me/analyses` | sim | Histórico, da mais recente para a mais antiga (RF12) |
-| POST | `/reports/resolve` | — | Recebe o link, valida (RF03) e devolve as lutas e os Magos Arcanos (RF04) |
-| POST | `/analyses` | opcional | Roda a análise de uma luta. Com login, guarda no histórico e conta no limite de 5/mês (RF14) |
-| GET | `/analyses/{id}` | opcional | Resultado de uma análise. Análise de uma conta só abre para o dono |
+| Método | Rota               | Login    | Descrição                                                                                    |
+| ------ | ------------------ | -------- | -------------------------------------------------------------------------------------------- |
+| POST   | `/auth/register`   | —        | Cadastro com e-mail e senha (mín. 8 caracteres). Devolve o token                             |
+| POST   | `/auth/login`      | —        | Login. Devolve o token (JWT, vale 7 dias)                                                    |
+| GET    | `/me`              | sim      | E-mail, plano e análises usadas no mês                                                       |
+| PUT    | `/me/password`     | sim      | Troca a senha                                                                                |
+| DELETE | `/me`              | sim      | Exclui a conta e todas as análises (RNF07)                                                   |
+| GET    | `/me/analyses`     | sim      | Histórico, da mais recente para a mais antiga (RF12)                                         |
+| POST   | `/reports/resolve` | —        | Recebe o link, valida (RF03) e devolve as lutas e os Magos Arcanos (RF04)                    |
+| POST   | `/analyses`        | opcional | Roda a análise de uma luta. Com login, guarda no histórico e conta no limite de 5/mês (RF14) |
+| GET    | `/analyses/{id}`   | opcional | Resultado de uma análise. Análise de uma conta só abre para o dono                           |
 
 **Erros.** Toda resposta de erro vem como `{"detail": {"code": "...", "message": "..."}}`. O `code` é fixo (o frontend decide o que fazer por ele) e a `message` já é o texto do item 8.2, pronto para mostrar ao usuário. Códigos: `invalid_link`, `report_not_available`, `fight_not_found`, `fight_too_short`, `unsupported_fight`, `no_arcane_mage`, `player_ambiguous`, `plan_limit`, `analysis_not_available`, `email_taken`, `invalid_credentials`, `wrong_password`, `login_required`, `invalid_token`, `analysis_not_found`.
 
@@ -62,10 +66,10 @@ Documentação interativa em http://localhost:8000/docs (botão **Authorize** re
 
 As rotas não falam direto com o Warcraft Logs nem com o motor. Elas dependem de duas interfaces em `backend/app/services/sources.py`:
 
-| Interface | O que faz | Implementação atual |
-|---|---|---|
-| `ReportSource.get_report(code)` | Lista as lutas e os Magos Arcanos de um relatório | `WclReportSource` (`DATA_SOURCE=wcl`): uma consulta `REPORT_FIGHTS` (~2 pontos) a cada chamada; ainda sem cache. `SampleReportSource` (`DATA_SOURCE=exemplo`): lê `app/samples/report_<código>.json` (só o kill de referência) |
-| `Analyzer.analyze(report, fight, player)` | Devolve o resultado da análise | `SampleAnalyzer`: lê `app/samples/analysis_<código>_<luta>.json` |
+| Interface                                 | O que faz                                         | Implementação atual                                                                                                                                                                                                             |
+| ----------------------------------------- | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ReportSource.get_report(code)`           | Lista as lutas e os Magos Arcanos de um relatório | `WclReportSource` (`DATA_SOURCE=wcl`): uma consulta `REPORT_FIGHTS` (\~2 pontos) a cada chamada; ainda sem cache. `SampleReportSource` (`DATA_SOURCE=exemplo`): lê `app/samples/report_<código>.json` (só o kill de referência) |
+| `Analyzer.analyze(report, fight, player)` | Devolve o resultado da análise                    | `SampleAnalyzer`: lê `app/samples/analysis_<código>_<luta>.json`                                                                                                                                                                |
 
 Os arquivos de exemplo são marcados como exemplo (`"sample": true` e `"source": "exemplo"`) e a interface mostra um aviso amarelo. O `WclReportSource` já lê relatórios reais; o analisador ainda é o de exemplo, então só a luta de referência tem resultado (as outras dão `analysis_not_available`). Quando o motor ficar pronto, basta trocar o que `get_analyzer()` devolve. Nenhuma rota nem tela muda.
 
@@ -75,11 +79,11 @@ No `WclReportSource`: entram só Magos com spec Arcano; spec e item level vêm d
 
 ## 12.4 Motor de análise: as três camadas de regras
 
-| Camada | O que é | Exemplos | Onde fica |
-|---|---|---|---|
-| **1. Regras da especialização** (determinísticas) | Valem em qualquer luta | Tempo parado, quantas vezes cada cooldown foi usado vs. o máximo possível, recurso desperdiçado, procs perdidos, mortes | `backend/app/rules/arcane_mage.yaml` |
-| **2. Regras do encontro** (determinísticas) | Descrevem a luta, uma por chefe | Fases e intermissões, janelas de burst esperadas, golpes de raide (onde se espera defensivo), períodos em que o chefe não pode ser atacado | `backend/app/encounters/nekzali.yaml` |
-| **3. Perguntas de julgamento** (IA) | O que não vira regra fixa | "Valeu segurar o cooldown para a próxima fase?", "o erro se repete em todos os pulls?", "é erro de execução ou de planejamento?" | Prompt do coach (item 9) |
+| Camada                                            | O que é                         | Exemplos                                                                                                                                   | Onde fica                             |
+| ------------------------------------------------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------- |
+| **1. Regras da especialização** (determinísticas) | Valem em qualquer luta          | Tempo parado, quantas vezes cada cooldown foi usado vs. o máximo possível, recurso desperdiçado, procs perdidos, mortes                    | `backend/app/rules/arcane_mage.yaml`  |
+| **2. Regras do encontro** (determinísticas)       | Descrevem a luta, uma por chefe | Fases e intermissões, janelas de burst esperadas, golpes de raide (onde se espera defensivo), períodos em que o chefe não pode ser atacado | `backend/app/encounters/nekzali.yaml` |
+| **3. Perguntas de julgamento** (IA)               | O que não vira regra fixa       | "Valeu segurar o cooldown para a próxima fase?", "o erro se repete em todos os pulls?", "é erro de execução ou de planejamento?"           | Prompt do coach (item 9)              |
 
 A camada 2 **ajusta** a camada 1. Exemplo: tempo parado durante uma intermissão não conta como erro; um cooldown segurado para uma janela de burst mais valiosa conta como acerto.
 
@@ -96,11 +100,11 @@ A camada 2 **ajusta** a camada 1. Exemplo: tempo parado durante uma intermissão
 
 A IA não consulta o Warcraft Logs nem faz conta. O backend monta um pacote com três partes:
 
-| Parte | O que é | Quem produz |
-|---|---|---|
-| **Fatos das regras** | Erros conhecidos, com certeza (ex.: "4º Surge 4,5 s depois do Touch") | Motor, a partir dos YAML |
-| **Guia da luta e da spec** | Texto curto: como o chefe funciona, como o Arcano joga, o que não é erro (`backend/app/guides/nekzali.md` e `arcane_mage.md`) | Arthur (um por chefe e um por spec) |
-| **Tabela por habilidade** | Por fase: casts por minuto e % do dano de cada habilidade, jogador vs. média dos top 10 do mesmo bracket | Motor (RF22), genérico para qualquer spec |
+| Parte                      | O que é                                                                                                                       | Quem produz                               |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- |
+| **Fatos das regras**       | Erros conhecidos, com certeza (ex.: "4º Surge 4,5 s depois do Touch")                                                         | Motor, a partir dos YAML                  |
+| **Guia da luta e da spec** | Texto curto: como o chefe funciona, como o Arcano joga, o que não é erro (`backend/app/guides/nekzali.md` e `arcane_mage.md`) | Arthur (um por chefe e um por spec)       |
+| **Tabela por habilidade**  | Por fase: casts por minuto e % do dano de cada habilidade, jogador vs. média dos top 10 do mesmo bracket                      | Motor (RF22), genérico para qualquer spec |
 
 Com isso a IA ordena os erros, explica em português e aponta como **hipótese** o que destoar na tabela sem ter regra (RF24). A tabela usa casts **por minuto** porque a duração das fases muda entre kills.
 
@@ -114,13 +118,13 @@ Com isso a IA ordena os erros, explica em português e aponta como **hipótese**
 
 ### Métricas da comparação (Mago Arcano)
 
-| Métrica | Exemplo no kill de referência |
-|---|---|
-| Cadência do Arcane Surge | Tops do bracket: ~93 s entre usos |
-| Distância Touch → Surge | Tops: 0,1 a 3,2 s |
-| Momento da 2ª poção | 9 de 10 tops: entre 4:59 e 5:29 |
-| Defensivo nos overlaps | Ver `overlaps` em `nekzali.yaml` |
-| DPS por fase | Stage Two é onde a diferença costuma aparecer |
+| Métrica                  | Exemplo no kill de referência                 |
+| ------------------------ | --------------------------------------------- |
+| Cadência do Arcane Surge | Tops do bracket: \~93 s entre usos            |
+| Distância Touch → Surge  | Tops: 0,1 a 3,2 s                             |
+| Momento da 2ª poção      | 9 de 10 tops: entre 4:59 e 5:29               |
+| Defensivo nos overlaps   | Ver `overlaps` em `nekzali.yaml`              |
+| DPS por fase             | Stage Two é onde a diferença costuma aparecer |
 
 **Cache por bracket (RNF03):** a referência dos top 10 é a mesma para todos do mesmo chefe, dificuldade e bracket, então é calculada uma vez a cada 24 h e reaproveitada.
 
@@ -170,28 +174,28 @@ thresholds:
 
 Código em `backend/app/wcl/`.
 
-| Arquivo | O que faz |
-|---|---|
-| `client.py` | `WclClient` (`from_env()` lê as chaves do `Settings`, em `app/config.py`): troca `WCL_CLIENT_ID` + `WCL_CLIENT_SECRET` por um token (fluxo *client credentials*), guarda o token e renova sozinho quando vence ou quando a API responde 401. `query()` faz o POST GraphQL; `events()` segue a paginação (`nextPageTimestamp`). |
-| `queries.py` | Consultas GraphQL: lutas e jogadores do report (`REPORT_FIGHTS`), dados da luta, brackets do encontro, rankings. |
-| `fetch.py` | `fetch_report()` devolve as lutas e os jogadores do report (usado pelo `WclReportSource`); `fetch_fight()` devolve uma luta pronta para o motor; `fetch_rankings()` e `bracket_index()` acham os top N do bracket. |
-| `anonymize.py` | Troca os nomes de jogadores por pseudônimos antes de salvar. |
+| Arquivo        | O que faz                                                                                                                                                                                                                                                                                                                      |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `client.py`    | `WclClient` (`from_env()` lê as chaves do `Settings`, em `app/config.py`): troca `WCL_CLIENT_ID` + `WCL_CLIENT_SECRET` por um token (fluxo _client credentials_), guarda o token e renova sozinho quando vence ou quando a API responde 401. `query()` faz o POST GraphQL; `events()` segue a paginação (`nextPageTimestamp`). |
+| `queries.py`   | Consultas GraphQL: lutas e jogadores do report (`REPORT_FIGHTS`), dados da luta, brackets do encontro, rankings.                                                                                                                                                                                                               |
+| `fetch.py`     | `fetch_report()` devolve as lutas e os jogadores do report (usado pelo `WclReportSource`); `fetch_fight()` devolve uma luta pronta para o motor; `fetch_rankings()` e `bracket_index()` acham os top N do bracket.                                                                                                             |
+| `anonymize.py` | Troca os nomes de jogadores por pseudônimos antes de salvar.                                                                                                                                                                                                                                                                   |
 
-**Limite da API:** 1000 pontos por hora. Uma luta completa custa ~12 pontos; o kill de referência + top 10 custa ~130.
+**Limite da API:** 1000 pontos por hora. Uma luta completa custa \~12 pontos; o kill de referência + top 10 custa \~130.
 
 **Formato de uma luta** (`fetch_fight`). Os tempos ficam em **ms do report**, como vêm da API. A conversão para "segundos desde o início da fase" é do motor, usando `meta.fight.phaseTransitions`.
 
-| Chave | Conteúdo |
-|---|---|
-| `meta` | Código do report, `fight` (id, encontro, dificuldade, kill, início/fim, `phaseTransitions`), `duration_ms` |
-| `phases` | Nomes das fases do encontro (`id`, `name`, `isIntermission`) |
-| `actors`, `abilities` | Só os que aparecem nos eventos desta luta |
-| `player` | Ator do jogador + `details` (spec, `minItemLevel`/`maxItemLevel`) |
-| `events.casts` | Casts do jogador (`begincast` e `cast`) |
-| `events.buffs` | Buffs no jogador, com stacks (`applybuffstack`/`removebuffstack` trazem `stack`) |
-| `events.damage_done` | Dano do jogador (sem a lista de buffs por golpe, que já está em `buffs`) |
-| `events.damage_taken`, `events.deaths` | Dano recebido e mortes do jogador (defensivo nos overlaps) |
-| `events.boss_casts` | Casts dos inimigos (habilidades do chefe e dos adds do `nekzali.yaml`) |
+| Chave                                  | Conteúdo                                                                                                   |
+| -------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `meta`                                 | Código do report, `fight` (id, encontro, dificuldade, kill, início/fim, `phaseTransitions`), `duration_ms` |
+| `phases`                               | Nomes das fases do encontro (`id`, `name`, `isIntermission`)                                               |
+| `actors`, `abilities`                  | Só os que aparecem nos eventos desta luta                                                                  |
+| `player`                               | Ator do jogador + `details` (spec, `minItemLevel`/`maxItemLevel`)                                          |
+| `events.casts`                         | Casts do jogador (`begincast` e `cast`)                                                                    |
+| `events.buffs`                         | Buffs no jogador, com stacks (`applybuffstack`/`removebuffstack` trazem `stack`)                           |
+| `events.damage_done`                   | Dano do jogador (sem a lista de buffs por golpe, que já está em `buffs`)                                   |
+| `events.damage_taken`, `events.deaths` | Dano recebido e mortes do jogador (defensivo nos overlaps)                                                 |
+| `events.boss_casts`                    | Casts dos inimigos (habilidades do chefe e dos adds do `nekzali.yaml`)                                     |
 
 **Fixtures.** `cd backend && python scripts/save_fixtures.py` baixa o kill de referência e os top 10 do mesmo bracket para `tests/fixtures/nekzali_mythic_<min>_<max>/` (`--only-reference` só a referência, `--force` para sobrescrever). Cada luta é um `.json.gz`; o `index.json` lista o bracket e o DPS/duração de cada top. Servem para os testes, para desenvolver sem internet e como plano B da demo.
 
@@ -203,18 +207,17 @@ Código em `backend/app/wcl/`.
 
 O motor devolve um `AnalysisResult` (`backend/app/schemas.py`); o frontend só lê desse objeto. Exemplo completo em `backend/app/samples/analysis_XhrmBaYkGCAQjH2D_34.json`.
 
-| Campo | O que é | Requisito |
-|---|---|---|
-| `source` | `"exemplo"` ou `"motor"` | — |
-| `fight`, `player` | Chefe, dificuldade, kill/wipe, duração; nome, reino (`server`), `display_name` (= `name`: o analisado nunca é ocultado), spec e item level | RF25 |
-| `comparison` | Com quem comparou (`label`, `bracket`, `size`), se o jogador já está no top 10 e `players`: cada comparado com `rank`, `display_name` (`top01`…), `name` (real, ou nulo no modo exemplo), `server`, `item_level` e `dps` | RF21, RF25 |
-| `summary` | DPS do jogador, média dos tops, diferença em %, tempo ativo | RF08 |
-| `coach` | `available` falso quando a IA falhou; `headline` é o resumo do coach | RF17 |
-| `mistakes` | Erros **já ordenados** do maior para o menor impacto. Cada um: `title`, `impact_pct` (ou `null` se é risco, não dano), `severity` (`atencao`/`erro`), `kind` (`regra` ou `hipotese`), `phase`, `explanation`, `what_to_do` e `numbers` (você × melhores) | RF10, RF24 |
-| `rules` | Todas as regras checadas, com valor do jogador, dos melhores e `status` (`ok`/`atencao`/`erro`) | RF07, RF18 |
-| `phases` | Fases com início e fim em segundos e se é intermissão | RF20 |
-| `timeline` | Por cooldown: segundos **desde o início da luta** de cada uso do jogador (`player_s`) e do log de referência dos tops (`top_s`). O motor calcula por fase e converte com `phases[].start_s` | RF11 |
-| `abilities` | Por fase: casts por minuto e % do dano, jogador × tops | RF22 |
+| Campo             | O que é                                                                                                                                                                                                                                                  | Requisito  |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
+| `source`          | `"exemplo"` ou `"motor"`                                                                                                                                                                                                                                 | —          |
+| `fight`, `player` | Chefe, dificuldade, kill/wipe, duração; nome, reino (`server`), `display_name` (= `name`: o analisado nunca é ocultado), spec e item level                                                                                                               | RF25       |
+| `comparison`      | Com quem comparou (`label`, `bracket`, `size`), se o jogador já está no top 10 e `players`: cada comparado com `rank`, `display_name` (`top01`…), `name` (real, ou nulo no modo exemplo), `server`, `item_level` e `dps`                                 | RF21, RF25 |
+| `summary`         | DPS do jogador, média dos tops, diferença em %, tempo ativo                                                                                                                                                                                              | RF08       |
+| `coach`           | `available` falso quando a IA falhou; `headline` é o resumo do coach                                                                                                                                                                                     | RF17       |
+| `mistakes`        | Erros **já ordenados** do maior para o menor impacto. Cada um: `title`, `impact_pct` (ou `null` se é risco, não dano), `severity` (`atencao`/`erro`), `kind` (`regra` ou `hipotese`), `phase`, `explanation`, `what_to_do` e `numbers` (você × melhores) | RF10, RF24 |
+| `rules`           | Todas as regras checadas, com valor do jogador, dos melhores e `status` (`ok`/`atencao`/`erro`)                                                                                                                                                          | RF07, RF18 |
+| `phases`          | Fases com início e fim em segundos e se é intermissão                                                                                                                                                                                                    | RF20       |
+| `timeline`        | Por cooldown: segundos **desde o início da luta** de cada uso do jogador (`player_s`) e do log de referência dos tops (`top_s`). O motor calcula por fase e converte com `phases[].start_s`                                                              | RF11       |
+| `abilities`       | Por fase: casts por minuto e % do dano, jogador × tops                                                                                                                                                                                                   | RF22       |
 
 Os textos (`title`, `explanation`, `what_to_do`) saem em português, com os nomes de `pt_br.yaml`.
-

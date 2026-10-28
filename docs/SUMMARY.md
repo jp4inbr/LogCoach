@@ -2,8 +2,8 @@
 
 * [LogCoach](README.md)
 * [1. Documento de Escopo](01-documento-de-escopo.md)
-* [2. Planejamento Estratégico do Produto](02-planejamento-estrategico/README.md)
-  * [2.B. Documento de Visão do Produto (Product Vision Board)](02-planejamento-estrategico/02b-product-vision-board.md)
+* [2. Planejamento Estratégico do Produto](02-planejamento-estrategico.md)
+  * [2.B. Documento de Visão do Produto (Product Vision Board)](02b-product-vision-board.md)
 * [3. Protótipo (Mockup)](03-prototipo.md)
 * [4. Documento de Requisitos](04-documento-de-requisitos.md)
 * [5. Diagrama de Arquitetura](05-diagrama-de-arquitetura.md)
