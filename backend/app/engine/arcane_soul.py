@@ -1,9 +1,9 @@
 """Arcane Soul e janela do Arcane Surge (regras do Arthur, Sunfury).
 
-- Entrada no Arcane Soul: entrar com 25 de Salvo. Os 2 últimos GCDs antes do Soul não podem
-  ser Barrage, salvo se vier Overpowered Missiles, que sobe o Salvo para 25 na hora.
-- Janela do Surge: chegar com Clearcasting para não encher o burst de Arcane Blast. Nos
-  melhores logs, Blast dentro do Surge só aparece no de abertura.
+- Entrada no Arcane Soul: entrar com 20 de Salvo no mínimo. A causa típica de entrar baixo é
+  Barrage nos 2 últimos GCDs antes do Soul; Overpowered Missiles sobe o Salvo para 25 na hora.
+- Janela do Surge: não entrar de mão vazia (Salvo baixo e no máximo 1 Clearcasting), senão
+  o burst enche de Arcane Blast. Nos melhores logs, Blast no Surge é raro fora o de abertura.
 Lê uma luta no formato de `wcl.fetch.fetch_fight` (tempos em ms do report).
 """
 
@@ -21,21 +21,32 @@ OVERPOWERED_LOOKBACK_MS = 3000
 class SoulEntry:
     start_s: float  # segundos desde o início da luta
     salvo: int
-    barrage_in_last_gcds: bool
+    barrage_in_last_gcds: bool  # diagnóstico: a causa mais comum de entrar baixo
     overpowered: bool
 
     @property
     def mistake(self) -> bool:
-        """Barrage nos últimos GCDs sem a exceção do Overpowered Missiles."""
-        return self.barrage_in_last_gcds and not self.overpowered
+        """Entrou com menos Salvo que o mínimo do YAML (20)."""
+        return self.salvo < load_spec_rules()["arcane_soul"]["min_salvo"]
 
 
 @dataclass(frozen=True)
 class SurgeWindow:
     start_s: float
+    salvo: int  # acúmulos de Salvo no começo da janela
     clearcasting: int  # cargas de Clearcasting no começo da janela
     arcane_blasts: int
     opener: bool
+
+    @property
+    def empty_handed(self) -> bool:
+        """Entrou de mão vazia: Salvo baixo e no máximo 1 Clearcasting (fora a abertura)."""
+        limits = load_spec_rules()["surge_window"]["empty_handed"]
+        return (
+            not self.opener
+            and self.salvo <= limits["max_salvo"]
+            and self.clearcasting <= limits["max_clearcasting"]
+        )
 
 
 def soul_entries(fight: dict[str, Any], rules: dict[str, Any] | None = None) -> list[SoulEntry]:
@@ -87,13 +98,18 @@ def surge_windows(fight: dict[str, Any], rules: dict[str, Any] | None = None) ->
         if e["type"] == "cast" and e["abilityGameID"] == blast
     ]
     windows = buff_windows(fight, rules["surge_window"]["buff_id"])
-    charges = stacks_before(fight, rules["buffs"]["clearcasting"], [s + 1 for s, _ in windows])
+    starts = [s + 1 for s, _ in windows]
+    charges = stacks_before(fight, rules["buffs"]["clearcasting"], starts)
+    salvos = stacks_before(fight, rules["buffs"]["arcane_salvo"], starts)
     return [
         SurgeWindow(
             start_s=(begin - start) / 1000,
+            salvo=salvo,
             clearcasting=cc,
             arcane_blasts=sum(begin <= t <= end for t in blasts),
             opener=index == 0,
         )
-        for index, ((begin, end), cc) in enumerate(zip(windows, charges, strict=True))
+        for index, ((begin, end), cc, salvo) in enumerate(
+            zip(windows, charges, salvos, strict=True)
+        )
     ]

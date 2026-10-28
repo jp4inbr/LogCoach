@@ -68,13 +68,15 @@ barrage:
 
 # Arcane Soul (Sunfury): começa quando o Arcane Surge acaba (~17,4 s). Dentro dele o Barrage
 # não gasta Salvo (medido: 20 dos 21 Barrages sem consumo do Harmonist caíram no Soul), então
-# cada Barrage rola Prismatic Bolt e Meteorite de graça. Regra do Arthur: entrar com 25 de Salvo.
+# cada Barrage rola Prismatic Bolt e Meteorite de graça. Regra do Arthur: entrar com 20 de
+# Salvo no mínimo. 25 é o máximo, mas de 20 para 25 o ganho é baixo (~0,3%), e às vezes vale
+# soltar um Barrage para não estourar o Salvo.
 arcane_soul:
   buff_id: 451038
-  target_salvo: 25
+  min_salvo: 20
   # Os 2 últimos GCDs antes do Soul (~2,5 s) não podem ser Barrage. Exceção: Overpowered Missiles
   # sobe o Salvo para 25 na hora. Kill de referência: entradas com 0, 20, 1, 18 e 22 de Salvo
-  # (média 12,2); nos 10 tops, média 18,1 e Barrage nos 2 últimos GCDs em 6 de 43 entradas.
+  # (2 de 5 com 20+); nos 10 tops, 23 de 43 com 20+ e Barrage nos 2 últimos GCDs em 6 de 43.
   no_barrage_last_gcds: 2
   exception_buff_id: 1277009  # Overpowered Missiles
 
@@ -86,6 +88,10 @@ surge_window:
   buff_id: 365362             # buff do Arcane Surge (o cast é 365350)
   max_arcane_blast: 0         # fora o Surge de abertura
   ignore_opener: true
+  # "Mão vazia": entrar no Surge com Salvo baixo e no máximo 1 Clearcasting obriga a encher a
+  # janela de Blast. Nos tops, as 5 entradas assim deram 3 Blasts por janela. Entrar com uma
+  # Clearcasting guardada e Salvo razoável está ok.
+  empty_handed: { max_salvo: 11, max_clearcasting: 1 }
 
 # Prismatic Bolt: decisão × sorte (regra do Arthur). Cada Salvo no Barrage dá 2% de chance
 # de proc (25 → 50%, 11 → 22%). A decisão que mais pesa é o Salvo dentro do Arcane Soul, onde

@@ -13,10 +13,10 @@
    - Com 3 cargas de Abstração (o máximo), gastar duas em Mísseis antes da Salva, para não perder carga nova.
    - Com uma Seta na mão, o comum é 1 Míssil + Seta e depois a Salva, que já passa de 12 sem estourar o Salvo.
 5. **Mísseis e Salva são o loop principal; Impacto é complemento.** Os melhores lançam ~17 Mísseis e ~15 Salvas por minuto, e só ~3 Impactos Arcanos (para completar o Arcane Salvo antes da Salva). Muito Impacto Arcano costuma ser sinal de Mísseis ou Setas perdidos.
-6. **Alma Arcana (Arcane Soul) depois do Surto.** Quando o Surto Arcano acaba (~17 s), começa a Alma Arcana: nela a Salva **não gasta** o Salvo, então cada Salva rola de graça a chance de Seta e os meteoros com os acúmulos que você tem. A regra é **entrar na Alma com 25 de Salvo** e soltar 4 a 5 Salvas cheias:
+6. **Alma Arcana (Arcane Soul) depois do Surto.** Quando o Surto Arcano acaba (~17 s), começa a Alma Arcana: nela a Salva **não gasta** o Salvo, então cada Salva rola de graça a chance de Seta e os meteoros com os acúmulos que você tem. A regra é **entrar na Alma com 20 de Salvo ou mais** e soltar 4 a 5 Salvas com o Salvo alto. 25 é o máximo, mas de 20 para 25 o ganho é pequeno (~0,3%), e às vezes vale soltar uma Salva para não estourar:
    - **os dois últimos GCDs antes da Alma (uns 2,5 s) não podem ser Salva Arcana**, senão você entra com o Salvo baixo;
    - exceção: se vier **Mísseis Sobrecarregados** (Overpowered Missiles), o Salvo sobe para 25 na hora, e aí não é erro.
-7. **Abstração guardada para o Surto.** Chegar no Surto com Abstração suficiente para manter Mísseis e Salvas durante a janela. Ter que encher a janela de Impacto Arcano é perda grande de dano no burst. Nos melhores logs, Impacto Arcano dentro do Surto só aparece no de abertura.
+7. **Não entrar no Surto de mão vazia.** Entrar com Salvo baixo e no máximo 1 Abstração obriga a encher a janela de Impacto Arcano, o que é perda grande de dano no burst (nos melhores logs, quando isso acontece, saem 3 Impactos por janela). Entrar com uma Abstração guardada e Salvo razoável está ok. Fora o Surto de abertura, os melhores soltam só 0,5 Impacto por janela.
 8. **Orbe Arcano é raro.** Cerca de 3 por luta nos melhores logs (0,5 por minuto), usado para gerar cargas e ajudar a gerar Setas, não como magia de rotação.
 9. **Ficar conjurando o tempo todo.** Os melhores ficam ~99% da luta lançando magia. Se o tempo ativo cair, o resto não compensa.
 

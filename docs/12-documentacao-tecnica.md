@@ -224,9 +224,11 @@ Regras do Arthur (28/10/2026), conferidas nas 11 fixtures. Código em `backend/a
 
 **Por que Barrage com 12 ou mais.** O Barrage derruba 1 Meteorite a cada 5 acúmulos de Salvo (15 → 3, 20 → 4, 25 → 5), e cada meteoro pode devolver Clearcasting → Missiles → mais Salvo (snowball). A chance de Prismatic Bolt é linear (2% por acúmulo): duas Salvas com 11 dão quase a mesma chance que uma com 22. Então o erro de soltar cedo está no ciclo de meteoros, não na Seta.
 
-**Arcane Soul (Sunfury).** Começa quando o Surge acaba (~17,4 s). Dentro dele o Barrage não gasta Salvo (medido: 20 dos 21 Barrages sem consumo do Harmonist), então cada Barrage rola Seta e meteoros de graça. Regra: entrar com 25 de Salvo; os 2 últimos GCDs antes do Soul não podem ser Barrage, salvo se vier Overpowered Missiles (sobe o Salvo para 25 na hora). `soul_entries()` devolve, por entrada, o Salvo, se houve Barrage nos últimos GCDs e se houve a exceção.
+**Arcane Soul (Sunfury).** Começa quando o Surge acaba (~17,4 s). Dentro dele o Barrage não gasta Salvo (medido: 20 dos 21 Barrages sem consumo do Harmonist), então cada Barrage rola Seta e meteoros de graça. Regra: entrar com **20 de Salvo ou mais** (25 é o máximo, mas de 20 para 25 o ganho é ~0,3%, e às vezes vale soltar um Barrage para não estourar). A causa típica de entrar baixo é Barrage nos 2 últimos GCDs antes do Soul; Overpowered Missiles sobe o Salvo para 25 na hora. `soul_entries()` devolve, por entrada, o Salvo, se ficou abaixo do mínimo (`mistake`), se houve Barrage nos últimos GCDs e se houve Overpowered.
 
-**Janela do Surge.** Chegar com Clearcasting suficiente para não encher o burst de Arcane Blast. `surge_windows()` devolve, por janela, as cargas de Clearcasting no começo e os Blasts dentro. Fora o Surge de abertura, os tops soltam 0,5 Blast por janela.
+**Janela do Surge.** Não entrar de mão vazia (Salvo até 11 e no máximo 1 Clearcasting), senão o burst enche de Arcane Blast: nos tops, as 5 entradas assim deram 3 Blasts por janela. `surge_windows()` devolve, por janela, Salvo e Clearcasting no começo, os Blasts dentro e `empty_handed`. Fora o Surge de abertura, os tops soltam 0,5 Blast por janela. O Harmonist não entrou de mão vazia nenhuma vez e mesmo assim soltou 2,8 por janela: a causa está dentro da janela.
+
+**2ª poção com o Surge ou no CD.** Nos 30 s depois de um Surge, o DPS médio é 37% maior que no meio do ciclo (307,7 mil × 225,0 mil; 24 e 20 janelas sem poção, Power Infusion nem lust, nas 11 fixtures). Como a poção multiplica o dano feito enquanto dura, ela rende ~37% mais junto com o Surge. Ganho de alinhar ≈ bônus de dano da poção × 2,6% do dano da luta (ex.: poção de +5% → ~0,13% do dano total). Falta o bônus do Potencial da Luz para fechar o número; os logs não dão para medir (só 1 janela de Surge com poção sem PI ou lust).
 
 **Prismatic Bolt: decisão × sorte.** A spec depende muito de RNG, e o relatório não pode cobrar azar como erro.
 
@@ -242,7 +244,7 @@ Regras do Arthur (28/10/2026), conferidas nas 11 fixtures. Código em `backend/a
 
 | | Harmonist | Tops (média) |
 |---|---|---|
-| Salvo ao entrar no Soul | 12,2 (0, 20, 1, 18, 22) | 18,1 |
+| Entradas no Soul com 20+ de Salvo | 2 de 5 (0, 20, 1, 18, 22) | 23 de 43 |
 | Entradas com Barrage nos 2 últimos GCDs (sem Overpowered) | 1 de 5 | 6 de 43 |
 | Arcane Blast por janela de Surge (fora a de abertura) | 2,8 | 0,5 |
 | Procs de Seta: recebidos ÷ esperados na luta | 28 ÷ ~41 (z −2,8) | z +0,9 |

@@ -113,7 +113,7 @@
   },
   "coach": {
     "available": true,
-    "headline": "Você ficou 15,2% abaixo da média dos 10 melhores do seu bracket. O que mais pesou foi o Salvo: Salvas soltas com poucos acúmulos e entradas na Alma Arcana com Salvo baixo. Também entraram Impactos Arcanos demais dentro do Surto e o 4º Surto saiu atrasado, depois do Toque. O resto foi azar na Seta Prismática."
+    "headline": "Você ficou 15,2% abaixo da média dos 10 melhores do seu bracket. O que mais pesou foi o Salvo: Salvas soltas com poucos acúmulos e entradas na Alma Arcana abaixo de 20 de Salvo. Também entraram Impactos Arcanos demais dentro do Surto e o 4º Surto saiu atrasado, depois do Toque. O resto foi azar na Seta Prismática."
   },
   "mistakes": [
     {
@@ -145,13 +145,13 @@
       "severity": "atencao",
       "kind": "regra",
       "phase": null,
-      "explanation": "Depois do Surto vem a Alma Arcana: ali a Salva não gasta o Salvo, então cada Salva rola Seta Prismática e meteoros de graça. A regra é entrar com 25. Você entrou com 0, 20, 1, 18 e 22 acúmulos (média 12,2); os melhores entram, em média, com 18,1. Na primeira, uma Salva nos dois últimos GCDs antes da Alma zerou o Salvo; na terceira você entrou com 1 acúmulo.",
-      "what_to_do": "Nos dois últimos GCDs antes da Alma Arcana (uns 2,5 s), não lance Salva. Exceção: se vier Mísseis Sobrecarregados, o Salvo sobe para 25 na hora.",
+      "explanation": "Depois do Surto vem a Alma Arcana: ali a Salva não gasta o Salvo, então cada Salva rola Seta Prismática e meteoros de graça. A meta é entrar com 20 de Salvo ou mais. Você entrou com 0, 20, 1, 18 e 22 acúmulos: 2 das 5 entradas bateram a meta. Nos melhores, 23 de 43 batem. Na primeira, uma Salva nos dois últimos GCDs antes da Alma zerou o Salvo; na terceira você entrou com 1.",
+      "what_to_do": "Chegue na Alma Arcana com 20 de Salvo ou mais. Nos dois últimos GCDs antes dela (uns 2,5 s), não lance Salva; se vier Mísseis Sobrecarregados, o Salvo sobe para 25 na hora. Não precisa forçar 25: de 20 para 25 o ganho é pequeno, e às vezes vale soltar uma Salva para não estourar.",
       "numbers": [
         {
-          "label": "Salvo ao entrar na Alma (média)",
-          "player": "12,2",
-          "top": "18,1"
+          "label": "Entradas na Alma com 20+ de Salvo",
+          "player": "2 de 5",
+          "top": "23 de 43"
         },
         {
           "label": "Entradas com Salva nos 2 últimos GCDs",
@@ -189,8 +189,8 @@
       "severity": "atencao",
       "kind": "regra",
       "phase": null,
-      "explanation": "Fora o Surto de abertura, você lançou 11 Impactos Arcanos em 4 janelas de Surto (2,8 por janela); os melhores, 0,5. Você chegou ao Surto com Abstração parecida com a deles (1,8 contra 1,7 cargas), então a diferença está em como ela foi gasta e reposta dentro da janela. Impacto no burst é dano perdido.",
-      "what_to_do": "Guarde Abstração para o Surto e, dentro dele, mantenha o ciclo de Mísseis e Salvas cheias; o Impacto Arcano fica para completar o Salvo fora do burst.",
+      "explanation": "Fora o Surto de abertura, você lançou 11 Impactos Arcanos em 4 janelas de Surto (2,8 por janela); os melhores, 0,5. Não foi por entrar de mão vazia: você não começou nenhum desses Surtos com Salvo baixo e só 1 Abstração (nos melhores, quando isso acontece, saem 3 Impactos por janela). No 2º Surto, por exemplo, você entrou com 25 de Salvo e ainda lançou 4. A causa está no que acontece dentro da janela.",
+      "what_to_do": "Entre no Surto com uma Abstração guardada e Salvo razoável, e dentro dele mantenha o ciclo de Mísseis e Salvas cheias. O Impacto Arcano fica para completar o Salvo fora do burst.",
       "numbers": [
         {
           "label": "Impactos Arcanos por janela de Surto",
@@ -198,9 +198,9 @@
           "top": "0,5"
         },
         {
-          "label": "Abstração no início do Surto",
-          "player": "1,8",
-          "top": "1,7"
+          "label": "Surtos começados de mão vazia",
+          "player": "0 de 4",
+          "top": "5 de 35"
         }
       ]
     },
@@ -297,11 +297,11 @@
     },
     {
       "id": "soul_entry",
-      "name": "Salvo ao entrar na Alma Arcana",
-      "player_value": "12,2",
-      "top_value": "18,1",
+      "name": "Entradas na Alma Arcana com 20+ de Salvo",
+      "player_value": "2 de 5",
+      "top_value": "23 de 43",
       "status": "atencao",
-      "note": "Meta: 25. Sem Salva nos 2 últimos GCDs antes da Alma."
+      "note": "Meta: 20 ou mais. Sem Salva nos 2 últimos GCDs antes da Alma."
     },
     {
       "id": "surge_blasts",

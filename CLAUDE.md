@@ -56,8 +56,8 @@ O motor entra como um `Analyzer` em `services/sources.py` e devolve um `Analysis
 - Surge em recarga; segurar até ~15 s só para casar com poção, Time Warp ou fase do chefe.
 - **Segurar a 2ª poção para casar com o Surge é o recomendado**, não erro (Light's Potential junto do Surge rende mais que a poção no CD aos 5:00), desde que a luta dure o bastante para esse Surge. O erro é **atrasar o Surge** e dessincronizar o Touch.
 - **Barrage com menos de 12 stacks de Arcane Salvo** é erro quando vira hábito (limites no YAML). Chegar no cap (25) não é erro. O motivo é o snowball de Meteorite (1 a cada 5 Salvo → Clearcasting → Missiles → Salvo), não a chance de Prismatic Bolt, que é linear (2% por Salvo).
-- **Entrar no Arcane Soul com 25 de Salvo**: nada de Barrage nos 2 últimos GCDs antes do Soul, exceto com Overpowered Missiles (sobe para 25 na hora). No Soul o Barrage não gasta Salvo.
-- **Clearcasting guardada para o Surge**, para não encher o burst de Arcane Blast.
+- **Entrar no Arcane Soul com 20 de Salvo ou mais** (25 é o máximo, mas de 20 para 25 o ganho é ~0,3%; às vezes vale soltar Barrage para não estourar). Nada de Barrage nos 2 últimos GCDs antes do Soul, exceto com Overpowered Missiles (sobe para 25 na hora). No Soul o Barrage não gasta Salvo.
+- **Não entrar no Surge de mão vazia** (Salvo baixo e no máximo 1 Clearcasting), para não encher o burst de Arcane Blast. Entrar com uma Clearcasting guardada está ok.
 - **Prismatic Bolt é RNG**: o relatório separa decisão (procs esperados pelos acúmulos) de sorte (desvios do esperado) e não cobra azar como erro.
 - A IA **não** consulta o Warcraft Logs nem faz contas; todo número vem do código.
 - Relatório e interface em português (nomes do cliente pt-BR). Conversas com o Arthur sobre o jogo podem usar os nomes em inglês.

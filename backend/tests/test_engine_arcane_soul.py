@@ -72,11 +72,12 @@ def reference() -> dict:
 
 
 def test_reference_soul_entries(reference):
-    # Kill de referência (28/10/2026): entradas no Soul com Salvo baixo; tops entram com 24–25.
+    # Kill de referência (28/10/2026): 2 de 5 entradas no Soul com 20+ (tops: 23 de 43).
     entries = soul_entries(reference)
 
     assert [e.salvo for e in entries] == [0, 20, 1, 18, 22]
-    assert entries[0].mistake is True
+    assert [e.mistake for e in entries] == [True, False, True, True, False]
+    assert entries[0].barrage_in_last_gcds is True
 
 
 def test_reference_arcane_blast_inside_surge(reference):
@@ -84,6 +85,8 @@ def test_reference_arcane_blast_inside_surge(reference):
 
     assert [w.arcane_blasts for w in windows] == [4, 4, 0, 4, 3]
     assert windows[0].opener is True
+    # Não entrou de mão vazia em nenhum Surge (o de abertura não conta).
+    assert [w.empty_handed for w in windows] == [False] * 5
 
 
 def test_reference_bolts_split_by_soul(reference):
