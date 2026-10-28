@@ -6,9 +6,15 @@ from sqlmodel import Session
 
 from app.main import app
 from app.models import Analysis
-from app.schemas import FightOption, PlayerOption, ReportResolved
+from app.schemas import AnalysisResult, FightOption, PlayerOption, ReportResolved
 from app.services.plan import month_start
-from app.services.sources import SAMPLE_REPORT_CODE, get_report_source
+from app.services.sources import (
+    SAMPLE_REPORT_CODE,
+    SAMPLES_DIR,
+    build_report,
+    get_analyzer,
+    get_report_source,
+)
 
 
 def test_analysis_without_account_is_not_saved_to_history(client):
@@ -121,10 +127,17 @@ def test_unsupported_boss_is_refused(client):
 
 
 def test_t10_player_not_in_fight(client):
-    response = client.post("/analyses", json={**ANALYSIS, "player_name": "Ninguem"})
+    response = client.post("/analyses", json={**ANALYSIS, "actor_id": 999})
 
     assert response.status_code == 422
     assert response.json()["detail"]["code"] == "no_arcane_mage"
+
+
+def test_request_without_actor_id_is_refused(client):
+    # O nome sozinho não serve mais: o jogador vem sempre pelo id do ator.
+    request = {"report_code": ANALYSIS["report_code"], "fight_id": 34, "player_name": "Harmonist"}
+
+    assert client.post("/analyses", json=request).status_code == 422
 
 
 def test_delete_account_removes_analyses(client, auth_headers, engine):
@@ -138,15 +151,37 @@ def test_delete_account_removes_analyses(client, auth_headers, engine):
         assert session.get(Analysis, created["id"]) is None
 
 
+def arcane(actor_id: int, name: str, server: str) -> PlayerOption:
+    return PlayerOption(
+        actor_id=actor_id, name=name, server=server, spec="Mago Arcano", item_level=327
+    )
+
+
+class SpyAnalyzer:
+    """Guarda o jogador que a rota escolheu e devolve o resultado de exemplo."""
+
+    players: list[PlayerOption] = []
+
+    def analyze(self, report, fight, player: PlayerOption) -> AnalysisResult:
+        SpyAnalyzer.players.append(player)
+        path = SAMPLES_DIR / f"analysis_{SAMPLE_REPORT_CODE}_34.json"
+        return AnalysisResult.model_validate_json(path.read_text(encoding="utf-8"))
+
+
+@pytest.fixture
+def spy_analyzer():
+    SpyAnalyzer.players = []
+    app.dependency_overrides[get_analyzer] = SpyAnalyzer
+    return SpyAnalyzer
+
+
 class TwoHarmonistsSource:
     """Relatório sintético com dois Magos Arcanos de mesmo nome em reinos diferentes."""
 
     def get_report(self, code: str) -> ReportResolved:
         players = [
-            PlayerOption(name="Harmonist", server="Area 52", spec="Mago Arcano", item_level=327),
-            PlayerOption(
-                name="Harmonist", server="Tichondrius", spec="Mago Arcano", item_level=327
-            ),
+            arcane(455, "Harmonist", "Area 52"),
+            arcane(456, "Harmonist", "Tichondrius"),
         ]
         fight = FightOption(
             id=34,
@@ -162,18 +197,70 @@ class TwoHarmonistsSource:
         )
 
 
-def test_repeated_name_without_server_is_ambiguous(client):
+def test_homonyms_are_told_apart_by_actor_id(client, spy_analyzer):
     app.dependency_overrides[get_report_source] = TwoHarmonistsSource
-    request = {**ANALYSIS, "player_name": "Harmonist"}
 
-    without_server = client.post("/analyses", json=request)
-    wrong_server = client.post("/analyses", json={**request, "server": "Azralon"})
-    with_server = client.post("/analyses", json={**request, "server": "area-52"})
+    for actor_id in (456, 455):
+        assert client.post("/analyses", json={**ANALYSIS, "actor_id": actor_id}).status_code == 201
 
-    assert without_server.status_code == 422
-    assert without_server.json()["detail"]["code"] == "player_ambiguous"
-    assert wrong_server.json()["detail"]["code"] == "no_arcane_mage"  # reino que não existe
-    assert with_server.status_code == 201  # o reino desempatou
+    assert [(p.actor_id, p.server) for p in spy_analyzer.players] == [
+        (456, "Tichondrius"),
+        (455, "Area 52"),
+    ]
+
+
+# REPORT_FIGHTS falso: na luta 2 há um Arcano, um Fogo e um Guerreiro; o outro Arcano
+# (id 13) só está na luta 1.
+RAW_REPORT = {
+    "code": SAMPLE_REPORT_CODE,
+    "title": "Sintético",
+    "fights": [
+        {"id": 1, "encounterID": 3470, "name": "Nek'zali", "difficulty": 5, "kill": False,
+         "startTime": 0, "endTime": 90_000, "friendlyPlayers": [10, 13]},
+        {"id": 2, "encounterID": 3470, "name": "Nek'zali", "difficulty": 5, "kill": True,
+         "startTime": 100_000, "endTime": 515_000, "friendlyPlayers": [10, 11, 12]},
+    ],
+    "actors": [
+        {"id": 10, "name": "arcano_a", "server": "Norte", "type": "Player", "subType": "Mage"},
+        {"id": 11, "name": "fogo_a", "server": "Norte", "type": "Player", "subType": "Mage"},
+        {"id": 12, "name": "guerreiro_a", "server": "Norte", "type": "Player",
+         "subType": "Warrior"},
+        {"id": 13, "name": "arcano_b", "server": "Sul", "type": "Player", "subType": "Mage"},
+    ],
+    "details": {
+        10: {"id": 10, "specs": [{"spec": "Arcane", "count": 1}], "maxItemLevel": 327},
+        11: {"id": 11, "specs": [{"spec": "Fire", "count": 1}], "maxItemLevel": 327},
+        12: {"id": 12, "specs": [{"spec": "Arms", "count": 1}], "maxItemLevel": 327},
+        13: {"id": 13, "specs": [{"spec": "Arcane", "count": 1}], "maxItemLevel": 327},
+    },
+}  # fmt: skip
+
+
+class RawReportSource:
+    def get_report(self, code: str) -> ReportResolved:
+        encounters = {3470: {"boss_npc_id": None, "difficulties": [5]}}
+        return ReportResolved.model_validate(build_report(RAW_REPORT, encounters, {}))
+
+
+@pytest.mark.parametrize("actor_id", [11, 12, 13, 999])
+def test_actor_that_is_not_an_arcane_of_the_fight_is_refused(client, spy_analyzer, actor_id):
+    # 11 é Fogo, 12 é Guerreiro, 13 é Arcano de outra luta, 999 não existe no report.
+    app.dependency_overrides[get_report_source] = RawReportSource
+
+    response = client.post("/analyses", json={**ANALYSIS, "fight_id": 2, "actor_id": actor_id})
+
+    assert response.status_code == 422
+    assert response.json()["detail"]["code"] == "no_arcane_mage"
+    assert spy_analyzer.players == []
+
+
+def test_arcane_of_the_fight_is_found_by_actor_id(client, spy_analyzer):
+    app.dependency_overrides[get_report_source] = RawReportSource
+
+    response = client.post("/analyses", json={**ANALYSIS, "fight_id": 2, "actor_id": 10})
+
+    assert response.status_code == 201
+    assert [p.name for p in spy_analyzer.players] == ["arcano_a"]
 
 
 class HarmonistAndOtherSource:
@@ -182,8 +269,8 @@ class HarmonistAndOtherSource:
     def get_report(self, code: str) -> ReportResolved:
         players = [
             # Com DATA_SOURCE=wcl o Harmonist chega com reino; o exemplo não tem reino.
-            PlayerOption(name="Harmonist", server="Azralon", spec="Mago Arcano", item_level=327),
-            PlayerOption(name="Outroarcano", server="Area 52", spec="Mago Arcano", item_level=327),
+            arcane(455, "Harmonist", "Azralon"),
+            arcane(456, "Outroarcano", "Area 52"),
         ]
         fight = FightOption(
             id=34,
@@ -202,9 +289,7 @@ class HarmonistAndOtherSource:
 def test_other_arcane_in_sample_fight_does_not_get_harmonist_result(client, auth_headers):
     app.dependency_overrides[get_report_source] = HarmonistAndOtherSource
 
-    response = client.post(
-        "/analyses", json={**ANALYSIS, "player_name": "Outroarcano"}, headers=auth_headers
-    )
+    response = client.post("/analyses", json={**ANALYSIS, "actor_id": 456}, headers=auth_headers)
 
     assert response.status_code == 503
     assert response.json()["detail"]["code"] == "analysis_not_available"
@@ -216,7 +301,7 @@ def test_other_arcane_in_sample_fight_does_not_get_harmonist_result(client, auth
 def test_harmonist_in_sample_fight_still_gets_the_result(client):
     app.dependency_overrides[get_report_source] = HarmonistAndOtherSource
 
-    response = client.post("/analyses", json={**ANALYSIS, "server": "Azralon"})
+    response = client.post("/analyses", json=ANALYSIS)
 
     assert response.status_code == 201
     assert response.json()["result"]["player"]["name"] == "Harmonist"

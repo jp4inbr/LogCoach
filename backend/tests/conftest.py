@@ -17,7 +17,8 @@ from app.db import create_tables, get_session  # noqa: E402
 from app.main import app  # noqa: E402
 
 LINK = "https://www.warcraftlogs.com/reports/XhrmBaYkGCAQjH2D#fight=34"
-ANALYSIS = {"report_code": "XhrmBaYkGCAQjH2D", "fight_id": 34, "player_name": "Harmonist"}
+# Harmonist: ator 455 do report de referência.
+ANALYSIS = {"report_code": "XhrmBaYkGCAQjH2D", "fight_id": 34, "actor_id": 455}
 
 
 @pytest.fixture
