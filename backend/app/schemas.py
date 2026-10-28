@@ -151,7 +151,8 @@ class Mistake(BaseModel):
     # Quanto custou, em % do dano. None quando o erro é de risco (ex.: defensivo).
     impact_pct: float | None
     severity: Literal["atencao", "erro"]
-    # "regra" = fato calculado pelo código; "hipotese" = apontado pela IA (RF24).
+    # "regra" = fato calculado pelo código; "hipotese" = o que as regras não explicam (RF23),
+    # com as pistas do coach (RF24). Na hipótese, impact_pct é a diferença sem regra que a explique.
     kind: Literal["regra", "hipotese"]
     phase: str | None = None
     explanation: str
@@ -210,7 +211,8 @@ class AnalysisResult(BaseModel):
     comparison: Comparison
     summary: Summary
     coach: Coach
-    mistakes: list[Mistake]  # ordenados do maior para o menor impacto (RF10)
+    # Regras do maior para o menor impacto (risco, sem impacto, no fim); hipóteses depois (RF10).
+    mistakes: list[Mistake]
     rules: list[RuleCheck]
     phases: list[Phase]
     timeline: list[TimelineTrack]  # RF11

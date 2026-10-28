@@ -50,7 +50,7 @@ class ReportNotAvailableError(Exception):
 
 
 class AnalysisNotAvailableError(Exception):
-    """Ainda não há como analisar essa luta (sem dados de exemplo para ela)."""
+    """Ainda não há análise para essa luta ou esse jogador (hoje: só o exemplo do Harmonist)."""
 
 
 class ReportSource(Protocol):
@@ -188,7 +188,7 @@ class WclReportSource:
 
 
 class SampleAnalyzer:
-    """Devolve o resultado de exemplo da luta de referência."""
+    """Devolve o resultado de exemplo da luta de referência, só para o jogador do exemplo."""
 
     def analyze(
         self, report: ReportResolved, fight: FightOption, player: PlayerOption
@@ -197,6 +197,11 @@ class SampleAnalyzer:
         if not path.exists():
             raise AnalysisNotAvailableError(f"{report.code}/{fight.id}")
         result = AnalysisResult.model_validate(_load(path.name))
+        # Outro Arcano da mesma luta não pode receber a análise do Harmonist. O exemplo não
+        # guarda reino (anonimização), então compara só o nome; o reino já foi conferido
+        # pelo match_player na rota.
+        if player.name != result.player.name:
+            raise AnalysisNotAvailableError(f"{report.code}/{fight.id}/{player.name}")
         fill_real_names(result, get_settings().names_file)
         return result
 

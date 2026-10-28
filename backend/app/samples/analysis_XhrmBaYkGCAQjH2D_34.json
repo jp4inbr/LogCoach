@@ -1,5 +1,5 @@
 {
-  "_nota": "Resultado de EXEMPLO no formato AnalysisResult (app/schemas.py), para as telas funcionarem antes do motor. O DPS do jogador (dano + absorvido ÷ duração do reference_harmonist.json.gz) e o dos tops (index.json das fixtures de 326–328, sem nomes reais) vêm das fixtures; o resto é ilustrativo, baseado nos limites de arcane_mage.yaml e nekzali.yaml, e não foi calculado do log. O motor do Arthur substitui este arquivo.",
+  "_nota": "Resultado de EXEMPLO (formato AnalysisResult, app/schemas.py) refeito a partir do log real: reference_harmonist.json.gz e os 10 tops de tests/fixtures/nekzali_mythic_326_328 (baixados com os buffs externos em 28/10/2026). Vêm do log: DPS, horários de Surto, Toque, poção, Barreira e Infusão de Poder, acúmulos de Salvo na Salva, atrasos, combinação Surto→Toque, picos com defensivo, procs e usos de Seta Prismática e a tabela por habilidade. Ilustrativos até o motor: o impacto em % das regras (3,1; 2,5; 2,0; 1,5) e o tempo ativo. Alma Arcana e janela do Surto vêm de app/engine/arcane_soul.py. A diferença que as regras não explicam é a sobra (RF23); decisão × sorte na Seta Prismática vêm de app/engine/prismatic_bolt.py.",
   "source": "exemplo",
   "report_code": "XhrmBaYkGCAQjH2D",
   "fight": {
@@ -7,7 +7,7 @@
     "boss": "Nek'zali, a Enrosca-almas",
     "difficulty": "Mítico",
     "kill": true,
-    "duration_s": 415.0
+    "duration_s": 415.6
   },
   "player": {
     "name": "Harmonist",
@@ -22,28 +22,98 @@
     "size": 10,
     "player_in_top": false,
     "players": [
-      { "rank": 1, "display_name": "top01", "name": null, "server": null, "item_level": 328, "dps": 278699.1 },
-      { "rank": 2, "display_name": "top02", "name": null, "server": null, "item_level": 328, "dps": 273205.9 },
-      { "rank": 3, "display_name": "top03", "name": null, "server": null, "item_level": 328, "dps": 271421.6 },
-      { "rank": 4, "display_name": "top04", "name": null, "server": null, "item_level": 326, "dps": 265041.2 },
-      { "rank": 5, "display_name": "top05", "name": null, "server": null, "item_level": 327, "dps": 264982.8 },
-      { "rank": 6, "display_name": "top06", "name": null, "server": null, "item_level": 328, "dps": 260777.1 },
-      { "rank": 7, "display_name": "top07", "name": null, "server": null, "item_level": 326, "dps": 259656.9 },
-      { "rank": 8, "display_name": "top08", "name": null, "server": null, "item_level": 326, "dps": 259378.4 },
-      { "rank": 9, "display_name": "top09", "name": null, "server": null, "item_level": 327, "dps": 259120.4 },
-      { "rank": 10, "display_name": "top10", "name": null, "server": null, "item_level": 328, "dps": 257919.7 }
+      {
+        "rank": 1,
+        "display_name": "top01",
+        "name": null,
+        "server": null,
+        "item_level": 328,
+        "dps": 278699.1
+      },
+      {
+        "rank": 2,
+        "display_name": "top02",
+        "name": null,
+        "server": null,
+        "item_level": 328,
+        "dps": 273205.9
+      },
+      {
+        "rank": 3,
+        "display_name": "top03",
+        "name": null,
+        "server": null,
+        "item_level": 328,
+        "dps": 271421.6
+      },
+      {
+        "rank": 4,
+        "display_name": "top04",
+        "name": null,
+        "server": null,
+        "item_level": 326,
+        "dps": 265041.2
+      },
+      {
+        "rank": 5,
+        "display_name": "top05",
+        "name": null,
+        "server": null,
+        "item_level": 327,
+        "dps": 264982.8
+      },
+      {
+        "rank": 6,
+        "display_name": "top06",
+        "name": null,
+        "server": null,
+        "item_level": 328,
+        "dps": 264888.8
+      },
+      {
+        "rank": 7,
+        "display_name": "top07",
+        "name": null,
+        "server": null,
+        "item_level": 328,
+        "dps": 264641.5
+      },
+      {
+        "rank": 8,
+        "display_name": "top08",
+        "name": null,
+        "server": null,
+        "item_level": 328,
+        "dps": 260777.1
+      },
+      {
+        "rank": 9,
+        "display_name": "top09",
+        "name": null,
+        "server": null,
+        "item_level": 326,
+        "dps": 259656.9
+      },
+      {
+        "rank": 10,
+        "display_name": "top10",
+        "name": null,
+        "server": null,
+        "item_level": 326,
+        "dps": 259378.4
+      }
     ]
   },
   "summary": {
     "dps": 225680.6,
-    "top_avg_dps": 265020.3,
-    "dps_gap_pct": -14.8,
+    "top_avg_dps": 266269.3,
+    "dps_gap_pct": -15.2,
     "active_time_pct": 98.1,
     "top_active_time_pct": 99.0
   },
   "coach": {
     "available": true,
-    "headline": "Você ficou 14,8% abaixo da média dos melhores do seu bracket. Entre os erros que dá para medir, a maior perda está nas Salvas Arcanas soltas com poucos acúmulos e no Toque dos Magos atrasando, que na Fase 2 deixa o Surto Arcano fora da janela do Toque."
+    "headline": "Você ficou 15,2% abaixo da média dos 10 melhores do seu bracket. O que mais pesou foi o Salvo: Salvas soltas com poucos acúmulos e entradas na Alma Arcana abaixo de 20 de Salvo. Também entraram Impactos Arcanos demais dentro do Surto e o 4º Surto saiu atrasado, depois do Toque. O resto foi azar na Seta Prismática."
   },
   "mistakes": [
     {
@@ -53,62 +123,135 @@
       "severity": "erro",
       "kind": "regra",
       "phase": null,
-      "explanation": "15% das suas Salvas Arcanas saíram com menos de 12 acúmulos de Salvo Arcano. Nos melhores do seu bracket isso acontece em cerca de 6% das vezes. Cada Salva gasta cedo demais desperdiça o dano que os acúmulos dariam.",
-      "what_to_do": "Segure a Salva até ter pelo menos 12 acúmulos. Antes de soltar, gaste 1 Mísseis Arcanos e a Seta Prismática; com 3 cargas de Clarividência, gaste 2 Mísseis para não perder proc.",
+      "explanation": "14,9% das suas Salvas Arcanas saíram com menos de 12 acúmulos de Salvo Arcano. Nos melhores do seu bracket isso acontece em 9,2% das vezes, em média. Todo acerto de magia arcana pode dar Abstração, e a Salva com mais Salvo derruba mais meteoros (1 a cada 5 acúmulos): mais acertos, mais Abstração, mais Mísseis, mais Salvo. Soltar cedo quebra esse ciclo.",
+      "what_to_do": "Segure a Salva até ter pelo menos 12 acúmulos. Antes de soltar, gaste 1 Mísseis Arcanos e a Seta Prismática; com 3 cargas de Abstração, gaste 2 Mísseis para não perder carga nova.",
       "numbers": [
-        { "label": "Salvas com menos de 12 acúmulos", "player": "15%", "top": "6%" },
-        { "label": "Salvas com o máximo (25)", "player": "48%", "top": "65%" }
+        {
+          "label": "Salvas com menos de 12 acúmulos",
+          "player": "14,9%",
+          "top": "9,2%"
+        },
+        {
+          "label": "Salvas com o máximo (25)",
+          "player": "49,5%",
+          "top": "60,6%"
+        }
       ]
     },
     {
-      "id": "touch_drift",
-      "title": "Toque dos Magos atrasado em relação à recarga",
-      "impact_pct": 2.4,
+      "id": "soul_entry",
+      "title": "Entrada na Alma Arcana com pouco Salvo",
+      "impact_pct": 2.5,
+      "severity": "atencao",
+      "kind": "regra",
+      "phase": null,
+      "explanation": "Depois do Surto vem a Alma Arcana: ali a Salva não gasta o Salvo, então cada Salva rola Seta Prismática e meteoros de graça. A meta é entrar com 20 de Salvo ou mais. Você entrou com 0, 20, 1, 18 e 22 acúmulos: 2 das 5 entradas bateram a meta. Nos melhores, 23 de 43 batem. Na primeira, uma Salva nos dois últimos GCDs antes da Alma zerou o Salvo; na terceira você entrou com 1.",
+      "what_to_do": "Chegue na Alma Arcana com 20 de Salvo ou mais. Nos dois últimos GCDs antes dela (uns 2,5 s), não lance Salva; se vier Mísseis Sobrecarregados, o Salvo sobe para 25 na hora. Não precisa forçar 25: de 20 para 25 o ganho é pequeno, e às vezes vale soltar uma Salva para não estourar.",
+      "numbers": [
+        {
+          "label": "Entradas na Alma com 20+ de Salvo",
+          "player": "2 de 5",
+          "top": "23 de 43"
+        },
+        {
+          "label": "Entradas com Salva nos 2 últimos GCDs",
+          "player": "1 de 5",
+          "top": "6 de 43"
+        }
+      ]
+    },
+    {
+      "id": "surge_touch_combo",
+      "title": "4º Surto Arcano atrasado ficou fora do Toque dos Magos",
+      "impact_pct": 2.0,
       "severity": "atencao",
       "kind": "regra",
       "phase": "Fase 2",
-      "explanation": "Em média, seu Toque dos Magos saiu 4,2 s depois de ficar pronto (melhores: 1,1 s). O atraso se acumula e, na Fase 2, o Surto Arcano das 4:46 ficou 6,5 s antes do Toque, fora da combinação.",
-      "what_to_do": "Use o Toque assim que voltar. Se precisar, solte uma Salva Arcana logo antes, como os melhores fazem, mas não segure o Toque por mais de 3 s.",
+      "explanation": "Seu 4º Surto Arcano ficou pronto aos 4:41 e só saiu aos 4:49, 8,0 s depois. O Toque dos Magos saiu na recarga, aos 4:45, e o Surto caiu 4,5 s depois dele, fora da janela de 3,5 s: esse Surto não ganhou o dano extra do Toque. Nos outros 4 Surtos a combinação saiu certa.",
+      "what_to_do": "Use o Surto assim que ele voltar. Só vale segurar até uns 15 s para casar com a poção, o Time Warp ou uma fase do chefe. Segurar a 2ª poção para o Surto, como você fez, está certo.",
       "numbers": [
-        { "label": "Atraso médio do Toque", "player": "4,2 s", "top": "1,1 s" },
-        { "label": "Surto → Toque (pior caso)", "player": "6,5 s", "top": "3,2 s" }
+        {
+          "label": "Surtos com o Toque em até 3,5 s",
+          "player": "4 de 5",
+          "top": "82%"
+        },
+        {
+          "label": "Atraso do 4º Surto",
+          "player": "8,0 s",
+          "top": "—"
+        }
       ]
     },
     {
-      "id": "unexplained_missiles_p2",
-      "title": "Menos Mísseis Arcanos na Fase 2 (hipótese do coach)",
+      "id": "surge_blasts",
+      "title": "Impactos Arcanos demais dentro do Surto",
       "impact_pct": 1.5,
       "severity": "atencao",
-      "kind": "hipotese",
-      "phase": "Fase 2",
-      "explanation": "Na Fase 2 você fez 14,1 Mísseis Arcanos por minuto, contra 16,9 dos melhores, e nenhuma regra explica essa diferença. Pode ser movimento no Desemaranhando ou Clarividência expirando sem uso.",
-      "what_to_do": "Reveja a Fase 2 do log: procure Clarividência que caiu sem uso e movimentos que poderiam ter sido feitos com Cintilação.",
-      "numbers": [
-        { "label": "Mísseis por minuto na Fase 2", "player": "14,1", "top": "16,9" },
-        { "label": "Diferença de dano não explicada", "player": "−1,5%", "top": "—" }
-      ]
-    },
-    {
-      "id": "late_second_potion",
-      "title": "Segunda poção atrasada",
-      "impact_pct": 1.2,
-      "severity": "atencao",
       "kind": "regra",
-      "phase": "Fase 2",
-      "explanation": "Você usou a segunda Potencial da Luz aos 5:52. Nove dos dez melhores usam entre 4:59 e 5:29, assim que ela volta, junto com o Surto Arcano.",
-      "what_to_do": "Use a segunda poção perto dos 5:00. Se o Surto estiver para voltar, segure o Surto alguns segundos para casar com a poção, e não o contrário.",
-      "numbers": [{ "label": "Momento da 2ª poção", "player": "5:52", "top": "5:01 (média)" }]
+      "phase": null,
+      "explanation": "Fora o Surto de abertura, você lançou 11 Impactos Arcanos em 4 janelas de Surto (2,8 por janela); os melhores, 0,5. Não foi por entrar de mão vazia: você não começou nenhum desses Surtos com Salvo baixo e só 1 Abstração (nos melhores, quando isso acontece, saem 3 Impactos por janela). No 2º Surto, por exemplo, você entrou com 25 de Salvo e ainda lançou 4. A causa está no que acontece dentro da janela.",
+      "what_to_do": "Entre no Surto com uma Abstração guardada e Salvo razoável, e dentro dele mantenha o ciclo de Mísseis e Salvas cheias. O Impacto Arcano fica para completar o Salvo fora do burst.",
+      "numbers": [
+        {
+          "label": "Impactos Arcanos por janela de Surto",
+          "player": "2,8",
+          "top": "0,5"
+        },
+        {
+          "label": "Surtos começados de mão vazia",
+          "player": "0 de 4",
+          "top": "5 de 35"
+        }
+      ]
     },
     {
       "id": "overlap_no_defensive",
-      "title": "Sem defensivo em 2 dos 3 picos de dano",
+      "title": "Sem defensivo nos picos de dano",
       "impact_pct": null,
       "severity": "atencao",
       "kind": "regra",
-      "phase": "Fase 2",
-      "explanation": "Nos picos em que a Barragem de Possessão cai junto com as Profundezas Constritoras (5:48 e 6:40), você estava sem Barreira Prismática. Isolada, nenhuma dessas mecânicas pede defensivo; juntas, elas dão o dobro do dano normal.",
-      "what_to_do": "Deixe a Barreira Prismática pronta para os dois picos da Fase 2. Não custa dano e reduz o risco de morte.",
-      "numbers": [{ "label": "Picos com defensivo", "player": "1 de 3", "top": "3 de 3" }]
+      "phase": null,
+      "explanation": "Nos 3 picos em que duas mecânicas caem juntas (0:36, 5:48 e 6:40) você estava sem Barreira Prismática; ela só subiu aos 5:11. Isolada, nenhuma dessas mecânicas pede defensivo; juntas, dão cerca do dobro do dano normal. Os melhores também quase nunca cobrem esses picos, e você não morreu: é risco, não perda de dano.",
+      "what_to_do": "Deixe a Barreira Prismática pronta para os dois picos da Fase 2 (5:48 e 6:40). Não custa dano e reduz o risco de morte.",
+      "numbers": [
+        {
+          "label": "Picos com defensivo",
+          "player": "0 de 3",
+          "top": "1 de 19"
+        }
+      ]
+    },
+    {
+      "id": "unexplained_gap",
+      "title": "O que as regras não explicam (hipótese do coach)",
+      "impact_pct": 6.1,
+      "severity": "atencao",
+      "kind": "hipotese",
+      "phase": null,
+      "explanation": "As regras explicam cerca de 9,1 dos 15,2 pontos; os outros 6,1 nenhuma regra mede. A maior pista está na Seta Prismática: você recebeu 4,0 procs por minuto, contra 6,9 dos melhores. O código separa decisão de sorte (2% de chance por acúmulo de Salvo em cada Salva). Na decisão, a diferença está na Alma Arcana: você esperava 1,0 proc por minuto ali, contra 1,2 dos melhores, por entrar com pouco Salvo. O resto foi azar: 2,1 desvios abaixo do esperado dentro e fora da Alma, enquanto os melhores do ranking ficaram na média ou acima. É esperado: um ranking dos melhores logs escolhe lutas com sorte.",
+      "what_to_do": "Não há o que corrigir no azar. O que depende de você é entrar na Alma Arcana com 25 de Salvo e soltar as Salvas com 12 acúmulos ou mais.",
+      "numbers": [
+        {
+          "label": "Procs de Seta por minuto (recebidos)",
+          "player": "4,0",
+          "top": "6,9"
+        },
+        {
+          "label": "Procs por minuto esperados na Alma Arcana (decisão)",
+          "player": "1,0",
+          "top": "1,2"
+        },
+        {
+          "label": "Sorte nos procs (desvios do esperado)",
+          "player": "−2,8",
+          "top": "+0,9 em média"
+        },
+        {
+          "label": "Diferença que as regras não explicam",
+          "player": "−6,1 pts",
+          "top": "—"
+        }
+      ]
     }
   ],
   "rules": [
@@ -118,114 +261,345 @@
       "player_value": "98,1%",
       "top_value": "99,0%",
       "status": "ok",
-      "note": "A intermissão não conta como tempo parado."
+      "note": "Valor ilustrativo até o motor. A intermissão não conta como tempo parado."
     },
     {
       "id": "barrage_low_salvo",
       "name": "Salva Arcana com menos de 12 acúmulos",
-      "player_value": "15%",
-      "top_value": "6%",
+      "player_value": "14,9%",
+      "top_value": "9,2%",
       "status": "erro",
-      "note": "Atenção a partir de 8%, erro a partir de 12%."
+      "note": null
     },
     {
       "id": "touch_drift",
       "name": "Atraso do Toque dos Magos",
-      "player_value": "4,2 s",
-      "top_value": "1,1 s",
-      "status": "atencao",
-      "note": "Atenção a partir de 3 s, erro a partir de 6 s."
+      "player_value": "2,6 s",
+      "top_value": "3,8 s",
+      "status": "ok",
+      "note": null
     },
     {
       "id": "surge_drift",
       "name": "Atraso do Surto Arcano",
-      "player_value": "2,8 s",
-      "top_value": "2,6 s",
-      "status": "ok",
-      "note": null
+      "player_value": "5,2 s",
+      "top_value": "6,1 s",
+      "status": "atencao",
+      "note": "Puxado pelo 4º Surto, que saiu 8 s depois de ficar pronto."
     },
     {
       "id": "surge_touch_combo",
       "name": "Surto → Toque em até 3,5 s",
       "player_value": "4 de 5",
-      "top_value": "5 de 5",
+      "top_value": "82%",
       "status": "atencao",
       "note": null
     },
     {
-      "id": "second_potion",
-      "name": "Momento da 2ª poção",
-      "player_value": "5:52",
-      "top_value": "5:01",
+      "id": "soul_entry",
+      "name": "Entradas na Alma Arcana com 20+ de Salvo",
+      "player_value": "2 de 5",
+      "top_value": "23 de 43",
+      "status": "atencao",
+      "note": "Meta: 20 ou mais. Sem Salva nos 2 últimos GCDs antes da Alma."
+    },
+    {
+      "id": "surge_blasts",
+      "name": "Impactos Arcanos dentro do Surto (fora o de abertura)",
+      "player_value": "2,8 por janela",
+      "top_value": "0,5 por janela",
       "status": "atencao",
       "note": null
+    },
+    {
+      "id": "potion_with_surge",
+      "name": "Poções casadas com o Surto",
+      "player_value": "2 de 2",
+      "top_value": "11 de 14",
+      "status": "ok",
+      "note": "Segurar a 2ª poção para o Surto é o recomendado, não erro."
     },
     {
       "id": "overlap_defensive",
       "name": "Defensivo nos picos de dano",
-      "player_value": "1 de 3",
-      "top_value": "3 de 3",
+      "player_value": "0 de 3",
+      "top_value": "1 de 19",
       "status": "atencao",
-      "note": "Só é cobrado quando duas mecânicas caem juntas."
+      "note": "Risco, não perda de dano."
+    },
+    {
+      "id": "power_infusion",
+      "name": "Infusão de Poder recebida (buff de outro jogador)",
+      "player_value": "2 (1 com o Surto)",
+      "top_value": "1,4 em média (o 1º: 0)",
+      "status": "ok",
+      "note": "Contexto, não erro: não explica a diferença."
     },
     {
       "id": "deaths",
       "name": "Mortes",
       "player_value": "0",
-      "top_value": "0",
+      "top_value": "—",
       "status": "ok",
       "note": null
     }
   ],
   "phases": [
-    { "id": 1, "name": "Fase 1", "start_s": 0.0, "end_s": 166.7, "intermission": false },
-    { "id": 2, "name": "Intermissão", "start_s": 166.7, "end_s": 267.4, "intermission": true },
-    { "id": 3, "name": "Fase 2", "start_s": 267.4, "end_s": 415.0, "intermission": false }
+    {
+      "id": 1,
+      "name": "Fase 1",
+      "start_s": 0,
+      "end_s": 166.7,
+      "intermission": false
+    },
+    {
+      "id": 2,
+      "name": "Intermissão",
+      "start_s": 166.7,
+      "end_s": 267.4,
+      "intermission": true
+    },
+    {
+      "id": 3,
+      "name": "Fase 2",
+      "start_s": 267.4,
+      "end_s": 415.6,
+      "intermission": false
+    }
   ],
   "timeline": [
     {
       "ability_id": 365350,
       "name": "Surto Arcano",
-      "player_s": [1.4, 95.8, 190.9, 286.3, 381.0],
-      "top_s": [0.9, 93.6, 186.8, 280.4, 374.1]
+      "player_s": [
+        2.9,
+        99.2,
+        191.1,
+        289.1,
+        383.8
+      ],
+      "top_s": [
+        3.1,
+        95.1,
+        188.3,
+        281.1
+      ]
     },
     {
       "ability_id": 321507,
       "name": "Toque dos Magos",
-      "player_s": [2.9, 50.6, 97.4, 147.2, 192.5, 243.8, 292.8, 338.0, 384.7],
-      "top_s": [1.6, 47.9, 94.6, 141.2, 187.9, 234.6, 281.5, 328.1, 375.0]
+      "player_s": [
+        5.3,
+        52.2,
+        99.6,
+        145.4,
+        191.2,
+        238.6,
+        284.6,
+        332.0,
+        385.8
+      ],
+      "top_s": [
+        4.5,
+        49.7,
+        98.4,
+        145.0,
+        190.3,
+        235.4,
+        282.9
+      ]
     },
     {
       "ability_id": 1236616,
       "name": "Potencial da Luz (poção)",
-      "player_s": [0.0, 352.0],
-      "top_s": [0.0, 301.5]
+      "player_s": [
+        3.6,
+        385.5
+      ],
+      "top_s": [
+        3.1,
+        304.4
+      ]
+    },
+    {
+      "ability_id": 10060,
+      "name": "Infusão de Poder (de outro jogador)",
+      "player_s": [
+        131.9,
+        382.2
+      ],
+      "top_s": []
     },
     {
       "ability_id": 235450,
       "name": "Barreira Prismática",
-      "player_s": [36.2],
-      "top_s": [35.8, 347.5, 399.6]
+      "player_s": [
+        311.0
+      ],
+      "top_s": []
     }
   ],
   "abilities": [
     {
-      "phase": "Luta inteira",
+      "phase": "Fase 1",
       "rows": [
-        { "name": "Mísseis Arcanos", "player_cpm": 15.4, "top_cpm": 16.6, "player_dmg_pct": 34.1, "top_dmg_pct": 35.7 },
-        { "name": "Seta Prismática", "player_cpm": 5.8, "top_cpm": 6.0, "player_dmg_pct": 23.5, "top_dmg_pct": 23.8 },
-        { "name": "Salva Arcana", "player_cpm": 15.9, "top_cpm": 14.6, "player_dmg_pct": 20.1, "top_dmg_pct": 20.8 },
-        { "name": "Toque dos Magos", "player_cpm": null, "top_cpm": null, "player_dmg_pct": 5.1, "top_dmg_pct": 5.4 },
-        { "name": "Orbe Arcano", "player_cpm": 0.5, "top_cpm": 0.5, "player_dmg_pct": 3.9, "top_dmg_pct": 3.8 },
-        { "name": "Impacto Arcano", "player_cpm": 3.6, "top_cpm": 3.2, "player_dmg_pct": 2.6, "top_dmg_pct": 2.2 }
+        {
+          "name": "Mísseis Arcanos",
+          "player_cpm": 16.2,
+          "top_cpm": 16.4,
+          "player_dmg_pct": 35.1,
+          "top_dmg_pct": 33.7
+        },
+        {
+          "name": "Salva Arcana",
+          "player_cpm": 15.8,
+          "top_cpm": 15.1,
+          "player_dmg_pct": 23.6,
+          "top_dmg_pct": 21.7
+        },
+        {
+          "name": "Seta Prismática",
+          "player_cpm": 4.3,
+          "top_cpm": 5.9,
+          "player_dmg_pct": 21.1,
+          "top_dmg_pct": 22.9
+        },
+        {
+          "name": "Meteorito",
+          "player_cpm": null,
+          "top_cpm": null,
+          "player_dmg_pct": 5.3,
+          "top_dmg_pct": 6.0
+        },
+        {
+          "name": "Toque dos Magos",
+          "player_cpm": 1.4,
+          "top_cpm": 1.4,
+          "player_dmg_pct": 5.7,
+          "top_dmg_pct": 5.8
+        },
+        {
+          "name": "Impacto Arcano",
+          "player_cpm": 5.8,
+          "top_cpm": 4.5,
+          "player_dmg_pct": 4.3,
+          "top_dmg_pct": 3.6
+        },
+        {
+          "name": "Orbe Arcano",
+          "player_cpm": 0.7,
+          "top_cpm": 0.7,
+          "player_dmg_pct": 3.0,
+          "top_dmg_pct": 3.8
+        }
+      ]
+    },
+    {
+      "phase": "Intermissão",
+      "rows": [
+        {
+          "name": "Mísseis Arcanos",
+          "player_cpm": 15.5,
+          "top_cpm": 16.0,
+          "player_dmg_pct": 36.3,
+          "top_dmg_pct": 34.6
+        },
+        {
+          "name": "Salva Arcana",
+          "player_cpm": 14.3,
+          "top_cpm": 13.9,
+          "player_dmg_pct": 23.9,
+          "top_dmg_pct": 22.5
+        },
+        {
+          "name": "Seta Prismática",
+          "player_cpm": 3.0,
+          "top_cpm": 6.3,
+          "player_dmg_pct": 15.1,
+          "top_dmg_pct": 22.8
+        },
+        {
+          "name": "Meteorito",
+          "player_cpm": null,
+          "top_cpm": null,
+          "player_dmg_pct": 6.9,
+          "top_dmg_pct": 6.2
+        },
+        {
+          "name": "Toque dos Magos",
+          "player_cpm": 1.2,
+          "top_cpm": 1.1,
+          "player_dmg_pct": 5.3,
+          "top_dmg_pct": 5.3
+        },
+        {
+          "name": "Impacto Arcano",
+          "player_cpm": 6.0,
+          "top_cpm": 2.4,
+          "player_dmg_pct": 5.1,
+          "top_dmg_pct": 1.7
+        },
+        {
+          "name": "Orbe Arcano",
+          "player_cpm": 2.4,
+          "top_cpm": 0.9,
+          "player_dmg_pct": 5.9,
+          "top_dmg_pct": 4.7
+        }
       ]
     },
     {
       "phase": "Fase 2",
       "rows": [
-        { "name": "Mísseis Arcanos", "player_cpm": 14.1, "top_cpm": 16.9, "player_dmg_pct": 32.8, "top_dmg_pct": 36.2 },
-        { "name": "Seta Prismática", "player_cpm": 5.9, "top_cpm": 6.1, "player_dmg_pct": 24.0, "top_dmg_pct": 23.9 },
-        { "name": "Salva Arcana", "player_cpm": 16.2, "top_cpm": 14.8, "player_dmg_pct": 20.4, "top_dmg_pct": 20.6 }
+        {
+          "name": "Mísseis Arcanos",
+          "player_cpm": 13.4,
+          "top_cpm": 16.1,
+          "player_dmg_pct": 30.9,
+          "top_dmg_pct": 35.3
+        },
+        {
+          "name": "Salva Arcana",
+          "player_cpm": 13.4,
+          "top_cpm": 14.4,
+          "player_dmg_pct": 27.8,
+          "top_dmg_pct": 20.9
+        },
+        {
+          "name": "Seta Prismática",
+          "player_cpm": 2.8,
+          "top_cpm": 5.9,
+          "player_dmg_pct": 14.5,
+          "top_dmg_pct": 24.0
+        },
+        {
+          "name": "Meteorito",
+          "player_cpm": null,
+          "top_cpm": null,
+          "player_dmg_pct": 7.2,
+          "top_dmg_pct": 6.0
+        },
+        {
+          "name": "Toque dos Magos",
+          "player_cpm": 1.2,
+          "top_cpm": 1.3,
+          "player_dmg_pct": 5.3,
+          "top_dmg_pct": 5.4
+        },
+        {
+          "name": "Impacto Arcano",
+          "player_cpm": 10.5,
+          "top_cpm": 3.8,
+          "player_dmg_pct": 6.0,
+          "top_dmg_pct": 2.3
+        },
+        {
+          "name": "Orbe Arcano",
+          "player_cpm": 1.2,
+          "top_cpm": 0.9,
+          "player_dmg_pct": 5.8,
+          "top_dmg_pct": 4.2
+        }
       ]
     }
   ]

@@ -1,18 +1,24 @@
 import { formatNumber } from "../lib/format.js";
 
 // Um erro do relatório: título, quanto custou, explicação, o que fazer e os números do código.
+// Na hipótese (RF23/RF24) não há custo confirmado: o número é a diferença que as regras não
+// explicam, e o card fica sem posição na lista (rank nulo).
 export default function MistakeCard({ mistake, rank }) {
   const impact =
     mistake.impact_pct === null
       ? "Risco de morte, sem perda direta de dano"
-      : `Custou cerca de ${formatNumber(mistake.impact_pct)}% do seu dano`;
+      : mistake.kind === "hipotese"
+        ? `As regras não explicam cerca de ${formatNumber(mistake.impact_pct)} pontos da diferença`
+        : `Custou cerca de ${formatNumber(mistake.impact_pct)}% do seu dano`;
 
   return (
     <article className={`mistake mistake-${mistake.severity}`}>
       <header className="mistake-head">
-        <span className="mistake-rank" aria-hidden="true">
-          {rank}
-        </span>
+        {rank && (
+          <span className="mistake-rank" aria-hidden="true">
+            {rank}
+          </span>
+        )}
         <div>
           <h3>{mistake.title}</h3>
           <p className="mistake-meta">

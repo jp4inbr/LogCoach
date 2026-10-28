@@ -29,7 +29,7 @@ npm run dev   # http://localhost:5173 (precisa do backend rodando)
 | `APP_ENV` | `dev` (padrão) ou `prod`. Em `prod` o backend não sobe sem `JWT_SECRET` |
 | `NAMES_FILE` | Mapa pseudônimo → nome real do modo exemplo (RF25). Padrão: `tests/fixtures/names.local.json`, fora do git |
 | `GOOGLE_CLOUD_PROJECT` | Projeto do Google Cloud (Vertex AI) |
-| `DATABASE_URL` | Banco (SQLite em dev, PostgreSQL em produção). O arquivo `logcoach.db` é criado sozinho na primeira subida |
+| `DATABASE_URL` | Banco (SQLite em dev, PostgreSQL em produção). Vazio = `backend/logcoach.db`; caminho SQLite relativo (`sqlite:///./x.db`) é resolvido a partir de `backend/`, não da pasta de onde o uvicorn sobe. O arquivo é criado sozinho na primeira subida |
 | `JWT_SECRET` | Assinatura do login. Vazio em dev = chave temporária (o login cai a cada reinício); obrigatório com `APP_ENV=prod` |
 
 ## 12.3 Endpoints da API
@@ -67,7 +67,7 @@ As rotas não falam direto com o Warcraft Logs nem com o motor. Elas dependem de
 | `ReportSource.get_report(code)` | Lista as lutas e os Magos Arcanos de um relatório | `WclReportSource` (`DATA_SOURCE=wcl`): uma consulta `REPORT_FIGHTS` (~2 pontos) a cada chamada; ainda sem cache. `SampleReportSource` (`DATA_SOURCE=exemplo`): lê `app/samples/report_<código>.json` (só o kill de referência) |
 | `Analyzer.analyze(report, fight, player)` | Devolve o resultado da análise | `SampleAnalyzer`: lê `app/samples/analysis_<código>_<luta>.json` |
 
-Os arquivos de exemplo são marcados como exemplo (`"sample": true` e `"source": "exemplo"`) e a interface mostra um aviso amarelo. O `WclReportSource` já lê relatórios reais; o analisador ainda é o de exemplo, então só a luta de referência tem resultado (as outras dão `analysis_not_available`). Quando o motor ficar pronto, basta trocar o que `get_analyzer()` devolve. Nenhuma rota nem tela muda.
+Os arquivos de exemplo são marcados como exemplo (`"sample": true` e `"source": "exemplo"`) e a interface mostra um aviso amarelo. O `WclReportSource` já lê relatórios reais; o analisador ainda é o de exemplo, então só a luta de referência, e só para o Harmonist, tem resultado (outras lutas ou outros Magos dão `analysis_not_available`, sem gravar no histórico). O exemplo foi refeito em 28/10 a partir do log real (fixtures com buffs externos): só o impacto em % das regras e o tempo ativo são ilustrativos (ver `_nota` do arquivo). A soma dos `impact_pct` fecha com a diferença de DPS: o que as regras não explicam fica no erro `hipotese` (RF23), e `tests/test_samples.py` confere isso. Quando o motor ficar pronto, basta trocar o que `get_analyzer()` devolve. Nenhuma rota nem tela muda.
 
 No `WclReportSource`: entram só Magos com spec Arcano; spec e item level vêm do `playerDetails` da noite inteira (o motor confere a spec na luta escolhida); chefe suportado = encontro com YAML em `encounters/`, dificuldade listada em `difficulties` do YAML (Nek'zali: só Mítico) e luta de 60 s ou mais; chefe e dificuldade em pt-BR (`pt_br.yaml`). Erro do WCL ou report privado viram `report_not_available`; o link de exemplo (`XhrmBaYkGCAQjH2D`) abre mesmo com o WCL fora do ar (plano B da demo). Consulta conferida no report de referência.
 
@@ -210,7 +210,7 @@ O motor devolve um `AnalysisResult` (`backend/app/schemas.py`); o frontend só l
 | `comparison` | Com quem comparou (`label`, `bracket`, `size`), se o jogador já está no top 10 e `players`: cada comparado com `rank`, `display_name` (`top01`…), `name` (real, ou nulo no modo exemplo), `server`, `item_level` e `dps` | RF21, RF25 |
 | `summary` | DPS do jogador, média dos tops, diferença em %, tempo ativo | RF08 |
 | `coach` | `available` falso quando a IA falhou; `headline` é o resumo do coach | RF17 |
-| `mistakes` | Erros **já ordenados** do maior para o menor impacto. Cada um: `title`, `impact_pct` (ou `null` se é risco, não dano), `severity` (`atencao`/`erro`), `kind` (`regra` ou `hipotese`), `phase`, `explanation`, `what_to_do` e `numbers` (você × melhores) | RF10, RF24 |
+| `mistakes` | Erros **já ordenados**: primeiro os de regra, do maior para o menor impacto (risco, com `impact_pct` nulo, no fim); depois as hipóteses. Na hipótese, `impact_pct` é a diferença que nenhuma regra explica (RF23), e o texto traz as pistas do coach (RF24); a tela mostra as hipóteses numa seção à parte, "O que as regras não explicam", sem posição e sem "custou X%". Cada um: `title`, `impact_pct` (ou `null` se é risco, não dano), `severity` (`atencao`/`erro`), `kind` (`regra` ou `hipotese`), `phase`, `explanation`, `what_to_do` e `numbers` (você × melhores) | RF10, RF24 |
 | `rules` | Todas as regras checadas, com valor do jogador, dos melhores e `status` (`ok`/`atencao`/`erro`) | RF07, RF18 |
 | `phases` | Fases com início e fim em segundos e se é intermissão | RF20 |
 | `timeline` | Por cooldown: segundos **desde o início da luta** de cada uso do jogador (`player_s`) e do log de referência dos tops (`top_s`). O motor calcula por fase e converte com `phases[].start_s` | RF11 |
@@ -218,3 +218,36 @@ O motor devolve um `AnalysisResult` (`backend/app/schemas.py`); o frontend só l
 
 Os textos (`title`, `explanation`, `what_to_do`) saem em português, com os nomes de `pt_br.yaml`.
 
+## 12.10 Motor: Salvo, Arcane Soul e Prismatic Bolt
+
+Regras do Arthur (28/10/2026), conferidas nas 11 fixtures. Código em `backend/app/engine/` (`rules.py` lê os YAML; `timeline.py` lê janelas e acúmulos de buffs; `prismatic_bolt.py` e `arcane_soul.py` fazem as contas). Regras em `arcane_mage.yaml` (`barrage`, `prismatic_bolt_rng`, `arcane_soul`, `surge_window`).
+
+**Por que Barrage com 12 ou mais.** Pelo snowball de procs: todo hit de magia arcana (Missiles, Meteorite, o próprio Barrage) pode dar Clearcasting, e o Barrage derruba 1 Meteorite a cada 5 acúmulos de Salvo (15 → 3, 20 → 4, 25 → 5). Mais hits → mais Clearcasting → mais Missiles → mais Salvo. A chance de Prismatic Bolt tem os mesmos odds (linear, 2% por acúmulo): duas Salvas com 11 dão a mesma chance que uma com 22. O que tira Bolt é o Salvo estourar no cap, e isso aparece nos procs esperados por minuto (Salvo gasto por minuto), que o `prismatic_bolt.py` já calcula.
+
+**Arcane Soul (Sunfury).** Começa quando o Surge acaba (~17,4 s). Dentro dele o Barrage não gasta Salvo (medido: 20 dos 21 Barrages sem consumo do Harmonist), então cada Barrage rola Seta e meteoros de graça. Regra: entrar com **20 de Salvo ou mais** (25 é o máximo, mas de 20 para 25 o ganho é ~0,3%, e às vezes vale soltar um Barrage para não estourar). A causa típica de entrar baixo é Barrage nos 2 últimos GCDs antes do Soul; Overpowered Missiles sobe o Salvo para 25 na hora. `soul_entries()` devolve, por entrada, o Salvo, se ficou abaixo do mínimo (`mistake`), se houve Barrage nos últimos GCDs e se houve Overpowered.
+
+**Janela do Surge.** Não entrar de mão vazia (Salvo até 11 e no máximo 1 Clearcasting), senão o burst enche de Arcane Blast: nos tops, as 5 entradas assim deram 3 Blasts por janela. `surge_windows()` devolve, por janela, Salvo e Clearcasting no começo, os Blasts dentro e `empty_handed`. Fora o Surge de abertura, os tops soltam 0,5 Blast por janela. O Harmonist não entrou de mão vazia nenhuma vez e mesmo assim soltou 2,8 por janela: a causa está dentro da janela.
+
+**2ª poção com o Surge ou no CD.** Nos 30 s depois de um Surge, o DPS médio é 37% maior que no meio do ciclo (307,7 mil × 225,0 mil; 24 e 20 janelas sem poção, Power Infusion nem lust, nas 11 fixtures). Como a poção multiplica o dano feito enquanto dura, ela rende ~37% mais junto com o Surge. Ganho de alinhar ≈ bônus de dano da poção × 2,6% do dano da luta. O Potencial da Luz dá +695 de intelecto; o Harmonist tinha 3.575 (`combatantInfo` do kill de referência), ou seja, ~+19% de dano enquanto a poção dura (supondo dano proporcional ao intelecto, sem buffs de raide). Alinhar a 2ª poção com o Surge rende ~0,48 milhão de dano a mais: **~+1,2 mil de DPS, ou ~0,5% do dano da luta**. Segurar a poção só não vale se a luta acabar antes do Surge.
+
+**Prismatic Bolt: decisão × sorte.** A spec depende muito de RNG, e o relatório não pode cobrar azar como erro.
+
+| Medida | Como é calculada | O que mostra |
+|---|---|---|
+| Esperado | Soma, em cada Barrage, de 2% × acúmulos de Salvo naquele instante | A **decisão** |
+| Recebidos | Barrages seguidos de proc em até 0,5 s | O que aconteceu |
+| Sorte (z) | (recebidos − esperado) ÷ √Σ p(1 − p) | O **RNG**: abaixo de −2 é azar, acima de +2 é sorte |
+
+`bolt_procs(fight, soul=None|True|False)` faz a conta para a luta inteira, só dentro do Soul ou só fora.
+
+**Validação.** Nos 1.015 Barrages das fixtures, a taxa de proc por faixa de Salvo bate com 2% por acúmulo (10–14: 26%; 15–19: 35%; 20–24: 45%; 25: 53%); o ajuste dá 2,1%. No kill de referência:
+
+| | Harmonist | Tops (média) |
+|---|---|---|
+| Entradas no Soul com 20+ de Salvo | 2 de 5 (0, 20, 1, 18, 22) | 23 de 43 |
+| Entradas com Barrage nos 2 últimos GCDs (sem Overpowered) | 1 de 5 | 6 de 43 |
+| Arcane Blast por janela de Surge (fora a de abertura) | 2,8 | 0,5 |
+| Procs de Seta: recebidos ÷ esperados na luta | 28 ÷ ~41 (z −2,8) | z +0,9 |
+| Procs esperados por minuto no Soul (decisão) | 1,0 | 1,2 |
+
+A falta de Seta do Harmonist é em parte decisão (entrar no Soul com pouco Salvo) e em grande parte azar. Um ranking de melhores logs tende a escolher lutas com sorte, e o relatório precisa dizer isso.

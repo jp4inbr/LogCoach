@@ -19,7 +19,7 @@
       "boss": "Nek'zali, a Enrosca-almas",
       "difficulty": "Mítico",
       "kill": true,
-      "duration_s": 415.0,
+      "duration_s": 415.6,
       "supported": true,
       "unsupported_reason": null,
       "players": [{ "name": "Harmonist", "server": null, "spec": "Mago Arcano", "item_level": 327 }]

@@ -47,7 +47,11 @@ def test_invalid_token_on_public_route_counts_as_no_login(client):
 def test_t06_mistakes_come_sorted_by_impact(client):
     mistakes = client.post("/analyses", json=ANALYSIS).json()["result"]["mistakes"]
 
-    impacts = [m["impact_pct"] if m["impact_pct"] is not None else -1 for m in mistakes]
+    # Regras do maior para o menor impacto (risco sem impacto no fim); hipóteses depois.
+    kinds = [m["kind"] for m in mistakes]
+    assert kinds == sorted(kinds, key=lambda kind: kind == "hipotese")
+    rules = [m["impact_pct"] for m in mistakes if m["kind"] == "regra"]
+    impacts = [-1 if impact is None else impact for impact in rules]
     assert impacts == sorted(impacts, reverse=True)
 
 
@@ -60,7 +64,7 @@ def test_analysis_with_account_goes_to_history(client, auth_headers):
     assert created["saved"] is True
     assert [item["id"] for item in history] == [created["id"]]
     assert history[0]["boss"] == "Nek'zali, a Enrosca-almas"
-    assert history[0]["mistakes_count"] == 5
+    assert history[0]["mistakes_count"] == 6
     assert me["analyses_this_month"] == 1
 
 
@@ -134,13 +138,15 @@ def test_delete_account_removes_analyses(client, auth_headers, engine):
         assert session.get(Analysis, created["id"]) is None
 
 
-class TwoSombrasSource:
+class TwoHarmonistsSource:
     """Relatório sintético com dois Magos Arcanos de mesmo nome em reinos diferentes."""
 
     def get_report(self, code: str) -> ReportResolved:
         players = [
-            PlayerOption(name="Sombra", server="Area 52", spec="Mago Arcano", item_level=327),
-            PlayerOption(name="Sombra", server="Tichondrius", spec="Mago Arcano", item_level=327),
+            PlayerOption(name="Harmonist", server="Area 52", spec="Mago Arcano", item_level=327),
+            PlayerOption(
+                name="Harmonist", server="Tichondrius", spec="Mago Arcano", item_level=327
+            ),
         ]
         fight = FightOption(
             id=34,
@@ -157,8 +163,8 @@ class TwoSombrasSource:
 
 
 def test_repeated_name_without_server_is_ambiguous(client):
-    app.dependency_overrides[get_report_source] = TwoSombrasSource
-    request = {**ANALYSIS, "player_name": "Sombra"}
+    app.dependency_overrides[get_report_source] = TwoHarmonistsSource
+    request = {**ANALYSIS, "player_name": "Harmonist"}
 
     without_server = client.post("/analyses", json=request)
     wrong_server = client.post("/analyses", json={**request, "server": "Azralon"})
@@ -167,7 +173,53 @@ def test_repeated_name_without_server_is_ambiguous(client):
     assert without_server.status_code == 422
     assert without_server.json()["detail"]["code"] == "player_ambiguous"
     assert wrong_server.json()["detail"]["code"] == "no_arcane_mage"  # reino que não existe
-    assert with_server.status_code == 201
+    assert with_server.status_code == 201  # o reino desempatou
+
+
+class HarmonistAndOtherSource:
+    """Luta 34 sintética com o Harmonist e outro Arcano (pseudônimo)."""
+
+    def get_report(self, code: str) -> ReportResolved:
+        players = [
+            # Com DATA_SOURCE=wcl o Harmonist chega com reino; o exemplo não tem reino.
+            PlayerOption(name="Harmonist", server="Azralon", spec="Mago Arcano", item_level=327),
+            PlayerOption(name="Outroarcano", server="Area 52", spec="Mago Arcano", item_level=327),
+        ]
+        fight = FightOption(
+            id=34,
+            boss="Nek'zali, a Enrosca-almas",
+            difficulty="Mítico",
+            kill=True,
+            duration_s=415.0,
+            supported=True,
+            players=players,
+        )
+        return ReportResolved(
+            code=SAMPLE_REPORT_CODE, title="Sintético", sample=True, fights=[fight]
+        )
+
+
+def test_other_arcane_in_sample_fight_does_not_get_harmonist_result(client, auth_headers):
+    app.dependency_overrides[get_report_source] = HarmonistAndOtherSource
+
+    response = client.post(
+        "/analyses", json={**ANALYSIS, "player_name": "Outroarcano"}, headers=auth_headers
+    )
+
+    assert response.status_code == 503
+    assert response.json()["detail"]["code"] == "analysis_not_available"
+    # Recusada antes de gravar: não entra no histórico nem conta no limite do plano.
+    assert client.get("/me", headers=auth_headers).json()["analyses_this_month"] == 0
+    assert client.get("/me/analyses", headers=auth_headers).json() == []
+
+
+def test_harmonist_in_sample_fight_still_gets_the_result(client):
+    app.dependency_overrides[get_report_source] = HarmonistAndOtherSource
+
+    response = client.post("/analyses", json={**ANALYSIS, "server": "Azralon"})
+
+    assert response.status_code == 201
+    assert response.json()["result"]["player"]["name"] == "Harmonist"
 
 
 def test_month_start():

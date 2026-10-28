@@ -47,6 +47,11 @@ buffs:
   prismatic_bolt_proc: 1295942
   arcane_soul: 451038         # janela pós-Surge (Sunfury)
 
+# Buffs de outros jogadores. Não são erro do Mago: entram como contexto na comparação
+# (ex.: o top que recebe Power Infusion em todo Surge tem vantagem).
+external_buffs:
+  power_infusion: 10060       # Priest; no kill de referência, 2 no Harmonist (2:12 e 6:22)
+
 # Barrage e Salvo (regra do Arthur, medida no top 10 do bracket 326–328).
 barrage:
   min_salvo: 12               # Barrage abaixo disso é erro quando vira hábito
@@ -55,6 +60,54 @@ barrage:
   # 1 Missiles + Prismatic Bolt antes do Barrage é o padrão sugerido pelo Arthur;
   # nos tops os dois padrões (1 ou 2 Missiles + Bolt) aparecem, então fica para a IA julgar.
   clearcasting_max: 3         # com 3 cargas, gastar 2 Missiles antes do Barrage evita perder proc
+  # Por que 12: snowball de procs. Todo hit de magia arcana (Missiles, Meteorite, Barrage...)
+  # pode dar Clearcasting, e o Barrage derruba 1 Meteorite a cada 5 Salvo (15 → 3, 20 → 4,
+  # 25 → 5): mais hits → mais Clearcasting → mais Missiles → mais Salvo. A chance de Prismatic
+  # Bolt tem os mesmos odds (linear, 2% por Salvo); o que tira Bolt é o Salvo estourar no cap.
+  meteorites_per_salvo: 0.2   # 1 a cada 5 acúmulos (regra do Arthur; no log, mediana 5 com 25)
+  meteorite_ids: [449569, 456139]
+
+# Arcane Soul (Sunfury): começa quando o Arcane Surge acaba (~17,4 s). Dentro dele o Barrage
+# não gasta Salvo (medido: 20 dos 21 Barrages sem consumo do Harmonist caíram no Soul), então
+# cada Barrage rola Prismatic Bolt e Meteorite de graça. Regra do Arthur: entrar com 20 de
+# Salvo no mínimo. 25 é o máximo, mas de 20 para 25 o ganho é baixo (~0,3%), e às vezes vale
+# soltar um Barrage para não estourar o Salvo.
+arcane_soul:
+  buff_id: 451038
+  min_salvo: 20
+  # Os 2 últimos GCDs antes do Soul (~2,5 s) não podem ser Barrage. Exceção: Overpowered Missiles
+  # sobe o Salvo para 25 na hora. Kill de referência: entradas com 0, 20, 1, 18 e 22 de Salvo
+  # (2 de 5 com 20+); nos 10 tops, 23 de 43 com 20+ e Barrage nos 2 últimos GCDs em 6 de 43.
+  no_barrage_last_gcds: 2
+  exception_buff_id: 1277009  # Overpowered Missiles
+
+# Janela do Arcane Surge (~17,4 s): chegar com Clearcasting suficiente para não encher a janela
+# de Arcane Blast. Fora o Surge de abertura, os tops soltam 0,5 Blast por janela; o Harmonist,
+# 2,8 (4, 0, 4 e 3). A Clearcasting no começo da janela é parecida (1,8 × 1,7): a diferença
+# está em como ela é gasta e reposta dentro do burst.
+surge_window:
+  buff_id: 365362             # buff do Arcane Surge (o cast é 365350)
+  max_arcane_blast: 0         # fora o Surge de abertura
+  ignore_opener: true
+  # "Mão vazia": entrar no Surge com Salvo baixo e no máximo 1 Clearcasting obriga a encher a
+  # janela de Blast. Nos tops, as 5 entradas assim deram 3 Blasts por janela. Entrar com uma
+  # Clearcasting guardada e Salvo razoável está ok.
+  empty_handed: { max_salvo: 11, max_clearcasting: 1 }
+
+# Prismatic Bolt: decisão × sorte (regra do Arthur). Cada Salvo no Barrage dá 2% de chance
+# de proc (25 → 50%, 11 → 22%). A decisão que mais pesa é o Salvo dentro do Arcane Soul, onde
+# o Barrage não gasta acúmulos; o cálculo separa dentro e fora do Soul.
+# Validado em 28/10/2026 nas 11 fixtures (1.015 Barrages): 2,1% por Salvo; quase todo proc
+# sai até 0,5 s depois do Barrage.
+#   esperado = Σ (chance × Salvo) em cada Barrage      → mede a decisão do jogador
+#   desvio   = √Σ p(1 − p)
+#   sorte z  = (recebidos − esperado) ÷ desvio          → mede o RNG
+# A spec é muito RNG: no kill de referência o Harmonist teve z −2,8 (azar raro) e um dos tops
+# +3,5. O relatório separa as duas coisas para não cobrar azar como erro.
+prismatic_bolt_rng:
+  proc_per_salvo: 0.02
+  proc_window_s: 0.5          # proc conta para o Barrage se aparecer até 0,5 s depois
+  luck_z: { unlucky: -2, lucky: 2 }   # fora disso, a diferença de procs não é só sorte
 
 defensives:
   - { name: Prismatic Barrier, ability_id: 235450 }   # tops do bracket: de 0 a 6 usos por kill
@@ -64,8 +117,11 @@ consumables:
   - name: Light's Potential (poção)
     ability_id: 1236616
     cooldown_s: 300
-    # Tops usam a 2ª poção assim que volta (~5:00). Quando o Surge está perto,
-    # seguram o Surge para casar com a poção, e não o contrário.
+    # Tops usam a 2ª poção por volta de 5:00 porque o 4º Surge deles cai ali. Segurar a
+    # 2ª poção para casar com um Surge é o recomendado (poção + Surge rende mais que a
+    # poção no CD), se a luta durar o bastante para esse Surge. Não é erro; o erro é
+    # atrasar o Surge e dessincronizar o Touch. Medido: +695 de intelecto (~+19% de dano no
+    # Harmonist) e DPS 37% maior nos 30 s pós-Surge → alinhar rende ~0,5% do dano da luta.
 
 # Referência de casts por minuto e % do dano (Archon, top 10 geral do Nek'zali
 # Mítico, 25/10/2026, talentos de herói Sunfury). Usada na tabela do RF22 até o
