@@ -739,16 +739,16 @@ label {
   background: var(--warn-bg);
 }
 
+/* Contagem até a próxima busca: na mesma linha da frase de estado, fora da região viva. */
 .auto-refresh-status {
-  display: flex;
-  align-items: center;
-  gap: 8px;
   color: var(--muted);
-  font-size: 0.9rem;
   font-variant-numeric: tabular-nums;
 }
 
 .auto-refresh-dot {
+  display: inline-block;
+  margin-left: 8px;
+  vertical-align: middle;
   width: 7px;
   height: 7px;
   border-radius: 50%;

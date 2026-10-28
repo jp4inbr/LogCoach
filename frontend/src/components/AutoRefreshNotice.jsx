@@ -1,63 +1,79 @@
 import { useEffect, useState } from "react";
 
-// Segundos até a próxima busca automática. Remontado a cada busca (key), começa da hora em
-// que a última terminou e conta de 1 em 1 s.
+// Tempo até a próxima busca automática, em minutos (o intervalo é de minutos; segundos só
+// fariam a linha mudar à toa). Remontado a cada busca (key), conta da hora em que a última
+// terminou.
 function Countdown({ from, to }) {
   const [now, setNow] = useState(from);
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(timer);
   }, []);
-  const seconds = Math.max(0, Math.ceil((to - now) / 1000));
-  return seconds > 0 ? `Próxima atualização em ${seconds} s.` : "Atualizando em instantes…";
+  const seconds = Math.ceil((to - now) / 1000);
+  if (seconds <= 0) return "atualizando em instantes…";
+  const when = seconds < 60 ? "menos de 1 min" : `${Math.ceil(seconds / 60)} min`;
+  return `próxima atualização em ${when} (ou clique em “Atualizar lutas”).`;
 }
 
-// Área do aviso de atualização automática da lista de lutas, enquanto houver luta subindo
-// para o Warcraft Logs. A frase principal é anunciada pelo leitor de tela só quando muda
-// (começou, parou); a contagem e o "buscando agora" ficam fora do anúncio (aria-live="off"),
-// para não falar a cada segundo.
+// Aviso da atualização automática da lista de lutas (log ao vivo).
 //
-// Props: active (há luta subindo), stopped (passou do teto sem novidade), busy (busca em
-// andamento, manual ou automática), lastDoneAt e intervalMs (para a contagem), limitMin.
-export default function AutoRefreshNotice({
-  active,
-  stopped,
-  busy,
-  lastDoneAt,
-  intervalMs,
-  limitMin,
-}) {
-  const seconds = Math.round(intervalMs / 1000);
+// A frase de estado fica numa região viva, sempre montada (vazia quando a automática está
+// desligada), para o leitor de tela anunciar só as mudanças de estado: ligou, luta começou a
+// subir, esperando o próximo pull, parou. A contagem e o "buscando agora" ficam numa irmã
+// fora da região viva, para não serem lidos a cada mudança.
+//
+// Props: state ("off" | "uploading" | "waiting" | "stopped"), busy (busca em andamento,
+// manual ou automática), lastDoneAt e intervalMs (para a contagem), stopAfter (quantas
+// automáticas seguidas sem novidade até parar).
+export default function AutoRefreshNotice({ state, busy, lastDoneAt, intervalMs, stopAfter }) {
+  const running = state === "uploading" || state === "waiting";
+  const stoppedMin = Math.round((stopAfter * intervalMs) / 60_000);
+  const className =
+    state === "off"
+      ? "sr-only"
+      : `auto-refresh ${state === "stopped" ? "auto-refresh-stopped" : ""}`;
+
+  let text = null;
+  if (state === "uploading") {
+    text = (
+      <>
+        <strong>Acompanhando o log ao vivo</strong> (luta subindo para o Warcraft Logs)
+      </>
+    );
+  } else if (state === "waiting") {
+    text = (
+      <>
+        <strong>Acompanhando o log ao vivo</strong> (esperando o próximo pull)
+      </>
+    );
+  } else if (state === "stopped") {
+    text = (
+      <>
+        <strong>Atualização automática parada:</strong> nada mudou nas últimas {stopAfter}{" "}
+        atualizações (cerca de {stoppedMin} min). “Atualizar lutas” confere de novo e volta a
+        acompanhar.
+      </>
+    );
+  }
+
   return (
-    <div aria-live="polite">
-      {active && (
-        <div className={`auto-refresh ${stopped ? "auto-refresh-stopped" : ""}`}>
-          {stopped ? (
-            <p>
-              <strong>Atualização automática pausada.</strong> A luta está subindo há mais de{" "}
-              {limitMin} minutos sem novidade; o envio do log pode ter parado. Clique em “Atualizar
-              lutas” para conferir e voltar a atualizar sozinho.
-            </p>
-          ) : (
-            <>
-              <p>
-                <strong>Atualizando automaticamente</strong> a cada {seconds} s enquanto houver luta
-                subindo para o Warcraft Logs. Não precisa clicar em “Atualizar lutas”.
-              </p>
-              <p className="auto-refresh-status" aria-live="off">
-                {busy ? (
-                  <>
-                    <span className="auto-refresh-dot" aria-hidden="true" />
-                    Buscando agora…
-                  </>
-                ) : lastDoneAt !== null ? (
-                  <Countdown key={lastDoneAt} from={lastDoneAt} to={lastDoneAt + intervalMs} />
-                ) : null}
-              </p>
-            </>
-          )}
-        </div>
-      )}
+    <div className={className}>
+      <p>
+        <span aria-live="polite">{text}</span>
+        {running && (
+          <span className="auto-refresh-status">
+            {": "}
+            {busy ? (
+              <>
+                buscando agora…
+                <span className="auto-refresh-dot" aria-hidden="true" />
+              </>
+            ) : lastDoneAt !== null ? (
+              <Countdown key={lastDoneAt} from={lastDoneAt} to={lastDoneAt + intervalMs} />
+            ) : null}
+          </span>
+        )}
+      </p>
     </div>
   );
 }

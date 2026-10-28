@@ -93,7 +93,9 @@ function Page({ route }) {
         />
       );
     case "relatorio":
-      return <ChooseFight code={id} />;
+      // key: relatório novo monta a tela do zero (pré-buscas, Magos por luta, buscas em
+      // andamento e timers não passam de um relatório para outro), mesmo se o key de Page mudar.
+      return <ChooseFight key={id} code={id} />;
     case "analise":
       return <Result id={id} />;
     case "perfil":

@@ -12,18 +12,21 @@ import { load, save } from "../lib/storage.js";
 const DEMO_KEY = "logcoach.demoUsed";
 const CHARACTER_KEY = "logcoach.character";
 const STEP_MS = 900;
-// Enquanto alguma luta ainda está subindo para o Warcraft Logs, a lista se refaz sozinha.
-const AUTO_REFRESH_MS = 30_000;
-// Teto da atualização automática: 20 min seguidos sem novidade com luta subindo (o envio do
-// log provavelmente parou). Daí em diante só pelo botão, que conta mais 20 min.
-const AUTO_LIMIT_MIN = 20;
-const AUTO_LIMIT_MS = AUTO_LIMIT_MIN * 60_000;
+// Log ao vivo (luta subindo ou liberada nesta sessão): a lista se refaz sozinha a cada 4 min.
+// Um pull dura 3–7 min, mais a conversa entre pulls; atualizar mais cedo não traz nada, e quem
+// quiser adiantar clica em "Atualizar lutas" (que reinicia a contagem).
+const AUTO_REFRESH_MS = 4 * 60_000;
+// Para depois de 3 automáticas seguidas sem novidade (~12 min: um pull longo + conversa). Daí
+// em diante só pelo botão, que volta a ligar.
+const AUTO_STOP_AFTER = 3;
 // Espera da seleção (luta + jogador) parada antes da pré-busca, para não gastar pontos do
 // Warcraft Logs com cliques exploratórios.
 const PREFETCH_DELAY_MS = 1000;
-// Falhas passageiras (Warcraft Logs ou LogCoach fora do ar, sem conexão): vale tentar de novo
-// sem mexer no link. unexpected_error fica: a mensagem já diz que o problema é nosso e pede
-// "Tente de novo", e erro inesperado do servidor costuma passar na segunda tentativa.
+// Erros em que vale oferecer "Tentar de novo" sem mexer no link: Warcraft Logs ou LogCoach fora
+// do ar, sem conexão. unexpected_error também (o usuário pode tentar), mas ele cobre ainda
+// credenciais do servidor e consulta com defeito, que só passam com correção do nosso lado:
+// por isso os textos em volta do botão não prometem que vai funcionar; quem diz o que fazer é
+// a mensagem do servidor.
 const TEMPORARY_ERRORS = new Set(["wcl_unavailable", "unexpected_error", "network"]);
 
 // Dentro do relatório o personagem é o id do ator do WCL (homônimos de reinos diferentes
@@ -50,10 +53,19 @@ function formatTime(iso) {
   return new Date(iso).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
 }
 
+// Hora com segundos ("21:04:37"), para o resultado de cliques seguidos não parecer repetido.
+function formatSeconds(ms) {
+  return new Date(ms).toLocaleTimeString("pt-BR", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
+}
+
 // O servidor sempre consulta o Warcraft Logs de novo (com uma trava de 8 s: dentro dela
 // devolve a mesma lista, com o mesmo fetched_at). Se o Warcraft Logs falhar e houver lista
-// guardada, ela volta com stale: true, a mensagem do erro e o fetched_at antigo. Serve para
-// abrir, atualizar e para a atualização automática.
+// guardada, ela volta com stale: true, a mensagem do erro (stale_message), o código (stale_code,
+// se vier) e o fetched_at antigo. Serve para abrir, atualizar e para a atualização automática.
 function resolveReport(code) {
   return api.post("/reports/resolve", {
     url: `https://www.warcraftlogs.com/reports/${code}`,
@@ -61,26 +73,42 @@ function resolveReport(code) {
   });
 }
 
-// O que mudou entre duas listas: lutas com id novo e lutas que passaram a poder ser
-// analisadas (ex.: terminaram de subir para o Warcraft Logs).
+// O que mudou entre duas listas: lutas com id novo, lutas que passaram a poder ser analisadas
+// (ex.: terminaram de subir para o Warcraft Logs), lutas que começaram a subir e lutas que
+// terminaram de subir (mesmo sem poder ser analisadas, ex.: outro chefe).
 function compareFights(before, after) {
   const known = new Map(before.map((item) => [item.id, item]));
   let added = 0;
   let unlocked = 0;
+  let started = 0;
+  let finished = 0;
   for (const item of after) {
     const previous = known.get(item.id);
-    if (!previous) added += 1;
-    else if (!previous.supported && item.supported) unlocked += 1;
+    if (!previous) {
+      added += 1;
+      if (item.in_progress) started += 1;
+      continue;
+    }
+    if (!previous.supported && item.supported) unlocked += 1;
+    if (!previous.in_progress && item.in_progress) started += 1;
+    if (previous.in_progress && !item.in_progress) finished += 1;
   }
-  return { added, unlocked };
+  return { added, unlocked, started, finished };
 }
 
 function hasUploading(fights) {
   return fights.some((item) => item.in_progress);
 }
 
+// Novidade que vale anunciar ("1 luta nova", "1 liberada para análise").
 function hasNews(news) {
   return news.added + news.unlocked > 0;
+}
+
+// Sinal de log ao vivo: qualquer novidade, inclusive luta começando ou terminando de subir.
+// Liga o acompanhamento e zera a contagem de automáticas sem novidade.
+function hasLiveNews(news) {
+  return hasNews(news) || news.started + news.finished > 0;
 }
 
 // "2 lutas novas", "1 luta liberada para análise", "2 lutas novas e 1 liberada para análise".
@@ -96,6 +124,15 @@ function newsText({ added, unlocked }) {
 }
 
 function refreshText(refresh) {
+  // Clique com a lista guardada: o servidor continua sem conseguir a lista nova. A hora com
+  // segundos mostra que o clique foi atendido. unexpected_error é do nosso lado, não do WCL.
+  if (refresh.status === "stale") {
+    const time = formatSeconds(refresh.at);
+    if (refresh.code === "unexpected_error") {
+      return `${refresh.again ? "Ainda não" : "Não"} deu para atualizar (${time})`;
+    }
+    return `${refresh.again ? "Ainda sem" : "Sem"} resposta do Warcraft Logs (${time})`;
+  }
   // Mesmo fetched_at: o servidor devolveu a lista que tinha acabado de ler, sem consultar.
   if (refresh.unchanged) return "A lista já está atualizada";
   return newsText(refresh);
@@ -103,8 +140,9 @@ function refreshText(refresh) {
 
 // Tela 2: escolher a luta e o personagem (RF04). A lista de lutas vem leve, sem jogadores;
 // os Magos Arcanos são buscados quando o usuário escolhe a luta. "Atualizar lutas" traz os
-// pulls novos de um log ao vivo, e a lista se refaz sozinha (com aviso na tela) enquanto
-// houver luta subindo, até 20 min sem novidade. Com luta e jogador definidos por 1 s, os
+// pulls novos de um log ao vivo, e a lista se refaz sozinha a cada 4 min (com aviso na tela)
+// enquanto houver luta subindo ou depois de uma luta liberada nesta sessão, até 3 atualizações
+// seguidas sem novidade. Com luta e jogador definidos por 1 s, os
 // eventos são pré-buscados em segundo plano. Depois do clique em Analisar, a mesma tela
 // mostra o andamento em etapas (Tela 3) e abre o resultado quando termina.
 export default function ChooseFight({ code }) {
@@ -124,10 +162,12 @@ export default function ChooseFight({ code }) {
   // antes de o estado chegar à tela.
   const [busy, setBusy] = useState(null);
   const refreshing = useRef(false);
-  // Hora em que a última busca da lista terminou (a próxima automática conta daí) e hora em
-  // que começou a contagem do teto (luta subindo sem novidade).
+  // Hora em que a última busca da lista terminou (a próxima automática conta daí), se esta
+  // sessão já viu o log ao vivo (luta subindo, nova ou liberada) e quantas automáticas seguidas
+  // vieram sem novidade (em AUTO_STOP_AFTER, para).
   const [lastDoneAt, setLastDoneAt] = useState(null);
-  const [autoSince, setAutoSince] = useState(null);
+  const [followingLive, setFollowingLive] = useState(false);
+  const [autoMisses, setAutoMisses] = useState(0);
   // Pré-buscas já pedidas nesta tela, por "luta:ator".
   const prefetched = useRef(new Set());
 
@@ -136,10 +176,10 @@ export default function ChooseFight({ code }) {
     resolveReport(code)
       .then((data) => {
         if (!active) return;
-        const now = Date.now();
         setReport({ status: "ok", data });
-        setLastDoneAt(now);
-        setAutoSince(now);
+        setLastDoneAt(Date.now());
+        setAutoMisses(0);
+        if (hasUploading(data.fights)) setFollowingLive(true);
       })
       .catch((error) => active && setReport({ status: "error", error }));
     return () => {
@@ -164,20 +204,22 @@ export default function ChooseFight({ code }) {
   const player = players.find((p) => playerKey(p) === selectedKey) ?? null;
   const demoBlocked = !token && load(DEMO_KEY, false);
   const uploading = Boolean(data && hasUploading(data.fights));
-  // Teto: 20 min desde a última novidade (ou clique) e a luta continua subindo.
-  const autoStopped =
-    uploading &&
-    lastDoneAt !== null &&
-    autoSince !== null &&
-    lastDoneAt - autoSince >= AUTO_LIMIT_MS;
-  const autoActive = uploading && !autoStopped;
+  // Log ao vivo: luta subindo agora ou já vista nesta sessão (entre um pull e outro a lista
+  // fica sem luta subindo, e o próximo costuma começar em 1–2 min).
+  const live = uploading || followingLive;
+  const autoStopped = live && autoMisses >= AUTO_STOP_AFTER;
+  const autoActive = live && !autoStopped;
+  const autoState = !live ? "off" : autoStopped ? "stopped" : uploading ? "uploading" : "waiting";
 
   // Busca a lista de novo no Warcraft Logs. Se falhar, a lista que já está na tela continua.
   // A manual sempre diz o resultado; a automática só fala quando há novidade. A lista
-  // guardada (stale) tem aviso próprio, que só se atualiza (não empilha a cada 30 s).
+  // guardada (stale) tem aviso próprio, que só se atualiza (não empilha a cada busca).
+  // Clique ou novidade zeram a contagem de automáticas sem novidade; automática sem novidade
+  // (inclusive com erro ou lista guardada) soma uma.
   function refreshFights(mode) {
     if (!data || refreshing.current) return;
     const before = data;
+    let liveNews = false;
     refreshing.current = true;
     setBusy(mode);
     if (mode === "manual") setRefresh({ status: "idle" });
@@ -186,17 +228,19 @@ export default function ChooseFight({ code }) {
         setReport({ status: "ok", data: fresh });
         const news = compareFights(before.fights, fresh.fights);
         const unchanged = fresh.fetched_at === before.fetched_at;
-        // Clique, novidade ou luta que começou a subir agora: o teto volta a contar do zero.
-        if (
-          mode === "manual" ||
-          hasNews(news) ||
-          (!hasUploading(before.fights) && hasUploading(fresh.fights))
-        ) {
-          setAutoSince(Date.now());
-        }
+        liveNews = hasLiveNews(news);
+        if (liveNews || hasUploading(fresh.fights)) setFollowingLive(true);
         if (fresh.stale && !hasNews(news)) {
-          // O aviso da lista guardada já explica; "A lista já está atualizada" seria falso.
-          if (mode === "manual") setRefresh({ status: "idle" });
+          // "A lista já está atualizada" seria falso. O clique ganha uma resposta com a hora,
+          // para não parecer ignorado; a automática deixa o aviso da lista guardada falar.
+          if (mode === "manual") {
+            setRefresh({
+              status: "stale",
+              at: Date.now(),
+              again: Boolean(before.stale),
+              code: fresh.stale_code ?? null,
+            });
+          }
         } else if (mode === "manual" || hasNews(news)) {
           setRefresh({ status: "ok", unchanged: unchanged && !hasNews(news), ...news });
         } else {
@@ -216,6 +260,8 @@ export default function ChooseFight({ code }) {
         refreshing.current = false;
         setBusy(null);
         setLastDoneAt(Date.now());
+        if (mode === "manual" || liveNews) setAutoMisses(0);
+        else setAutoMisses((current) => current + 1);
       });
   }
 
@@ -223,9 +269,10 @@ export default function ChooseFight({ code }) {
     if (document.visibilityState === "visible") refreshFights("auto");
   });
 
-  // Enquanto houver luta subindo (e antes do teto), refaz a lista 30 s depois de a última
-  // busca terminar, só com a aba visível. Ao voltar para a aba depois desse tempo, atualiza na
-  // hora. Busca em andamento suspende o relógio; ele recomeça quando ela termina.
+  // Com o log ao vivo (e antes de parar), refaz a lista 4 min depois de a última busca terminar
+  // (automática ou clique), só com a aba visível: com a aba escondida nada é buscado nem
+  // contado. Ao voltar para a aba depois desse tempo, atualiza na hora. Busca em andamento
+  // suspende o relógio; ele recomeça quando ela termina.
   useEffect(() => {
     if (!autoActive || busy || lastDoneAt === null) return undefined;
     const delay = Math.max(0, lastDoneAt + AUTO_REFRESH_MS - Date.now());
@@ -401,12 +448,16 @@ export default function ChooseFight({ code }) {
         <div className="fights-head">
           <h2 id="fights-title">1. Escolha a luta</h2>
           <div className="fights-refresh">
-            <span className="field-hint" aria-live="polite">
+            {/* Só o resultado da atualização é anunciado; a hora da lista fica fora da região
+                viva, para não ser lida a cada busca. */}
+            <span className="field-hint">
               Lista de {formatTime(data.fetched_at)}
-              {refresh.status === "ok" && ` · ${refreshText(refresh)}`}
+              <span aria-live="polite">
+                {["ok", "stale"].includes(refresh.status) && ` · ${refreshText(refresh)}`}
+              </span>
             </span>
-            {/* aria-disabled em vez de disabled: a busca automática não tira o foco do botão
-                a cada 30 s. O clique durante uma busca é ignorado em refreshFights. */}
+            {/* aria-disabled em vez de disabled: a busca automática não tira o foco do botão.
+                O clique durante uma busca é ignorado em refreshFights. */}
             <button
               type="button"
               className="button ghost small"
@@ -418,15 +469,15 @@ export default function ChooseFight({ code }) {
           </div>
         </div>
         <AutoRefreshNotice
-          active={uploading}
-          stopped={autoStopped}
+          state={autoState}
           busy={busy !== null}
           lastDoneAt={lastDoneAt}
           intervalMs={AUTO_REFRESH_MS}
-          limitMin={AUTO_LIMIT_MIN}
+          stopAfter={AUTO_STOP_AFTER}
         />
+        {/* Título neutro: a causa (WCL fora do ar ou erro nosso) vem na mensagem do servidor. */}
         {data.stale && (
-          <Notice tone="atencao" title="Não deu para atualizar com o Warcraft Logs">
+          <Notice tone="atencao" title="Não deu para atualizar a lista">
             {data.stale_message} Mostrando a lista de {formatTime(data.fetched_at)}.
           </Notice>
         )}
