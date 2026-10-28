@@ -179,6 +179,24 @@ def test_429_with_http_date():
     assert "10 minutos" in message or "9 minutos" in message
 
 
+@pytest.mark.parametrize(
+    ("response", "rate_limited", "retry_after_s"),
+    [
+        (httpx.Response(429, headers={"retry-after": "120"}, json={}), True, 120),
+        (httpx.Response(429, json={}), True, None),
+        # Manutenção com Retry-After: não é limite, mas o tempo vale para a pausa da fonte.
+        (httpx.Response(503, headers={"retry-after": "300"}, json={}), False, 300),
+        (httpx.Response(502, json={}), False, None),
+        (httpx.Response(200, json={"errors": [{"message": "Rate limit exceeded"}]}), True, None),
+    ],
+)
+def test_unavailable_error_carries_the_wait(response, rate_limited, retry_after_s):
+    error = raised(client_for(response))
+
+    assert isinstance(error, WclUnavailableError)
+    assert (error.rate_limited, error.retry_after_s) == (rate_limited, retry_after_s)
+
+
 def test_rate_limit_message_without_time_does_not_promise_minutes():
     assert "1 hora" in rate_limit_message(None)
     assert rate_limit_message(61).endswith("uns 2 minutos.")

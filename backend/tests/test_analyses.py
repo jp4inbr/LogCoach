@@ -12,7 +12,6 @@ from app.services.plan import month_start
 from app.services.sources import (
     SAMPLE_REPORT_CODE,
     SAMPLES_DIR,
-    ReportCache,
     SourceUnavailableError,
     build_players,
     build_report,
@@ -318,7 +317,7 @@ class DownSource:
 
 
 def wcl_source(wcl: FakeWcl, now: list[float]):
-    source = wcl.source(cache=ReportCache(clock=lambda: now[0]))
+    source = wcl.source(clock=now)
     app.dependency_overrides[get_report_source] = lambda: source
     return source
 

@@ -88,9 +88,11 @@ class ReportResolved(BaseModel):
     fetched_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     fights: list[FightOption]
     # Lista guardada: a busca nova falhou (Warcraft Logs fora do ar, limite de pontos ou erro
-    # nosso) e veio a última lista lida, de `fetched_at`. `stale_message` diz o porquê.
+    # nosso) e veio a última lista lida, de `fetched_at`. `stale_message` diz o porquê e
+    # `stale_code` é o código do erro (`wcl_unavailable` ou `unexpected_error`, item 12.3).
     stale: bool = False
     stale_message: str | None = None
+    stale_code: str | None = None
 
 
 class FightPlayers(BaseModel):
