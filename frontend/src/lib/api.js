@@ -37,8 +37,24 @@ async function request(method, path, { body, token } = {}) {
 
   const detail = data?.detail;
   if (detail?.code) throw new ApiError(detail.code, detail.message, response.status);
-  // Erros de validação do FastAPI (422) chegam como lista; mostramos uma mensagem genérica.
-  throw new ApiError("unknown", "Algo deu errado. Tente de novo em alguns instantes.", response.status);
+  // Erros de validação do FastAPI (422) chegam como lista, sem `code`: dado que a tela
+  // mandou fora do formato. Raro, porque as telas validam antes de enviar.
+  if (response.status === 422) {
+    throw new ApiError(
+      "invalid_request",
+      "Algum dado enviado não está no formato esperado. Confira e tente de novo.",
+      response.status,
+    );
+  }
+  // Qualquer outra resposta sem `code` (500 cru, 502/504 do proxy, página HTML) não veio
+  // das nossas rotas: é erro inesperado do LogCoach, não do relatório nem do Warcraft Logs.
+  throw new ApiError(
+    "unexpected_error",
+    // Mesmo texto do UNEXPECTED_ERROR_MESSAGE do backend (app/errors.py).
+    "Erro inesperado no LogCoach. O problema é nosso, não do seu relatório. " +
+      "Tente de novo; se continuar, recarregue a página.",
+    response.status,
+  );
 }
 
 export const api = {
