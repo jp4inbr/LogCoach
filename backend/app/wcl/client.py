@@ -77,6 +77,10 @@ CONFIG_MESSAGE = (
     "Erro de configuração do LogCoach: nosso acesso ao Warcraft Logs não está funcionando. "
     "O problema é nosso, não do seu relatório nem do Warcraft Logs. Tente de novo mais tarde."
 )
+QUERY_MESSAGE = (
+    "Erro inesperado no LogCoach: a consulta que fazemos ao Warcraft Logs está com defeito. "
+    "O problema é nosso, não do seu relatório nem do Warcraft Logs. Tente de novo mais tarde."
+)
 UNEXPECTED_MESSAGE = (
     "O Warcraft Logs respondeu com um erro inesperado. Tente de novo; se continuar, "
     "recarregue a página."
@@ -124,6 +128,16 @@ REPORT_ERRORS = ("this report does not exist", "you do not have permission to vi
 # Erros de GraphQL que são instabilidade do WCL (Lighthouse/Laravel sem detalhes).
 OUTAGE_ERRORS = ("internal server error", "server error", "service unavailable", "maintenance")
 RATE_LIMIT_ERRORS = ("rate limit", "too many requests")
+# Validação do GraphQL: a consulta que montamos está errada (campo, argumento ou variável).
+QUERY_ERRORS = (
+    "syntax error",
+    "cannot query field",
+    "unknown argument",
+    "unknown type",
+    'variable "$',
+    "must be of type",
+    "expected type",
+)
 REPORT_PATH = ["reportData", "report"]
 
 BODY_LOG_CHARS = 1000
@@ -196,6 +210,10 @@ def _graphql_error(errors: list[Any], data: Any = None) -> WclError:
         return WclUnavailableError(detail, rate_limit_message())
     if mentions(OUTAGE_ERRORS):
         return WclUnavailableError(detail, UNAVAILABLE_MESSAGE)
+    if mentions(QUERY_ERRORS):
+        # Bug nosso (consulta desatualizada com o schema do WCL): tentar de novo não resolve.
+        logger.error("Consulta ao Warcraft Logs com defeito: %s", detail[:BODY_LOG_CHARS])
+        return WclUnavailableError(detail, QUERY_MESSAGE)
     on_report = all(e.get("path") == REPORT_PATH for e in entries)
     if mentions(REPORT_ERRORS) or on_report or _report_is_null(data):
         # Privado ou inexistente: o WCL devolve `report: null` junto, no campo do report.

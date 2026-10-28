@@ -17,6 +17,7 @@ from app.wcl.client import (
     BLOCKED_MESSAGE,
     CONFIG_MESSAGE,
     NETWORK_MESSAGE,
+    QUERY_MESSAGE,
     TIMEOUT_MESSAGE,
     TOKEN_URL,
     UNAVAILABLE_MESSAGE,
@@ -39,9 +40,6 @@ NOT_FOUND_BODY = {
         }
     ],
     "data": {"reportData": {"report": None}},
-}
-SYNTAX_ERROR_BODY = {
-    "errors": [{"message": "Syntax Error: Unexpected )", "locations": [{"line": 1, "column": 29}]}]
 }
 NOT_FOUND_HTML = (
     '<!DOCTYPE html>\n<html lang="en">\n<head><title>Not Found</title></head>\n'
@@ -302,12 +300,32 @@ def test_config_message_does_not_leak_details():
 # --- Não reconhecido: não fingir que sabe ------------------------------------------------
 
 
-def test_unknown_graphql_error_is_unexpected_and_logged(caplog):
+@pytest.mark.parametrize(
+    "error",
+    [
+        "Syntax Error: Unexpected )",
+        'Cannot query field "friendlySpecs" on type "ReportFight".',
+        'Unknown argument "foo" on field "fights" of type "Report".',
+        'Variable "$fightID" of required type "Int!" was not provided.',
+    ],
+)
+def test_broken_query_is_our_fault_and_logged(error, caplog):
+    body = {"errors": [{"message": error, "locations": [{"line": 1, "column": 29}]}]}
     with caplog.at_level(logging.ERROR, logger="app.wcl.client"):
-        message = user_message(client_for(httpx.Response(200, json=SYNTAX_ERROR_BODY)))
+        message = user_message(client_for(httpx.Response(200, json=body)))
+
+    assert message == QUERY_MESSAGE
+    assert "nosso" in message and "Warcraft Logs respondeu" not in message
+    assert error[:20] in caplog.text
+
+
+def test_unknown_graphql_error_is_unexpected_and_logged(caplog):
+    body = {"errors": [{"message": "Something new happened"}]}
+    with caplog.at_level(logging.ERROR, logger="app.wcl.client"):
+        message = user_message(client_for(httpx.Response(200, json=body)))
 
     assert message == UNEXPECTED_MESSAGE
-    assert "Syntax Error" in caplog.text
+    assert "Something new happened" in caplog.text
 
 
 @pytest.mark.parametrize("status", [400, 404, 418])
