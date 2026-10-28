@@ -99,6 +99,27 @@ def test_events_follow_pagination():
     assert [e["timestamp"] for e in events] == [1, 2, 3]
 
 
+def test_small_queries_wait_10_s_and_events_60_s():
+    read_timeouts: dict[str, float] = {}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        if str(request.url) == TOKEN_URL:
+            return token_response()
+        query = json.loads(request.content)["query"]
+        kind = "events" if "events(" in query else "small"
+        read_timeouts[kind] = request.extensions["timeout"]["read"]
+        if kind == "events":
+            page = {"data": [], "nextPageTimestamp": None}
+            return httpx.Response(200, json={"data": {"reportData": {"report": {"events": page}}}})
+        return httpx.Response(200, json={"data": {"ok": True}})
+
+    client = make_client(handler)
+    client.query("query { ok }")
+    client.events("CODE", 1, 0, 10, "Casts")
+
+    assert read_timeouts == {"small": 10, "events": 60}
+
+
 def test_missing_credentials_message(monkeypatch):
     # Sem ler o backend/.env do desenvolvedor, que pode ter as chaves de verdade.
     empty = Settings(_env_file=None, wcl_client_id="", wcl_client_secret="")

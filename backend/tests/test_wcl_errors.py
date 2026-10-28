@@ -393,7 +393,8 @@ def test_token_and_queries_use_separate_timeouts():
 
     assert seen["token"]["connect"] == seen["api"]["connect"] == 5
     assert seen["token"]["read"] == 10
-    assert seen["api"]["read"] == 60
+    # Consulta pequena: 10 s. As páginas de eventos (60 s) estão em test_wcl.py.
+    assert seen["api"]["read"] == 10
 
 
 def test_waiting_for_token_has_a_limit():

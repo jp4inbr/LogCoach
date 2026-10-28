@@ -26,14 +26,16 @@ API_URL = "https://www.warcraftlogs.com/api/v2/client"
 TOKEN_MARGIN_S = 60
 EVENTS_PAGE_LIMIT = 10000
 
-# Tempos de espera. Conectar é rápido quando o WCL está de pé; ler uma página de 10 mil
-# eventos pode levar dezenas de segundos. O token é uma resposta pequena: se demorar, o
-# endpoint travou, e não adianta esperar o mesmo que uma consulta grande.
-API_TIMEOUT = httpx.Timeout(connect=5, read=60, write=10, pool=5)
+# Tempos de espera. Consultas pequenas (lista de lutas, Magos, metadados) voltam em menos
+# de 1 s: passou de 10 s, o WCL travou e o usuário já está esperando demais sem retorno
+# (limite de atenção de Nielsen). Só as páginas de 10 mil eventos, que rodam em segundo
+# plano na pré-busca, podem levar dezenas de segundos. O token também é pequeno.
+API_TIMEOUT = httpx.Timeout(connect=5, read=10, write=10, pool=5)
+EVENTS_TIMEOUT = httpx.Timeout(connect=5, read=60, write=10, pool=5)
 TOKEN_TIMEOUT = httpx.Timeout(connect=5, read=10, write=5, pool=5)
 # Quanto uma consulta espera na fila enquanto outra thread pede o token. Sem limite, com o
 # endpoint do token travado, N pedidos juntos esperariam N × o tempo do token.
-TOKEN_WAIT_S = 20
+TOKEN_WAIT_S = 10
 
 EVENTS_QUERY = """
 query Events(
@@ -236,11 +238,13 @@ class WclClient:
         client_secret: str,
         transport: httpx.BaseTransport | None = None,
         timeout: httpx.Timeout = API_TIMEOUT,
+        events_timeout: httpx.Timeout = EVENTS_TIMEOUT,
         token_timeout: httpx.Timeout = TOKEN_TIMEOUT,
         token_wait_s: float = TOKEN_WAIT_S,
     ) -> None:
         self._auth = (client_id, client_secret)
         self._http = httpx.Client(transport=transport, timeout=timeout)
+        self._events_timeout = events_timeout
         self._token_timeout = token_timeout
         self._token_wait_s = token_wait_s
         self._token: str | None = None
@@ -337,12 +341,19 @@ class WclClient:
             if self._token == token:
                 self._token = None
 
-    def query(self, gql: str, variables: dict[str, Any] | None = None) -> dict[str, Any]:
+    def query(
+        self,
+        gql: str,
+        variables: dict[str, Any] | None = None,
+        timeout: httpx.Timeout | None = None,
+    ) -> dict[str, Any]:
+        """`timeout` troca o tempo padrão (consulta pequena) só nesta chamada."""
         payload = {"query": gql, "variables": variables or {}}
+        extra = {} if timeout is None else {"timeout": timeout}
         for attempt in range(2):
             token = self._access_token()
             headers = {"Authorization": f"Bearer {token}"}
-            response = self._post(API_URL, json=payload, headers=headers)
+            response = self._post(API_URL, json=payload, headers=headers, **extra)
             if _token_refused(response) and attempt == 0:
                 # Token revogado ou expirado antes da hora: pede outro e tenta de novo.
                 self._drop_token(token)
@@ -397,6 +408,7 @@ class WclClient:
                     "abilityID": ability_id,
                     "limit": EVENTS_PAGE_LIMIT,
                 },
+                timeout=self._events_timeout,
             )
             report = (data.get("reportData") or {}).get("report")
             if report is None:
