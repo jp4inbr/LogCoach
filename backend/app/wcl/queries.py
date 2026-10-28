@@ -67,6 +67,8 @@ query ReportFights($code: String!) {
 
 # Magos de uma luta (2 pontos): spec e item level vêm da própria luta (friendlySpecs e
 # friendlyItemLevels seguem a ordem de friendlyPlayers). Atores só os Magos do report.
+# Conferido na API real em 28/10/2026 (tests/fixtures/fight_players_XhrmBaYkGCAQjH2D_34.json):
+# as três listas têm o mesmo tamanho, spec em texto ("Arcane") e item level inteiro.
 FIGHT_PLAYERS = """
 query FightPlayers($code: String!, $fightID: Int!) {
   reportData {
