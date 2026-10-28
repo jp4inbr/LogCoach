@@ -42,8 +42,24 @@ T03–T05, T07 e T11–T14 dependem do motor e da IA (frentes C e D).
 
 ## 10.3 Resultado
 
+Execução no CI do GitHub, com `pytest -v --cov=app` (PR #22, 28/10/2026, Python 3.12, pytest 9.2).
+
 | Total | Passaram | Falharam | Cobertura |
 | ----- | -------- | -------- | --------- |
-|       |          |          |           |
+| 120   | 120      | 0        | 94% do backend; 98% do motor de análise (`app/engine/`) |
 
-_Inserir print da saída do `pytest -v`._
+O único aviso da execução ("1 warning") é de uma biblioteca de teste (o cliente de testes do FastAPI anuncia uma troca de dependência no futuro). Não é falha.
+
+Os arquivos com menos cobertura são `app/wcl/fetch.py` (36%), que faz as chamadas reais ao Warcraft Logs e é testado com dados salvos em arquivo, e `app/db.py` (85%).
+
+**Início da execução: 120 testes coletados**
+
+![Saída do pytest no CI: plataforma, plugin de cobertura e "collected 120 items", seguido dos primeiros testes com PASSED](.gitbook/assets/10-3-pytest-inicio.jpg)
+
+**Cobertura por arquivo**
+
+![Tabela de cobertura do pytest-cov com os arquivos da API, do motor e dos serviços](.gitbook/assets/10-3-pytest-cobertura.jpg)
+
+**Resumo: 120 passaram, cobertura total de 94%**
+
+![Final da tabela de cobertura com TOTAL 914 linhas, 56 sem teste, 94%, e a linha "120 passed, 1 warning in 2.51s"](.gitbook/assets/10-3-pytest-resumo.jpg)

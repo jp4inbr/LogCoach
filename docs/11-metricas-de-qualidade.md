@@ -1,11 +1,11 @@
 # 11. Métricas de Qualidade
 
-> Entrega da RT03 / banca. Testes, lint, carregamento e responsividade já medidos. Cobertura do motor e tempo de uma análise completa entram com o motor ligado; tempo da 1ª análise, SUS e taxa de sucesso vêm do teste de usabilidade (item 8.3).
+> Entrega da RT03 / banca. Testes, cobertura, lint, carregamento e responsividade já medidos. O tempo de uma análise completa entra com o motor ligado; tempo da 1ª análise, SUS e taxa de sucesso vêm do teste de usabilidade (item 8.3).
 
 | Métrica | Meta | Como medir | Resultado |
 |---|---|---|---|
-| Testes passando | 100% | `pytest` no CI | **100%** — 120 testes do backend passando e CI verde (PR #20 e `main` em `b842fcf`, 28/10). O print da saída entra no item 10.3 |
-| Cobertura de testes do motor de análise | ≥ 70% | `pytest --cov=app/engine` | |
+| Testes passando | 100% | `pytest` no CI | **100%** — 120 de 120 testes do backend passando, 0 falhas (CI do PR #22, 28/10). Print da saída no item 10.3 |
+| Cobertura de testes do motor de análise | ≥ 70% | `pytest --cov=app/engine` | **98%** — 135 linhas em `app/engine/`, 3 sem teste; backend inteiro 94% (CI, 28/10; ver 10.3) |
 | Erros de lint | 0 | `ruff check` e `eslint` no CI | **0** — CI verde no backend e no frontend (`main` em `b842fcf`, 28/10) |
 | Tempo de carregamento das páginas | < 3 s (RNF01) | DevTools do navegador | **0,7 s em 4G e 1,8 s em 3G rápido** — tela inicial, build de produção (mediana de 5 medições, ver 11.1) |
 | Tempo de uma análise completa | < 2 min (RNF02) | Log do backend | |
