@@ -13,10 +13,10 @@ As evidências são prints da alfa rodando (versão de 27/10/2026, relatório de
 | Controle e liberdade do usuário | Botões "← Trocar o link" e "← Escolher outra luta"; o voltar do navegador funciona em todas as telas | [Figura 3](#figura-3-voltar-sem-perder-o-caminho) |
 | Consistência e padrões | Mesmas cores e ícones para ok / atenção / erro nos erros, nas regras e nos avisos | _após o motor_ |
 | Prevenção de erros | Link conferido antes de enviar; lutas que não podem ser analisadas aparecem em cinza, com o motivo | [Figura 4](#figura-4-link-conferido-antes-de-enviar) e [Figura 2](#figura-2-escolher-a-luta) |
-| Reconhecer em vez de lembrar | O personagem da última análise (ou o único da luta) já vem marcado; os erros principais ficam no topo do resultado | [Figura 5](#figura-5-personagem-ja-marcado) |
-| Flexibilidade e eficiência | Atalho "Usar o log de exemplo" para quem não tem um log à mão; usuário frequente pula a escolha do personagem | [Figura 6](#figura-6-atalho-do-log-de-exemplo) e [Figura 5](#figura-5-personagem-ja-marcado) |
+| Reconhecer em vez de lembrar | O personagem da última análise (ou o único da luta) já vem marcado; os erros principais ficam no topo do resultado | [Figura 5](#figura-5-personagem-marcado-sozinho) |
+| Flexibilidade e eficiência | Atalho "Usar o log de exemplo" para quem não tem um log à mão; usuário frequente pula a escolha do personagem | [Figura 6](#figura-6-atalho-do-log-de-exemplo) e [Figura 5](#figura-5-personagem-marcado-sozinho) |
 | Design estético e minimalista | Resumo só com os erros de maior impacto; detalhes nas abas "Linha do tempo" e "Todas as regras" | _após o motor_ |
-| Ajudar a reconhecer e corrigir erros | Mensagens no próprio campo dizendo o que fazer; limite do plano com o caminho para resolver | [Figura 7](#figura-7-erros-no-proprio-campo) e [Figura 8](#figura-8-limite-do-plano) |
+| Ajudar a reconhecer e corrigir erros | Mensagens no próprio campo dizendo o que fazer; limite do plano com o caminho para resolver | [Figura 7](#figura-7-erros-mostrados-no-campo) e [Figura 8](#figura-8-limite-do-plano) |
 | Ajuda e documentação | Termos técnicos ("bracket", "tempo ativo", tabela por habilidade) com linha pontilhada e explicação ao passar o mouse ou tocar | _após o motor_ |
 
 ### Figura 1: andamento em etapas
@@ -37,7 +37,7 @@ Nomes em português e lutas fora do recorte em cinza, cada uma com o motivo ("A 
 
 ![Campo do link com "https://google.com" e a mensagem: Esse link não parece ser do Warcraft Logs. Ele deve começar com warcraftlogs.com/reports/](.gitbook/assets/8-1-prevencao-link.png)
 
-### Figura 5: personagem já marcado
+### Figura 5: personagem marcado sozinho
 
 ![Lista "Escolha seu Mago Arcano" com o Harmonist já selecionado](.gitbook/assets/8-1-reconhecer-personagem.png)
 
@@ -45,7 +45,7 @@ Nomes em português e lutas fora do recorte em cinza, cada uma com o motivo ("A 
 
 ![Campo do link com o atalho "Usar o log de exemplo" logo abaixo](.gitbook/assets/8-1-flexibilidade-atalho.png)
 
-### Figura 7: erros no próprio campo
+### Figura 7: erros mostrados no campo
 
 ![Tela de cadastro com e-mail incompleto e senha curta, cada campo com sua mensagem em vermelho](.gitbook/assets/8-1-erros-login.png)
 
