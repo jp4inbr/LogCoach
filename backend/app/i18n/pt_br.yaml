@@ -18,6 +18,8 @@ spells:
   45438: Bloco de Gelo            # Ice Block
   342245: Alterar Tempo           # Alter Time
   1236616: Potencial da Luz       # Light's Potential (poção)
+  263725: Abstração               # Clearcasting (nome do Warcraft Logs em pt-BR; conferir no Wowhead)
+  10060: Infusão de Poder         # Power Infusion, buff de Priest (conferir no Wowhead)
 
   # Nek'zali, a Enrosca-almas
   1293664: Ignição dos Enrosca-almas   # Soulcoil Ignition

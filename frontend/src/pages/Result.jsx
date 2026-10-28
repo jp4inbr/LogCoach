@@ -162,7 +162,10 @@ export default function Result({ id }) {
 }
 
 function Summary({ result }) {
-  const { coach, mistakes } = result;
+  const { coach } = result;
+  // Primeiro os erros que as regras confirmam; as hipóteses vêm depois, separadas (RF23, RF24).
+  const mistakes = result.mistakes.filter((mistake) => mistake.kind === "regra");
+  const hypotheses = result.mistakes.filter((mistake) => mistake.kind === "hipotese");
   return (
     <div className="stack">
       {coach.available ? (
@@ -188,6 +191,19 @@ function Summary({ result }) {
         mistakes.map((mistake, index) => (
           <MistakeCard key={mistake.id} mistake={mistake} rank={index + 1} />
         ))
+      )}
+
+      {hypotheses.length > 0 && (
+        <>
+          <h2>O que as regras não explicam</h2>
+          <p className="muted">
+            Diferença que nenhuma regra mede. O coach aponta onde olhar, mas são pistas, não erros
+            confirmados.
+          </p>
+          {hypotheses.map((mistake) => (
+            <MistakeCard key={mistake.id} mistake={mistake} rank={null} />
+          ))}
+        </>
       )}
 
       <div className="ask">

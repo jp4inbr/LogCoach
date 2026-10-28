@@ -67,9 +67,8 @@ Levantadas no review técnico de 26–28/10. O detalhe (onde mexer e por quê) e
 
 | Tarefa | Por quê | Dono |
 |---|---|---|
-| Buffs externos nas fixtures e no motor (Power Infusion, Bloodlust etc.) | A busca de buffs só trazia os que o próprio jogador lança; um top com PI de um Priest a cada Surge tem vantagem que o relatório precisa mostrar como contexto | |
+| Buffs externos no motor (Power Infusion, Bloodlust etc.) | A busca já traz os externos (corrigida em 28/10); falta o motor contar e mostrar como contexto, já que um top com PI a cada Surge tem vantagem | |
 | Conferir no Wowhead todos os nomes em pt-BR (magias, buffs, talentos) | Há nomes divergentes entre guia, exemplo e cliente (ex.: Clearcasting = "Abstração" no Warcraft Logs em português) | |
-| Refazer o resultado de exemplo a partir do log real | O exemplo da alfa foi montado à mão e contradiz o log de referência | |
 | Motor de análise (regras, tabela por habilidade) | Hoje só o exemplo do Harmonist tem resultado | Arthur |
 | Pacote da IA (Gemini) + resposta reserva | RF17, RF24 | |
 | Cache e cliente único do Warcraft Logs | Cada busca pede token e baixa o relatório de novo (limite de 1000 pontos/h) | |

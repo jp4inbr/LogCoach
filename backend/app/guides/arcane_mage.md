@@ -10,7 +10,7 @@
 4. **Seta Prismática é prioridade.** Quando aparecer depois de uma Salva Arcana, usar logo: gera 4 cargas e bate forte. Nos melhores logs ela é cerca de **6 por minuto e quase 1/4 do dano**. Cada acúmulo de Arcane Salvo gasto na Salva Arcana dá chance de uma Seta nova, então:
    - **Nunca lançar Salva Arcana com menos de 12 acúmulos de Salvo** como costume. Uma vez ou outra, na correria, acontece; nos melhores logs isso fica em ~6% das Salvas.
    - Os melhores soltam a maior parte das Salvas com o Salvo cheio (25).
-   - Com 3 cargas de Clareza Mental (o máximo), gastar duas em Mísseis antes da Salva, para não perder carga nova.
+   - Com 3 cargas de Abstração (o máximo), gastar duas em Mísseis antes da Salva, para não perder carga nova.
    - Com uma Seta na mão, o comum é 1 Míssil + Seta e depois a Salva, que já passa de 12 sem estourar o Salvo.
 5. **Mísseis e Salva são o loop principal; Impacto é complemento.** Os melhores lançam ~17 Mísseis e ~15 Salvas por minuto, e só ~3 Impactos Arcanos (para completar o Arcane Salvo antes da Salva). Muito Impacto Arcano costuma ser sinal de Mísseis ou Setas perdidos.
 6. **Orbe Arcano é raro.** Cerca de 3 por luta nos melhores logs (0,5 por minuto), usado para gerar cargas e ajudar a gerar Setas, não como magia de rotação.

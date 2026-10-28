@@ -47,7 +47,11 @@ def test_invalid_token_on_public_route_counts_as_no_login(client):
 def test_t06_mistakes_come_sorted_by_impact(client):
     mistakes = client.post("/analyses", json=ANALYSIS).json()["result"]["mistakes"]
 
-    impacts = [m["impact_pct"] if m["impact_pct"] is not None else -1 for m in mistakes]
+    # Regras do maior para o menor impacto (risco sem impacto no fim); hipóteses depois.
+    kinds = [m["kind"] for m in mistakes]
+    assert kinds == sorted(kinds, key=lambda kind: kind == "hipotese")
+    rules = [m["impact_pct"] for m in mistakes if m["kind"] == "regra"]
+    impacts = [-1 if impact is None else impact for impact in rules]
     assert impacts == sorted(impacts, reverse=True)
 
 
@@ -60,7 +64,7 @@ def test_analysis_with_account_goes_to_history(client, auth_headers):
     assert created["saved"] is True
     assert [item["id"] for item in history] == [created["id"]]
     assert history[0]["boss"] == "Nek'zali, a Enrosca-almas"
-    assert history[0]["mistakes_count"] == 5
+    assert history[0]["mistakes_count"] == 4
     assert me["analyses_this_month"] == 1
 
 
