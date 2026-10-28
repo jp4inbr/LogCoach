@@ -33,7 +33,8 @@ Trabalho A3 de Usabilidade de Software (Engenharia de Software, UNA). Web app qu
 | `backend/app/services/sources.py` | Interfaces `ReportSource` e `Analyzer`. Relatório: `WclReportSource` (real) ou `SampleReportSource` (`app/samples/`), escolhido por `DATA_SOURCE`. Análise: ainda `SampleAnalyzer`; é aqui que o motor entra |
 | `backend/app/services/players.py` | Escolha do jogador na luta por nome + reino (`match_player`, `normalize_server`) |
 | `backend/app/models.py`, `db.py`, `config.py`, `security.py` | Tabelas (`User`, `Analysis`), conexão, configurações do `.env` e login |
-| `backend/app/engine/`, `ai/` | **Vazios — é o que falta construir** |
+| `backend/app/engine/` | Motor, começando: `rules.py` (lê os YAML) e `prismatic_bolt.py` (Prismatic Bolt: decisão × sorte, item 12.10). O resto das regras falta |
+| `backend/app/ai/` | **Vazio — é o que falta construir** |
 | `frontend/src/pages/` | Telas: início, login, escolher luta, resultado, perfil, planos (roteamento por hash em `lib/router.js`, chamadas em `lib/api.js`) |
 
 ## Fluxo do motor (o que construir)
@@ -75,7 +76,7 @@ O motor entra como um `Analyzer` em `services/sources.py` e devolve um `Analysis
    - **Buffs externos no motor.** *Onde:* `app/rules/arcane_mage.yaml` (`external_buffs`) e o motor. *O quê:* contar Power Infusion e outros buffs de outros jogadores no jogador e em cada top e mostrar como contexto. *Por quê:* a busca já traz os externos (corrigida em 28/10; fixtures baixadas de novo). No kill de referência: Harmonist 2 PIs, tops 1,4 em média, o 1º colocado nenhum, ou seja, o PI não explica a diferença dele.
    - **Nomes em pt-BR conferidos no Wowhead.** *Onde:* `app/i18n/pt_br.yaml`, `app/guides/*.md`, `app/samples/*.json`. *O quê:* cruzar cada magia, buff e talento do inglês com o nome do cliente pt-BR no Wowhead (trocando o idioma da página) e padronizar. *Por quê:* há divergências; ex.: Clearcasting (263725) aparece como "Clarividência" no exemplo e "Clareza Mental" no guia, e no Warcraft Logs em português aparece "Abstração". "Abstração" e "Infusão de Poder" já entraram no `pt_br.yaml`, marcados para conferir.
    - `samples/report_*.json` **fica** como fonte offline (`DATA_SOURCE=exemplo` ou WCL fora do ar): plano B da demo e fonte do CI.
-3. Motor: leitura dos YAML, regras (Surge/Touch, poção, tempo ativo, Salvo no Barrage), tabela por habilidade. Entra como `Analyzer` em `services/sources.py`.
+3. Motor: leitura dos YAML, regras (Surge/Touch, poção, tempo ativo, Salvo no Barrage), tabela por habilidade. Entra como `Analyzer` em `services/sources.py`. Já existe a peça de Prismatic Bolt (decisão × sorte, `engine/prismatic_bolt.py`); os cálculos usados para refazer o exemplo em 28/10 (Salvo na Salva, atrasos, Surge→Touch, poção com Surge, picos com defensivo, tabela por habilidade) servem de base para as outras.
 4. Pacote da IA + chamada ao Gemini + resposta reserva.
 5. ~~Endpoints `POST /reports/resolve` e `POST /analyses`~~ Feitos (PR #2 + passo 2). `/reports/resolve` já lê relatórios reais; `/analyses` só tem resultado da luta de referência até o motor entrar.
 6. ~~Frontend~~ Feito: início → login → escolher luta/personagem → resultado (com a lista dos comparados e o botão de olho), mais perfil e planos.

@@ -1,5 +1,5 @@
 {
-  "_nota": "Resultado de EXEMPLO (formato AnalysisResult, app/schemas.py) refeito a partir do log real: reference_harmonist.json.gz e os 10 tops de tests/fixtures/nekzali_mythic_326_328 (baixados com os buffs externos em 28/10/2026). Vêm do log: DPS, horários de Surto, Toque, poção, Barreira e Infusão de Poder, acúmulos de Salvo na Salva, atrasos, combinação Surto→Toque, picos com defensivo, procs e usos de Seta Prismática e a tabela por habilidade. Ilustrativos até o motor: o impacto em % das duas regras (3,1 e 2,0) e o tempo ativo. A diferença que as regras não explicam é a sobra (RF23), e o texto da hipótese só usa números do log.",
+  "_nota": "Resultado de EXEMPLO (formato AnalysisResult, app/schemas.py) refeito a partir do log real: reference_harmonist.json.gz e os 10 tops de tests/fixtures/nekzali_mythic_326_328 (baixados com os buffs externos em 28/10/2026). Vêm do log: DPS, horários de Surto, Toque, poção, Barreira e Infusão de Poder, acúmulos de Salvo na Salva, atrasos, combinação Surto→Toque, picos com defensivo, procs e usos de Seta Prismática e a tabela por habilidade. Ilustrativos até o motor: o impacto em % das duas regras (3,1 e 2,0) e o tempo ativo. A diferença que as regras não explicam é a sobra (RF23); decisão × sorte na Seta Prismática vêm de app/engine/prismatic_bolt.py.",
   "source": "exemplo",
   "report_code": "XhrmBaYkGCAQjH2D",
   "fight": {
@@ -113,7 +113,7 @@
   },
   "coach": {
     "available": true,
-    "headline": "Você ficou 15,2% abaixo da média dos 10 melhores do seu bracket. As regras confirmam dois erros: Salvas Arcanas soltas com poucos acúmulos de Salvo e o 4º Surto Arcano atrasado, que saiu depois do Toque dos Magos. A maior parte da diferença, porém, as regras não explicam: você usou bem menos Setas Prismáticas que os melhores."
+    "headline": "Você ficou 15,2% abaixo da média dos 10 melhores do seu bracket. As regras confirmam dois erros: Salvas Arcanas soltas com poucos acúmulos de Salvo e o 4º Surto Arcano atrasado, que saiu depois do Toque dos Magos. A maior parte do resto foi azar na Seta Prismática: pelos seus acúmulos, você deveria ter recebido uns 41 procs e recebeu 28."
   },
   "mistakes": [
     {
@@ -184,23 +184,23 @@
       "severity": "atencao",
       "kind": "hipotese",
       "phase": null,
-      "explanation": "As regras explicam cerca de 5,1 dos 15,2 pontos; os outros 10,1 nenhuma regra mede. A tabela por habilidade aponta onde olhar: você usou 24 Setas Prismáticas na luta (3,5 por minuto), contra 6,0 por minuto dos melhores. Quase todo proc de Seta vem da Salva Arcana, com 2% de chance por acúmulo de Salvo. Com os seus acúmulos (20,4 em média, perto dos 21,5 dos melhores), o esperado seriam uns 41 procs; você recebeu 28. Os melhores recebem mais do que essa conta prevê (117% do esperado, em média). Então as Salvas soltas cedo explicam só uma parte pequena (uns 2 procs): o resto sugere outra fonte de proc que eles têm e você não, como um talento. No lugar das Setas, entraram mais Impactos Arcanos (10,5 por minuto na Fase 2, contra 3,8). É uma pista, não uma certeza.",
-      "what_to_do": "Compare seus talentos com os de um dos melhores do bracket, procurando o que aumenta a chance de Seta Prismática. E siga segurando a Salva até 12 acúmulos ou mais: cada acúmulo é mais 2% de chance de Seta.",
+      "explanation": "As regras explicam cerca de 5,1 dos 15,2 pontos; os outros 10,1 nenhuma regra mede. A maior pista está na Seta Prismática: você recebeu 4,0 procs por minuto, contra 6,9 dos melhores. O código separa decisão de sorte. Cada acúmulo de Salvo na Salva dá 2% de chance de Seta, e pelos seus acúmulos (20,4 em média por Salva) o esperado era 5,9 procs por minuto; nos melhores, 6,2. Ou seja, suas Salvas explicam só uns 10% da falta de Seta. O resto foi azar: você recebeu 28 dos ~41 esperados, 2,8 desvios abaixo (algo como 1 luta em 400), enquanto os melhores do ranking tiveram, em média, 0,9 desvio acima. É esperado: um ranking dos melhores logs escolhe lutas com sorte. No lugar das Setas, entraram mais Impactos Arcanos (10,5 por minuto na Fase 2, contra 3,8).",
+      "what_to_do": "Não há o que corrigir no azar: compare seu DPS com o desta luta em outros kills. O que depende de você é seguir soltando a Salva com 12 acúmulos ou mais, porque cada acúmulo é mais 2% de chance de Seta.",
       "numbers": [
         {
-          "label": "Setas Prismáticas por minuto",
-          "player": "3,5",
-          "top": "6,0"
+          "label": "Procs de Seta por minuto (recebidos)",
+          "player": "4,0",
+          "top": "6,9"
         },
         {
-          "label": "Procs de Seta: recebidos ÷ esperados pelos acúmulos (2% cada)",
-          "player": "28 ÷ 41 (68%)",
-          "top": "117% em média"
+          "label": "Procs por minuto esperados pelos acúmulos (decisão)",
+          "player": "5,9",
+          "top": "6,2"
         },
         {
-          "label": "Acúmulos de Salvo por Salva, em média",
-          "player": "20,4",
-          "top": "21,5"
+          "label": "Sorte nos procs (desvios do esperado)",
+          "player": "−2,8",
+          "top": "+0,9 em média"
         },
         {
           "label": "Diferença que as regras não explicam",

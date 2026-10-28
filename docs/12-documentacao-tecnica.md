@@ -218,3 +218,15 @@ O motor devolve um `AnalysisResult` (`backend/app/schemas.py`); o frontend só l
 
 Os textos (`title`, `explanation`, `what_to_do`) saem em português, com os nomes de `pt_br.yaml`.
 
+## 12.10 Motor: Prismatic Bolt, decisão × sorte
+
+A spec do Arcano depende muito de RNG: a Prismatic Bolt (Seta Prismática) vem de procs do Arcane Barrage. Para não cobrar azar como erro, o motor separa as duas coisas (`backend/app/engine/prismatic_bolt.py`, regra `prismatic_bolt_rng` em `arcane_mage.yaml`).
+
+| Medida | Como é calculada | O que mostra |
+|---|---|---|
+| Esperado | Soma, em cada Barrage, de 2% × acúmulos de Salvo naquele instante | A **decisão**: soltar Barrage com poucos acúmulos baixa a chance |
+| Recebidos | Barrages seguidos de proc em até 0,5 s | O que aconteceu |
+| Sorte (z) | (recebidos − esperado) ÷ √Σ p(1 − p) | O **RNG**: abaixo de −2 é azar, acima de +2 é sorte |
+
+**Validação (28/10/2026).** Nos 1.015 Barrages das 11 fixtures, a taxa de proc por faixa de Salvo bate com 2% por acúmulo (10–14: 26%; 15–19: 35%; 20–24: 45%; 25: 53%); o ajuste dá 2,1% por acúmulo. No kill de referência, o Harmonist esperava ~41 procs (5,9 por minuto, contra 6,2 dos tops) e recebeu 28: z = −2,8. Os tops tiveram z +0,9 em média, e um deles +3,5. As Salvas soltas cedo explicam só cerca de 10% da falta de Seta; o resto foi azar. Um ranking de melhores logs tende a escolher lutas com sorte, e o relatório precisa dizer isso.
+
