@@ -12,16 +12,29 @@ from app.services.sources import (
     SHORT_FIGHT_REASON,
     UNSUPPORTED_BOSS_REASON,
     UNSUPPORTED_DIFFICULTY_REASON,
+    ReportCache,
     ReportNotAvailableError,
     SampleReportSource,
+    SourceUnavailableError,
     WclReportSource,
     build_report,
     get_report_source,
+    report_cache,
 )
-from app.wcl.client import TOKEN_URL, WclClient, WclError
+from app.wcl.client import TOKEN_URL, WclClient, WclUnavailableError, close_shared_client
 from app.wcl.fetch import fetch_report
 
 NEKZALI = 3470
+
+
+@pytest.fixture(autouse=True)
+def fresh_wcl_state():
+    """Cache de reports e cliente do processo zerados: nada vaza de um teste para outro."""
+    report_cache.clear()
+    close_shared_client()
+    yield
+    report_cache.clear()
+    close_shared_client()
 
 
 def details(actor_id: int, spec: str, item_level: int) -> dict:
@@ -77,20 +90,28 @@ REPORT = {
 }  # fmt: skip
 
 
-def fake_client(body: dict, status: int = 200) -> WclClient:
+def fake_client(body: dict, status: int = 200, calls: list | None = None) -> WclClient:
     def handler(request: httpx.Request) -> httpx.Response:
         if str(request.url) == TOKEN_URL:
             return httpx.Response(200, json={"access_token": "tok", "expires_in": 3600})
+        if calls is not None:
+            calls.append(request)
         return httpx.Response(status, json=body)
 
     return WclClient("id", "secret", transport=httpx.MockTransport(handler))
 
 
-def source_for(report: dict | None, errors: list | None = None, status: int = 200):
+def report_body(report: dict | None, errors: list | None = None) -> dict:
     body: dict = {"data": {"reportData": {"report": report}}}
     if errors:
         body["errors"] = errors
-    return WclReportSource(client_factory=lambda: fake_client(body, status))
+    return body
+
+
+def source_for(report: dict | None, errors: list | None = None, status: int = 200):
+    # Cache próprio: cada chamada aqui é uma API nova, sem reaproveitar a de outro teste.
+    body = report_body(report, errors)
+    return WclReportSource(client_factory=lambda: fake_client(body, status), cache=ReportCache())
 
 
 def raw_report() -> dict:
@@ -178,25 +199,157 @@ def test_sample_report_opens_when_wcl_is_down():
 
 
 @pytest.mark.parametrize(
-    ("report", "errors", "status"),
+    ("report", "errors"),
     [
-        (None, [{"message": "This report does not exist."}], 200),  # inexistente
-        (None, [{"message": "You do not have permission to view this report."}], 200),  # privado
-        (None, None, 200),  # report nulo sem erro
-        (REPORT, None, 500),  # API fora do ar
+        (None, [{"message": "This report does not exist."}]),  # inexistente
+        (None, [{"message": "You do not have permission to view this report."}]),  # privado
+        (None, None),  # report nulo sem erro
     ],
 )
-def test_unavailable_report_raises(report, errors, status):
+def test_unavailable_report_raises(report, errors):
     with pytest.raises(ReportNotAvailableError):
-        source_for(report, errors, status).get_report("NAOEXISTE")
+        source_for(report, errors).get_report("NAOEXISTE")
 
 
-def test_missing_credentials_is_report_not_available():
+@pytest.mark.parametrize("status", [429, 500, 502, 503])
+def test_wcl_down_is_not_report_not_available(status):
+    # Limite de pontos ou API fora do ar: o report pode estar certo.
+    with pytest.raises(SourceUnavailableError):
+        source_for(REPORT, status=status).get_report("TESTE123")
+
+
+def test_network_error_is_source_unavailable():
+    def handler(request: httpx.Request) -> httpx.Response:
+        raise httpx.ConnectTimeout("sem rede", request=request)
+
+    client = WclClient("id", "secret", transport=httpx.MockTransport(handler))
+    source = WclReportSource(client_factory=lambda: client, cache=ReportCache())
+
+    with pytest.raises(SourceUnavailableError):
+        source.get_report("TESTE123")
+
+
+def test_missing_credentials_is_source_unavailable():
+    # Falta de chave é problema do servidor, não do relatório do usuário.
     def no_credentials() -> WclClient:
-        raise WclError("WCL_CLIENT_ID e WCL_CLIENT_SECRET não definidos.")
+        raise WclUnavailableError("WCL_CLIENT_ID e WCL_CLIENT_SECRET não definidos.")
 
+    with pytest.raises(SourceUnavailableError):
+        WclReportSource(client_factory=no_credentials, cache=ReportCache()).get_report("TESTE123")
+
+
+def test_sample_report_opens_with_missing_credentials():
+    def no_credentials() -> WclClient:
+        raise WclUnavailableError("WCL_CLIENT_ID e WCL_CLIENT_SECRET não definidos.")
+
+    source = WclReportSource(client_factory=no_credentials, cache=ReportCache())
+
+    assert source.get_report(SAMPLE_REPORT_CODE).sample is True
+
+
+# --- Cache de reports ----------------------------------------------------------
+
+
+def counting_source(calls: list, status: int = 200, cache: ReportCache | None = None):
+    client = fake_client(report_body(REPORT), status, calls)
+    return WclReportSource(client_factory=lambda: client, cache=cache)
+
+
+def test_report_is_fetched_once_while_cached():
+    calls: list = []
+    source = counting_source(calls, cache=ReportCache())
+
+    first = source.get_report("TESTE123")
+    second = source.get_report("TESTE123")
+
+    assert len(calls) == 1
+    assert second == first
+
+
+def test_cache_is_shared_between_sources():
+    # A rota cria um WclReportSource por pedido; o cache é do processo.
+    calls: list = []
+
+    counting_source(calls).get_report("TESTE123")
+    counting_source(calls).get_report("TESTE123")
+
+    assert len(calls) == 1
+
+
+def test_cache_expires():
+    now = [0.0]
+    cache = ReportCache(ttl_s=300, clock=lambda: now[0])
+    calls: list = []
+    source = counting_source(calls, cache=cache)
+
+    source.get_report("TESTE123")
+    now[0] = 299
+    source.get_report("TESTE123")
+    now[0] = 300
+    source.get_report("TESTE123")
+
+    assert len(calls) == 2
+
+
+def test_cache_keeps_only_the_newest_reports():
+    cache = ReportCache(max_items=2)
+    report = SampleReportSource().get_report(SAMPLE_REPORT_CODE)
+
+    for code in ("A", "B", "C"):
+        cache.put(code, report)
+
+    assert cache.get("A") is None
+    assert cache.get("B") is not None and cache.get("C") is not None
+
+
+def test_cached_report_is_a_copy():
+    source = counting_source([], cache=ReportCache())
+
+    source.get_report("TESTE123").fights.clear()
+
+    assert len(source.get_report("TESTE123").fights) == 4
+
+
+def test_failures_are_not_cached():
+    cache = ReportCache()
+    failing = WclReportSource(
+        client_factory=lambda: fake_client(report_body(REPORT), status=503), cache=cache
+    )
+    with pytest.raises(SourceUnavailableError):
+        failing.get_report("TESTE123")
+    private = WclReportSource(
+        client_factory=lambda: fake_client(report_body(None, [{"message": "Sem permissão"}])),
+        cache=cache,
+    )
     with pytest.raises(ReportNotAvailableError):
-        WclReportSource(client_factory=no_credentials).get_report("TESTE123")
+        private.get_report("TESTE123")
+
+    # Assim que a API volta (ou o report fica público), o próximo pedido já funciona.
+    assert counting_source([], cache=cache).get_report("TESTE123").sample is False
+
+
+def test_sample_fallback_is_not_cached():
+    # O plano B não pode "grudar": com a API de volta, vem o report real.
+    cache = ReportCache()
+    down = WclReportSource(
+        client_factory=lambda: fake_client(report_body(REPORT), status=500), cache=cache
+    )
+    assert down.get_report(SAMPLE_REPORT_CODE).sample is True
+
+    up = WclReportSource(
+        client_factory=lambda: fake_client(report_body(REPORT | {"code": SAMPLE_REPORT_CODE})),
+        cache=cache,
+    )
+    assert up.get_report(SAMPLE_REPORT_CODE).sample is False
+
+
+def test_source_does_not_close_the_shared_client():
+    calls: list = []
+    client = fake_client(report_body(REPORT), calls=calls)
+    WclReportSource(client_factory=lambda: client, cache=ReportCache()).get_report("UM")
+    WclReportSource(client_factory=lambda: client, cache=ReportCache()).get_report("DOIS")
+
+    assert len(calls) == 2  # o segundo pedido usou o mesmo cliente, ainda aberto
 
 
 # --- Configuração (DATA_SOURCE, APP_ENV) --------------------------------------

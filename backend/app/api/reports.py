@@ -12,6 +12,7 @@ from app.services.sources import (
     ReportNotAvailableError,
     ReportSource,
     SampleReportSource,
+    SourceUnavailableError,
     get_report_source,
 )
 
@@ -34,6 +35,14 @@ def load_report(source: ReportSource, code: str) -> ReportResolved:
                 f"({SAMPLE_REPORT_CODE}) está disponível."
             )
         raise api_error(404, "report_not_available", message) from None
+    except SourceUnavailableError:
+        # Limite de pontos, API fora do ar ou credencial do servidor: o relatório pode estar
+        # certo, então não mandamos o usuário conferir se ele é público.
+        raise api_error(
+            503,
+            "wcl_unavailable",
+            "O Warcraft Logs não respondeu agora. Tente de novo em alguns minutos.",
+        ) from None
 
 
 @router.post("/resolve")

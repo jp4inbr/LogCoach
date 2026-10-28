@@ -1,5 +1,7 @@
 import gzip
 import json
+import threading
+import time
 from pathlib import Path
 
 import httpx
@@ -7,7 +9,15 @@ import pytest
 
 from app.config import Settings
 from app.wcl.anonymize import anonymize_fight
-from app.wcl.client import API_URL, TOKEN_URL, WclClient, WclError
+from app.wcl.client import (
+    API_URL,
+    TOKEN_URL,
+    WclClient,
+    WclError,
+    WclUnavailableError,
+    close_shared_client,
+    shared_client,
+)
 from app.wcl.fetch import bracket_index, bracket_range
 
 FIXTURES = Path(__file__).parent / "fixtures" / "nekzali_mythic_326_328"
@@ -104,8 +114,165 @@ def test_missing_credentials_message(monkeypatch):
     empty = Settings(_env_file=None, wcl_client_id="", wcl_client_secret="")
     monkeypatch.setattr("app.wcl.client.get_settings", lambda: empty)
 
-    with pytest.raises(WclError, match="WCL_CLIENT_ID"):
+    # Problema do servidor, não do report: vira "WCL indisponível" na API.
+    with pytest.raises(WclUnavailableError, match="WCL_CLIENT_ID"):
         WclClient.from_env()
+
+
+def api_status(status: int, token_status: int = 200):
+    def handler(request: httpx.Request) -> httpx.Response:
+        if str(request.url) == TOKEN_URL:
+            if token_status != 200:
+                return httpx.Response(token_status, json={"error": "invalid_client"})
+            return token_response()
+        return httpx.Response(status, json={"error": "x"})
+
+    return make_client(handler)
+
+
+@pytest.mark.parametrize("status", [429, 500, 502, 503, 504])
+def test_rate_limit_and_server_errors_are_unavailable(status):
+    with pytest.raises(WclUnavailableError, match=str(status)):
+        api_status(status).query("{ x }")
+
+
+def test_other_http_errors_are_plain_wcl_error():
+    with pytest.raises(WclError) as info:
+        api_status(400).query("{ x }")
+
+    assert not isinstance(info.value, WclUnavailableError)
+
+
+def test_graphql_errors_are_not_unavailable():
+    # Report privado ou inexistente chega como erro de GraphQL com HTTP 200.
+    def handler(request: httpx.Request) -> httpx.Response:
+        if str(request.url) == TOKEN_URL:
+            return token_response()
+        return httpx.Response(200, json={"errors": [{"message": "No permission"}]})
+
+    with pytest.raises(WclError) as info:
+        make_client(handler).query("{ x }")
+
+    assert not isinstance(info.value, WclUnavailableError)
+
+
+@pytest.mark.parametrize("token_status", [401, 503])
+def test_token_failure_is_unavailable(token_status):
+    with pytest.raises(WclUnavailableError, match="token"):
+        api_status(200, token_status=token_status).query("{ x }")
+
+
+def test_401_twice_is_unavailable():
+    # Token novo também recusado: credencial do servidor, não o report.
+    with pytest.raises(WclUnavailableError, match="401"):
+        api_status(401).query("{ x }")
+
+
+@pytest.mark.parametrize("error", [httpx.ConnectError("sem rede"), httpx.ReadTimeout("demorou")])
+def test_network_errors_are_unavailable(error):
+    def handler(request: httpx.Request) -> httpx.Response:
+        raise error
+
+    with pytest.raises(WclUnavailableError):
+        make_client(handler).query("{ x }")
+
+
+def test_non_json_response_is_unavailable():
+    def handler(request: httpx.Request) -> httpx.Response:
+        if str(request.url) == TOKEN_URL:
+            return token_response()
+        return httpx.Response(200, text="<html>Bad gateway</html>")
+
+    with pytest.raises(WclUnavailableError, match="JSON"):
+        make_client(handler).query("{ x }")
+
+
+def test_concurrent_queries_share_one_token():
+    # Rotas síncronas rodam em threads: várias chegam juntas sem token e só uma o pede.
+    calls = {"token": 0}
+    threads_n = 8
+    start = threading.Barrier(threads_n)
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        if str(request.url) == TOKEN_URL:
+            calls["token"] += 1
+            time.sleep(0.05)  # dá tempo das outras threads chegarem
+            return token_response()
+        return httpx.Response(200, json={"data": {"ok": True}})
+
+    client = make_client(handler)
+    errors: list = []
+
+    def run() -> None:
+        start.wait()
+        try:
+            client.query("{ ok }")
+        except Exception as exc:
+            errors.append(exc)
+
+    threads = [threading.Thread(target=run) for _ in range(threads_n)]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join()
+
+    assert errors == []
+    assert calls["token"] == 1
+
+
+def test_401_keeps_token_renewed_by_another_thread():
+    calls = {"token": 0}
+    tokens = iter(["velho", "novo"])
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        if str(request.url) == TOKEN_URL:
+            calls["token"] += 1
+            return httpx.Response(200, json={"access_token": next(tokens), "expires_in": 3600})
+        return httpx.Response(200, json={"data": {}})
+
+    client = make_client(handler)
+    client.query("{ a }")  # token "velho"
+    client._drop_token("velho")
+    client.query("{ a }")  # renova: "novo"
+    client._drop_token("velho")  # 401 atrasado de quem usou o velho
+
+    client.query("{ a }")
+
+    assert calls["token"] == 2  # o "novo" continuou valendo
+
+
+@pytest.fixture
+def wcl_credentials(monkeypatch):
+    settings = Settings(_env_file=None, wcl_client_id="id", wcl_client_secret="secret")
+    monkeypatch.setattr("app.wcl.client.get_settings", lambda: settings)
+    close_shared_client()
+    yield monkeypatch
+    close_shared_client()
+
+
+def test_shared_client_is_one_per_process(wcl_credentials):
+    client = shared_client()
+
+    assert shared_client() is client
+
+
+def test_close_shared_client_creates_a_new_one(wcl_credentials):
+    first = shared_client()
+    close_shared_client()
+
+    assert shared_client() is not first
+
+
+def test_shared_client_retries_after_missing_credentials(wcl_credentials):
+    empty = Settings(_env_file=None, wcl_client_id="", wcl_client_secret="")
+    wcl_credentials.setattr("app.wcl.client.get_settings", lambda: empty)
+    with pytest.raises(WclUnavailableError):
+        shared_client()
+
+    # Falha não fica guardada: com as chaves no lugar, o próximo uso cria o cliente.
+    filled = Settings(_env_file=None, wcl_client_id="id", wcl_client_secret="secret")
+    wcl_credentials.setattr("app.wcl.client.get_settings", lambda: filled)
+    assert isinstance(shared_client(), WclClient)
 
 
 def test_bracket_index_for_reference_item_level():

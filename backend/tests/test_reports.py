@@ -1,6 +1,8 @@
 import pytest
 
+from app.main import app
 from app.services.links import parse_report_code
+from app.services.sources import SourceUnavailableError, get_report_source
 
 
 @pytest.mark.parametrize(
@@ -60,3 +62,23 @@ def test_resolve_unknown_report(client):
 
     assert response.status_code == 404
     assert response.json()["detail"]["code"] == "report_not_available"
+
+
+class DownSource:
+    """Fonte com o Warcraft Logs fora do ar (limite de pontos, 5xx, rede ou credenciais)."""
+
+    def get_report(self, code: str):
+        raise SourceUnavailableError(code)
+
+
+def test_resolve_with_wcl_down_is_not_report_not_available(client):
+    app.dependency_overrides[get_report_source] = DownSource
+
+    response = client.post(
+        "/reports/resolve", json={"url": "https://www.warcraftlogs.com/reports/OutroRelatorio1"}
+    )
+
+    assert response.status_code == 503
+    detail = response.json()["detail"]
+    assert detail["code"] == "wcl_unavailable"
+    assert "público" not in detail["message"]

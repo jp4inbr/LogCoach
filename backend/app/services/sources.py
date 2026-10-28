@@ -3,13 +3,17 @@
 O resto do backend depende só das duas interfaces abaixo (o "D" do SOLID, item 7).
 `get_report_source()` escolhe pela variável DATA_SOURCE: "wcl" lê o report da API do
 Warcraft Logs; "exemplo" lê os arquivos montados à mão em `app/samples/` (plano B da
-demo sem internet e fonte do CI). O analisador ainda é o de exemplo até o motor
+demo sem internet e fonte do CI). O "wcl" usa um cliente só por processo e guarda cada
+report por alguns minutos (`ReportCache`). O analisador ainda é o de exemplo até o motor
 (frente C) ficar pronto; aí basta trocá-lo em `get_analyzer`.
 """
 
 import json
 import logging
 import re
+import threading
+import time
+from collections import OrderedDict
 from collections.abc import Callable
 from functools import lru_cache
 from pathlib import Path
@@ -20,7 +24,7 @@ import yaml
 
 from app.config import get_settings
 from app.schemas import AnalysisResult, FightOption, PlayerOption, ReportResolved
-from app.wcl.client import WclClient, WclError
+from app.wcl.client import WclClient, WclError, WclUnavailableError, shared_client
 from app.wcl.fetch import fetch_report
 
 logger = logging.getLogger(__name__)
@@ -47,6 +51,13 @@ ARCANE_LABEL = "Mago Arcano"
 
 class ReportNotAvailableError(Exception):
     """O relatório não pôde ser aberto (privado, inexistente ou fora do exemplo)."""
+
+
+class SourceUnavailableError(Exception):
+    """O Warcraft Logs não atendeu (limite de pontos, fora do ar ou credenciais do servidor).
+
+    Problema nosso ou da API, não do relatório: o usuário só precisa tentar de novo depois.
+    """
 
 
 class AnalysisNotAvailableError(Exception):
@@ -165,24 +176,93 @@ def build_report(
     return {"code": raw["code"], "title": raw["title"], "sample": False, "fights": fights}
 
 
-class WclReportSource:
-    """Lê o report da API do Warcraft Logs (uma consulta por report)."""
+# Validade do report guardado: cobre o caminho /reports/resolve → /analyses sem esconder
+# por muito tempo as lutas novas de um log ao vivo.
+REPORT_CACHE_TTL_S = 5 * 60
+REPORT_CACHE_MAX = 128
 
-    def __init__(self, client_factory: Callable[[], WclClient] = WclClient.from_env) -> None:
+
+class ReportCache:
+    """Reports já lidos do Warcraft Logs, por código, com validade curta (seguro entre threads).
+
+    Só guarda o que veio da API; falhas e o plano B do exemplo não entram.
+    """
+
+    def __init__(
+        self,
+        ttl_s: float = REPORT_CACHE_TTL_S,
+        max_items: int = REPORT_CACHE_MAX,
+        clock: Callable[[], float] = time.monotonic,
+    ) -> None:
+        self._ttl_s = ttl_s
+        self._max_items = max_items
+        self._clock = clock
+        self._items: OrderedDict[str, tuple[float, ReportResolved]] = OrderedDict()
+        self._lock = threading.Lock()
+
+    def get(self, code: str) -> ReportResolved | None:
+        with self._lock:
+            item = self._items.get(code)
+            if item is None:
+                return None
+            if self._clock() >= item[0]:
+                del self._items[code]
+                return None
+            # Cópia: quem recebe pode mexer no objeto sem estragar o que está guardado.
+            return item[1].model_copy(deep=True)
+
+    def put(self, code: str, report: ReportResolved) -> None:
+        with self._lock:
+            self._items.pop(code, None)
+            self._items[code] = (self._clock() + self._ttl_s, report.model_copy(deep=True))
+            while len(self._items) > self._max_items:
+                self._items.popitem(last=False)  # o mais antigo
+
+    def clear(self) -> None:
+        with self._lock:
+            self._items.clear()
+
+
+# Um por processo, como o cliente do WCL. Os testes limpam com `report_cache.clear()`.
+report_cache = ReportCache()
+
+
+class WclReportSource:
+    """Lê o report da API do Warcraft Logs (uma consulta por report, depois o cache)."""
+
+    def __init__(
+        self,
+        client_factory: Callable[[], WclClient] = shared_client,
+        cache: ReportCache | None = None,
+    ) -> None:
         self._client_factory = client_factory
+        self._cache = report_cache if cache is None else cache
 
     def get_report(self, code: str) -> ReportResolved:
+        cached = self._cache.get(code)
+        if cached is not None:
+            return cached
         try:
-            with self._client_factory() as client:
-                raw = fetch_report(client, code)
+            # O cliente é do processo: não fecha aqui.
+            raw = fetch_report(self._client_factory(), code)
         except (WclError, httpx.HTTPError) as exc:
-            logger.warning("Report %s indisponível no Warcraft Logs: %s", code, exc)
+            unavailable = isinstance(exc, (WclUnavailableError, httpx.HTTPError))
+            logger.warning(
+                "Report %s %s: %s",
+                code,
+                "sem resposta do Warcraft Logs" if unavailable else "indisponível",
+                exc,
+            )
             # Plano B da demo: sem internet, o link de exemplo continua abrindo.
             if code == SAMPLE_REPORT_CODE:
                 return SampleReportSource().get_report(code)
-            # Privado, inexistente ou API fora do ar: para o usuário é igual.
+            if unavailable:
+                raise SourceUnavailableError(code) from exc
+            # Privado ou inexistente: a API respondeu, mas sem o report.
             raise ReportNotAvailableError(code) from exc
-        return ReportResolved.model_validate(build_report(raw))
+        report = ReportResolved.model_validate(build_report(raw))
+        self._cache.put(code, report)
+        return report
 
 
 # --- Análise ------------------------------------------------------------------
