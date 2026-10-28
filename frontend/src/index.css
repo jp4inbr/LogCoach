@@ -652,7 +652,7 @@ label {
   cursor: pointer;
 }
 
-.fight:hover:not(:disabled) {
+.fight:hover:not(:disabled, [aria-disabled="true"]) {
   border-color: var(--accent);
 }
 
@@ -667,6 +667,49 @@ label {
   cursor: not-allowed;
   opacity: 0.55;
   filter: grayscale(1);
+}
+
+/* Luta ainda subindo para o Warcraft Logs: também não dá para escolher, mas vai dar. Por isso
+   não fica apagada como as não suportadas: borda tracejada no tom de destaque, selo
+   "Subindo…" com um ponto pulsando e o motivo em texto. */
+.fight-uploading {
+  cursor: progress;
+  border-style: dashed;
+  border-color: rgb(167 139 250 / 45%);
+  background: var(--info-bg);
+}
+
+.fight-uploading .fight-reason {
+  color: var(--text);
+}
+
+.pill-uploading {
+  gap: 6px;
+  background: var(--info-bg);
+  color: var(--accent);
+  box-shadow: inset 0 0 0 1px rgb(167 139 250 / 35%);
+}
+
+.pill-uploading::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: uploading 1.4s ease-in-out infinite;
+}
+
+@keyframes uploading {
+  50% {
+    opacity: 0.25;
+    transform: scale(0.7);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pill-uploading::before {
+    animation: none;
+  }
 }
 
 .fight-main {
