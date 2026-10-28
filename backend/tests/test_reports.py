@@ -2,6 +2,7 @@ import threading
 
 import pytest
 from conftest import ANALYSIS
+from fastapi import Request
 from test_sources import (  # noqa: F401 (fixture autouse)
     FakeWcl,
     fake_client,
@@ -10,20 +11,22 @@ from test_sources import (  # noqa: F401 (fixture autouse)
     wait_prefetch,
 )
 
-from app.api.reports import PREFETCH_LIMIT_MESSAGE
+from app.api.reports import PREFETCH_LIMIT_MESSAGE, prefetch_client
 from app.main import app
+from app.models import User
 from app.services.links import parse_report_code
 from app.services.sources import (
     IN_PROGRESS_REASON,
     REFRESH_MIN_INTERVAL_S,
     UNSUPPORTED_BOSS_REASON,
+    WCL_COOLDOWN_S,
     PrefetchLimiter,
     ReportCache,
     SourceUnavailableError,
     WclReportSource,
     get_report_source,
 )
-from app.wcl.client import QUERY_MESSAGE
+from app.wcl.client import CONFIG_MESSAGE, QUERY_MESSAGE
 
 SAMPLE_LINK = "https://www.warcraftlogs.com/reports/XhrmBaYkGCAQjH2D#fight=34"
 
@@ -118,7 +121,7 @@ LINK = {"url": "https://www.warcraftlogs.com/reports/TESTE123"}
 
 def use_wcl(wcl: FakeWcl, now: list[float]) -> None:
     # Mesma fonte (e mesmos caches) em todos os pedidos do teste, com relógio controlado.
-    source = wcl.source(cache=ReportCache(clock=lambda: now[0]))
+    source = wcl.source(clock=now)
     app.dependency_overrides[get_report_source] = lambda: source
 
 
@@ -173,8 +176,10 @@ def test_failed_resolve_brings_the_cached_list_as_stale(client):
     assert "fora do ar" in body["stale_message"]
     assert body["fetched_at"] == first["fetched_at"]
     assert body["fights"] == first["fights"]
-    # A lista guardada continua valendo para a escolha da luta (Magos e análise).
+    # A lista guardada continua valendo para a escolha da luta (Magos e análise), passada a
+    # pausa depois da falha.
     wcl.status = 200
+    now[0] += WCL_COOLDOWN_S
     assert client.get("/reports/TESTE123/fights/2/players").status_code == 200
     assert wcl.calls == ["ReportFights", "ReportFights", "FightPlayers"]
 
@@ -429,3 +434,113 @@ def test_fight_players_with_wcl_down_is_wcl_unavailable(client):
 
     assert response.status_code == 503
     assert response.json()["detail"]["code"] == "wcl_unavailable"
+
+
+# --- Código do erro na lista guardada, pausa depois da falha e teto da pré-busca -------
+
+
+def test_stale_list_brings_the_error_code(client):
+    now = [0.0]
+    wcl = FakeWcl()
+    use_wcl(wcl, now)
+    assert client.post("/reports/resolve", json=LINK).json()["stale_code"] is None
+
+    wcl.status = 403  # credencial recusada: erro nosso
+    now[0] = 120
+    body = client.post("/reports/resolve", json=LINK).json()
+
+    assert (body["stale"], body["stale_code"]) == (True, "unexpected_error")
+    assert body["stale_message"] == CONFIG_MESSAGE
+
+
+def test_new_fight_with_a_config_error_keeps_status_and_code(client):
+    # Lista guardada por erro nosso: a luta nova não sai como "Warcraft Logs fora do ar".
+    now = [0.0]
+    wcl = FakeWcl()
+    use_wcl(wcl, now)
+    client.post("/reports/resolve", json=LINK)
+
+    wcl.status = 403
+    now[0] = 120
+    response = client.get("/reports/TESTE123/fights/5/players")
+
+    assert response.status_code == 500
+    assert response.json()["detail"] == {"code": "unexpected_error", "message": CONFIG_MESSAGE}
+
+
+def test_tabs_refreshing_during_the_pause_do_not_call_the_wcl(client):
+    now = [0.0]
+    wcl = FakeWcl()
+    use_wcl(wcl, now)
+    client.post("/reports/resolve", json=LINK)
+    wcl.status, wcl.headers = 429, {"retry-after": "60"}
+    now[0] = 120
+
+    bodies = [client.post("/reports/resolve", json=LINK | {"refresh": True}).json()]
+    now[0] = 150
+    bodies += [client.post("/reports/resolve", json=LINK).json() for _ in range(3)]
+    missing = client.get("/reports/TESTE123/fights/5/players")
+
+    assert all(b["stale"] and b["stale_code"] == "wcl_unavailable" for b in bodies)
+    assert "limitando os pedidos" in bodies[-1]["stale_message"]
+    assert (missing.status_code, missing.json()["detail"]["code"]) == (503, "wcl_unavailable")
+    assert wcl.calls == ["ReportFights", "ReportFights"]
+
+
+def test_prefetch_during_the_pause_is_wcl_unavailable(client):
+    now = [0.0]
+    wcl = FakeWcl()
+    use_wcl(wcl, now)
+    client.get("/reports/TESTE123/fights/2/players")  # lista e Magos no cache
+    wcl.status = 503
+    now[0] = 120
+    client.post("/reports/resolve", json=LINK)  # falha: começa a pausa
+
+    response = prefetch(client)
+
+    assert response.status_code == 503
+    assert response.json()["detail"]["code"] == "wcl_unavailable"
+    assert wcl.count("FightMeta") == 0
+
+
+def test_prefetch_global_cap(client, auth_headers):
+    # O teto do processo vale para todos: a conta logada não escapa dele.
+    wcl = FakeWcl()
+    source = wcl.source(limiter=PrefetchLimiter(global_max_calls=1))
+    app.dependency_overrides[get_report_source] = lambda: source
+
+    first = prefetch(client, 2, 10)
+    blocked = client.post(
+        "/reports/TESTE123/fights/2/prefetch", json={"actor_id": 13}, headers=auth_headers
+    )
+    wait_prefetch()
+
+    assert first.json() == {"status": "started"}
+    assert blocked.status_code == 429
+    assert blocked.json()["detail"] == {"code": "prefetch_limit", "message": PREFETCH_LIMIT_MESSAGE}
+
+
+def request_from(host: str | None) -> Request:
+    return Request({"type": "http", "client": None if host is None else (host, 50000)})
+
+
+@pytest.mark.parametrize(
+    ("host", "expected"),
+    [
+        ("203.0.113.7", "ip:203.0.113.7"),
+        ("2001:db8:1:2::5", "ip:2001:db8:1:2::/64"),
+        ("2001:db8:1:2:ffff:ffff:ffff:ffff", "ip:2001:db8:1:2::/64"),  # mesma casa
+        ("2001:db8:1:3::5", "ip:2001:db8:1:3::/64"),  # outra rede
+        ("::ffff:203.0.113.7", "ip:203.0.113.7"),  # IPv4 escrito em IPv6
+        ("testclient", "ip:testclient"),  # não é IP
+        (None, None),
+    ],
+)
+def test_prefetch_client_groups_ipv6_by_64(host, expected):
+    assert prefetch_client(request_from(host), None) == expected
+
+
+def test_prefetch_client_prefers_the_account():
+    user = User(id="u7", email="jogador@exemplo.com", password_hash="x")
+
+    assert prefetch_client(request_from("2001:db8::1"), user) == "user:u7"

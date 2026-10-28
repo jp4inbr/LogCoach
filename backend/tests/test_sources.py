@@ -3,6 +3,7 @@
 import copy
 import json
 import threading
+import time
 
 import httpx
 import pytest
@@ -16,12 +17,16 @@ from app.services.sources import (
     SHORT_FIGHT_REASON,
     UNSUPPORTED_BOSS_REASON,
     UNSUPPORTED_DIFFICULTY_REASON,
+    WCL_COOLDOWN_MAX_S,
+    WCL_COOLDOWN_S,
+    WCL_RATE_LIMIT_COOLDOWN_S,
     FightDataStore,
     PrefetchLimiter,
     ReportCache,
     ReportNotAvailableError,
     SampleReportSource,
     SourceUnavailableError,
+    WclCooldown,
     WclReportSource,
     build_report,
     fight_data_store,
@@ -30,10 +35,13 @@ from app.services.sources import (
     prefetch_limiter,
     report_cache,
     shutdown_prefetch,
+    wcl_cooldown,
 )
 from app.wcl.client import (
+    CONFIG_MESSAGE,
     QUERY_MESSAGE,
     TOKEN_URL,
+    UNAVAILABLE_MESSAGE,
     WclClient,
     WclUnavailableError,
     close_shared_client,
@@ -45,7 +53,8 @@ NEKZALI = 3470
 
 @pytest.fixture(autouse=True)
 def fresh_wcl_state():
-    """Caches, pré-buscas, limite e cliente do processo zerados: nada vaza entre testes.
+    """Caches, pré-buscas, limite, falha lembrada e cliente do processo zerados: nada vaza
+    entre testes.
 
     `shutdown_prefetch` espera as threads da pré-busca terminarem: nenhuma fica solta.
     """
@@ -53,6 +62,7 @@ def fresh_wcl_state():
     players_cache.clear()
     fight_data_store.clear()
     prefetch_limiter.clear()
+    wcl_cooldown.clear()
     close_shared_client()
     yield
     shutdown_prefetch()
@@ -60,6 +70,7 @@ def fresh_wcl_state():
     players_cache.clear()
     fight_data_store.clear()
     prefetch_limiter.clear()
+    wcl_cooldown.clear()
     close_shared_client()
 
 
@@ -119,6 +130,7 @@ class FakeWcl:
         self.fight_players = copy.deepcopy(FIGHT_PLAYERS)
         self.details: dict = {}
         self.status = status
+        self.headers: dict[str, str] = {}  # da resposta de erro (ex.: Retry-After)
         self.calls: list[str] = []
         # Eventos da luta: com `gate`, cada página espera o teste liberar (busca "lenta").
         self.gate: threading.Event | None = None
@@ -135,7 +147,7 @@ class FakeWcl:
         if name == "Events" and self.gate is not None:
             assert self.gate.wait(timeout=5), "o teste não liberou a busca"
         if self.status != 200:
-            return httpx.Response(self.status, json={})
+            return httpx.Response(self.status, json={}, headers=self.headers)
         if name == "ReportFights":
             return httpx.Response(200, json=report_body(self.report))
         fight_id = body["variables"]["fightID"]
@@ -191,18 +203,22 @@ class FakeWcl:
         fight_data: FightDataStore | None = None,
         executor=None,
         limiter: PrefetchLimiter | None = None,
+        clock=None,
     ) -> WclReportSource:
-        # Caches e limite próprios por padrão: cada FakeWcl é uma API nova. A pré-busca usa
-        # o executor do processo (que o `fresh_wcl_state` desliga no fim de cada teste), a
-        # menos que o teste passe o dele.
+        # Caches, limite e falha lembrada próprios por padrão: cada FakeWcl é uma API nova.
+        # `clock` (lista de um número, como nos outros testes) vale para o cache da lista e
+        # para a falha lembrada. A pré-busca usa o executor do processo (que o
+        # `fresh_wcl_state` desliga no fim de cada teste), a menos que o teste passe o dele.
         client = self.client()
         extra = {} if executor is None else {"executor_factory": lambda: executor}
+        tick = time.monotonic if clock is None else (lambda: clock[0])
         return WclReportSource(
             client_factory=lambda: client,
-            cache=ReportCache() if cache is None else cache,
+            cache=ReportCache(clock=tick) if cache is None else cache,
             players=ReportCache(),
             fight_data=FightDataStore() if fight_data is None else fight_data,
             limiter=PrefetchLimiter() if limiter is None else limiter,
+            cooldown=WclCooldown(clock=tick),
             **extra,
         )
 
@@ -559,7 +575,7 @@ def test_refresh_brings_new_fights_of_a_live_log():
     now = [0.0]
     wcl = FakeWcl()
     wcl.report["fights"] = REPORT["fights"][:2]
-    source = wcl.source(cache=ReportCache(clock=lambda: now[0]))
+    source = wcl.source(clock=now)
     first = source.get_report("TESTE123")
     assert [f.id for f in first.fights] == [1, 2]
 
@@ -581,7 +597,7 @@ def test_player_who_joined_in_the_middle_of_the_night():
     # Jogador que entrou na raide depois da lista guardada: aparece na luta nova.
     now = [0.0]
     wcl = FakeWcl()
-    source = wcl.source(cache=ReportCache(clock=lambda: now[0]))
+    source = wcl.source(clock=now)
     source.get_report("TESTE123")
 
     wcl.mages.append(
@@ -604,7 +620,7 @@ def test_refresh_right_after_a_fetch_uses_the_cache():
     # Cliques repetidos (ou dois magos da raide) não gastam pontos à toa.
     now = [0.0]
     wcl = FakeWcl()
-    source = wcl.source(cache=ReportCache(clock=lambda: now[0]))
+    source = wcl.source(clock=now)
     source.get_report("TESTE123")
 
     now[0] = REFRESH_MIN_INTERVAL_S - 1
@@ -623,7 +639,7 @@ def test_refresh_interval_is_short():
 def test_failed_refresh_returns_the_cached_list_as_stale():
     now = [0.0]
     wcl = FakeWcl()
-    source = wcl.source(cache=ReportCache(clock=lambda: now[0]))
+    source = wcl.source(clock=now)
     first = source.get_report("TESTE123")
 
     wcl.status = 503
@@ -633,8 +649,9 @@ def test_failed_refresh_returns_the_cached_list_as_stale():
     assert [f.id for f in stale.fights] == [1, 2, 3, 4]
     assert stale.stale is True
     assert "fora do ar" in stale.stale_message
+    assert stale.stale_code == "wcl_unavailable"
     assert stale.fetched_at == first.fetched_at  # hora da lista guardada
-    assert (first.stale, first.stale_message) == (False, None)
+    assert (first.stale, first.stale_message, first.stale_code) == (False, None, None)
     # O guardado não vira "stale": a lista do cache continua como veio da API.
     assert source.get_report("TESTE123").stale is False
     assert wcl.calls == ["ReportFights", "ReportFights"]
@@ -643,7 +660,7 @@ def test_failed_refresh_returns_the_cached_list_as_stale():
 def test_failed_refresh_with_rate_limit_brings_its_message():
     now = [0.0]
     wcl = FakeWcl()
-    source = wcl.source(cache=ReportCache(clock=lambda: now[0]))
+    source = wcl.source(clock=now)
     source.get_report("TESTE123")
 
     wcl.status = 429
@@ -685,6 +702,197 @@ def test_broken_query_is_our_error_not_wcl_down():
     assert info.value.error_code == "unexpected_error"
     assert info.value.user_message == QUERY_MESSAGE
     assert str(info.value) == "TESTE123"
+
+
+def test_failed_refresh_with_config_error_keeps_its_code():
+    # Erro nosso (credencial recusada): a lista guardada leva o código, não "fora do ar".
+    now = [0.0]
+    wcl = FakeWcl()
+    source = wcl.source(clock=now)
+    source.get_report("TESTE123")
+
+    wcl.status = 403  # JSON, não Cloudflare: acesso negado à nossa credencial
+    now[0] = 120
+    stale = source.get_report("TESTE123", refresh=True)
+
+    assert stale.stale is True
+    assert (stale.stale_code, stale.stale_message) == ("unexpected_error", CONFIG_MESSAGE)
+
+
+# --- Falha lembrada (WclCooldown) ---------------------------------------------------
+
+
+def test_failure_is_remembered_and_the_api_is_not_called_again():
+    # Várias abas atualizando a lista com o WCL fora do ar: uma consulta só até a pausa passar.
+    now = [0.0]
+    wcl = FakeWcl()
+    source = wcl.source(clock=now)
+    source.get_report("TESTE123")
+    wcl.status = 503
+    now[0] = 120
+    first = source.get_report("TESTE123", refresh=True)
+
+    now[0] = 120 + WCL_COOLDOWN_S - 1
+    again = [source.get_report("TESTE123", refresh=True) for _ in range(5)]
+
+    assert wcl.calls == ["ReportFights", "ReportFights"]
+    assert all(r.stale and r.stale_message == first.stale_message for r in again)
+    assert all(r.stale_code == "wcl_unavailable" for r in again)
+    # Passada a pausa, uma consulta testa a API de novo.
+    now[0] = 120 + WCL_COOLDOWN_S
+    wcl.status = 200
+    assert source.get_report("TESTE123", refresh=True).stale is False
+    assert wcl.count("ReportFights") == 3
+
+
+def test_pause_is_at_least_the_refresh_interval():
+    assert WCL_COOLDOWN_S >= REFRESH_MIN_INTERVAL_S
+
+
+def test_remembered_failure_without_cached_list_is_the_same_error():
+    now = [0.0]
+    wcl = FakeWcl(status=403)
+    source = wcl.source(clock=now)
+    with pytest.raises(SourceUnavailableError):
+        source.get_report("TESTE123")
+
+    with pytest.raises(SourceUnavailableError) as info:
+        source.get_report("OUTRO456")  # vale para o processo: o limite e a queda são do WCL
+
+    assert (info.value.error_code, info.value.user_message) == ("unexpected_error", CONFIG_MESSAGE)
+    assert str(info.value) == "OUTRO456"
+    assert wcl.count("ReportFights") == 1
+
+
+def test_remembered_failure_also_holds_players_and_fight_data():
+    now = [0.0]
+    wcl = FakeWcl()
+    source = wcl.source(clock=now)
+    source.get_report("TESTE123")
+    wcl.status = 503
+    with pytest.raises(SourceUnavailableError):
+        source.get_fight_players("TESTE123", 2)
+    calls = len(wcl.calls)
+
+    with pytest.raises(SourceUnavailableError):
+        source.get_fight_players("TESTE123", 4)
+    with pytest.raises(SourceUnavailableError):
+        source.get_fight_data("TESTE123", 2, 10)
+    with pytest.raises(SourceUnavailableError):
+        source.prefetch("TESTE123", 2, 10, client="ana")
+
+    assert len(wcl.calls) == calls
+
+
+def test_remembered_failure_does_not_spend_the_prefetch_limit():
+    now = [0.0]
+    wcl = FakeWcl(status=503)
+    limiter = PrefetchLimiter(max_calls=1, clock=lambda: now[0])
+    source = wcl.source(clock=now, limiter=limiter)
+    with pytest.raises(SourceUnavailableError):
+        source.get_report("TESTE123")
+
+    with pytest.raises(SourceUnavailableError):
+        source.prefetch("TESTE123", 2, 10, client="ana")
+
+    assert limiter.take("ana") is True  # a pré-busca negada pela pausa não contou
+
+
+def test_sample_report_opens_during_the_pause():
+    now = [0.0]
+    wcl = FakeWcl(status=503)
+    source = wcl.source(clock=now)
+    with pytest.raises(SourceUnavailableError):
+        source.get_report("TESTE123")
+
+    assert source.get_report(SAMPLE_REPORT_CODE).sample is True
+    assert wcl.count("ReportFights") == 1
+
+
+def test_private_report_does_not_pause_the_api():
+    # A API respondeu (sem o report): nada a esperar.
+    now = [0.0]
+    pause = WclCooldown(clock=lambda: now[0])
+    private = WclReportSource(
+        client_factory=lambda: fake_client(report_body(None)),
+        cache=ReportCache(),
+        players=ReportCache(),
+        cooldown=pause,
+    )
+    with pytest.raises(ReportNotAvailableError):
+        private.get_report("TESTE123")
+
+    assert pause.active() is None
+
+
+@pytest.mark.parametrize(
+    ("headers", "pause_s"),
+    [
+        ({"retry-after": "120"}, 120),  # o tempo que o WCL pediu
+        ({"retry-after": "2"}, WCL_COOLDOWN_S),  # no mínimo a pausa comum
+        ({"retry-after": "7200"}, WCL_COOLDOWN_MAX_S),  # com teto
+        ({}, WCL_RATE_LIMIT_COOLDOWN_S),  # sem o cabeçalho
+    ],
+)
+def test_rate_limit_pauses_for_the_time_the_wcl_asked(headers, pause_s):
+    now = [0.0]
+    wcl = FakeWcl()
+    source = wcl.source(clock=now)
+    source.get_report("TESTE123")
+    wcl.status, wcl.headers = 429, headers
+    now[0] = 120
+    source.get_report("TESTE123", refresh=True)
+
+    now[0] = 120 + pause_s - 0.5
+    assert source.get_report("TESTE123", refresh=True).stale is True
+    assert wcl.count("ReportFights") == 2
+    now[0] = 120 + pause_s
+    source.get_report("TESTE123", refresh=True)
+    assert wcl.count("ReportFights") == 3
+
+
+def test_rate_limit_constants():
+    # Limite sem Retry-After: 1 min (o de pontos é por hora); Retry-After respeitado até 5 min.
+    assert (WCL_RATE_LIMIT_COOLDOWN_S, WCL_COOLDOWN_MAX_S) == (60, 300)
+
+
+def test_rate_limit_message_counts_down_during_the_pause():
+    now = [0.0]
+    wcl = FakeWcl()
+    source = wcl.source(clock=now)
+    source.get_report("TESTE123")
+    wcl.status, wcl.headers = 429, {"retry-after": "180"}
+    now[0] = 120
+
+    assert "uns 3 minutos" in source.get_report("TESTE123", refresh=True).stale_message
+    now[0] = 120 + 90
+    assert "uns 2 minutos" in source.get_report("TESTE123", refresh=True).stale_message
+    now[0] = 120 + 170
+    assert "uns 1 minuto" in source.get_report("TESTE123", refresh=True).stale_message
+    assert wcl.count("ReportFights") == 2
+
+
+def test_longer_pause_wins():
+    # Uma consulta que já estava no ar e falha com 503 não encurta a pausa do 429.
+    now = [0.0]
+    pause = WclCooldown(clock=lambda: now[0])
+    pause.fail(WclUnavailableError("429", "limite", rate_limited=True, retry_after_s=120))
+    pause.fail(WclUnavailableError("503", "fora do ar"))
+
+    now[0] = 119
+    assert pause.active() is not None
+    now[0] = 120
+    assert pause.active() is None
+
+
+def test_network_error_outside_the_client_also_pauses():
+    now = [0.0]
+    pause = WclCooldown(clock=lambda: now[0])
+    pause.fail(httpx.ConnectError("sem rede"))
+
+    assert pause.active() == (UNAVAILABLE_MESSAGE, "wcl_unavailable")
+    now[0] = WCL_COOLDOWN_S
+    assert pause.active() is None
 
 
 class LockProbe:
@@ -738,15 +946,21 @@ def test_cached_players_are_a_copy():
 
 
 def test_failures_are_not_cached():
+    now = [0.0]
     cache = ReportCache()
+    pause = WclCooldown(clock=lambda: now[0])
     failing = WclReportSource(
-        client_factory=lambda: fake_client(report_body(REPORT), status=503), cache=cache
+        client_factory=lambda: fake_client(report_body(REPORT), status=503),
+        cache=cache,
+        cooldown=pause,
     )
     with pytest.raises(SourceUnavailableError):
         failing.get_report("TESTE123")
+    now[0] = WCL_COOLDOWN_S  # passada a pausa depois da falha
     private = WclReportSource(
         client_factory=lambda: fake_client(report_body(None, [{"message": "Sem permissão"}])),
         cache=cache,
+        cooldown=pause,
     )
     with pytest.raises(ReportNotAvailableError):
         private.get_report("TESTE123")
@@ -757,15 +971,21 @@ def test_failures_are_not_cached():
 
 def test_sample_fallback_is_not_cached():
     # O plano B não pode "grudar": com a API de volta, vem o report real.
+    now = [0.0]
     cache = ReportCache()
+    pause = WclCooldown(clock=lambda: now[0])
     down = WclReportSource(
-        client_factory=lambda: fake_client(report_body(REPORT), status=500), cache=cache
+        client_factory=lambda: fake_client(report_body(REPORT), status=500),
+        cache=cache,
+        cooldown=pause,
     )
     assert down.get_report(SAMPLE_REPORT_CODE).sample is True
 
+    now[0] = WCL_COOLDOWN_S
     up = WclReportSource(
         client_factory=lambda: fake_client(report_body(REPORT | {"code": SAMPLE_REPORT_CODE})),
         cache=cache,
+        cooldown=pause,
     )
     assert up.get_report(SAMPLE_REPORT_CODE).sample is False
 

@@ -7,9 +7,11 @@ demo sem internet e fonte do CI). O "wcl" usa um cliente só por processo: ao co
 (e em "Atualizar lutas") busca só a lista de lutas (consulta leve) e, na luta escolhida, os
 Magos Arcanos dela; os dois ficam em cache (`ReportCache`). Quando o jogador fica definido,
 a pré-busca baixa em segundo plano os eventos da luta dele (`FightDataStore`), que o motor
-lê com `get_fight_data`; a pré-busca tem limite por cliente (`PrefetchLimiter`). O
-analisador ainda é o de exemplo até o motor (frente C) ficar pronto; aí basta trocá-lo em
-`get_analyzer`. O modo exemplo também tem os eventos do kill de referência
+lê com `get_fight_data`; a pré-busca tem limite por cliente e um teto do processo
+(`PrefetchLimiter`). Uma falha do Warcraft Logs fica lembrada por alguns segundos (ou pelo
+`Retry-After` do limite de pedidos) e, nesse tempo, nenhuma consulta vai à API
+(`WclCooldown`). O analisador ainda é o de exemplo até o motor (frente C) ficar pronto; aí
+basta trocá-lo em `get_analyzer`. O modo exemplo também tem os eventos do kill de referência
 (`app/samples/fight_*.json.gz`).
 """
 
@@ -45,6 +47,7 @@ from app.wcl.client import (
     WclClient,
     WclError,
     WclUnavailableError,
+    rate_limit_message,
     shared_client,
 )
 from app.wcl.fetch import fetch_fight, fetch_fight_players, fetch_report
@@ -131,7 +134,8 @@ class ReportSource(Protocol):
         """Começa a baixar o `get_fight_data` em segundo plano, sem esperar.
 
         `client` (usuário logado ou IP) limita as pré-buscas de quem pediu: uma só na fila
-        por cliente e no máximo `PREFETCH_LIMIT` novas por janela (`PrefetchLimitError`).
+        por cliente e no máximo `PREFETCH_LIMIT` novas por janela, com o teto do processo
+        de `PREFETCH_GLOBAL_LIMIT` por hora (`PrefetchLimitError`).
         """
         ...
 
@@ -341,8 +345,23 @@ PREFETCH_WORKERS = 2
 # ou de luta algumas vezes não chega perto; quem clica em tudo não esgota os pontos de todos.
 PREFETCH_LIMIT = 10
 PREFETCH_WINDOW_S = 10 * 60
-# Acima disso, o limitador esquece quem não pediu nada na última janela.
+# Teto do processo inteiro, somando todos os clientes: o limite por cliente não segura quem
+# troca de IP (com IPv6 é fácil). 40 por hora × ~12 pontos são ~480 pontos, metade dos 1000/h
+# do Warcraft Logs; a outra metade fica para colar links, Magos de cada luta e as análises
+# (que buscam a luta sozinhas quando a pré-busca não veio).
+PREFETCH_GLOBAL_LIMIT = 40
+PREFETCH_GLOBAL_WINDOW_S = 60 * 60
+# Clientes lembrados pelo limitador: acima disso, esquece quem pediu há mais tempo.
 PREFETCH_CLIENTS_MAX = 10_000
+# A limpeza de quem não pede nada há uma janela roda no máximo uma vez por minuto.
+PREFETCH_PRUNE_INTERVAL_S = 60
+# Falha do Warcraft Logs lembrada (`WclCooldown`): nesse tempo nenhuma consulta vai à API.
+# No mínimo a trava da lista; limite de pedidos sem `Retry-After` pausa 1 min (o limite de
+# pontos é por hora, não adianta insistir); com `Retry-After`, o tempo dele, até 5 min (data
+# absurda não para o LogCoach por horas: passado o teto, uma consulta testa a API de novo).
+WCL_COOLDOWN_S = REFRESH_MIN_INTERVAL_S
+WCL_RATE_LIMIT_COOLDOWN_S = 60
+WCL_COOLDOWN_MAX_S = 5 * 60
 
 
 class ReportCache:
@@ -622,49 +641,137 @@ class FightDataStore:
         self._cache.clear()
 
 
-class PrefetchLimiter:
-    """Pré-buscas novas por cliente numa janela deslizante (em memória do processo).
+def _expire(calls: deque[float], now: float, window_s: float) -> None:
+    while calls and now - calls[0] >= window_s:
+        calls.popleft()
 
-    "Cliente" é o usuário logado ou, sem login, o IP do pedido (atrás de um proxy reverso,
-    o IP é o do proxy e todos os anônimos dividem o limite).
+
+class PrefetchLimiter:
+    """Pré-buscas novas numa janela deslizante, por cliente e no processo inteiro (em
+    memória do processo).
+
+    "Cliente" é o usuário logado ou, sem login, o IP do pedido (IPv6 agrupado por /64; atrás
+    de um proxy reverso, o IP é o do proxy e todos os anônimos dividem o limite). Os clientes
+    ficam na ordem da última pré-busca, para esquecer os parados sem varrer todos.
     """
 
     def __init__(
         self,
         max_calls: int = PREFETCH_LIMIT,
         window_s: float = PREFETCH_WINDOW_S,
+        global_max_calls: int = PREFETCH_GLOBAL_LIMIT,
+        global_window_s: float = PREFETCH_GLOBAL_WINDOW_S,
+        max_clients: int = PREFETCH_CLIENTS_MAX,
         clock: Callable[[], float] = time.monotonic,
     ) -> None:
         self._max_calls = max_calls
         self._window_s = window_s
+        self._global_max_calls = global_max_calls
+        self._global_window_s = global_window_s
+        self._max_clients = max_clients
         self._clock = clock
-        self._calls: dict[Hashable, deque[float]] = {}
+        # Cliente → horários das pré-buscas, de quem pediu há mais tempo ao mais recente.
+        self._calls: OrderedDict[Hashable, deque[float]] = OrderedDict()
+        self._global: deque[float] = deque()
+        self._pruned_at = clock()
         self._lock = threading.Lock()
 
     def take(self, client: Hashable | None) -> bool:
-        """Conta uma pré-busca nova do cliente, se ele ainda tem; sem cliente, sempre pode."""
-        if client is None:
-            return True
+        """Conta uma pré-busca nova, se o cliente e o processo ainda têm. Sem cliente, só o
+        teto do processo vale. Negada, não conta nada."""
         with self._lock:
             now = self._clock()
-            calls = self._calls.setdefault(client, deque())
-            while calls and now - calls[0] >= self._window_s:
-                calls.popleft()
-            if len(calls) >= self._max_calls:
-                return False
-            calls.append(now)
-            if len(self._calls) > PREFETCH_CLIENTS_MAX:
+            if now - self._pruned_at >= PREFETCH_PRUNE_INTERVAL_S:
                 self._prune(now)
+            _expire(self._global, now, self._global_window_s)
+            if len(self._global) >= self._global_max_calls:
+                return False
+            calls = self._calls.get(client) if client is not None else None
+            if calls is not None:
+                _expire(calls, now, self._window_s)
+                if len(calls) >= self._max_calls:
+                    return False
+            self._global.append(now)
+            if client is None:
+                return True
+            if calls is None:
+                calls = self._calls[client] = deque()
+            calls.append(now)
+            self._calls.move_to_end(client)
+            while len(self._calls) > self._max_clients:
+                self._calls.popitem(last=False)  # quem pediu há mais tempo
             return True
 
     def _prune(self, now: float) -> None:
-        # Muitos clientes: esquece quem não pede nada há uma janela inteira.
-        for client in [c for c, calls in self._calls.items() if now - calls[-1] >= self._window_s]:
-            del self._calls[client]
+        # Esquece quem não pede nada há uma janela inteira: pela ordem, são os primeiros.
+        self._pruned_at = now
+        while self._calls:
+            calls = next(iter(self._calls.values()))
+            if now - calls[-1] < self._window_s:
+                break
+            self._calls.popitem(last=False)
 
     def clear(self) -> None:
         with self._lock:
             self._calls.clear()
+            self._global.clear()
+
+
+class WclCooldown:
+    """A última falha do Warcraft Logs, lembrada por um tempo (`WCL_COOLDOWN_S` ou o do limite
+    de pedidos), para o processo inteiro: o limite de pontos e uma queda valem para todas as
+    consultas.
+
+    Sem isso, com a lista guardada servida, cada pedido e cada atualização automática de
+    cada aba bateria no WCL de novo, e com o limite de pedidos (429) isso só prolonga o
+    bloqueio. Sucesso não apaga a falha: uma consulta que já estava no ar não encerra a
+    pausa pedida pelo `Retry-After`.
+    """
+
+    def __init__(self, clock: Callable[[], float] = time.monotonic) -> None:
+        self._clock = clock
+        self._until = float("-inf")
+        self._message = UNAVAILABLE_MESSAGE
+        self._error_code = WCL_UNAVAILABLE_CODE
+        self._retry_at: float | None = None  # quando o WCL disse que libera (limite)
+        self._lock = threading.Lock()
+
+    def fail(self, exc: BaseException) -> None:
+        """Lembra a falha. Fica a pausa que termina mais tarde."""
+        rate_limited = bool(getattr(exc, "rate_limited", False))
+        retry_after = getattr(exc, "retry_after_s", None)
+        if retry_after is not None:
+            wait = min(max(retry_after, WCL_COOLDOWN_S), WCL_COOLDOWN_MAX_S)
+        elif rate_limited:
+            wait = WCL_RATE_LIMIT_COOLDOWN_S
+        else:
+            wait = WCL_COOLDOWN_S
+        with self._lock:
+            now = self._clock()
+            if now + wait < self._until:
+                return
+            self._until = now + wait
+            self._message = getattr(exc, "user_message", UNAVAILABLE_MESSAGE)
+            self._error_code = getattr(exc, "error_code", WCL_UNAVAILABLE_CODE)
+            known = rate_limited and retry_after is not None
+            self._retry_at = now + retry_after if known else None
+
+    def active(self) -> tuple[str, str] | None:
+        """(mensagem, código) da falha enquanto a pausa vale; None se pode chamar a API."""
+        with self._lock:
+            now = self._clock()
+            if now >= self._until:
+                return None
+            message = self._message
+            if self._retry_at is not None:
+                # "Tente daqui a uns N minutos" conta do que falta, não do que o WCL disse.
+                message = rate_limit_message(max(0.0, self._retry_at - now))
+            return message, self._error_code
+
+    def clear(self) -> None:
+        with self._lock:
+            self._until = float("-inf")
+            self._retry_at = None
 
 
 # Um de cada por processo, como o cliente do WCL. Os testes limpam com `.clear()`.
@@ -672,6 +779,7 @@ report_cache = ReportCache()
 players_cache = ReportCache(max_items=PLAYERS_CACHE_MAX)
 fight_data_store = FightDataStore()
 prefetch_limiter = PrefetchLimiter()
+wcl_cooldown = WclCooldown()
 
 # Threads da pré-busca: do processo, e não o BackgroundTasks do FastAPI, porque a busca
 # (dezenas de segundos) não deve ocupar as threads das rotas síncronas, não depende do
@@ -717,6 +825,7 @@ class WclReportSource:
         fight_data: FightDataStore | None = None,
         executor_factory: Callable[[], Executor] = prefetch_executor,
         limiter: PrefetchLimiter | None = None,
+        cooldown: WclCooldown | None = None,
     ) -> None:
         self._client_factory = client_factory
         self._cache = report_cache if cache is None else cache
@@ -724,13 +833,15 @@ class WclReportSource:
         self._fight_data = fight_data_store if fight_data is None else fight_data
         self._executor_factory = executor_factory
         self._limiter = prefetch_limiter if limiter is None else limiter
+        self._cooldown = wcl_cooldown if cooldown is None else cooldown
 
     def get_report(self, code: str, refresh: bool = False) -> ReportResolved:
         """Lista de lutas. `refresh` busca de novo (lutas novas de um log ao vivo).
 
         Se a busca falhar com o Warcraft Logs fora do ar (ou erro nosso) e houver lista no
-        cache, devolve a guardada com `stale` e a mensagem do erro: o usuário continua
-        escolhendo a luta. Sem lista guardada, o erro sobe.
+        cache, devolve a guardada com `stale`, a mensagem e o código do erro: o usuário
+        continua escolhendo a luta. Sem lista guardada, o erro sobe. Logo depois de uma
+        falha (`WclCooldown`), responde assim sem chamar a API.
         """
         cached = self._cache.get(code, REFRESH_MIN_INTERVAL_S if refresh else None)
         if cached is not None:
@@ -747,7 +858,8 @@ class WclReportSource:
             stale = self._cache.get(code)
             if stale is None:
                 raise
-            stale.stale, stale.stale_message = True, exc.user_message
+            stale.stale = True
+            stale.stale_message, stale.stale_code = exc.user_message, exc.error_code
             return stale
         if from_api:
             self._cache.put(code, report)
@@ -791,8 +903,16 @@ class WclReportSource:
             self._fight_fetch(code, fight_id, actor_id),
             self._executor_factory(),
             client=client,
-            admit=lambda: self._limiter.take(client),
+            admit=lambda: self._admit_prefetch(code, client),
         )
+
+    def _admit_prefetch(self, code: str, client: Hashable | None) -> bool:
+        """Pré-busca nova: com o WCL falhando há pouco, o erro dele (sem gastar o limite);
+        senão, o limite do cliente e o do processo."""
+        blocked = self._cooldown.active()
+        if blocked is not None and code != SAMPLE_REPORT_CODE:
+            raise SourceUnavailableError(code, *blocked)
+        return self._limiter.take(client)
 
     def _fight_fetch(self, code: str, fight_id: int, actor_id: int) -> Fetch:
         return lambda: self._ask(
@@ -805,12 +925,22 @@ class WclReportSource:
         self, code: str, fetch: Callable[[WclClient], Any], sample: Callable[[], Any]
     ) -> tuple[Any, bool]:
         """Uma consulta ao WCL com os erros da fonte. Devolve (valor, veio da API?): o plano
-        B do exemplo não entra no cache, para não "grudar" quando a API voltar."""
+        B do exemplo não entra no cache, para não "grudar" quando a API voltar.
+
+        Logo depois de uma falha do WCL (`WclCooldown`), repete essa falha sem chamar a API.
+        """
+        blocked = self._cooldown.active()
+        if blocked is not None:
+            if code == SAMPLE_REPORT_CODE:
+                return sample(), False
+            raise SourceUnavailableError(code, *blocked)
         try:
             # O cliente é do processo: não fecha aqui.
             return fetch(self._client_factory()), True
         except (WclError, httpx.HTTPError) as exc:
             unavailable = isinstance(exc, (WclUnavailableError, httpx.HTTPError))
+            if unavailable:
+                self._cooldown.fail(exc)
             logger.warning(
                 "Report %s %s: %s",
                 code,

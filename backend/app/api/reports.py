@@ -1,6 +1,7 @@
 """Leitura do link do Warcraft Logs, lista de lutas, Magos de cada luta e pré-busca dos
 eventos da luta do jogador (RF03, RF04)."""
 
+import ipaddress
 from collections.abc import Callable
 from typing import Annotated, Any
 
@@ -31,14 +32,14 @@ from app.services.sources import (
     SourceUnavailableError,
     get_report_source,
 )
-from app.wcl.client import UNAVAILABLE_MESSAGE
+from app.wcl.client import UNAVAILABLE_MESSAGE, WCL_UNAVAILABLE_CODE
 
 router = APIRouter(prefix="/reports", tags=["análises"])
 
 ReportSourceDep = Annotated[ReportSource, Depends(get_report_source)]
 
 # Status de cada código da fonte: do Warcraft Logs (tentar de novo depois resolve) ou nosso.
-SOURCE_ERROR_STATUS = {"wcl_unavailable": 503, UNEXPECTED_ERROR_CODE: 500}
+SOURCE_ERROR_STATUS = {WCL_UNAVAILABLE_CODE: 503, UNEXPECTED_ERROR_CODE: 500}
 
 PREFETCH_LIMIT_MESSAGE = (
     "Você abriu muitas lutas em pouco tempo. Espere alguns minutos para abrir outras; "
@@ -98,8 +99,13 @@ def load_fight(
         fight = next((f for f in report.fights if f.id == fight_id), None)
         if fight is None and report.stale:
             # A busca nova falhou e veio a lista guardada: não dá para dizer que a luta não
-            # existe, só que o Warcraft Logs não respondeu.
-            raise api_error(503, "wcl_unavailable", report.stale_message or UNAVAILABLE_MESSAGE)
+            # existe, só repassar o erro da busca (mesmo status e código do `load_report`).
+            error_code = report.stale_code or WCL_UNAVAILABLE_CODE
+            raise api_error(
+                SOURCE_ERROR_STATUS.get(error_code, 503),
+                error_code,
+                report.stale_message or UNAVAILABLE_MESSAGE,
+            )
     if fight is None:
         raise api_error(404, "fight_not_found", "Essa luta não existe nesse relatório.")
     # Luta subindo: a duração ainda vai crescer, então o motivo é ela estar em andamento.
@@ -147,7 +153,9 @@ def resolve_report(data: ReportResolveRequest, source: ReportSourceDep) -> Repor
     # Colar o link, "Atualizar lutas" e a atualização automática (luta subindo) leem a lista
     # de novo, com ou sem `refresh`: o log pode ser ao vivo. Menos de 8 s depois da última
     # busca vem a lista guardada. Se a busca falhar com o WCL fora do ar e houver lista
-    # guardada, ela vem com `stale` e `stale_message`; sem lista guardada, vem o erro.
+    # guardada, ela vem com `stale`, `stale_message` e `stale_code`; sem lista guardada, vem
+    # o erro. Logo depois de uma falha (8 s, ou o `Retry-After` do limite), a resposta é essa
+    # mesma, sem chamar o WCL.
     return refresh_report(source, code)
 
 
@@ -162,13 +170,25 @@ def fight_players(code: str, fight_id: int, source: ReportSourceDep) -> FightPla
 def prefetch_client(request: Request, user: User | None) -> str | None:
     """Quem pediu a pré-busca, para o limite: a conta, ou sem login o IP do pedido.
 
-    Atrás de um proxy reverso, `request.client.host` é o IP do proxy (todos os anônimos
-    dividem o limite), a menos que o uvicorn rode com `--proxy-headers` e
-    `--forwarded-allow-ips` apontando para o proxy.
+    IPv6 conta pela rede /64: um provedor dá a cada casa um /64 inteiro, e trocar de
+    endereço dentro dele não pode zerar o limite. Atrás de um proxy reverso,
+    `request.client.host` é o IP do proxy (todos os anônimos dividem o limite), a menos que
+    o uvicorn rode com `--proxy-headers` e `--forwarded-allow-ips` apontando para o proxy.
     """
     if user is not None:
         return f"user:{user.id}"
-    return f"ip:{request.client.host}" if request.client else None
+    if not request.client:
+        return None
+    host = request.client.host
+    try:
+        ip = ipaddress.ip_address(host)
+    except ValueError:
+        return f"ip:{host}"  # não é IP (cliente de teste, socket local)
+    if isinstance(ip, ipaddress.IPv6Address):
+        if ip.ipv4_mapped is not None:
+            return f"ip:{ip.ipv4_mapped}"  # ::ffff:1.2.3.4 é o IPv4 de sempre
+        return f"ip:{ipaddress.IPv6Network((ip, 64), strict=False)}"
+    return f"ip:{ip}"
 
 
 @router.post("/{code}/fights/{fight_id}/prefetch", status_code=202)
@@ -186,7 +206,8 @@ def prefetch_fight(
 
     Login opcional. Conta sem análises no mês não pré-busca (403 `plan_limit`); cada cliente
     tem uma pré-busca na fila (a nova tira a anterior) e no máximo `PREFETCH_LIMIT` novas
-    por janela (429 `prefetch_limit`). A tela ignora esses erros: a análise busca sozinha.
+    por janela, com um teto de `PREFETCH_GLOBAL_LIMIT` por hora no processo (429
+    `prefetch_limit` nos dois). A tela ignora esses erros: a análise busca sozinha.
     """
     check_plan_limit(session, user)
     report, fight = load_fight(source, code, fight_id)

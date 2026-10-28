@@ -122,6 +122,8 @@ class WclUnavailableError(WclError):
     GraphQL), timeout/erro de rede, resposta inválida ou credenciais do servidor
     ausentes/recusadas. `user_message` é o texto pronto para o usuário (item 8.2) e
     `error_code` o código da API, escolhidos aqui pela causa; a rota só repassa.
+    `rate_limited` marca o limite de pedidos e `retry_after_s` traz o `Retry-After` (429 ou
+    manutenção), para a fonte não chamar a API de novo antes da hora.
     """
 
     def __init__(
@@ -129,10 +131,14 @@ class WclUnavailableError(WclError):
         detail: str,
         user_message: str = UNAVAILABLE_MESSAGE,
         error_code: str = WCL_UNAVAILABLE_CODE,
+        rate_limited: bool = False,
+        retry_after_s: float | None = None,
     ) -> None:
         super().__init__(detail)
         self.user_message = user_message
         self.error_code = error_code
+        self.rate_limited = rate_limited
+        self.retry_after_s = retry_after_s
 
 
 # --- Classificação das respostas ------------------------------------------------
@@ -185,12 +191,16 @@ def _http_error(response: httpx.Response, what: str) -> WclError:
     """Status diferente de 200 que não é de token recusado (esse a chamada trata antes)."""
     status = response.status_code
     detail = f"{what}: HTTP {status}: {_snippet(response)}"
+    retry_after = _retry_after_s(response)
     if status == 429:
         # Limite de pontos da API e também o 1015 do Cloudflare (excesso de pedidos por IP).
-        return WclUnavailableError(detail, rate_limit_message(_retry_after_s(response)))
+        return WclUnavailableError(
+            detail, rate_limit_message(retry_after), rate_limited=True, retry_after_s=retry_after
+        )
     if status >= 500:
-        # 500–504, 52x do Cloudflare (origem fora do ar ou sem resposta) e manutenção.
-        return WclUnavailableError(detail, UNAVAILABLE_MESSAGE)
+        # 500–504, 52x do Cloudflare (origem fora do ar ou sem resposta) e manutenção (que
+        # pode trazer `Retry-After`).
+        return WclUnavailableError(detail, UNAVAILABLE_MESSAGE, retry_after_s=retry_after)
     if status == 403 and ("cf-mitigated" in response.headers or _is_html(response)):
         # Página de desafio/bloqueio do Cloudflare na frente da API.
         return WclUnavailableError(detail, BLOCKED_MESSAGE)
@@ -221,7 +231,7 @@ def _graphql_error(errors: list[Any], data: Any = None) -> WclError:
         return any(word in message for message in lowered for word in words)
 
     if mentions(RATE_LIMIT_ERRORS):
-        return WclUnavailableError(detail, rate_limit_message())
+        return WclUnavailableError(detail, rate_limit_message(), rate_limited=True)
     if mentions(OUTAGE_ERRORS):
         return WclUnavailableError(detail, UNAVAILABLE_MESSAGE)
     if mentions(QUERY_ERRORS):
