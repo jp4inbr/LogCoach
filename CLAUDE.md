@@ -2,7 +2,7 @@
 
 Trabalho A3 de Usabilidade de Software (Engenharia de Software, UNA). Web app que analisa o log de combate do World of Warcraft (Warcraft Logs) de um **Mago Arcano** e explica, em português, o que ele errou, comparando com os 10 melhores do mesmo item level.
 
-- **RT03: 28/10/2026** — meta: versão alfa rodando com o chefe Nek'zali (Mítico).
+- **RT03: 04/11/2026** (adiada pelo professor; era 28/10) — meta: versão alfa rodando com o chefe Nek'zali (Mítico).
 - **Banca final:** fim de novembro.
 - **Líder técnico e especialista do jogo:** Arthur (joga em inglês; produto sai em português).
 

@@ -46,7 +46,7 @@ O jogador cola o link do seu log de combate do Warcraft Logs e o LogCoach mostra
 |---|---|---|
 | RT01 — Ficha, ideia e escopo inicial | 09/09/2026 | 1, 2, 2.B |
 | RT02 — Requisitos, arquitetura e protótipo | 30/09/2026 | 2 (revisão), 3, 4, 5, 6, 7 |
-| RT03 — Consolidação, usabilidade e IA | 28/10/2026 | 8, 9, 10, 11, 12 + protótipo final |
+| RT03 — Consolidação, usabilidade e IA | 04/11/2026 (adiada pelo professor; era 28/10) | 8, 9, 10, 11, 12 + protótipo final |
 | Banca final | fim de nov/2026 | 13, 14 |
 
 > **Nota:** em 12/10/2026 o professor aprovou a troca do tema original (HIO) pelo LogCoach. Os itens 1 a 7 foram refeitos para o novo tema.
