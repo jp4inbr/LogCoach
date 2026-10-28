@@ -8,11 +8,10 @@
 |---|---|---|
 | Claude (Anthropic), no chat do claude.ai e como agente na IDE (Claude Code) | Desenvolvimento | Comparação de temas, escopo, pesquisa de mercado, rascunho da documentação, plano de tarefas, escrita de código e testes |
 | Gemini via Vertex AI (Google Cloud) | Dentro do produto | Explicar e priorizar os erros do jogador em português |
-| _outras (Copilot etc.), se usadas_ |  |  |
 
 ## 9.2 Como o Claude foi usado no desenvolvimento
 
-- Comparação entre o tema antigo (Central de Rotinas) e o LogCoach.
+- Comparação entre o tema antigo (HIO) e o LogCoach.
 - Pesquisa de mercado: ferramentas concorrentes, premiações (MDI, AWC), API do Warcraft Logs.
 - Rascunho da documentação retroativa (itens 1 a 7) e reorganização no formato deste GitBook.
 - Plano de tarefas da RT03.

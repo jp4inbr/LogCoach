@@ -1,3 +1,7 @@
+---
+description: Heurísticas de Nielsen aplicadas, validação de entradas e teste de usabilidade.
+---
+
 # 8. Relatório de Princípios de Usabilidade Aplicados
 
 > Entrega da RT03. Evidências da seção 8.1 a partir da alfa; resultados da seção 8.3 após o teste com usuários.
@@ -6,18 +10,18 @@
 
 As evidências são prints da alfa rodando (versão de 27/10/2026, relatório de exemplo do Nek'zali Mítico). As três heurísticas marcadas com "após o motor" aparecem na tela de resultado, cujos números mudam quando o motor de análise entrar; os prints delas serão tirados nessa versão.
 
-| Heurística | Onde aparece no LogCoach | Evidência (print) |
-|---|---|---|
-| Visibilidade do status do sistema | Barra de progresso em etapas durante a análise: "Buscando sua luta → Comparando com os melhores → Coach analisando" | [Figura 1](#figura-1-andamento-em-etapas) |
-| Correspondência com o mundo real | Interface em português, com os nomes do cliente do jogo em pt-BR ("Nek'zali, a Enrosca-almas", "Mítico", "Kill", "Wipe") | [Figura 2](#figura-2-escolher-a-luta) |
-| Controle e liberdade do usuário | Botões "← Trocar o link" e "← Escolher outra luta"; o voltar do navegador funciona em todas as telas | [Figura 3](#figura-3-voltar-sem-perder-o-caminho) |
-| Consistência e padrões | Mesmas cores e ícones para ok / atenção / erro nos erros, nas regras e nos avisos | _após o motor_ |
-| Prevenção de erros | Link conferido antes de enviar; lutas que não podem ser analisadas aparecem em cinza, com o motivo | [Figura 4](#figura-4-link-conferido-antes-de-enviar) e [Figura 2](#figura-2-escolher-a-luta) |
-| Reconhecer em vez de lembrar | O personagem da última análise (ou o único da luta) já vem marcado; os erros principais ficam no topo do resultado | [Figura 5](#figura-5-personagem-marcado-sozinho) |
-| Flexibilidade e eficiência | Atalho "Usar o log de exemplo" para quem não tem um log à mão; usuário frequente pula a escolha do personagem | [Figura 6](#figura-6-atalho-do-log-de-exemplo) e [Figura 5](#figura-5-personagem-marcado-sozinho) |
-| Design estético e minimalista | Resumo só com os erros de maior impacto; detalhes nas abas "Linha do tempo" e "Todas as regras" | _após o motor_ |
-| Ajudar a reconhecer e corrigir erros | Mensagens no próprio campo dizendo o que fazer; limite do plano com o caminho para resolver | [Figura 7](#figura-7-erros-mostrados-no-campo) e [Figura 8](#figura-8-limite-do-plano) |
-| Ajuda e documentação | Termos técnicos ("bracket", "tempo ativo", tabela por habilidade) com linha pontilhada e explicação ao passar o mouse ou tocar | _após o motor_ |
+| Heurística | Onde aparece no LogCoach | Evidência (print) | Tela no protótipo (item 3) |
+|---|---|---|---|
+| Visibilidade do status do sistema | Barra de progresso em etapas durante a análise: "Buscando sua luta → Comparando com os melhores → Coach analisando"; no perfil, uso do plano no mês | [Figura 1](#figura-1-andamento-em-etapas) | 4, 8 e 9 |
+| Correspondência com o mundo real | Interface em português, com os nomes do cliente do jogo em pt-BR ("Nek'zali, a Enrosca-almas", "Mítico", "Kill", "Wipe"); relatório do coach em linguagem simples | [Figura 2](#figura-2-escolher-a-luta) | 2, 4 e 5 |
+| Controle e liberdade do usuário | Botões "← Trocar o link" e "← Escolher outra luta"; o voltar do navegador funciona em todas as telas; no perfil, alterar a senha e excluir a conta | [Figura 3](#figura-3-voltar-sem-perder-o-caminho) | 3, 5 e 8 |
+| Consistência e padrões | Mesmas cores e ícones para ok / atenção / erro nos erros, nas regras, nos avisos e na linha do tempo; login no padrão e-mail e senha | _após o motor_ | 1, 6 e 7 |
+| Prevenção de erros | Link conferido antes de enviar; lutas que não podem ser analisadas aparecem em cinza, com o motivo; exclusão da conta em área vermelha, com confirmação e aviso de que não dá para desfazer; plano Pro marcado como "Em breve" | [Figura 4](#figura-4-link-conferido-antes-de-enviar) e [Figura 2](#figura-2-escolher-a-luta) | 2, 3, 8 e 9 |
+| Reconhecer em vez de lembrar | Cada luta identificada por chefe, número, duração e resultado; o personagem da última análise (ou o único da luta) já vem marcado; jogador e melhores lado a lado no mesmo eixo; os erros principais ficam no topo do resultado | [Figura 5](#figura-5-personagem-marcado-sozinho) | 3 e 6 |
+| Flexibilidade e eficiência | Atalho "Usar o log de exemplo" para quem não tem um log à mão; usuário frequente pula a escolha do personagem; "Nova análise" a um clique, direto do perfil | [Figura 6](#figura-6-atalho-do-log-de-exemplo) e [Figura 5](#figura-5-personagem-marcado-sozinho) | 2, 7 e 8 |
+| Design estético e minimalista | Resumo só com os erros de maior impacto; detalhes nas abas "Linha do tempo" e "Todas as regras"; login só com e-mail e senha; planos em dois cartões lado a lado | _após o motor_ | 1, 5 e 9 |
+| Ajudar a reconhecer e corrigir erros | Mensagens no próprio campo dizendo o que fazer; cada luta bloqueada explica o motivo; limite do plano com o caminho para resolver | [Figura 7](#figura-7-erros-mostrados-no-campo) e [Figura 8](#figura-8-limite-do-plano) | 3 |
+| Ajuda e documentação | Termos técnicos ("bracket", "tempo ativo", tabela por habilidade) com linha pontilhada e explicação ao passar o mouse ou tocar; "Como funciona" em três passos no início; quando ainda não há evolução para mostrar, o perfil diz o que fazer | _após o motor_ | 2, 7 e 8 |
 
 ### Figura 1: andamento em etapas
 
