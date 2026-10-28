@@ -60,9 +60,10 @@ barrage:
   # 1 Missiles + Prismatic Bolt antes do Barrage é o padrão sugerido pelo Arthur;
   # nos tops os dois padrões (1 ou 2 Missiles + Bolt) aparecem, então fica para a IA julgar.
   clearcasting_max: 3         # com 3 cargas, gastar 2 Missiles antes do Barrage evita perder proc
-  # Por que 12: o Barrage derruba 1 Meteorite a cada 5 Salvo (15 → 3, 20 → 4, 25 → 5), e cada
-  # Meteorite pode devolver Clearcasting (Abstração) → Missiles → mais Salvo (snowball). A chance
-  # de Prismatic Bolt é linear (2% por Salvo) e quase não muda com o momento do Barrage.
+  # Por que 12: snowball de procs. Todo hit de magia arcana (Missiles, Meteorite, Barrage...)
+  # pode dar Clearcasting, e o Barrage derruba 1 Meteorite a cada 5 Salvo (15 → 3, 20 → 4,
+  # 25 → 5): mais hits → mais Clearcasting → mais Missiles → mais Salvo. A chance de Prismatic
+  # Bolt tem os mesmos odds (linear, 2% por Salvo); o que tira Bolt é o Salvo estourar no cap.
   meteorites_per_salvo: 0.2   # 1 a cada 5 acúmulos (regra do Arthur; no log, mediana 5 com 25)
   meteorite_ids: [449569, 456139]
 

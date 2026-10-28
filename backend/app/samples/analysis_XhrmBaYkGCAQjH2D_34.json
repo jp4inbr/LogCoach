@@ -123,7 +123,7 @@
       "severity": "erro",
       "kind": "regra",
       "phase": null,
-      "explanation": "14,9% das suas Salvas Arcanas saíram com menos de 12 acúmulos de Salvo Arcano. Nos melhores do seu bracket isso acontece em 9,2% das vezes, em média. A Salva derruba 1 Meteorito a cada 5 acúmulos (15 → 3, 20 → 4, 25 → 5), e cada meteoro pode devolver Abstração, que vira Mísseis, que geram mais Salvo. Soltar cedo quebra esse ciclo.",
+      "explanation": "14,9% das suas Salvas Arcanas saíram com menos de 12 acúmulos de Salvo Arcano. Nos melhores do seu bracket isso acontece em 9,2% das vezes, em média. Todo acerto de magia arcana pode dar Abstração, e a Salva com mais Salvo derruba mais meteoros (1 a cada 5 acúmulos): mais acertos, mais Abstração, mais Mísseis, mais Salvo. Soltar cedo quebra esse ciclo.",
       "what_to_do": "Segure a Salva até ter pelo menos 12 acúmulos. Antes de soltar, gaste 1 Mísseis Arcanos e a Seta Prismática; com 3 cargas de Abstração, gaste 2 Mísseis para não perder carga nova.",
       "numbers": [
         {
