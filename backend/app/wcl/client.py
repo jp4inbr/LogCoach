@@ -16,6 +16,7 @@ from typing import Any
 import httpx
 
 from app.config import get_settings
+from app.errors import UNEXPECTED_ERROR_CODE
 
 logger = logging.getLogger(__name__)
 
@@ -55,6 +56,11 @@ query Events(
 }
 """
 
+
+# Códigos da API (item 12.3) para cada causa. Do Warcraft Logs (fora do ar, limite, lentidão):
+# 503, vale tentar de novo daqui a pouco. Nossos (consulta com defeito, credenciais do
+# servidor): 500, tentar de novo não resolve até alguém corrigir o LogCoach.
+WCL_UNAVAILABLE_CODE = "wcl_unavailable"
 
 # --- Mensagens ao usuário (item 8.2) ------------------------------------------
 # Dizem o que houve, de quem é o problema e o que fazer (heurística 9 de Nielsen).
@@ -114,13 +120,19 @@ class WclUnavailableError(WclError):
 
     Limite de pedidos (429), fora do ar (5xx, Cloudflare, manutenção, erro interno do
     GraphQL), timeout/erro de rede, resposta inválida ou credenciais do servidor
-    ausentes/recusadas. `user_message` é o texto pronto para o usuário (item 8.2), escolhido
-    aqui pela causa; a rota só repassa.
+    ausentes/recusadas. `user_message` é o texto pronto para o usuário (item 8.2) e
+    `error_code` o código da API, escolhidos aqui pela causa; a rota só repassa.
     """
 
-    def __init__(self, detail: str, user_message: str = UNAVAILABLE_MESSAGE) -> None:
+    def __init__(
+        self,
+        detail: str,
+        user_message: str = UNAVAILABLE_MESSAGE,
+        error_code: str = WCL_UNAVAILABLE_CODE,
+    ) -> None:
         super().__init__(detail)
         self.user_message = user_message
+        self.error_code = error_code
 
 
 # --- Classificação das respostas ------------------------------------------------
@@ -189,7 +201,7 @@ def _http_error(response: httpx.Response, what: str) -> WclError:
 def _config_error(detail: str) -> WclUnavailableError:
     # Problema nosso: vai para o log como erro, e o usuário só sabe que é configuração.
     logger.error("Configuração do Warcraft Logs: %s", detail)
-    return WclUnavailableError(detail, CONFIG_MESSAGE)
+    return WclUnavailableError(detail, CONFIG_MESSAGE, UNEXPECTED_ERROR_CODE)
 
 
 def _report_is_null(data: Any) -> bool:
@@ -215,7 +227,7 @@ def _graphql_error(errors: list[Any], data: Any = None) -> WclError:
     if mentions(QUERY_ERRORS):
         # Bug nosso (consulta desatualizada com o schema do WCL): tentar de novo não resolve.
         logger.error("Consulta ao Warcraft Logs com defeito: %s", detail[:BODY_LOG_CHARS])
-        return WclUnavailableError(detail, QUERY_MESSAGE)
+        return WclUnavailableError(detail, QUERY_MESSAGE, UNEXPECTED_ERROR_CODE)
     on_report = all(e.get("path") == REPORT_PATH for e in entries)
     if mentions(REPORT_ERRORS) or on_report or _report_is_null(data):
         # Privado ou inexistente: o WCL devolve `report: null` junto, no campo do report.

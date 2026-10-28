@@ -7,8 +7,10 @@ demo sem internet e fonte do CI). O "wcl" usa um cliente só por processo: ao co
 (e em "Atualizar lutas") busca só a lista de lutas (consulta leve) e, na luta escolhida, os
 Magos Arcanos dela; os dois ficam em cache (`ReportCache`). Quando o jogador fica definido,
 a pré-busca baixa em segundo plano os eventos da luta dele (`FightDataStore`), que o motor
-lê com `get_fight_data`. O analisador ainda é o de exemplo até o motor (frente C) ficar
-pronto; aí basta trocá-lo em `get_analyzer`.
+lê com `get_fight_data`; a pré-busca tem limite por cliente (`PrefetchLimiter`). O
+analisador ainda é o de exemplo até o motor (frente C) ficar pronto; aí basta trocá-lo em
+`get_analyzer`. O modo exemplo também tem os eventos do kill de referência
+(`app/samples/fight_*.json.gz`).
 """
 
 import copy
@@ -18,12 +20,12 @@ import logging
 import re
 import threading
 import time
-from collections import OrderedDict
+from collections import OrderedDict, deque
 from collections.abc import Callable, Hashable
 from concurrent.futures import Executor, Future, ThreadPoolExecutor
 from functools import lru_cache
 from pathlib import Path
-from typing import Any, Protocol
+from typing import Any, NamedTuple, Protocol
 
 import httpx
 import yaml
@@ -39,6 +41,7 @@ from app.schemas import (
 from app.wcl.client import (
     TIMEOUT_MESSAGE,
     UNAVAILABLE_MESSAGE,
+    WCL_UNAVAILABLE_CODE,
     WclClient,
     WclError,
     WclUnavailableError,
@@ -50,8 +53,6 @@ logger = logging.getLogger(__name__)
 
 APP_DIR = Path(__file__).resolve().parent.parent
 SAMPLES_DIR = APP_DIR / "samples"
-# Lutas completas do save_fixtures.py (kill de referência + top 10), com pseudônimos.
-FIXTURES_DIR = APP_DIR.parent / "tests" / "fixtures"
 ENCOUNTERS_DIR = APP_DIR / "encounters"
 PT_BR_FILE = APP_DIR / "i18n" / "pt_br.yaml"
 
@@ -67,6 +68,11 @@ UNSUPPORTED_DIFFICULTY_REASON = "Dificuldade ainda não suportada para esse chef
 IN_PROGRESS_REASON = (
     "A luta ainda está subindo para o Warcraft Logs. Ela fica disponível aqui assim que terminar."
 )
+# Pré-busca que estava na fila quando o servidor desligou (--reload, deploy).
+SHUTDOWN_MESSAGE = (
+    "O LogCoach está reiniciando e a busca dos eventos da luta foi interrompida. "
+    "Tente de novo em alguns instantes."
+)
 
 # Dificuldades de raide no Warcraft Logs, com os nomes do cliente pt-BR.
 DIFFICULTIES = {1: "Localizador", 3: "Normal", 4: "Heroico", 5: "Mítico", 10: "Mítica+"}
@@ -79,14 +85,27 @@ class ReportNotAvailableError(Exception):
 
 
 class SourceUnavailableError(Exception):
-    """O Warcraft Logs não atendeu (limite de pontos, fora do ar ou credenciais do servidor).
+    """O Warcraft Logs não atendeu (limite de pontos, fora do ar) ou o erro é nosso (consulta
+    com defeito, credenciais do servidor).
 
-    Problema nosso ou da API, não do relatório: o usuário só precisa tentar de novo depois.
+    Não é do relatório. `code` é o código do report; `user_message` e `error_code` vêm do
+    cliente do WCL, que sabe a causa: "wcl_unavailable" (tentar de novo depois resolve) ou
+    "unexpected_error" (só resolve corrigindo o LogCoach).
     """
 
-    def __init__(self, code: str, user_message: str = UNAVAILABLE_MESSAGE) -> None:
+    def __init__(
+        self,
+        code: str,
+        user_message: str = UNAVAILABLE_MESSAGE,
+        error_code: str = WCL_UNAVAILABLE_CODE,
+    ) -> None:
         super().__init__(code)
         self.user_message = user_message
+        self.error_code = error_code
+
+
+class PrefetchLimitError(Exception):
+    """O cliente passou do limite de pré-buscas novas (`PrefetchLimiter`)."""
 
 
 class AnalysisNotAvailableError(Exception):
@@ -106,8 +125,14 @@ class ReportSource(Protocol):
         """Luta completa do jogador, no formato de `wcl.fetch.fetch_fight` (item 12.8)."""
         ...
 
-    def prefetch(self, code: str, fight_id: int, actor_id: int) -> PrefetchState:
-        """Começa a baixar o `get_fight_data` em segundo plano, sem esperar."""
+    def prefetch(
+        self, code: str, fight_id: int, actor_id: int, client: Hashable | None = None
+    ) -> PrefetchState:
+        """Começa a baixar o `get_fight_data` em segundo plano, sem esperar.
+
+        `client` (usuário logado ou IP) limita as pré-buscas de quem pediu: uma só na fila
+        por cliente e no máximo `PREFETCH_LIMIT` novas por janela (`PrefetchLimitError`).
+        """
         ...
 
 
@@ -118,7 +143,8 @@ class Analyzer(Protocol):
     player.actor_id)` (a fonte entra pelo construtor, em `get_analyzer`). A luta completa
     custa ~12 pontos do Warcraft Logs (item 12.8), mas em geral já estará no cache: a tela
     chama a pré-busca (`POST /reports/{code}/fights/{id}/prefetch`) assim que o jogador fica
-    definido, e se ela ainda estiver baixando o motor espera essa mesma busca terminar.
+    definido. Se ela estiver baixando, o motor espera essa mesma busca terminar; se ainda
+    estiver na fila (atrás de outras), o motor busca ele mesmo, sem esperar a fila.
     """
 
     def analyze(
@@ -130,13 +156,13 @@ def _load(name: str) -> dict:
     return json.loads((SAMPLES_DIR / name).read_text(encoding="utf-8"))
 
 
-def reference_fixture(code: str, fight_id: int) -> Path | None:
-    """Arquivo do kill de referência em tests/fixtures/<bracket>/ (pelo index.json)."""
-    for index in sorted(FIXTURES_DIR.glob("*/index.json")):
-        reference = json.loads(index.read_text(encoding="utf-8")).get("reference") or {}
-        if reference.get("report") == code and reference.get("fight") == fight_id:
-            return index.parent / reference["file"]
-    return None
+def sample_fight_file(code: str, fight_id: int, actor_id: int) -> Path:
+    """Eventos de exemplo de uma luta em app/samples/ (hoje só o kill de referência).
+
+    Cópia da fixture anonimizada do save_fixtures.py (tests/fixtures/<bracket>/), que fica
+    aqui dentro para o plano B ir junto com o app num deploy (o pacote é só `app*`).
+    """
+    return SAMPLES_DIR / f"fight_{code}_{fight_id}_{actor_id}.json.gz"
 
 
 class SampleReportSource:
@@ -159,13 +185,13 @@ class SampleReportSource:
         return [PlayerOption.model_validate(p) for p in players]
 
     def get_fight_data(self, code: str, fight_id: int, actor_id: int) -> dict[str, Any]:
-        """A fixture do kill de referência (luta 34, Harmonist), se ela estiver na máquina."""
+        """Os eventos de exemplo do kill de referência (luta 34, Harmonist)."""
         self._data(code)  # outro código: ReportNotAvailableError
-        path = reference_fixture(code, fight_id)
-        if path is None or not path.exists():
+        path = sample_fight_file(code, fight_id, actor_id)
+        if not path.exists():
             raise FightDataNotAvailableError(
-                f"Sem eventos de exemplo para a luta {fight_id} de {code}: só o kill de "
-                "referência tem fixture (scripts/save_fixtures.py)."
+                f"Sem eventos de exemplo para o ator {actor_id} da luta {fight_id} de {code}: "
+                "só o kill de referência tem (scripts/save_fixtures.py)."
             )
         data = json.loads(gzip.decompress(path.read_bytes()))
         owner = data["player"]["actor"]["id"]
@@ -175,8 +201,10 @@ class SampleReportSource:
             )
         return data
 
-    def prefetch(self, code: str, fight_id: int, actor_id: int) -> PrefetchState:
-        # O arquivo é local: não há o que baixar antes.
+    def prefetch(
+        self, code: str, fight_id: int, actor_id: int, client: Hashable | None = None
+    ) -> PrefetchState:
+        # O arquivo é local: não há o que baixar antes (nem limite a aplicar).
         return "ready"
 
 
@@ -205,18 +233,24 @@ def npc_names_pt() -> dict[int, str]:
     return {int(k): v for k, v in (data.get("npcs") or {}).items()}
 
 
-def _fight_reason(fight: dict[str, Any], duration_s: float, encounter: dict | None) -> str | None:
-    # Luta ainda subindo (log ao vivo): a duração ainda vai mudar.
-    if fight.get("inProgress"):
-        return IN_PROGRESS_REASON
-    # Mesma ordem da rota /analyses: primeiro a duração, depois o chefe.
-    if duration_s < MIN_FIGHT_S:
-        return SHORT_FIGHT_REASON
+def _encounter_reason(fight: dict[str, Any], encounter: dict | None) -> str | None:
     if encounter is None:
         return UNSUPPORTED_BOSS_REASON
     if encounter["difficulties"] and fight.get("difficulty") not in encounter["difficulties"]:
         return UNSUPPORTED_DIFFICULTY_REASON
     return None
+
+
+def _fight_reason(fight: dict[str, Any], duration_s: float, encounter: dict | None) -> str | None:
+    # Luta ainda subindo (log ao vivo): chefe e dificuldade já são definitivos, a duração
+    # não. Chefe sem regras não fica "subindo" (terminaria cinza do mesmo jeito) e a
+    # duração parcial não vale como "curta": só a luta que seria suportada fica subindo.
+    if fight.get("inProgress"):
+        return _encounter_reason(fight, encounter) or IN_PROGRESS_REASON
+    # Mesma ordem da rota /analyses: primeiro a duração, depois o chefe.
+    if duration_s < MIN_FIGHT_S:
+        return SHORT_FIGHT_REASON
+    return _encounter_reason(fight, encounter)
 
 
 def build_report(
@@ -244,7 +278,7 @@ def build_report(
                 "duration_s": duration_s,
                 "supported": reason is None,
                 "unsupported_reason": reason,
-                "in_progress": bool(fight.get("inProgress")),
+                "in_progress": reason == IN_PROGRESS_REASON,
             }
         )
 
@@ -288,7 +322,8 @@ REPORT_CACHE_MAX = 128
 PLAYERS_CACHE_MAX = 1024
 # Colar o link ou "Atualizar lutas" com a lista de agora há pouco devolve a mesma lista,
 # sem gastar pontos (cliques repetidos, ou dois usuários da mesma raide ao mesmo tempo).
-REFRESH_MIN_INTERVAL_S = 15
+# Curto o bastante para quem acabou de ver a luta terminar não receber a lista de antes.
+REFRESH_MIN_INTERVAL_S = 8
 # Eventos de uma luta (pré-busca e motor). O kill de referência (6:55) tem ~1,3 MB de JSON
 # e ocupa ~4,5 MB na memória do Python; luta longa passa disso. O cache só precisa cobrir o
 # caminho "escolher a luta → analisar" (segundos ou minutos) e uma análise repetida da
@@ -301,6 +336,13 @@ FIGHT_DATA_WAIT_S = 180
 # Pré-buscas ao mesmo tempo (threads do processo). Duas bastam para a versão alfa e seguram
 # o gasto de pontos e de memória se muitos escolherem luta juntos; o resto espera na fila.
 PREFETCH_WORKERS = 2
+# Pré-buscas novas por cliente (usuário logado ou IP) na janela: ~12 pontos cada, então 10
+# em 10 min são ~120 pontos, um oitavo dos 1000/h do LogCoach inteiro. Quem troca de jogador
+# ou de luta algumas vezes não chega perto; quem clica em tudo não esgota os pontos de todos.
+PREFETCH_LIMIT = 10
+PREFETCH_WINDOW_S = 10 * 60
+# Acima disso, o limitador esquece quem não pediu nada na última janela.
+PREFETCH_CLIENTS_MAX = 10_000
 
 
 class ReportCache:
@@ -334,8 +376,11 @@ class ReportCache:
                 return None
             if max_age_s is not None and age >= max_age_s:
                 return None
-            # Cópia: quem recebe pode mexer no objeto sem estragar o que está guardado.
-            return copy.deepcopy(item[1])
+            value = item[1]
+        # Cópia, para quem recebe poder mexer no objeto sem estragar o guardado, e fora do
+        # lock: os eventos de uma luta (~4,5 MB) não podem travar as outras rotas. O guardado
+        # nunca é alterado, então copiar sem o lock é seguro.
+        return copy.deepcopy(value)
 
     def has(self, key: Hashable) -> bool:
         """Se há valor válido, sem copiar (os eventos de uma luta são MB)."""
@@ -346,10 +391,13 @@ class ReportCache:
                 item = None
             return item is not None
 
-    def put(self, key: Hashable, value: Any) -> None:
+    def put(self, key: Hashable, value: Any, copied: bool = False) -> None:
+        """Guarda uma cópia de `value`, feita fora do lock. `copied`: `value` já é uma cópia
+        só do cache, que ninguém mais altera."""
+        stored = value if copied else copy.deepcopy(value)
         with self._lock:
             self._items.pop(key, None)
-            self._items[key] = (self._clock(), copy.deepcopy(value))
+            self._items[key] = (self._clock(), stored)
             while len(self._items) > self._max_items:
                 self._items.popitem(last=False)  # o mais antigo
 
@@ -361,17 +409,47 @@ class ReportCache:
 Fetch = Callable[[], tuple[Any, bool]]
 
 
+class FightKey(NamedTuple):
+    """Chave dos eventos de uma luta no `FightDataStore`."""
+
+    code: str
+    fight_id: int
+    actor_id: int
+
+
+def _report_code(key: Hashable) -> str:
+    # O código do report para as mensagens de erro (os testes usam chaves simples).
+    return getattr(key, "code", None) or str(key)
+
+
+class _Flight:
+    """Uma busca de uma chave: na fila do executor (pré-busca) ou baixando."""
+
+    __slots__ = ("future", "claimed", "job", "clients")
+
+    def __init__(self) -> None:
+        self.future: Future = Future()  # quem espera a busca lê daqui
+        # Alguém já assumiu a busca (a thread da pré-busca ou quem precisa dos dados), ou ela
+        # saiu da fila. Enquanto falso, a busca está só na fila.
+        self.claimed = False
+        self.job: Future | None = None  # a tarefa no executor, enquanto está na fila
+        self.clients: set[Hashable] = set()  # quem pediu essa pré-busca, enquanto na fila
+
+
 class FightDataStore:
     """Eventos de luta já baixados (cache) e os que estão baixando agora (single-flight).
 
     Uma busca por chave de cada vez: quem pede o que já está baixando espera essa busca em
-    vez de baixar de novo. Falha não entra no cache (o próximo pedido tenta de novo); quem
-    estava esperando recebe o mesmo erro.
+    vez de baixar de novo. A pré-busca que ainda está na fila (atrás de outras) não segura
+    ninguém: quem precisa dos dados assume a busca e baixa na hora. Cada cliente tem no
+    máximo uma pré-busca na fila; uma nova dele tira a anterior da fila. Falha não entra no
+    cache (o próximo pedido tenta de novo); quem estava esperando recebe o mesmo erro.
     """
 
     def __init__(self, cache: ReportCache | None = None) -> None:
         self._cache = ReportCache(max_items=FIGHT_DATA_CACHE_MAX) if cache is None else cache
-        self._running: dict[Hashable, Future] = {}
+        self._running: dict[Hashable, _Flight] = {}
+        self._queued: dict[Hashable, Hashable] = {}  # cliente → chave da pré-busca na fila
         self._lock = threading.Lock()
 
     def get(self, key: Hashable, fetch: Fetch, wait_s: float = FIGHT_DATA_WAIT_S) -> Any:
@@ -383,58 +461,158 @@ class FightDataStore:
             value = self._cache.get(key)
             if value is not None:
                 return value
+            job = None
             with self._lock:
-                future = self._running.get(key)
-                owner = future is None and not self._cache.has(key)
-                if owner:
-                    future = self._running[key] = Future()
+                flight = self._running.get(key)
+                if flight is None:
+                    if self._cache.has(key):
+                        continue  # entrou no cache entre a leitura e o lock: lê de novo
+                    flight = self._running[key] = _Flight()
+                    flight.claimed = owner = True
+                elif not flight.claimed:
+                    # Pré-busca ainda na fila: busca aqui, sem esperar as que estão na frente.
+                    job = self._claim(key, flight)
+                    owner = True
+                else:
+                    owner = False
             if owner:
-                return self._run(key, future, fetch)
-            if future is not None:
-                try:
-                    return copy.deepcopy(future.result(timeout=wait_s))
-                except TimeoutError:
-                    raise SourceUnavailableError(str(key), TIMEOUT_MESSAGE) from None
-            # Entrou no cache entre a leitura e o lock: lê de novo.
+                if job is not None:
+                    job.cancel()  # libera o lugar na fila (fora do lock: chama o callback)
+                return self._run(key, flight, fetch)
+            try:
+                return copy.deepcopy(flight.future.result(timeout=wait_s))
+            except TimeoutError:
+                raise SourceUnavailableError(_report_code(key), TIMEOUT_MESSAGE) from None
 
-    def start(self, key: Hashable, fetch: Fetch, executor: Executor) -> PrefetchState:
-        """Começa a busca em segundo plano, se ela não está no cache nem baixando."""
+    def start(
+        self,
+        key: Hashable,
+        fetch: Fetch,
+        executor: Executor,
+        client: Hashable | None = None,
+        admit: Callable[[], bool] | None = None,
+    ) -> PrefetchState:
+        """Põe a busca na fila do executor, se ela não está no cache nem baixando.
+
+        `admit` é chamado só quando a busca seria nova ("ready" e "running" não gastam
+        pontos); se ele negar, levanta `PrefetchLimitError` sem mexer em nada.
+        """
         with self._lock:
             if self._cache.has(key):
                 return "ready"
-            if key in self._running:
-                return "running"
-            future = self._running[key] = Future()
+            flight = self._running.get(key)
+            if flight is None and admit is not None and not admit():
+                raise PrefetchLimitError(_report_code(key))
+            dropped = self._leave_queue(client, key)
+            if flight is not None:
+                state: PrefetchState = "running"
+                self._join_queue(client, key, flight)
+            else:
+                state = "started"
+                flight = self._running[key] = _Flight()
+                self._join_queue(client, key, flight)
+        if dropped is not None:
+            dropped.cancel()
+        if state == "running":
+            return state
         try:
-            executor.submit(self._background, key, future, fetch)
+            job = executor.submit(self._background, key, flight, fetch)
         except RuntimeError as exc:  # executor já desligado (app saindo)
-            self._fail(key, future, exc)
+            with self._lock:
+                mine = not flight.claimed  # se alguém já assumiu, a busca é dele
+                if mine:
+                    self._claim(key, flight)
+                    self._forget(key, flight)
+            if mine:
+                flight.future.set_exception(exc)
             raise
-        return "started"
+        with self._lock:
+            # Alguém pode ter assumido (ou tirado da fila) antes de a tarefa existir.
+            cancel = flight.claimed
+            if not cancel:
+                flight.job = job
+        if cancel:
+            job.cancel()
+        else:
+            job.add_done_callback(lambda done: self._job_done(key, flight, done))
+        return state
 
-    def _run(self, key: Hashable, future: Future, fetch: Fetch) -> Any:
+    def _join_queue(self, client: Hashable | None, key: Hashable, flight: _Flight) -> None:
+        if client is not None and not flight.claimed:
+            flight.clients.add(client)
+            self._queued[client] = key
+
+    def _leave_queue(self, client: Hashable | None, key: Hashable) -> Future | None:
+        """Tira o cliente da pré-busca dele que está na fila, se for de outra chave. Sem mais
+        ninguém pedindo, ela sai da fila; devolve a tarefa para cancelar fora do lock."""
+        old = self._queued.get(client) if client is not None else None
+        if old is None or old == key:
+            return None
+        del self._queued[client]
+        flight = self._running.get(old)
+        if flight is None or flight.claimed:
+            return None
+        flight.clients.discard(client)
+        if flight.clients:
+            return None  # outro cliente também pediu essa luta
+        job = self._claim(old, flight)
+        self._forget(old, flight)
+        flight.future.cancel()  # ninguém espera busca da fila (quem precisa assume)
+        return job
+
+    def _claim(self, key: Hashable, flight: _Flight) -> Future | None:
+        """Marca a busca como assumida e tira da fila (com o lock). Devolve a tarefa."""
+        flight.claimed = True
+        for client in flight.clients:
+            if self._queued.get(client) == key:
+                del self._queued[client]
+        flight.clients.clear()
+        job, flight.job = flight.job, None
+        return job
+
+    def _forget(self, key: Hashable, flight: _Flight) -> None:
+        if self._running.get(key) is flight:
+            del self._running[key]
+
+    def _job_done(self, key: Hashable, flight: _Flight, job: Future) -> None:
+        """Tarefa cancelada na fila (desligamento com `cancel_futures`): a busca falha, para
+        ninguém ficar esperando por ela e o próximo pedido buscar de novo."""
+        if not job.cancelled():
+            return
+        with self._lock:
+            if flight.claimed:
+                return  # alguém assumiu ou ela já saiu da fila
+            self._claim(key, flight)
+            self._forget(key, flight)
+        flight.future.set_exception(SourceUnavailableError(_report_code(key), SHUTDOWN_MESSAGE))
+
+    def _run(self, key: Hashable, flight: _Flight, fetch: Fetch) -> Any:
         try:
             value, cacheable = fetch()
         except BaseException as exc:
-            self._fail(key, future, exc)
+            with self._lock:
+                self._forget(key, flight)
+            flight.future.set_exception(exc)
             raise
+        # Uma cópia só do cache e de quem esperava (cada um copia de novo), feita fora do
+        # lock; quem buscou fica com o original.
+        stored = copy.deepcopy(value)
         with self._lock:
             # Primeiro no cache, depois sai de "baixando": quem chega no meio acha um dos dois.
             if cacheable:
-                self._cache.put(key, value)
-            self._running.pop(key, None)
-        future.set_result(value)
+                self._cache.put(key, stored, copied=True)
+            self._forget(key, flight)
+        flight.future.set_result(stored)
         return value
 
-    def _fail(self, key: Hashable, future: Future, exc: BaseException) -> None:
+    def _background(self, key: Hashable, flight: _Flight, fetch: Fetch) -> None:
         with self._lock:
-            self._running.pop(key, None)
-        future.set_exception(exc)
-
-    def _background(self, key: Hashable, future: Future, fetch: Fetch) -> None:
+            if flight.claimed:
+                return  # quem precisava dos dados já assumiu, ou ela saiu da fila
+            self._claim(key, flight)
         # Na pré-busca ninguém espera a resposta: a falha só fica no log.
         try:
-            self._run(key, future, fetch)
+            self._run(key, flight, fetch)
         except (ReportNotAvailableError, SourceUnavailableError, AnalysisNotAvailableError) as exc:
             logger.warning("Pré-busca de %s falhou (o próximo pedido tenta de novo): %r", key, exc)
         except Exception:
@@ -444,10 +622,56 @@ class FightDataStore:
         self._cache.clear()
 
 
+class PrefetchLimiter:
+    """Pré-buscas novas por cliente numa janela deslizante (em memória do processo).
+
+    "Cliente" é o usuário logado ou, sem login, o IP do pedido (atrás de um proxy reverso,
+    o IP é o do proxy e todos os anônimos dividem o limite).
+    """
+
+    def __init__(
+        self,
+        max_calls: int = PREFETCH_LIMIT,
+        window_s: float = PREFETCH_WINDOW_S,
+        clock: Callable[[], float] = time.monotonic,
+    ) -> None:
+        self._max_calls = max_calls
+        self._window_s = window_s
+        self._clock = clock
+        self._calls: dict[Hashable, deque[float]] = {}
+        self._lock = threading.Lock()
+
+    def take(self, client: Hashable | None) -> bool:
+        """Conta uma pré-busca nova do cliente, se ele ainda tem; sem cliente, sempre pode."""
+        if client is None:
+            return True
+        with self._lock:
+            now = self._clock()
+            calls = self._calls.setdefault(client, deque())
+            while calls and now - calls[0] >= self._window_s:
+                calls.popleft()
+            if len(calls) >= self._max_calls:
+                return False
+            calls.append(now)
+            if len(self._calls) > PREFETCH_CLIENTS_MAX:
+                self._prune(now)
+            return True
+
+    def _prune(self, now: float) -> None:
+        # Muitos clientes: esquece quem não pede nada há uma janela inteira.
+        for client in [c for c, calls in self._calls.items() if now - calls[-1] >= self._window_s]:
+            del self._calls[client]
+
+    def clear(self) -> None:
+        with self._lock:
+            self._calls.clear()
+
+
 # Um de cada por processo, como o cliente do WCL. Os testes limpam com `.clear()`.
 report_cache = ReportCache()
 players_cache = ReportCache(max_items=PLAYERS_CACHE_MAX)
 fight_data_store = FightDataStore()
+prefetch_limiter = PrefetchLimiter()
 
 # Threads da pré-busca: do processo, e não o BackgroundTasks do FastAPI, porque a busca
 # (dezenas de segundos) não deve ocupar as threads das rotas síncronas, não depende do
@@ -468,15 +692,17 @@ def prefetch_executor() -> ThreadPoolExecutor:
 
 
 def shutdown_prefetch() -> None:
-    """Espera as pré-buscas e desliga o executor (desligamento do app e testes).
+    """Desliga o executor da pré-busca (desligamento do app e testes).
 
-    As da fila também rodam até o fim: ninguém fica esperando uma busca cancelada.
+    As da fila são canceladas (com `--reload` ou SIGTERM, rodar a fila inteira levaria
+    minutos) e falham com `SHUTDOWN_MESSAGE` no store: quem esperasse por elas recebe erro
+    em vez de travar. Só as que já estão baixando (no máximo PREFETCH_WORKERS) terminam.
     """
     global _prefetch_executor
     with _prefetch_lock:
         executor, _prefetch_executor = _prefetch_executor, None
     if executor is not None:
-        executor.shutdown(wait=True)
+        executor.shutdown(wait=True, cancel_futures=True)
 
 
 class WclReportSource:
@@ -490,24 +716,39 @@ class WclReportSource:
         players: ReportCache | None = None,
         fight_data: FightDataStore | None = None,
         executor_factory: Callable[[], Executor] = prefetch_executor,
+        limiter: PrefetchLimiter | None = None,
     ) -> None:
         self._client_factory = client_factory
         self._cache = report_cache if cache is None else cache
         self._players = players_cache if players is None else players
         self._fight_data = fight_data_store if fight_data is None else fight_data
         self._executor_factory = executor_factory
+        self._limiter = prefetch_limiter if limiter is None else limiter
 
     def get_report(self, code: str, refresh: bool = False) -> ReportResolved:
-        """Lista de lutas. `refresh` busca de novo (lutas novas de um log ao vivo); se a
-        busca falhar, o que estava no cache continua lá."""
+        """Lista de lutas. `refresh` busca de novo (lutas novas de um log ao vivo).
+
+        Se a busca falhar com o Warcraft Logs fora do ar (ou erro nosso) e houver lista no
+        cache, devolve a guardada com `stale` e a mensagem do erro: o usuário continua
+        escolhendo a luta. Sem lista guardada, o erro sobe.
+        """
         cached = self._cache.get(code, REFRESH_MIN_INTERVAL_S if refresh else None)
         if cached is not None:
             return cached
-        report, from_api = self._ask(
-            code,
-            lambda client: ReportResolved.model_validate(build_report(fetch_report(client, code))),
-            lambda: SampleReportSource().get_report(code),
-        )
+        try:
+            report, from_api = self._ask(
+                code,
+                lambda client: ReportResolved.model_validate(
+                    build_report(fetch_report(client, code))
+                ),
+                lambda: SampleReportSource().get_report(code),
+            )
+        except SourceUnavailableError as exc:
+            stale = self._cache.get(code)
+            if stale is None:
+                raise
+            stale.stale, stale.stale_message = True, exc.user_message
+            return stale
         if from_api:
             self._cache.put(code, report)
         return report
@@ -535,17 +776,22 @@ class WclReportSource:
 
     def get_fight_data(self, code: str, fight_id: int, actor_id: int) -> dict[str, Any]:
         """Luta completa do jogador (`wcl.fetch.fetch_fight`, ~12 pontos), uma vez por
-        (código, luta, jogador). Se a pré-busca dela está baixando, espera essa busca."""
+        (código, luta, jogador). Se a pré-busca dela está baixando, espera essa busca; se
+        ainda está na fila, busca aqui."""
         return self._fight_data.get(
-            (code, fight_id, actor_id), self._fight_fetch(code, fight_id, actor_id)
+            FightKey(code, fight_id, actor_id), self._fight_fetch(code, fight_id, actor_id)
         )
 
-    def prefetch(self, code: str, fight_id: int, actor_id: int) -> PrefetchState:
-        """Começa a baixar a luta do jogador em segundo plano e responde na hora."""
+    def prefetch(
+        self, code: str, fight_id: int, actor_id: int, client: Hashable | None = None
+    ) -> PrefetchState:
+        """Põe a luta do jogador na fila de pré-busca e responde na hora."""
         return self._fight_data.start(
-            (code, fight_id, actor_id),
+            FightKey(code, fight_id, actor_id),
             self._fight_fetch(code, fight_id, actor_id),
             self._executor_factory(),
+            client=client,
+            admit=lambda: self._limiter.take(client),
         )
 
     def _fight_fetch(self, code: str, fight_id: int, actor_id: int) -> Fetch:
@@ -576,7 +822,8 @@ class WclReportSource:
                 return sample(), False
             if unavailable:
                 message = getattr(exc, "user_message", UNAVAILABLE_MESSAGE)
-                raise SourceUnavailableError(code, message) from exc
+                error_code = getattr(exc, "error_code", WCL_UNAVAILABLE_CODE)
+                raise SourceUnavailableError(code, message, error_code) from exc
             # Privado ou inexistente: a API respondeu, mas sem o report.
             raise ReportNotAvailableError(code) from exc
 

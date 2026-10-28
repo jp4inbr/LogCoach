@@ -4,13 +4,11 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends
 
-from app.api.deps import OptionalUserDep, SessionDep
+from app.api.deps import OptionalUserDep, SessionDep, check_plan_limit
 from app.api.reports import ReportSourceDep, load_fight, load_player
-from app.config import get_settings
 from app.errors import api_error
 from app.models import Analysis
 from app.schemas import AnalysisOut, AnalysisRequest, AnalysisResult
-from app.services.plan import analyses_this_month
 from app.services.sources import AnalysisNotAvailableError, Analyzer, get_analyzer
 
 router = APIRouter(prefix="/analyses", tags=["análises"])
@@ -41,13 +39,7 @@ def create_analysis(
     # Só os Magos Arcanos da luta: id de fora dela ou de outra spec cai aqui.
     player = load_player(source, report, fight, data.actor_id)
 
-    limit = get_settings().free_monthly_limit
-    if user is not None and analyses_this_month(session, user.id) >= limit:
-        raise api_error(
-            403,
-            "plan_limit",
-            f"Você usou suas {limit} análises do mês. Veja o plano Pro.",
-        )
+    check_plan_limit(session, user)
 
     try:
         result = analyzer.analyze(report, fight, player)

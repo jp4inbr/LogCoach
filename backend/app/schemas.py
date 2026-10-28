@@ -87,6 +87,10 @@ class ReportResolved(BaseModel):
     # Quando a lista foi lida do Warcraft Logs (UTC); a tela mostra "lista de 21:04".
     fetched_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     fights: list[FightOption]
+    # Lista guardada: a busca nova falhou (Warcraft Logs fora do ar, limite de pontos ou erro
+    # nosso) e veio a última lista lida, de `fetched_at`. `stale_message` diz o porquê.
+    stale: bool = False
+    stale_message: str | None = None
 
 
 class FightPlayers(BaseModel):
@@ -102,7 +106,8 @@ class PrefetchRequest(BaseModel):
     actor_id: int
 
 
-# started: a busca começou agora; running: já estava em andamento; ready: já está no cache.
+# started: a busca entrou na fila agora; running: já estava na fila ou baixando; ready: já
+# está no cache.
 PrefetchState = Literal["started", "running", "ready"]
 
 

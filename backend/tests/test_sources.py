@@ -8,6 +8,7 @@ import httpx
 import pytest
 
 from app.config import Settings, get_settings
+from app.services import sources
 from app.services.sources import (
     IN_PROGRESS_REASON,
     REFRESH_MIN_INTERVAL_S,
@@ -16,6 +17,7 @@ from app.services.sources import (
     UNSUPPORTED_BOSS_REASON,
     UNSUPPORTED_DIFFICULTY_REASON,
     FightDataStore,
+    PrefetchLimiter,
     ReportCache,
     ReportNotAvailableError,
     SampleReportSource,
@@ -25,10 +27,17 @@ from app.services.sources import (
     fight_data_store,
     get_report_source,
     players_cache,
+    prefetch_limiter,
     report_cache,
     shutdown_prefetch,
 )
-from app.wcl.client import TOKEN_URL, WclClient, WclUnavailableError, close_shared_client
+from app.wcl.client import (
+    QUERY_MESSAGE,
+    TOKEN_URL,
+    WclClient,
+    WclUnavailableError,
+    close_shared_client,
+)
 from app.wcl.fetch import fetch_report
 
 NEKZALI = 3470
@@ -36,20 +45,34 @@ NEKZALI = 3470
 
 @pytest.fixture(autouse=True)
 def fresh_wcl_state():
-    """Caches, pré-buscas e cliente do processo zerados: nada vaza de um teste para outro.
+    """Caches, pré-buscas, limite e cliente do processo zerados: nada vaza entre testes.
 
     `shutdown_prefetch` espera as threads da pré-busca terminarem: nenhuma fica solta.
     """
     report_cache.clear()
     players_cache.clear()
     fight_data_store.clear()
+    prefetch_limiter.clear()
     close_shared_client()
     yield
     shutdown_prefetch()
     report_cache.clear()
     players_cache.clear()
     fight_data_store.clear()
+    prefetch_limiter.clear()
     close_shared_client()
+
+
+def wait_prefetch() -> None:
+    """Espera a fila de pré-busca do processo rodar até o fim e desliga o executor.
+
+    O `shutdown_prefetch` cancela o que está na fila (desligamento do app); aqui o teste
+    quer que a pré-busca aconteça.
+    """
+    with sources._prefetch_lock:
+        executor, sources._prefetch_executor = sources._prefetch_executor, None
+    if executor is not None:
+        executor.shutdown(wait=True)
 
 
 def nekzali(fight_id: int, start: int, end: int, **extra) -> dict:
@@ -163,16 +186,24 @@ class FakeWcl:
         return WclClient("id", "secret", transport=httpx.MockTransport(self.handler))
 
     def source(
-        self, cache: ReportCache | None = None, fight_data: FightDataStore | None = None
+        self,
+        cache: ReportCache | None = None,
+        fight_data: FightDataStore | None = None,
+        executor=None,
+        limiter: PrefetchLimiter | None = None,
     ) -> WclReportSource:
-        # Caches próprios por padrão: cada FakeWcl é uma API nova. A pré-busca usa o
-        # executor do processo, que o `fresh_wcl_state` desliga no fim de cada teste.
+        # Caches e limite próprios por padrão: cada FakeWcl é uma API nova. A pré-busca usa
+        # o executor do processo (que o `fresh_wcl_state` desliga no fim de cada teste), a
+        # menos que o teste passe o dele.
         client = self.client()
+        extra = {} if executor is None else {"executor_factory": lambda: executor}
         return WclReportSource(
             client_factory=lambda: client,
             cache=ReportCache() if cache is None else cache,
             players=ReportCache(),
             fight_data=FightDataStore() if fight_data is None else fight_data,
+            limiter=PrefetchLimiter() if limiter is None else limiter,
+            **extra,
         )
 
 
@@ -290,6 +321,35 @@ def test_fight_still_uploading_is_not_supported():
     # A tela mostra a luta subindo diferente das não suportadas e atualiza sozinha.
     assert fights[1].in_progress is True
     assert [f.in_progress for f in fights if f.id != 2] == [False, False, False]
+
+
+def test_fight_still_uploading_with_few_seconds_is_not_short():
+    # A duração parcial (41 s até agora) ainda vai crescer: o motivo é estar subindo.
+    report = copy.deepcopy(REPORT)
+    report["fights"][0]["inProgress"] = True
+
+    fight = source_for(report).get_report("TESTE123").fights[0]
+
+    assert (fight.in_progress, fight.unsupported_reason) == (True, IN_PROGRESS_REASON)
+
+
+@pytest.mark.parametrize(
+    ("fight_id", "reason"),
+    [(3, UNSUPPORTED_BOSS_REASON), (4, UNSUPPORTED_DIFFICULTY_REASON)],
+)
+def test_unsupported_fight_still_uploading_is_not_marked_as_uploading(fight_id, reason):
+    # Outro chefe ou Nek'zali Normal terminariam cinza de qualquer jeito: nada de "subindo".
+    report = copy.deepcopy(REPORT)
+    for fight in report["fights"]:
+        fight["inProgress"] = True
+        if fight["id"] == fight_id:
+            fight["endTime"] = fight["startTime"] + 20_000  # poucos segundos até agora
+
+    fight = next(f for f in source_for(report).get_report("TESTE123").fights if f.id == fight_id)
+
+    assert fight.in_progress is False
+    assert fight.supported is False
+    assert fight.unsupported_reason == reason
 
 
 def test_boss_without_rules_is_not_supported():
@@ -555,19 +615,99 @@ def test_refresh_right_after_a_fetch_uses_the_cache():
     assert wcl.calls == ["ReportFights", "ReportFights"]
 
 
-def test_failed_refresh_keeps_the_cached_list():
+def test_refresh_interval_is_short():
+    # Quem acabou de ver a luta terminar e cola o link não pode receber a lista de antes.
+    assert REFRESH_MIN_INTERVAL_S == 8
+
+
+def test_failed_refresh_returns_the_cached_list_as_stale():
+    now = [0.0]
+    wcl = FakeWcl()
+    source = wcl.source(cache=ReportCache(clock=lambda: now[0]))
+    first = source.get_report("TESTE123")
+
+    wcl.status = 503
+    now[0] = 120
+    stale = source.get_report("TESTE123", refresh=True)
+
+    assert [f.id for f in stale.fights] == [1, 2, 3, 4]
+    assert stale.stale is True
+    assert "fora do ar" in stale.stale_message
+    assert stale.fetched_at == first.fetched_at  # hora da lista guardada
+    assert (first.stale, first.stale_message) == (False, None)
+    # O guardado não vira "stale": a lista do cache continua como veio da API.
+    assert source.get_report("TESTE123").stale is False
+    assert wcl.calls == ["ReportFights", "ReportFights"]
+
+
+def test_failed_refresh_with_rate_limit_brings_its_message():
     now = [0.0]
     wcl = FakeWcl()
     source = wcl.source(cache=ReportCache(clock=lambda: now[0]))
     source.get_report("TESTE123")
 
-    wcl.status = 503
+    wcl.status = 429
     now[0] = 120
-    with pytest.raises(SourceUnavailableError):
-        source.get_report("TESTE123", refresh=True)
 
-    assert [f.id for f in source.get_report("TESTE123").fights] == [1, 2, 3, 4]
-    assert wcl.calls == ["ReportFights", "ReportFights"]
+    assert "limitando os pedidos" in source.get_report("TESTE123", refresh=True).stale_message
+
+
+def test_failed_fetch_without_cached_list_raises():
+    with pytest.raises(SourceUnavailableError):
+        FakeWcl(status=503).source().get_report("TESTE123", refresh=True)
+
+
+def test_report_gone_private_is_not_stale():
+    # A API respondeu (sem o report): não é falha do WCL, então nada de lista guardada.
+    now = [0.0]
+    cache = ReportCache(clock=lambda: now[0])
+    WclReportSource(
+        client_factory=lambda: fake_client(report_body(REPORT)), cache=cache, players=ReportCache()
+    ).get_report("TESTE123")
+    now[0] = 120
+
+    private = WclReportSource(
+        client_factory=lambda: fake_client(report_body(None)), cache=cache, players=ReportCache()
+    )
+    with pytest.raises(ReportNotAvailableError):
+        private.get_report("TESTE123", refresh=True)
+
+
+def test_broken_query_is_our_error_not_wcl_down():
+    body = {"errors": [{"message": 'Cannot query field "x" on type "Report".'}]}
+    source = WclReportSource(
+        client_factory=lambda: fake_client(body), cache=ReportCache(), players=ReportCache()
+    )
+
+    with pytest.raises(SourceUnavailableError) as info:
+        source.get_report("TESTE123")
+
+    assert info.value.error_code == "unexpected_error"
+    assert info.value.user_message == QUERY_MESSAGE
+    assert str(info.value) == "TESTE123"
+
+
+class LockProbe:
+    """Valor que anota se algum dos locks estava preso quando foi copiado."""
+
+    def __init__(self, *locks) -> None:
+        self.locks = locks
+        self.locked_on_copy: list[bool] = []
+
+    def __deepcopy__(self, memo):
+        self.locked_on_copy.append(any(lock.locked() for lock in self.locks))
+        return self
+
+
+def test_cache_copies_outside_the_lock():
+    # Os eventos de uma luta são MB: copiar com o lock preso travaria as outras rotas.
+    cache = ReportCache()
+    probe = LockProbe(cache._lock)
+
+    cache.put("chave", probe)
+    cache.get("chave")
+
+    assert probe.locked_on_copy == [False, False]
 
 
 def test_cache_keeps_only_the_newest_reports():

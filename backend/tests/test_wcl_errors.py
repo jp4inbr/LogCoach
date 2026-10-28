@@ -425,3 +425,44 @@ def test_stuck_token_endpoint_does_not_queue_forever():
     finally:
         release.set()
         first.join()
+
+
+# --- Código da API: do Warcraft Logs (503) ou nosso (500) ----------------------------
+
+
+def error_code(client: WclClient) -> str:
+    error = raised(client)
+    assert isinstance(error, WclUnavailableError), error
+    return error.error_code
+
+
+@pytest.mark.parametrize(
+    "response",
+    [
+        httpx.Response(503, text="Service Unavailable"),
+        httpx.Response(429, json={}),
+        httpx.Response(200, json={"errors": [{"message": "Internal server error"}]}),
+    ],
+)
+def test_wcl_side_errors_are_wcl_unavailable(response):
+    # Tentar de novo daqui a pouco resolve: a tela oferece "Tentar de novo".
+    assert error_code(client_for(response)) == "wcl_unavailable"
+
+
+def test_broken_query_is_unexpected_error():
+    # Bug nosso: tentar de novo não resolve, então não sai como "Warcraft Logs fora do ar".
+    body = {"errors": [{"message": 'Cannot query field "x" on type "Report".'}]}
+
+    assert error_code(client_for(httpx.Response(200, json=body))) == "unexpected_error"
+
+
+def test_config_error_is_unexpected_error():
+    token = httpx.Response(401, json={"error": "invalid_client"})
+
+    assert error_code(client_for(httpx.Response(200, json={}), token=token)) == "unexpected_error"
+
+
+def test_unavailable_error_stays_compatible():
+    # Quem já cria `WclUnavailableError(detail, user_message)` continua com o código do WCL.
+    assert WclUnavailableError("x", "y").error_code == "wcl_unavailable"
+    assert WclUnavailableError("x").user_message == UNAVAILABLE_MESSAGE
