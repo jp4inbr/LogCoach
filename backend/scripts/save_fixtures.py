@@ -39,6 +39,13 @@ CLASS_NAME, SPEC_NAME = "Mage", "Arcane"
 TOP_N = 10
 
 FIXTURES = BACKEND / "tests" / "fixtures"
+# Cópia do kill de referência que o modo exemplo (plano B) lê; vai junto com o app.
+SAMPLE_FIGHT = (
+    BACKEND
+    / "app"
+    / "samples"
+    / f"fight_{REFERENCE['report']}_{REFERENCE['fight']}_{REFERENCE['actor_id']}.json.gz"
+)
 NAMES_FILE = FIXTURES / "names.local.json"
 RULES_FILE = BACKEND / "app" / "rules" / "arcane_mage.yaml"
 
@@ -103,6 +110,7 @@ def main() -> None:
         )
         names["reference_harmonist.json.gz"] = ref_names
         write_json(out_dir / "reference_harmonist.json.gz", ref_anon, args.force)
+        write_json(SAMPLE_FIGHT, ref_anon, force=True)  # mesma luta, mesmos bytes
         summarize("referência", ref, expected_ids)
 
         index_data: dict[str, Any] = {
