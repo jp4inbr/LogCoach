@@ -24,7 +24,8 @@ jobs:
       - name: Ruff (formatação)
         run: ruff format --check
       - name: Testes
-        run: pytest
+        # -v lista cada teste e --cov mostra a cobertura por arquivo (itens 10.3 e 11).
+        run: pytest -v --cov=app --cov-report=term
 
   frontend:
     runs-on: ubuntu-latest

@@ -8,20 +8,20 @@ description: Heurísticas de Nielsen aplicadas, validação de entradas e teste 
 
 ## 8.1 Heurísticas de Nielsen aplicadas
 
-As evidências são prints da alfa rodando (versão de 27/10/2026, relatório de exemplo do Nek'zali Mítico). As três heurísticas marcadas com "após o motor" aparecem na tela de resultado, cujos números mudam quando o motor de análise entrar; os prints delas serão tirados nessa versão.
+As evidências são prints da alfa rodando, com o relatório de exemplo do Nek'zali Mítico. As Figuras 1 a 8 são da versão de 27/10/2026; as Figuras 9 a 11, da tela de resultado na versão de 28/10/2026, com o exemplo refeito a partir do log real.
 
 | Heurística | Onde aparece no LogCoach | Evidência (print) | Tela no protótipo (item 3) |
 |---|---|---|---|
 | Visibilidade do status do sistema | Barra de progresso em etapas durante a análise: "Buscando sua luta → Comparando com os melhores → Coach analisando"; no perfil, uso do plano no mês | [Figura 1](#figura-1-andamento-em-etapas) | 4, 8 e 9 |
 | Correspondência com o mundo real | Interface em português, com os nomes do cliente do jogo em pt-BR ("Nek'zali, a Enrosca-almas", "Mítico", "Kill", "Wipe"); relatório do coach em linguagem simples | [Figura 2](#figura-2-escolher-a-luta) | 2, 4 e 5 |
 | Controle e liberdade do usuário | Botões "← Trocar o link" e "← Escolher outra luta"; o voltar do navegador funciona em todas as telas; no perfil, alterar a senha e excluir a conta | [Figura 3](#figura-3-voltar-sem-perder-o-caminho) | 3, 5 e 8 |
-| Consistência e padrões | Mesmas cores e ícones para ok / atenção / erro nos erros, nas regras, nos avisos e na linha do tempo; login no padrão e-mail e senha | _após o motor_ | 1, 6 e 7 |
+| Consistência e padrões | Mesmas cores e ícones para ok / atenção / erro nos erros, nas regras, nos avisos e na linha do tempo; login no padrão e-mail e senha | [Figura 9](#figura-9-mesmas-cores-em-todas-as-regras) | 1, 6 e 7 |
 | Prevenção de erros | Link conferido antes de enviar; lutas que não podem ser analisadas aparecem em cinza, com o motivo; exclusão da conta em área vermelha, com confirmação e aviso de que não dá para desfazer; plano Pro marcado como "Em breve" | [Figura 4](#figura-4-link-conferido-antes-de-enviar) e [Figura 2](#figura-2-escolher-a-luta) | 2, 3, 8 e 9 |
 | Reconhecer em vez de lembrar | Cada luta identificada por chefe, número, duração e resultado; o personagem da última análise (ou o único da luta) já vem marcado; jogador e melhores lado a lado no mesmo eixo; os erros principais ficam no topo do resultado | [Figura 5](#figura-5-personagem-marcado-sozinho) | 3 e 6 |
 | Flexibilidade e eficiência | Atalho "Usar o log de exemplo" para quem não tem um log à mão; usuário frequente pula a escolha do personagem; "Nova análise" a um clique, direto do perfil | [Figura 6](#figura-6-atalho-do-log-de-exemplo) e [Figura 5](#figura-5-personagem-marcado-sozinho) | 2, 7 e 8 |
-| Design estético e minimalista | Resumo só com os erros de maior impacto; detalhes nas abas "Linha do tempo" e "Todas as regras"; login só com e-mail e senha; planos em dois cartões lado a lado | _após o motor_ | 1, 5 e 9 |
+| Design estético e minimalista | Resumo só com os erros de maior impacto; detalhes nas abas "Linha do tempo" e "Todas as regras"; login só com e-mail e senha; planos em dois cartões lado a lado | [Figura 10](#figura-10-resumo-antes-dos-detalhes) | 1, 5 e 9 |
 | Ajudar a reconhecer e corrigir erros | Mensagens no próprio campo dizendo o que fazer; cada luta bloqueada explica o motivo; limite do plano com o caminho para resolver | [Figura 7](#figura-7-erros-mostrados-no-campo) e [Figura 8](#figura-8-limite-do-plano) | 3 |
-| Ajuda e documentação | Termos técnicos ("bracket", "tempo ativo", tabela por habilidade) com linha pontilhada e explicação ao passar o mouse ou tocar; "Como funciona" em três passos no início; quando ainda não há evolução para mostrar, o perfil diz o que fazer | _após o motor_ | 2, 7 e 8 |
+| Ajuda e documentação | Termos técnicos ("bracket", "tempo ativo", tabela por habilidade) com linha pontilhada e explicação ao passar o mouse ou tocar; "Como funciona" em três passos no início; quando ainda não há evolução para mostrar, o perfil diz o que fazer | [Figura 11](#figura-11-dica-ao-passar-o-mouse) | 2, 7 e 8 |
 
 ### Figura 1: andamento em etapas
 
@@ -56,6 +56,22 @@ Nomes em português e lutas fora do recorte em cinza, cada uma com o motivo ("A 
 ### Figura 8: limite do plano
 
 ![Aviso "A análise não foi concluída. Você usou suas 5 análises do mês. Veja o plano Pro." com o botão Ver planos](.gitbook/assets/8-1-erros-limite-plano.png)
+
+### Figura 9: mesmas cores em todas as regras
+
+Aba "Todas as regras": ok em verde, atenção em amarelo e erro em vermelho, sempre com ícone e texto, as mesmas cores dos cartões de erro e dos avisos.
+
+![Tabela "Todas as regras" com regra, valor do jogador, valor dos melhores e a situação em selos verdes, amarelos e vermelhos](.gitbook/assets/8-1-consistencia-regras.png)
+
+### Figura 10: resumo antes dos detalhes
+
+O resumo abre com o texto curto do coach e os erros do maior para o menor impacto; linha do tempo e tabelas completas ficam nas outras abas.
+
+![Aba Resumo com o resumo do coach e o primeiro erro, com quanto custou, o que fazer e os números lado a lado](.gitbook/assets/8-1-minimalista-resumo.png)
+
+### Figura 11: dica ao passar o mouse
+
+![Dica aberta sobre o termo "Top 10 do bracket": faixa de 3 níveis de item level do Warcraft Logs; você é comparado só com quem tem equipamento parecido](.gitbook/assets/8-1-ajuda-dica.png)
 
 ## 8.2 Validação de entradas e tratamento de erros
 

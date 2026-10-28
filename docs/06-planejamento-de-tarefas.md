@@ -4,15 +4,17 @@ description: Organização das tarefas e prazos do time.
 
 # 6. Planejamento de Tarefas (Cronograma)
 
-**Planilha de entregas:** controle de prazos mantido pelo Luiz.
+O grupo acompanha o trabalho em dois lugares, que se completam:
+
+**Planilha de entregas:** controle de prazos do grupo, mantido pelo Luiz.
 
 {% embed url="https://docs.google.com/spreadsheets/d/1usVGNxfKOdTOzPsQEzIczHR9qQlqXamn/edit?gid=2102548923#gid=2102548923" %}
 
-**Quadro oficial:** GitHub Projects do repositório (_link a adicionar_), com colunas *Backlog → A fazer → Fazendo → Revisão → Feito*.
+**Quadro de tarefas (GitHub Projects):** _link a adicionar_. Colunas *A fazer → Fazendo → Revisão → Feito*. Cada cartão é uma frente de trabalho; quem é responsável move o próprio cartão, e a frente concluída vai sozinha para *Feito* quando a issue é fechada.
 
-**Tarefas:** cada frente de trabalho é uma issue no GitHub, de #3 a #17, com responsável, situação e dependências: [issues com o rótulo `frente`](https://github.com/jp4inbr/LogCoach/issues?q=label%3Afrente). As concluídas ficam fechadas. O rótulo `RT03` marca o que é da entrega de 28/10 e `banca`, o que fica para o fim de novembro.
+**Detalhe de cada frente:** cada cartão do quadro é uma issue no GitHub, de #3 a #17, com responsável, situação e dependências: [issues com o rótulo `frente`](https://github.com/jp4inbr/LogCoach/issues?q=label%3Afrente). As concluídas ficam fechadas. O rótulo `RT03` marca o que é da entrega de 28/10 e `banca`, o que fica para o fim de novembro.
 
-**Meta da RT03 (28/10/2026):** versão alfa rodando com o 1º chefe (Nek'zali), documentação consolidada, relatório de IA, testes e roteiro da banca.
+**Meta da RT03 (04/11/2026, adiada pelo professor; era 28/10):** versão alfa rodando com o 1º chefe (Nek'zali), documentação consolidada, relatório de IA, testes e roteiro da banca.
 
 ## 6.1 Papéis
 
@@ -42,7 +44,7 @@ gantt
     title RT03 — LogCoach
     section Base
     Repositório, linters, CI          :2026-10-13, 2d
-    GitHub Projects                   :2026-10-13, 2d
+    Planilha e quadro de tarefas      :2026-10-13, 2d
     Docs RT01/RT02 no GitBook         :2026-10-14, 3d
     Chaves WCL + Google Cloud         :2026-10-13, 2d
     Dados de exemplo do Nek'zali      :2026-10-14, 3d
@@ -69,8 +71,9 @@ gantt
 |---|---|---|
 | Base | 13/10 – 16/10 | Repositório e CI, quadro, docs no GitBook, chaves de API, dados de exemplo, mapa do encontro Nek'zali, formulário, mockups 1–2 |
 | Construção | 17/10 – 23/10 | Regras da spec e do encontro, correlação, comparador por fase, IA, telas React, mockups 3–5, testes, diagramas apresentáveis, rascunho do relatório de IA |
-| Validação | 24/10 – 27/10 | Teste de usabilidade, roteiro da banca, documentação consolidada, ensaio |
-| Entrega | 28/10 | RT03 |
+| Validação | 24/10 – 27/10 | Documentação consolidada, evidências de usabilidade, testes e métricas |
+| Ajuste (prazo adiado) | 28/10 – 03/11 | Motor ligado nas análises, teste de usabilidade com 5 pessoas e SUS, quadro do GitHub Projects, ensaio e divisão de fala |
+| Entrega | 04/11 | RT03 |
 
 ## 6.3 Tarefas abertas depois da RT03 (para o cronograma)
 
