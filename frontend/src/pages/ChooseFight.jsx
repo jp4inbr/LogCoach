@@ -12,12 +12,14 @@ const DEMO_KEY = "logcoach.demoUsed";
 const CHARACTER_KEY = "logcoach.character";
 const STEP_MS = 900;
 
-// O mesmo nome pode existir em reinos diferentes: o personagem é sempre nome + reino.
+// Dentro do relatório o personagem é o id do ator do WCL (homônimos de reinos diferentes
+// têm ids diferentes). É esse id que vai no POST /analyses.
 function playerKey(player) {
-  return `${player.name}|${player.server ?? ""}`;
+  return String(player.actor_id);
 }
 
-// Personagem salvo: { name, server }. Versões antigas guardavam só o nome (string).
+// Personagem salvo: { name, server }, porque o id do ator muda de um relatório para outro.
+// Versões antigas guardavam só o nome (string).
 function loadCharacter() {
   const saved = load(CHARACTER_KEY);
   if (typeof saved === "string") return { name: saved, server: null };
@@ -110,8 +112,7 @@ export default function ChooseFight({ code }) {
         {
           report_code: data.code,
           fight_id: fight.id,
-          player_name: player.name,
-          server: player.server ?? null,
+          actor_id: player.actor_id,
         },
         token,
       )

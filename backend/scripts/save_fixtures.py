@@ -32,8 +32,8 @@ from app.wcl.fetch import (  # noqa: E402
     fetch_rankings,
 )
 
-# Kill de referência (ver CLAUDE.md).
-REFERENCE = {"report": "XhrmBaYkGCAQjH2D", "fight": 34, "player": "Harmonist"}
+# Kill de referência (ver CLAUDE.md). Buscado pelo id do ator, como o motor faz.
+REFERENCE = {"report": "XhrmBaYkGCAQjH2D", "fight": 34, "player": "Harmonist", "actor_id": 455}
 ENCOUNTER_ID = 3470
 CLASS_NAME, SPEC_NAME = "Mage", "Arcane"
 TOP_N = 10
@@ -87,7 +87,11 @@ def main() -> None:
     names: dict[str, Any] = {}
     with WclClient.from_env() as client:
         print(f"Baixando referência {REFERENCE['report']} luta {REFERENCE['fight']}…")
-        ref = fetch_fight(client, REFERENCE["report"], REFERENCE["fight"], REFERENCE["player"])
+        ref = fetch_fight(
+            client, REFERENCE["report"], REFERENCE["fight"], actor_id=REFERENCE["actor_id"]
+        )
+        if ref["player"]["actor"]["name"] != REFERENCE["player"]:
+            raise SystemExit(f"O ator {REFERENCE['actor_id']} não é o {REFERENCE['player']}.")
         ilvl = ref["player"]["details"]["maxItemLevel"]
         brackets = fetch_brackets(client, ENCOUNTER_ID)
         index = bracket_index(ilvl, brackets["min"], brackets["bucket"])
@@ -129,8 +133,8 @@ def main() -> None:
                     client,
                     ranking["report"]["code"],
                     ranking["report"]["fightID"],
-                    ranking["name"],
-                    server,
+                    name=ranking["name"],
+                    server=server,
                 )
                 fight_anon, fight_names = anonymize_fight(fight, label)
                 public, real = anonymize_ranking(ranking, label)

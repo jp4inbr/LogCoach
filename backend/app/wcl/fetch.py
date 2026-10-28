@@ -6,9 +6,9 @@ Os tempos ficam em ms do report, como vêm da API. Quem converte para
 
 from typing import Any
 
-from app.services.players import normalize_server
 from app.wcl import queries
 from app.wcl.client import WclClient, WclError
+from app.wcl.players import find_player
 
 MYTHIC = 5
 
@@ -21,15 +21,6 @@ def bracket_index(item_level: float, bracket_min: int, bucket: int) -> int:
 def bracket_range(index: int, bracket_min: int, bucket: int) -> tuple[int, int]:
     low = bracket_min + (index - 1) * bucket
     return low, low + bucket - 1
-
-
-def find_player(actors: list[dict[str, Any]], name: str, server: str | None = None) -> dict:
-    players = [a for a in actors if a["type"] == "Player" and a["name"] == name]
-    if len(players) > 1 and server:
-        players = [a for a in players if normalize_server(a["server"]) == normalize_server(server)]
-    if len(players) != 1:
-        raise WclError(f"Jogador {name!r} não encontrado (ou ambíguo) no report.")
-    return players[0]
 
 
 def _details_by_id(details: dict[str, Any] | None) -> dict[int, dict[str, Any]]:
@@ -67,8 +58,17 @@ def fetch_report(client: WclClient, code: str) -> dict[str, Any]:
 
 
 def fetch_fight(
-    client: WclClient, code: str, fight_id: int, player_name: str, server: str | None = None
+    client: WclClient,
+    code: str,
+    fight_id: int,
+    *,
+    actor_id: int | None = None,
+    name: str | None = None,
+    server: str | None = None,
 ) -> dict[str, Any]:
+    """Luta completa de um jogador: pelo id do ator (jogador analisado) ou por nome + reino
+    (top 10, que o ranking traz sem id). Ver `wcl/players.py`.
+    """
     report = client.query(queries.FIGHT_META, {"code": code, "fightID": fight_id})["reportData"][
         "report"
     ]
@@ -76,7 +76,7 @@ def fetch_fight(
         raise WclError(f"Luta {fight_id} não existe no report {code}.")
     fight = report["fights"][0]
     actors = report["masterData"]["actors"]
-    player = find_player(actors, player_name, server)
+    player = find_player(actors, actor_id=actor_id, name=name, server=server)
     phase_names = next(
         (p["phases"] for p in report["phases"] or [] if p["encounterID"] == fight["encounterID"]),
         [],

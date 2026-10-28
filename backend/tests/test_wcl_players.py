@@ -1,0 +1,94 @@
+"""Achar o jogador nos atores do WCL: pelo id (analisado) ou por nome + reino (top 10)."""
+
+import gzip
+import json
+from pathlib import Path
+
+import pytest
+
+from app.wcl.client import WclError
+from app.wcl.players import PlayerNotFoundError, find_player, normalize_server
+
+
+def actor(actor_id: int, name: str, server: str | None, kind: str = "Player") -> dict:
+    return {"id": actor_id, "name": name, "server": server, "type": kind}
+
+
+ACTORS = [
+    actor(10, "Harmonist", "Azralon"),
+    actor(11, "Sombra", "Area 52"),
+    actor(12, "Sombra", "Tichondrius"),
+    # Pet e NPC também vêm no masterData; não são jogadores.
+    actor(13, "Sombra", "Area 52", kind="Pet"),
+    actor(14, "Nek'zali", None, kind="NPC"),
+]
+
+
+def test_by_actor_id():
+    assert find_player(ACTORS, actor_id=12) is ACTORS[2]
+
+
+@pytest.mark.parametrize("actor_id", [14, 999])
+def test_actor_id_that_is_not_a_player_in_the_report(actor_id):
+    with pytest.raises(PlayerNotFoundError):
+        find_player(ACTORS, actor_id=actor_id)
+
+
+def test_unique_name_is_found_with_or_without_server():
+    assert find_player(ACTORS, name="Harmonist") is ACTORS[0]
+    assert find_player(ACTORS, name="Harmonist", server="azralon") is ACTORS[0]
+
+
+def test_unique_name_on_another_server_is_not_found():
+    with pytest.raises(PlayerNotFoundError):
+        find_player(ACTORS, name="Harmonist", server="Tichondrius")
+
+
+def test_unique_name_without_known_server_accepts_any_server():
+    # Fixture anonimizada não tem reino: vale só o nome.
+    actors = [actor(1, "Harmonist", None)]
+    assert find_player(actors, name="Harmonist", server="Azralon")["id"] == 1
+
+
+def test_unknown_name():
+    with pytest.raises(PlayerNotFoundError):
+        find_player(ACTORS, name="Ninguem")
+
+
+def test_repeated_name_without_server_is_ambiguous():
+    with pytest.raises(PlayerNotFoundError, match="mais de um"):
+        find_player(ACTORS, name="Sombra")
+
+
+def test_repeated_name_with_unknown_server_is_not_found():
+    with pytest.raises(PlayerNotFoundError):
+        find_player(ACTORS, name="Sombra", server="Azralon")
+
+
+@pytest.mark.parametrize("server", ["Area 52", "area-52", "AREA52", "Area-52"])
+def test_repeated_name_is_resolved_by_server(server):
+    # O pet de mesmo nome e reino não conta.
+    assert find_player(ACTORS, name="Sombra", server=server) is ACTORS[1]
+
+
+def test_not_found_is_a_wcl_error():
+    # Quem já trata WclError (ex.: save_fixtures) não precisa de outro except.
+    assert issubclass(PlayerNotFoundError, WclError)
+
+
+@pytest.mark.parametrize("kwargs", [{}, {"actor_id": 10, "name": "Harmonist"}])
+def test_needs_exactly_one_key(kwargs):
+    with pytest.raises(ValueError):
+        find_player(ACTORS, **kwargs)
+
+
+def test_reference_harmonist_is_actor_455():
+    # Mesmo id do exemplo (app/samples) e do save_fixtures.py.
+    path = Path(__file__).parent / "fixtures/nekzali_mythic_326_328/reference_harmonist.json.gz"
+    fight = json.loads(gzip.decompress(path.read_bytes()))
+    assert find_player(fight["actors"], actor_id=455)["name"] == "Harmonist"
+
+
+def test_normalize_server():
+    assert normalize_server("Area 52") == normalize_server("area-52") == "area52"
+    assert normalize_server(None) == ""

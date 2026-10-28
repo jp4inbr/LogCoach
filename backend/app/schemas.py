@@ -55,7 +55,7 @@ class PlayerOption(BaseModel):
     # Id do ator no report do WCL (masterData.actors): chave do jogador do resolve até o motor.
     actor_id: int | None = None
     name: str
-    # O mesmo nome se repete entre reinos; o reino desempata (services/players.py).
+    # O mesmo nome se repete entre reinos: na tela o reino diferencia; na API vale o actor_id.
     server: str | None = None
     spec: str
     item_level: int | None = None
@@ -227,9 +227,8 @@ class AnalysisResult(BaseModel):
 class AnalysisRequest(BaseModel):
     report_code: str = Field(min_length=1, max_length=40)
     fight_id: int
-    player_name: str = Field(min_length=1, max_length=40)
-    # Reino do jogador; só é preciso quando o nome se repete na luta.
-    server: str | None = Field(default=None, max_length=40)
+    # Jogador escolhido: o actor_id do PlayerOption (sem ambiguidade entre homônimos).
+    actor_id: int
 
 
 class AnalysisOut(BaseModel):
