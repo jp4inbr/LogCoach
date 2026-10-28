@@ -123,7 +123,7 @@
       "severity": "erro",
       "kind": "regra",
       "phase": null,
-      "explanation": "14,9% das suas Salvas Arcanas saíram com menos de 12 acúmulos de Salvo Arcano. Nos melhores do seu bracket isso acontece em 9,2% das vezes, em média. Cada Salva gasta cedo demais desperdiça o dano que os acúmulos dariam.",
+      "explanation": "14,9% das suas Salvas Arcanas saíram com menos de 12 acúmulos de Salvo Arcano. Nos melhores do seu bracket isso acontece em 9,2% das vezes, em média. Cada Salva gasta cedo demais perde duas vezes: o dano que os acúmulos dariam e a chance de Seta Prismática, que é de 2% por acúmulo (25 acúmulos dão 50%; 11 dão 22%).",
       "what_to_do": "Segure a Salva até ter pelo menos 12 acúmulos. Antes de soltar, gaste 1 Mísseis Arcanos e a Seta Prismática; com 3 cargas de Abstração, gaste 2 Mísseis para não perder carga nova.",
       "numbers": [
         {
@@ -184,8 +184,8 @@
       "severity": "atencao",
       "kind": "hipotese",
       "phase": null,
-      "explanation": "As regras explicam cerca de 5,1 dos 15,2 pontos; os outros 10,1 nenhuma regra mede. A tabela por habilidade aponta onde olhar: você usou 24 Setas Prismáticas na luta (3,5 por minuto), contra 6,0 por minuto dos melhores, e recebeu 28 procs de Seta Prismática contra 45 deles, em média, em lutas mais curtas. Nenhum proc seu expirou: a diferença está em gerar o proc, não em gastá-lo. No lugar, entraram mais Impactos Arcanos (10,5 por minuto na Fase 2, contra 3,8), e os Mísseis Arcanos caíram na Fase 2 (13,4 por minuto, contra 16,1). É uma pista, não uma certeza: pode ser talento diferente ou ordem de prioridade.",
-      "what_to_do": "Compare seus talentos e a prioridade da Seta Prismática com as de um dos melhores do bracket. Na Fase 2, veja por que entraram Impactos Arcanos no lugar de Mísseis e Setas.",
+      "explanation": "As regras explicam cerca de 5,1 dos 15,2 pontos; os outros 10,1 nenhuma regra mede. A tabela por habilidade aponta onde olhar: você usou 24 Setas Prismáticas na luta (3,5 por minuto), contra 6,0 por minuto dos melhores. Quase todo proc de Seta vem da Salva Arcana, com 2% de chance por acúmulo de Salvo. Com os seus acúmulos (20,4 em média, perto dos 21,5 dos melhores), o esperado seriam uns 41 procs; você recebeu 28. Os melhores recebem mais do que essa conta prevê (117% do esperado, em média). Então as Salvas soltas cedo explicam só uma parte pequena (uns 2 procs): o resto sugere outra fonte de proc que eles têm e você não, como um talento. No lugar das Setas, entraram mais Impactos Arcanos (10,5 por minuto na Fase 2, contra 3,8). É uma pista, não uma certeza.",
+      "what_to_do": "Compare seus talentos com os de um dos melhores do bracket, procurando o que aumenta a chance de Seta Prismática. E siga segurando a Salva até 12 acúmulos ou mais: cada acúmulo é mais 2% de chance de Seta.",
       "numbers": [
         {
           "label": "Setas Prismáticas por minuto",
@@ -193,14 +193,14 @@
           "top": "6,0"
         },
         {
-          "label": "Procs de Seta Prismática",
-          "player": "28",
-          "top": "45"
+          "label": "Procs de Seta: recebidos ÷ esperados pelos acúmulos (2% cada)",
+          "player": "28 ÷ 41 (68%)",
+          "top": "117% em média"
         },
         {
-          "label": "Impactos Arcanos por minuto na Fase 2",
-          "player": "10,5",
-          "top": "3,8"
+          "label": "Acúmulos de Salvo por Salva, em média",
+          "player": "20,4",
+          "top": "21,5"
         },
         {
           "label": "Diferença que as regras não explicam",

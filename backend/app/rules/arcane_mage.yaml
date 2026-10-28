@@ -60,6 +60,10 @@ barrage:
   # 1 Missiles + Prismatic Bolt antes do Barrage é o padrão sugerido pelo Arthur;
   # nos tops os dois padrões (1 ou 2 Missiles + Bolt) aparecem, então fica para a IA julgar.
   clearcasting_max: 3         # com 3 cargas, gastar 2 Missiles antes do Barrage evita perder proc
+  # Cada Salvo no Barrage dá 2% de chance de proc de Prismatic Bolt (25 → 50%, 11 → 22%).
+  # Conferido nas fixtures: quase todo proc vem logo após um Barrage. Barrage cedo também
+  # perde Prismatic Bolt, não só o dano dos acúmulos.
+  prismatic_bolt_proc_per_salvo: 0.02
 
 defensives:
   - { name: Prismatic Barrier, ability_id: 235450 }   # tops do bracket: de 0 a 6 usos por kill
