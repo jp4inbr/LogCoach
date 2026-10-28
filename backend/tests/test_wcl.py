@@ -12,8 +12,8 @@ from app.wcl.anonymize import anonymize_fight
 from app.wcl.client import (
     API_URL,
     TOKEN_URL,
+    UNEXPECTED_MESSAGE,
     WclClient,
-    WclError,
     WclUnavailableError,
     close_shared_client,
     shared_client,
@@ -79,16 +79,6 @@ def test_401_requests_new_token_and_retries():
     assert calls["token"] == 2
 
 
-def test_graphql_errors_raise_wcl_error():
-    def handler(request: httpx.Request) -> httpx.Response:
-        if str(request.url) == TOKEN_URL:
-            return token_response()
-        return httpx.Response(200, json={"errors": [{"message": "Invalid report"}]})
-
-    with pytest.raises(WclError, match="Invalid report"):
-        make_client(handler).query("{ x }")
-
-
 def test_events_follow_pagination():
     pages = {
         0: {"data": [{"timestamp": 1}, {"timestamp": 2}], "nextPageTimestamp": 3},
@@ -136,29 +126,17 @@ def test_rate_limit_and_server_errors_are_unavailable(status):
         api_status(status).query("{ x }")
 
 
-def test_other_http_errors_are_plain_wcl_error():
-    with pytest.raises(WclError) as info:
+def test_other_http_errors_are_unexpected():
+    # GraphQL responde 200 até para erro de sintaxe: outro status não é do report.
+    with pytest.raises(WclUnavailableError) as info:
         api_status(400).query("{ x }")
 
-    assert not isinstance(info.value, WclUnavailableError)
-
-
-def test_graphql_errors_are_not_unavailable():
-    # Report privado ou inexistente chega como erro de GraphQL com HTTP 200.
-    def handler(request: httpx.Request) -> httpx.Response:
-        if str(request.url) == TOKEN_URL:
-            return token_response()
-        return httpx.Response(200, json={"errors": [{"message": "No permission"}]})
-
-    with pytest.raises(WclError) as info:
-        make_client(handler).query("{ x }")
-
-    assert not isinstance(info.value, WclUnavailableError)
+    assert info.value.user_message == UNEXPECTED_MESSAGE
 
 
 @pytest.mark.parametrize("token_status", [401, 503])
 def test_token_failure_is_unavailable(token_status):
-    with pytest.raises(WclUnavailableError, match="token"):
+    with pytest.raises(WclUnavailableError, match="(?i)token"):
         api_status(200, token_status=token_status).query("{ x }")
 
 
