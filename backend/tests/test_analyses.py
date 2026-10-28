@@ -3,6 +3,7 @@ from datetime import UTC, datetime, timedelta
 import pytest
 from conftest import ANALYSIS
 from sqlmodel import Session
+from test_sources import FakeWcl, nekzali
 
 from app.main import app
 from app.models import Analysis
@@ -11,7 +12,9 @@ from app.services.plan import month_start
 from app.services.sources import (
     SAMPLE_REPORT_CODE,
     SAMPLES_DIR,
+    ReportCache,
     SourceUnavailableError,
+    build_players,
     build_report,
     get_analyzer,
     get_report_source,
@@ -176,14 +179,12 @@ def spy_analyzer():
     return SpyAnalyzer
 
 
-class TwoHarmonistsSource:
-    """Relatório sintético com dois Magos Arcanos de mesmo nome em reinos diferentes."""
+class OneFightSource:
+    """Relatório sintético com a luta 34 e os Magos Arcanos dados."""
 
-    def get_report(self, code: str) -> ReportResolved:
-        players = [
-            arcane(455, "Harmonist", "Area 52"),
-            arcane(456, "Harmonist", "Tichondrius"),
-        ]
+    players: list[PlayerOption] = []
+
+    def get_report(self, code: str, refresh: bool = False) -> ReportResolved:
         fight = FightOption(
             id=34,
             boss="Nek'zali, a Enrosca-almas",
@@ -191,11 +192,19 @@ class TwoHarmonistsSource:
             kill=True,
             duration_s=415.0,
             supported=True,
-            players=players,
         )
         return ReportResolved(
             code=SAMPLE_REPORT_CODE, title="Sintético", sample=True, fights=[fight]
         )
+
+    def get_fight_players(self, code: str, fight_id: int) -> list[PlayerOption]:
+        return self.players
+
+
+class TwoHarmonistsSource(OneFightSource):
+    """Dois Magos Arcanos de mesmo nome em reinos diferentes."""
+
+    players = [arcane(455, "Harmonist", "Area 52"), arcane(456, "Harmonist", "Tichondrius")]
 
 
 def test_homonyms_are_told_apart_by_actor_id(client, spy_analyzer):
@@ -210,37 +219,39 @@ def test_homonyms_are_told_apart_by_actor_id(client, spy_analyzer):
     ]
 
 
-# REPORT_FIGHTS falso: na luta 2 há um Arcano, um Fogo e um Guerreiro; o outro Arcano
-# (id 13) só está na luta 1.
+# Respostas falsas do REPORT_FIGHTS e do FIGHT_PLAYERS: na luta 2 há um Arcano, um Fogo e
+# um Guerreiro; o outro Arcano (id 13) só está na luta 1.
 RAW_REPORT = {
     "code": SAMPLE_REPORT_CODE,
     "title": "Sintético",
     "fights": [
         {"id": 1, "encounterID": 3470, "name": "Nek'zali", "difficulty": 5, "kill": False,
-         "startTime": 0, "endTime": 90_000, "friendlyPlayers": [10, 13]},
+         "startTime": 0, "endTime": 90_000},
         {"id": 2, "encounterID": 3470, "name": "Nek'zali", "difficulty": 5, "kill": True,
-         "startTime": 100_000, "endTime": 515_000, "friendlyPlayers": [10, 11, 12]},
+         "startTime": 100_000, "endTime": 515_000},
     ],
-    "actors": [
-        {"id": 10, "name": "arcano_a", "server": "Norte", "type": "Player", "subType": "Mage"},
-        {"id": 11, "name": "fogo_a", "server": "Norte", "type": "Player", "subType": "Mage"},
-        {"id": 12, "name": "guerreiro_a", "server": "Norte", "type": "Player",
-         "subType": "Warrior"},
-        {"id": 13, "name": "arcano_b", "server": "Sul", "type": "Player", "subType": "Mage"},
-    ],
-    "details": {
-        10: {"id": 10, "specs": [{"spec": "Arcane", "count": 1}], "maxItemLevel": 327},
-        11: {"id": 11, "specs": [{"spec": "Fire", "count": 1}], "maxItemLevel": 327},
-        12: {"id": 12, "specs": [{"spec": "Arms", "count": 1}], "maxItemLevel": 327},
-        13: {"id": 13, "specs": [{"spec": "Arcane", "count": 1}], "maxItemLevel": 327},
-    },
+}  # fmt: skip
+RAW_ACTORS = [
+    {"id": 10, "name": "arcano_a", "server": "Norte", "type": "Player", "subType": "Mage"},
+    {"id": 11, "name": "fogo_a", "server": "Norte", "type": "Player", "subType": "Mage"},
+    {"id": 13, "name": "arcano_b", "server": "Sul", "type": "Player", "subType": "Mage"},
+]
+RAW_PLAYERS = {
+    1: [{"id": 10, "spec": "Arcane", "item_level": 327}, {"id": 13, "spec": "Arcane",
+        "item_level": 327}],
+    2: [{"id": 10, "spec": "Arcane", "item_level": 327}, {"id": 11, "spec": "Fire",
+        "item_level": 327}, {"id": 12, "spec": "Arms", "item_level": 327}],
 }  # fmt: skip
 
 
 class RawReportSource:
-    def get_report(self, code: str) -> ReportResolved:
+    def get_report(self, code: str, refresh: bool = False) -> ReportResolved:
         encounters = {3470: {"boss_npc_id": None, "difficulties": [5]}}
         return ReportResolved.model_validate(build_report(RAW_REPORT, encounters, {}))
+
+    def get_fight_players(self, code: str, fight_id: int) -> list[PlayerOption]:
+        raw = {"fight_id": fight_id, "players": RAW_PLAYERS[fight_id], "actors": RAW_ACTORS}
+        return [PlayerOption.model_validate(p) for p in build_players(raw)]
 
 
 @pytest.mark.parametrize("actor_id", [11, 12, 13, 999])
@@ -264,27 +275,14 @@ def test_arcane_of_the_fight_is_found_by_actor_id(client, spy_analyzer):
     assert [p.name for p in spy_analyzer.players] == ["arcano_a"]
 
 
-class HarmonistAndOtherSource:
+class HarmonistAndOtherSource(OneFightSource):
     """Luta 34 sintética com o Harmonist e outro Arcano (pseudônimo)."""
 
-    def get_report(self, code: str) -> ReportResolved:
-        players = [
-            # Com DATA_SOURCE=wcl o Harmonist chega com reino; o exemplo não tem reino.
-            arcane(455, "Harmonist", "Azralon"),
-            arcane(456, "Outroarcano", "Area 52"),
-        ]
-        fight = FightOption(
-            id=34,
-            boss="Nek'zali, a Enrosca-almas",
-            difficulty="Mítico",
-            kill=True,
-            duration_s=415.0,
-            supported=True,
-            players=players,
-        )
-        return ReportResolved(
-            code=SAMPLE_REPORT_CODE, title="Sintético", sample=True, fights=[fight]
-        )
+    players = [
+        # Com DATA_SOURCE=wcl o Harmonist chega com reino; o exemplo não tem reino.
+        arcane(455, "Harmonist", "Azralon"),
+        arcane(456, "Outroarcano", "Area 52"),
+    ]
 
 
 def test_other_arcane_in_sample_fight_does_not_get_harmonist_result(client, auth_headers):
@@ -309,8 +307,61 @@ def test_harmonist_in_sample_fight_still_gets_the_result(client):
 
 
 class DownSource:
-    def get_report(self, code: str) -> ReportResolved:
+    def get_report(self, code: str, refresh: bool = False) -> ReportResolved:
         raise SourceUnavailableError(code)
+
+    def get_fight_players(self, code: str, fight_id: int) -> list[PlayerOption]:
+        raise SourceUnavailableError(code)
+
+
+# --- Luta fora do cache (log ao vivo) ---------------------------------------------
+
+
+def wcl_source(wcl: FakeWcl, now: list[float]):
+    source = wcl.source(cache=ReportCache(clock=lambda: now[0]))
+    app.dependency_overrides[get_report_source] = lambda: source
+    return source
+
+
+def test_fight_missing_from_cache_refreshes_the_list_once(client, spy_analyzer):
+    # O usuário abriu o log antes do pull; a luta nova não está na lista guardada.
+    now = [0.0]
+    wcl = FakeWcl(report={**FakeWcl().report, "code": SAMPLE_REPORT_CODE})
+    wcl_source(wcl, now).get_report(SAMPLE_REPORT_CODE)
+    wcl.report["fights"].append(nekzali(5, 1_300_000, 1_450_000))
+    wcl.fight_players[5] = ([10], ["Arcane"], [327])
+    now[0] = 120
+
+    response = client.post("/analyses", json={**ANALYSIS, "fight_id": 5, "actor_id": 10})
+
+    assert response.status_code == 201
+    assert wcl.calls == ["ReportFights", "ReportFights", "FightPlayers"]
+
+
+def test_fight_that_does_not_exist_is_searched_only_once(client, spy_analyzer):
+    now = [0.0]
+    wcl = FakeWcl(report={**FakeWcl().report, "code": SAMPLE_REPORT_CODE})
+    wcl_source(wcl, now).get_report(SAMPLE_REPORT_CODE)
+    now[0] = 120
+
+    response = client.post("/analyses", json={**ANALYSIS, "fight_id": 99, "actor_id": 10})
+
+    assert response.status_code == 404
+    assert response.json()["detail"]["code"] == "fight_not_found"
+    assert wcl.calls == ["ReportFights", "ReportFights"]
+
+
+def test_analysis_uses_the_cached_fight_players(client, spy_analyzer):
+    # A tela já buscou os Magos da luta; o /analyses não consulta o WCL de novo.
+    wcl = FakeWcl(report={**FakeWcl().report, "code": SAMPLE_REPORT_CODE})
+    source = wcl_source(wcl, [0.0])
+    source.get_report(SAMPLE_REPORT_CODE)
+    source.get_fight_players(SAMPLE_REPORT_CODE, 2)
+
+    response = client.post("/analyses", json={**ANALYSIS, "fight_id": 2, "actor_id": 13})
+
+    assert response.status_code == 201
+    assert wcl.calls == ["ReportFights", "FightPlayers"]
 
 
 def test_analysis_with_wcl_down_is_wcl_unavailable(client, auth_headers):
