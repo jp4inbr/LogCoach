@@ -178,3 +178,7 @@ def test_fixture_has_what_the_engine_needs(file):
     )
     assert any(e["type"] == "cast" and e["abilityGameID"] == 365350 for e in events["casts"])
     assert 326 <= fight["player"]["details"]["maxItemLevel"] <= 328
+    # Buffs externos (de outros jogadores) também vêm, e todos os buffs são no jogador.
+    player_id = fight["player"]["actor"]["id"]
+    assert all(e["targetID"] == player_id for e in events["buffs"])
+    assert any(e["sourceID"] != player_id for e in events["buffs"])

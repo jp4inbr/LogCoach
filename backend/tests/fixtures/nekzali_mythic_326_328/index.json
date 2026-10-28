@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-10-26T00:49:26+00:00",
+ "generated_at": "2026-10-28T16:07:53+00:00",
  "encounter_id": 3470,
  "difficulty": 5,
  "spec": "Arcane Mage",
@@ -59,41 +59,41 @@
    "file": "top06.json.gz",
    "rank": 6,
    "display_name": "top06",
-   "amount": 260777.10349395,
-   "duration_ms": 386583,
+   "amount": 264888.82733563,
+   "duration_ms": 445865,
    "bracket_item_level": 328
   },
   {
    "file": "top07.json.gz",
    "rank": 7,
    "display_name": "top07",
-   "amount": 259656.91831028,
-   "duration_ms": 344058,
-   "bracket_item_level": 326
+   "amount": 264641.46784466,
+   "duration_ms": 389251,
+   "bracket_item_level": 328
   },
   {
    "file": "top08.json.gz",
    "rank": 8,
    "display_name": "top08",
-   "amount": 259378.37672407,
-   "duration_ms": 343084,
-   "bracket_item_level": 326
+   "amount": 260777.10349395,
+   "duration_ms": 386583,
+   "bracket_item_level": 328
   },
   {
    "file": "top09.json.gz",
    "rank": 9,
    "display_name": "top09",
-   "amount": 259120.35775032,
-   "duration_ms": 355108,
-   "bracket_item_level": 327
+   "amount": 259656.91831028,
+   "duration_ms": 344058,
+   "bracket_item_level": 326
   },
   {
    "file": "top10.json.gz",
    "rank": 10,
    "display_name": "top10",
-   "amount": 257919.66036872,
-   "duration_ms": 367104,
-   "bracket_item_level": 328
+   "amount": 259378.37672407,
+   "duration_ms": 343084,
+   "bracket_item_level": 326
   }
  ]
 }
