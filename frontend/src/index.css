@@ -253,13 +253,19 @@ a {
   white-space: nowrap;
 }
 
-.button:hover:not(:disabled) {
+.button:hover:not(:disabled, [aria-disabled="true"]) {
   border-color: var(--accent);
 }
 
 .button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* Desabilitado sem perder o foco (ex.: "Atualizar lutas" durante uma busca). */
+.button[aria-disabled="true"] {
+  opacity: 0.6;
+  cursor: progress;
 }
 
 .button.primary {
@@ -708,6 +714,50 @@ label {
 
 @media (prefers-reduced-motion: reduce) {
   .pill-uploading::before {
+    animation: none;
+  }
+}
+
+/* Aviso da atualização automática (luta subindo). Pausado pelo teto: borda tracejada e
+   fundo de atenção, além do texto. */
+.auto-refresh {
+  display: grid;
+  gap: 4px;
+  padding: 12px 16px;
+  border-radius: var(--radius);
+  border: 1px solid rgb(167 139 250 / 35%);
+  background: var(--info-bg);
+}
+
+.auto-refresh p {
+  margin: 0;
+}
+
+.auto-refresh-stopped {
+  border-style: dashed;
+  border-color: rgb(251 191 36 / 35%);
+  background: var(--warn-bg);
+}
+
+.auto-refresh-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.auto-refresh-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: uploading 1.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auto-refresh-dot {
     animation: none;
   }
 }

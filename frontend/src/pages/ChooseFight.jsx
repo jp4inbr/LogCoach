@@ -1,4 +1,5 @@
 import { useEffect, useEffectEvent, useRef, useState } from "react";
+import AutoRefreshNotice from "../components/AutoRefreshNotice.jsx";
 import Notice from "../components/Notice.jsx";
 import Steps from "../components/Steps.jsx";
 import { api } from "../lib/api.js";
@@ -13,9 +14,17 @@ const CHARACTER_KEY = "logcoach.character";
 const STEP_MS = 900;
 // Enquanto alguma luta ainda está subindo para o Warcraft Logs, a lista se refaz sozinha.
 const AUTO_REFRESH_MS = 30_000;
+// Teto da atualização automática: 20 min seguidos sem novidade com luta subindo (o envio do
+// log provavelmente parou). Daí em diante só pelo botão, que conta mais 20 min.
+const AUTO_LIMIT_MIN = 20;
+const AUTO_LIMIT_MS = AUTO_LIMIT_MIN * 60_000;
+// Espera da seleção (luta + jogador) parada antes da pré-busca, para não gastar pontos do
+// Warcraft Logs com cliques exploratórios.
+const PREFETCH_DELAY_MS = 1000;
 // Falhas passageiras (Warcraft Logs ou LogCoach fora do ar, sem conexão): vale tentar de novo
-// sem mexer no link.
-const TEMPORARY_ERRORS = new Set(["wcl_unavailable", "unexpected_error", "network", "unknown"]);
+// sem mexer no link. unexpected_error fica: a mensagem já diz que o problema é nosso e pede
+// "Tente de novo", e erro inesperado do servidor costuma passar na segunda tentativa.
+const TEMPORARY_ERRORS = new Set(["wcl_unavailable", "unexpected_error", "network"]);
 
 // Dentro do relatório o personagem é o id do ator do WCL (homônimos de reinos diferentes
 // têm ids diferentes). É esse id que vai no POST /analyses.
@@ -41,9 +50,10 @@ function formatTime(iso) {
   return new Date(iso).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
 }
 
-// O servidor sempre consulta o Warcraft Logs de novo (com uma trava de 15 s: dentro dela
-// devolve a mesma lista, com o mesmo fetched_at). Serve para abrir, atualizar e para a
-// atualização automática.
+// O servidor sempre consulta o Warcraft Logs de novo (com uma trava de 8 s: dentro dela
+// devolve a mesma lista, com o mesmo fetched_at). Se o Warcraft Logs falhar e houver lista
+// guardada, ela volta com stale: true, a mensagem do erro e o fetched_at antigo. Serve para
+// abrir, atualizar e para a atualização automática.
 function resolveReport(code) {
   return api.post("/reports/resolve", {
     url: `https://www.warcraftlogs.com/reports/${code}`,
@@ -63,6 +73,10 @@ function compareFights(before, after) {
     else if (!previous.supported && item.supported) unlocked += 1;
   }
   return { added, unlocked };
+}
+
+function hasUploading(fights) {
+  return fights.some((item) => item.in_progress);
 }
 
 function hasNews(news) {
@@ -89,33 +103,44 @@ function refreshText(refresh) {
 
 // Tela 2: escolher a luta e o personagem (RF04). A lista de lutas vem leve, sem jogadores;
 // os Magos Arcanos são buscados quando o usuário escolhe a luta. "Atualizar lutas" traz os
-// pulls novos de um log ao vivo, e a lista se refaz sozinha enquanto houver luta subindo.
-// Com luta e jogador definidos, os eventos são pré-buscados em segundo plano. Depois do
-// clique em Analisar, a mesma tela mostra o andamento em etapas (Tela 3) e abre o resultado
-// quando termina.
+// pulls novos de um log ao vivo, e a lista se refaz sozinha (com aviso na tela) enquanto
+// houver luta subindo, até 20 min sem novidade. Com luta e jogador definidos por 1 s, os
+// eventos são pré-buscados em segundo plano. Depois do clique em Analisar, a mesma tela
+// mostra o andamento em etapas (Tela 3) e abre o resultado quando termina.
 export default function ChooseFight({ code }) {
   const { token, logout } = useAuth();
   const [report, setReport] = useState({ status: "loading" });
   const [attempt, setAttempt] = useState(0);
   const [refresh, setRefresh] = useState({ status: "idle" });
   const [fightId, setFightId] = useState(null);
-  // Magos de cada luta já buscada: { [id]: { status, players | error } }.
+  // Magos de cada luta já buscada: { [id]: { status, players | error } }; status "empty"
+  // (nenhum Arcano) é buscado de novo.
   const [playersByFight, setPlayersByFight] = useState({});
   const [chosenPlayer, setChosenPlayer] = useState(null);
   const [run, setRun] = useState({ status: "idle" });
   const [step, setStep] = useState(0);
   const [resultId, setResultId] = useState(null);
-  // Atualização da lista em andamento (manual ou automática), para não pedir duas vezes.
+  // Busca da lista em andamento: "manual" | "auto" | null. O ref evita pedir duas vezes
+  // antes de o estado chegar à tela.
+  const [busy, setBusy] = useState(null);
   const refreshing = useRef(false);
-  const lastFetch = useRef(0);
+  // Hora em que a última busca da lista terminou (a próxima automática conta daí) e hora em
+  // que começou a contagem do teto (luta subindo sem novidade).
+  const [lastDoneAt, setLastDoneAt] = useState(null);
+  const [autoSince, setAutoSince] = useState(null);
   // Pré-buscas já pedidas nesta tela, por "luta:ator".
   const prefetched = useRef(new Set());
 
   useEffect(() => {
     let active = true;
-    lastFetch.current = Date.now();
     resolveReport(code)
-      .then((data) => active && setReport({ status: "ok", data }))
+      .then((data) => {
+        if (!active) return;
+        const now = Date.now();
+        setReport({ status: "ok", data });
+        setLastDoneAt(now);
+        setAutoSince(now);
+      })
       .catch((error) => active && setReport({ status: "error", error }));
     return () => {
       active = false;
@@ -138,22 +163,41 @@ export default function ChooseFight({ code }) {
     (players.length === 1 ? playerKey(players[0]) : null);
   const player = players.find((p) => playerKey(p) === selectedKey) ?? null;
   const demoBlocked = !token && load(DEMO_KEY, false);
-  const uploading = Boolean(data?.fights.some((item) => item.in_progress));
+  const uploading = Boolean(data && hasUploading(data.fights));
+  // Teto: 20 min desde a última novidade (ou clique) e a luta continua subindo.
+  const autoStopped =
+    uploading &&
+    lastDoneAt !== null &&
+    autoSince !== null &&
+    lastDoneAt - autoSince >= AUTO_LIMIT_MS;
+  const autoActive = uploading && !autoStopped;
 
   // Busca a lista de novo no Warcraft Logs. Se falhar, a lista que já está na tela continua.
-  // A manual sempre diz o resultado; a automática só fala quando há novidade.
+  // A manual sempre diz o resultado; a automática só fala quando há novidade. A lista
+  // guardada (stale) tem aviso próprio, que só se atualiza (não empilha a cada 30 s).
   function refreshFights(mode) {
     if (!data || refreshing.current) return;
     const before = data;
     refreshing.current = true;
-    lastFetch.current = Date.now();
-    if (mode === "manual") setRefresh({ status: "loading" });
+    setBusy(mode);
+    if (mode === "manual") setRefresh({ status: "idle" });
     resolveReport(before.code)
       .then((fresh) => {
         setReport({ status: "ok", data: fresh });
         const news = compareFights(before.fights, fresh.fights);
         const unchanged = fresh.fetched_at === before.fetched_at;
-        if (mode === "manual" || hasNews(news)) {
+        // Clique, novidade ou luta que começou a subir agora: o teto volta a contar do zero.
+        if (
+          mode === "manual" ||
+          hasNews(news) ||
+          (!hasUploading(before.fights) && hasUploading(fresh.fights))
+        ) {
+          setAutoSince(Date.now());
+        }
+        if (fresh.stale && !hasNews(news)) {
+          // O aviso da lista guardada já explica; "A lista já está atualizada" seria falso.
+          if (mode === "manual") setRefresh({ status: "idle" });
+        } else if (mode === "manual" || hasNews(news)) {
           setRefresh({ status: "ok", unchanged: unchanged && !hasNews(news), ...news });
         } else {
           // Automática sem novidade: mantém o último aviso de luta nova e apaga o resto
@@ -170,6 +214,8 @@ export default function ChooseFight({ code }) {
       })
       .finally(() => {
         refreshing.current = false;
+        setBusy(null);
+        setLastDoneAt(Date.now());
       });
   }
 
@@ -177,40 +223,48 @@ export default function ChooseFight({ code }) {
     if (document.visibilityState === "visible") refreshFights("auto");
   });
 
-  // Enquanto houver luta subindo, refaz a lista a cada 30 s, só com a aba visível. Ao voltar
-  // para a aba depois desse tempo, atualiza na hora. O intervalo recomeça a cada lista nova.
+  // Enquanto houver luta subindo (e antes do teto), refaz a lista 30 s depois de a última
+  // busca terminar, só com a aba visível. Ao voltar para a aba depois desse tempo, atualiza na
+  // hora. Busca em andamento suspende o relógio; ele recomeça quando ela termina.
   useEffect(() => {
-    if (!uploading) return undefined;
-    const timer = setInterval(autoRefresh, AUTO_REFRESH_MS);
+    if (!autoActive || busy || lastDoneAt === null) return undefined;
+    const delay = Math.max(0, lastDoneAt + AUTO_REFRESH_MS - Date.now());
+    const timer = setTimeout(autoRefresh, delay);
     function onVisibility() {
-      if (Date.now() - lastFetch.current >= AUTO_REFRESH_MS) autoRefresh();
+      if (Date.now() - lastDoneAt >= AUTO_REFRESH_MS) autoRefresh();
     }
     document.addEventListener("visibilitychange", onVisibility);
     return () => {
-      clearInterval(timer);
+      clearTimeout(timer);
       document.removeEventListener("visibilitychange", onVisibility);
     };
-  }, [uploading, data?.fetched_at]);
+  }, [autoActive, busy, lastDoneAt]);
 
-  // Pré-busca dos eventos assim que luta e jogador estão definidos (clicado, único Arcano ou
-  // personagem lembrado), para a análise sair mais rápido. É só otimização: falha em
-  // silêncio, porque o erro de verdade aparece no /analyses. Uma vez por luta e jogador.
+  // Pré-busca dos eventos quando luta e jogador ficam definidos (clicado, único Arcano ou
+  // personagem lembrado) e parados por 1 s, para a análise sair mais rápido. É só otimização:
+  // falha em silêncio (inclusive prefetch_limit e plan_limit), porque o erro de verdade
+  // aparece no /analyses. Uma vez por luta e jogador; não dispara com a análise rodando.
   const prefetchCode = data?.code ?? null;
   const prefetchFight = fight && player ? fight.id : null;
   const prefetchActor = fight && player ? player.actor_id : null;
+  const analyzing = run.status === "running";
   useEffect(() => {
-    if (!prefetchCode || prefetchFight === null || prefetchActor === null || demoBlocked) return;
+    if (!prefetchCode || prefetchFight === null || prefetchActor === null) return undefined;
+    if (demoBlocked || analyzing) return undefined;
     const key = `${prefetchFight}:${prefetchActor}`;
-    if (prefetched.current.has(key)) return;
-    prefetched.current.add(key);
-    api
-      .post(
-        `/reports/${encodeURIComponent(prefetchCode)}/fights/${prefetchFight}/prefetch`,
-        { actor_id: prefetchActor },
-        token,
-      )
-      .catch(() => {});
-  }, [prefetchCode, prefetchFight, prefetchActor, demoBlocked, token]);
+    if (prefetched.current.has(key)) return undefined;
+    const timer = setTimeout(() => {
+      prefetched.current.add(key);
+      api
+        .post(
+          `/reports/${encodeURIComponent(prefetchCode)}/fights/${prefetchFight}/prefetch`,
+          { actor_id: prefetchActor },
+          token,
+        )
+        .catch(() => {});
+    }, PREFETCH_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, [prefetchCode, prefetchFight, prefetchActor, demoBlocked, analyzing, token]);
 
   // Avança as etapas enquanto a análise roda; a última espera o resultado chegar.
   useEffect(() => {
@@ -267,7 +321,11 @@ export default function ChooseFight({ code }) {
     setFor({ status: "loading" });
     api
       .get(`/reports/${encodeURIComponent(data.code)}/fights/${id}/players`)
-      .then((body) => setFor({ status: "ok", players: body.players }))
+      // Lista vazia não é definitiva: o Warcraft Logs pode ainda não ter processado a luta.
+      // Fica como "empty", que volta a ser buscado ao escolher a luta de novo.
+      .then((body) =>
+        setFor(body.players.length ? { status: "ok", players: body.players } : { status: "empty" }),
+      )
       .catch((error) => setFor({ status: "error", error }));
   }
 
@@ -304,6 +362,9 @@ export default function ChooseFight({ code }) {
       .catch((error) => setRun({ status: "error", error }));
   }
 
+  // Falha passageira na análise: o botão principal vira "Tentar de novo" (mesma ação).
+  const retryAnalysis = run.status === "error" && TEMPORARY_ERRORS.has(run.error.code);
+
   if (run.status === "running") {
     return (
       <div className="card analyzing" aria-live="polite">
@@ -331,8 +392,8 @@ export default function ChooseFight({ code }) {
 
       {data.sample && (
         <Notice tone="atencao" title="Relatório de exemplo">
-          Sem conexão com o Warcraft Logs, a lista de lutas vem de um arquivo de exemplo. Os
-          outros relatórios abrem quando a conexão voltar.
+          Sem conexão com o Warcraft Logs, a lista de lutas vem de um arquivo de exemplo. Os outros
+          relatórios abrem quando a conexão voltar.
         </Notice>
       )}
 
@@ -344,21 +405,30 @@ export default function ChooseFight({ code }) {
               Lista de {formatTime(data.fetched_at)}
               {refresh.status === "ok" && ` · ${refreshText(refresh)}`}
             </span>
+            {/* aria-disabled em vez de disabled: a busca automática não tira o foco do botão
+                a cada 30 s. O clique durante uma busca é ignorado em refreshFights. */}
             <button
               type="button"
               className="button ghost small"
-              disabled={refresh.status === "loading"}
+              aria-disabled={busy ? "true" : undefined}
               onClick={() => refreshFights("manual")}
             >
-              {refresh.status === "loading" ? "Atualizando…" : "Atualizar lutas"}
+              {busy ? "Atualizando…" : "Atualizar lutas"}
             </button>
           </div>
         </div>
-        {uploading && (
-          <p className="field-hint">
-            Tem luta subindo para o Warcraft Logs. A lista se atualiza sozinha a cada 30 segundos
-            até ela ficar disponível.
-          </p>
+        <AutoRefreshNotice
+          active={uploading}
+          stopped={autoStopped}
+          busy={busy !== null}
+          lastDoneAt={lastDoneAt}
+          intervalMs={AUTO_REFRESH_MS}
+          limitMin={AUTO_LIMIT_MIN}
+        />
+        {data.stale && (
+          <Notice tone="atencao" title="Não deu para atualizar com o Warcraft Logs">
+            {data.stale_message} Mostrando a lista de {formatTime(data.fetched_at)}.
+          </Notice>
         )}
         {refresh.status === "error" && (
           <Notice tone="erro" title="Não deu para atualizar as lutas">
@@ -436,8 +506,23 @@ export default function ChooseFight({ code }) {
             >
               {fightPlayers.error.message}
             </Notice>
-          ) : players.length === 0 ? (
-            <Notice tone="atencao">Não achamos nenhum Mago Arcano nessa luta.</Notice>
+          ) : fightPlayers.status === "empty" ? (
+            <Notice
+              tone="atencao"
+              title="Não achamos nenhum Mago Arcano nessa luta"
+              action={
+                <button
+                  type="button"
+                  className="button ghost small"
+                  onClick={() => loadPlayers(fight.id)}
+                >
+                  Tentar de novo
+                </button>
+              }
+            >
+              Se a luta acabou de terminar, o Warcraft Logs pode ainda estar processando. Tente de
+              novo em alguns segundos.
+            </Notice>
           ) : (
             <div className="player-list" role="radiogroup" aria-labelledby="players-title">
               {players.map((option) => (
@@ -447,7 +532,10 @@ export default function ChooseFight({ code }) {
                     name="player"
                     value={playerKey(option)}
                     checked={selectedKey === playerKey(option)}
-                    onChange={() => setChosenPlayer(playerKey(option))}
+                    onChange={() => {
+                      setChosenPlayer(playerKey(option));
+                      setRun({ status: "idle" });
+                    }}
                   />
                   <span>
                     <span className="player-name">
@@ -489,7 +577,9 @@ export default function ChooseFight({ code }) {
           action={
             <a
               className="button primary"
-              href={href(`/entrar?modo=cadastro&depois=${encodeURIComponent(`/relatorio/${code}`)}`)}
+              href={href(
+                `/entrar?modo=cadastro&depois=${encodeURIComponent(`/relatorio/${code}`)}`,
+              )}
             >
               Criar conta grátis
             </a>
@@ -505,7 +595,7 @@ export default function ChooseFight({ code }) {
             disabled={!fight || !player}
             onClick={startAnalysis}
           >
-            Analisar
+            {retryAnalysis ? "Tentar de novo" : "Analisar"}
           </button>
           {!fight && <span className="field-hint">Escolha uma luta para continuar.</span>}
         </div>
