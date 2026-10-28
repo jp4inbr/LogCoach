@@ -1,4 +1,10 @@
+---
+description: Página inicial do projeto.
+---
+
 # LogCoach
+
+<p align="center"><img src=".gitbook/assets/image.png" alt="Ecossistema Ânima" data-size="original"></p>
 
 **Coach de desempenho para jogadores competitivos de World of Warcraft.**
 
@@ -10,8 +16,29 @@ O jogador cola o link do seu log de combate do Warcraft Logs e o LogCoach mostra
 | **Trabalho** | A3 — Usabilidade de Software |
 | **Tipo** | Aplicação Web responsiva |
 | **Setor** | Entretenimento e Esportes Eletrônicos |
-| **Recorte do MVP** | Mago Arcano · raide The Venomous Abyss (Midnight T2) · português |
+| **Recorte do MVP** | Mago Arcano · raide The Venomous Abyss (Midnight T2) · Mítico · português |
 | **Repositório** | [github.com/jp4inbr/LogCoach](https://github.com/jp4inbr/LogCoach) |
+
+## Ficha de Inscrição
+
+**Projeto A3 · UC Usabilidade e Desenvolvimento Web (UDS)**\
+**Professor:** Mário Teixeira\
+**Campus:** Center Minas · **Turma:** 439 · **Turno:** Noite\
+**Tema do projeto:** coach de desempenho para jogadores competitivos de World of Warcraft · **Título provisório:** LogCoach
+
+| Integrantes |
+|---|
+| Arthur Beiral |
+| Danilo Félix |
+| João Nicacio |
+| Luís Carneiro |
+| Matheus Morgado |
+| Matheus Damasceno |
+| Pedro Nogueira |
+| Thales Almeida |
+| Yohanan Amaral |
+
+> Esta documentação é pública (sincronizada com o GitHub). RA, e-mail e outros dados pessoais ficam só na ficha entregue ao professor.
 
 ## Entregas
 
@@ -22,4 +49,4 @@ O jogador cola o link do seu log de combate do Warcraft Logs e o LogCoach mostra
 | RT03 — Consolidação, usabilidade e IA | 28/10/2026 | 8, 9, 10, 11, 12 + protótipo final |
 | Banca final | fim de nov/2026 | 13, 14 |
 
-> **Nota:** em 12/10/2026 o professor aprovou a troca do tema original (Central de Rotinas) pelo LogCoach. Os itens 1 a 7 foram refeitos para o novo tema.
+> **Nota:** em 12/10/2026 o professor aprovou a troca do tema original (HIO) pelo LogCoach. Os itens 1 a 7 foram refeitos para o novo tema.
