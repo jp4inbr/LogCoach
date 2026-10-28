@@ -36,6 +36,7 @@ PT_BR_FILE = APP_DIR / "i18n" / "pt_br.yaml"
 
 # Kill de referência do CLAUDE.md: Nek'zali Mítico, luta 34, jogador Harmonist.
 SAMPLE_REPORT_CODE = "XhrmBaYkGCAQjH2D"
+SAMPLE_ACTOR_ID = 455
 
 # Item 8.2: lutas com menos de 60 s não são analisadas.
 MIN_FIGHT_S = 60
@@ -278,10 +279,9 @@ class SampleAnalyzer:
         if not path.exists():
             raise AnalysisNotAvailableError(f"{report.code}/{fight.id}")
         result = AnalysisResult.model_validate(_load(path.name))
-        # Outro Arcano da mesma luta não pode receber a análise do Harmonist. O exemplo não
-        # guarda reino (anonimização), então compara só o nome; o reino já foi conferido
-        # pelo match_player na rota.
-        if player.name != result.player.name:
+        # Outro Arcano da mesma luta (até um homônimo de outro reino) não pode receber a
+        # análise do Harmonist: o jogador foi escolhido pelo actor_id na rota.
+        if player.actor_id != SAMPLE_ACTOR_ID:
             raise AnalysisNotAvailableError(f"{report.code}/{fight.id}/{player.name}")
         fill_real_names(result, get_settings().names_file)
         return result

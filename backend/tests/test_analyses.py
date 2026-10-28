@@ -11,6 +11,7 @@ from app.services.plan import month_start
 from app.services.sources import (
     SAMPLE_REPORT_CODE,
     SAMPLES_DIR,
+    SourceUnavailableError,
     build_report,
     get_analyzer,
     get_report_source,
@@ -305,6 +306,21 @@ def test_harmonist_in_sample_fight_still_gets_the_result(client):
 
     assert response.status_code == 201
     assert response.json()["result"]["player"]["name"] == "Harmonist"
+
+
+class DownSource:
+    def get_report(self, code: str) -> ReportResolved:
+        raise SourceUnavailableError(code)
+
+
+def test_analysis_with_wcl_down_is_wcl_unavailable(client, auth_headers):
+    app.dependency_overrides[get_report_source] = DownSource
+
+    response = client.post("/analyses", json=ANALYSIS, headers=auth_headers)
+
+    assert response.status_code == 503
+    assert response.json()["detail"]["code"] == "wcl_unavailable"
+    assert client.get("/me", headers=auth_headers).json()["analyses_this_month"] == 0
 
 
 def test_month_start():

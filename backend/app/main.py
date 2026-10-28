@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api import analyses, auth, me, reports
 from app.config import get_settings
 from app.db import create_tables
+from app.wcl.client import close_shared_client
 
 
 @asynccontextmanager
@@ -14,6 +15,7 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     # Sem migrações no MVP: as tabelas são criadas na subida se ainda não existirem.
     create_tables()
     yield
+    close_shared_client()
 
 
 app = FastAPI(title="LogCoach", lifespan=lifespan)
