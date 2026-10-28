@@ -1,3 +1,56 @@
+# LogCoach - Coach de Desempenho para World of Warcraft
+
+> **Status do Projeto:** Versão Alfa (Entrega RT03 - Consolidação, Usabilidade, IA e Testes)
+
+## 1. Sobre o Projeto (Escopo RT01)
+
+O **LogCoach** é uma aplicação web responsiva voltada ao setor de Entretenimento e Esportes Eletrônicos (e-sports) que transforma o log de combate do World of Warcraft (Warcraft Logs) — hoje um dado bruto, extenso e em inglês — em um diagnóstico claro e priorizado em português do Brasil.
+
+A partir do link público de um relatório do Warcraft Logs, o sistema compara a luta do jogador com a média dos **10 melhores jogadores do mundo na mesma faixa de item level (bracket)**, aplica regras determinísticas da especialização e do chefe, e utiliza Inteligência Artificial para explicar em linguagem simples quais erros mais custaram dano (DPS) e o que corrigir primeiro.
+
+- **Curso:** Engenharia de Software — Centro Universitário UNA
+- **Unidade Curricular:** Usabilidade e Desenvolvimento Web (Projeto A3)
+- **Recorte do MVP:** Especialização Mago Arcano (Sunfury) | Raide *The Venomous Abyss* (Midnight, Temporada 2) | Dificuldade Mítica | Chefe da Alfa: *Nek'zali, a Enrosca-almas* (Encontro 3470)
+
+## 2. Arquitetura e Stack Tecnológica (RT02)
+
+| Camada | Tecnologia | Responsabilidade |
+| :--- | :--- | :--- |
+| **Frontend** | React 19 + Vite | Interface responsiva (360px a desktop), validação de entrada e visualização do relatório |
+| **Backend** | Python 3.12 + FastAPI | API REST, autenticação JWT + Argon2, controle de limite do plano e orquestração |
+| **Motor de Análise** | Python (`app/engine/`) | Leitura de regras YAML (`arcane_mage.yaml` e `nekzali.yaml`), linha do tempo e comparação por fase |
+| **Banco de Dados** | SQLModel (SQLite / PostgreSQL) | Persistência de usuários, histórico de análises e evolução por chefe, com atenção à conformidade com a LGPD |
+| **Inteligência Artificial** | Gemini via Vertex AI (GCP) | Explicação e priorização dos erros em português a partir dos fatos estruturados |
+| **Fonte de Dados** | Warcraft Logs API v2 (GraphQL) | Coleta de eventos de combate, fases e rankings por bracket de item level (OAuth2) |
+
+## 3. Estrutura do Repositório
+
+```text
+LogCoach/
+├── .github/workflows/ci.yml   # Pipeline CI: Ruff (lint/format), Pytest, ESLint e Vite Build
+├── backend/                   # API FastAPI e Motor de Análise
+│   ├── app/
+│   │   ├── api/               # Rotas REST (/auth, /me, /reports/resolve, /analyses)
+│   │   ├── engine/            # Motor determinístico (rules, timeline, prismatic_bolt, arcane_soul)
+│   │   ├── rules/             # Regras da especialização (arcane_mage.yaml)
+│   │   ├── encounters/        # Regras e mecânicas do chefe (nekzali.yaml)
+│   │   ├── guides/            # Guias em português enviados como contexto para a IA
+│   │   ├── i18n/              # Tradução de magias e NPCs por ID (pt_br.yaml)
+│   │   ├── samples/           # Dados do kill de referência para modo offline/demo
+│   │   ├── services/          # Interfaces ReportSource e Analyzer, planos e validação
+│   │   └── wcl/               # Cliente GraphQL Warcraft Logs e anonimização (RF25)
+│   ├── scripts/               # Script de coleta e anonimização de fixtures
+│   └── tests/                 # Suíte de testes automatizados (Pytest + fixtures reais)
+├── frontend/                  # SPA React + Vite
+│   └── src/
+│       ├── components/        # Componentes de UI (Timeline, MistakeCard, EvolutionChart, etc.)
+│       ├── lib/               # Cliente de API, roteador hash, autenticação e formatação
+│       └── pages/             # Telas (Home, Login, ChooseFight, Result, Profile, Plans)
+├── docs/                      # Documentação completa sincronizada com o GitBook (Itens 01 a 14)
+├── .pre-commit-config.yaml    # Hooks de pré-commit com Ruff
+└── gitbook-docs.yaml          # Configuração de sincronização GitBook Git Sync
+```
+
 ## 4. Gestão e Qualidade de Código (Clean Code / SOLID)
 
 O projeto adota princípios de Clean Code e SOLID para garantir a manutenibilidade, a extensibilidade e a qualidade do código.
