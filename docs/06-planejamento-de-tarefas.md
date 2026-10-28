@@ -4,13 +4,11 @@ description: Organização das tarefas e prazos do time.
 
 # 6. Planejamento de Tarefas (Cronograma)
 
-**Planilha de entregas:** controle de prazos mantido pelo Luiz.
+**Controle oficial das tarefas:** a planilha de entregas abaixo, mantida pelo Luiz, com o controle de prazos do grupo.
 
 {% embed url="https://docs.google.com/spreadsheets/d/1usVGNxfKOdTOzPsQEzIczHR9qQlqXamn/edit?gid=2102548923#gid=2102548923" %}
 
-**Quadro oficial:** GitHub Projects do repositório (_link a adicionar_), com colunas *Backlog → A fazer → Fazendo → Revisão → Feito*.
-
-**Tarefas:** cada frente de trabalho é uma issue no GitHub, de #3 a #17, com responsável, situação e dependências: [issues com o rótulo `frente`](https://github.com/jp4inbr/LogCoach/issues?q=label%3Afrente). As concluídas ficam fechadas. O rótulo `RT03` marca o que é da entrega de 28/10 e `banca`, o que fica para o fim de novembro.
+**Detalhe técnico:** cada frente de trabalho também é uma issue no GitHub, de #3 a #17, com responsável, situação e dependências: [issues com o rótulo `frente`](https://github.com/jp4inbr/LogCoach/issues?q=label%3Afrente). As concluídas ficam fechadas. O rótulo `RT03` marca o que é da entrega de 28/10 e `banca`, o que fica para o fim de novembro.
 
 **Meta da RT03 (28/10/2026):** versão alfa rodando com o 1º chefe (Nek'zali), documentação consolidada, relatório de IA, testes e roteiro da banca.
 
@@ -23,7 +21,7 @@ description: Organização das tarefas e prazos do time.
 | **Arthur** | Líder técnico + especialista do jogo | Motor de análise, regras do Mago Arcano e do encontro (mapa do Nek'zali), integração com Warcraft Logs e IA, validação de todo conteúdo de WoW |
 | **Pedro** | Frontend, backend de contas e qualidade | Base técnica (linters, CI), telas em React ligadas ao backend, contas, histórico e limite do plano; evidências de usabilidade (8.1) e métricas (11) |
 | **João** | GitBook | Organização e revisão das páginas no GitBook |
-| **Luiz** | Gestão | Planilha de entregas, quadro no GitHub Projects, checagem de prazos |
+| **Luiz** | Gestão | Planilha de entregas, checagem de prazos |
 | **Danilo** | Design | Mockups das telas no Figma (item 3) |
 | **Matheus Damasceno** | Planejamento estratégico | Product Vision Board (item 2.B) |
 | **Matheus Morgado** | Qualidade da Apresentação | Elaborar os slides e garantir que o material estará disponível e correto na hora da apresentação à banca |
@@ -42,7 +40,7 @@ gantt
     title RT03 — LogCoach
     section Base
     Repositório, linters, CI          :2026-10-13, 2d
-    GitHub Projects                   :2026-10-13, 2d
+    Planilha de entregas              :2026-10-13, 2d
     Docs RT01/RT02 no GitBook         :2026-10-14, 3d
     Chaves WCL + Google Cloud         :2026-10-13, 2d
     Dados de exemplo do Nek'zali      :2026-10-14, 3d
