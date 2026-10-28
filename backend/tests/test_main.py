@@ -14,7 +14,7 @@ ORIGIN = "http://localhost:5173"
 
 
 class BrokenSource:
-    def get_report(self, code: str):
+    def get_report(self, code: str, refresh: bool = False):
         raise RuntimeError("bug de propósito")
 
 

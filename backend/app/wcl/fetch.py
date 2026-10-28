@@ -7,7 +7,7 @@ Os tempos ficam em ms do report, como vêm da API. Quem converte para
 from typing import Any
 
 from app.wcl import queries
-from app.wcl.client import WclClient, WclError
+from app.wcl.client import EVENTS_TIMEOUT, WclClient, WclError
 from app.wcl.players import find_player
 
 MYTHIC = 5
@@ -94,9 +94,13 @@ def fetch_fight(
     """Luta completa de um jogador: pelo id do ator (jogador analisado) ou por nome + reino
     (top 10, que o ranking traz sem id). Ver `wcl/players.py`.
     """
-    report = client.query(queries.FIGHT_META, {"code": code, "fightID": fight_id})["reportData"][
-        "report"
-    ]
+    # Parte da busca pesada (masterData e playerDetails de um log que pode ser do dia
+    # inteiro): espera como as páginas de eventos, não como as consultas pequenas.
+    variables = {"code": code, "fightID": fight_id}
+    data = client.query(queries.FIGHT_META, variables, timeout=EVENTS_TIMEOUT)
+    report = data["reportData"]["report"]
+    if report is None:
+        raise WclError(f"Report {code} não encontrado.")
     if not report["fights"]:
         raise WclError(f"Luta {fight_id} não existe no report {code}.")
     fight = report["fights"][0]

@@ -48,7 +48,8 @@ class Me(BaseModel):
 
 class ReportResolveRequest(BaseModel):
     url: str
-    # "Atualizar lutas": busca a lista de novo no Warcraft Logs em vez de usar o cache.
+    # Mantido por compatibilidade: colar o link, "Atualizar lutas" e a atualização automática
+    # já buscam a lista de novo no Warcraft Logs (com a trava de 15 s), com ou sem ele.
     refresh: bool = False
 
 
@@ -72,6 +73,9 @@ class FightOption(BaseModel):
     supported: bool
     # Motivo para a luta aparecer em cinza (item 8.2), quando supported é falso.
     unsupported_reason: str | None = None
+    # Luta ainda subindo para o Warcraft Logs (log ao vivo): não suportada por enquanto, mas
+    # a tela mostra diferente e atualiza a lista sozinha enquanto houver uma assim.
+    in_progress: bool = False
     # Sem jogadores: os Magos Arcanos vêm por luta, em GET /reports/{code}/fights/{id}/players.
 
 
@@ -91,6 +95,21 @@ class FightPlayers(BaseModel):
     report_code: str
     fight_id: int
     players: list[PlayerOption]
+
+
+class PrefetchRequest(BaseModel):
+    # Jogador já definido na tela (escolhido, único Arcano da luta ou personagem lembrado).
+    actor_id: int
+
+
+# started: a busca começou agora; running: já estava em andamento; ready: já está no cache.
+PrefetchState = Literal["started", "running", "ready"]
+
+
+class PrefetchStatus(BaseModel):
+    """Resposta da pré-busca dos eventos da luta (202): a análise depois aproveita a busca."""
+
+    status: PrefetchState
 
 
 # --- Resultado da análise --------------------------------------------------

@@ -374,6 +374,19 @@ def test_analysis_with_wcl_down_is_wcl_unavailable(client, auth_headers):
     assert client.get("/me", headers=auth_headers).json()["analyses_this_month"] == 0
 
 
+def test_sample_analyzer_does_not_download_the_fight_events(client):
+    # Enquanto o motor não entra, o /analyses não gasta os ~12 pontos da luta completa.
+    wcl = FakeWcl()
+    wcl_source(wcl, [0.0])
+
+    response = client.post(
+        "/analyses", json={"report_code": "TESTE123", "fight_id": 2, "actor_id": 10}
+    )
+
+    assert response.json()["detail"]["code"] == "analysis_not_available"
+    assert wcl.calls == ["ReportFights", "FightPlayers"]
+
+
 def test_month_start():
     assert month_start(datetime(2026, 10, 26, 17, 30, tzinfo=UTC)) == datetime(
         2026, 10, 1, tzinfo=UTC

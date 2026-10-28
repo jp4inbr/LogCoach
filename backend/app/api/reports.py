@@ -1,4 +1,5 @@
-"""Leitura do link do Warcraft Logs, lista de lutas e Magos de cada luta (RF03, RF04)."""
+"""Leitura do link do Warcraft Logs, lista de lutas, Magos de cada luta e pré-busca dos
+eventos da luta do jogador (RF03, RF04)."""
 
 from collections.abc import Callable
 from typing import Annotated, Any
@@ -10,11 +11,14 @@ from app.schemas import (
     FightOption,
     FightPlayers,
     PlayerOption,
+    PrefetchRequest,
+    PrefetchStatus,
     ReportResolved,
     ReportResolveRequest,
 )
 from app.services.links import parse_report_code
 from app.services.sources import (
+    IN_PROGRESS_REASON,
     MIN_FIGHT_S,
     SAMPLE_REPORT_CODE,
     ReportNotAvailableError,
@@ -70,7 +74,8 @@ def refresh_report(source: ReportSource, code: str) -> ReportResolved:
 def load_fight(
     source: ReportSource, code: str, fight_id: int
 ) -> tuple[ReportResolved, FightOption]:
-    """A luta pedida, se ela pode ser analisada. Mesmos erros no /analyses e nos jogadores."""
+    """A luta pedida, se ela pode ser analisada. Mesmos erros no /analyses, nos jogadores e
+    na pré-busca."""
     report = load_report(source, code)
     fight = next((f for f in report.fights if f.id == fight_id), None)
     if fight is None:
@@ -79,6 +84,9 @@ def load_fight(
         fight = next((f for f in report.fights if f.id == fight_id), None)
     if fight is None:
         raise api_error(404, "fight_not_found", "Essa luta não existe nesse relatório.")
+    # Luta subindo: a duração ainda vai crescer, então o motivo é ela estar em andamento.
+    if fight.in_progress:
+        raise api_error(422, "unsupported_fight", fight.unsupported_reason or IN_PROGRESS_REASON)
     if fight.duration_s < MIN_FIGHT_S:
         raise api_error(
             422, "fight_too_short", "A luta tem menos de 60 s. Escolha uma tentativa mais longa."
@@ -94,6 +102,19 @@ def load_fight_players(source: ReportSource, code: str, fight_id: int) -> list[P
     return load_report(_SourceCall(lambda: source.get_fight_players(code, fight_id)), code)
 
 
+def load_player(
+    source: ReportSource, report: ReportResolved, fight: FightOption, actor_id: int
+) -> PlayerOption:
+    """O Mago Arcano da luta com esse id: id de fora dela ou de outra spec dá no_arcane_mage."""
+    players = load_fight_players(source, report.code, fight.id)
+    player = next((p for p in players if p.actor_id == actor_id), None)
+    if player is None:
+        raise api_error(
+            422, "no_arcane_mage", "Não achamos esse personagem entre os Magos Arcanos da luta."
+        )
+    return player
+
+
 @router.post("/resolve")
 def resolve_report(data: ReportResolveRequest, source: ReportSourceDep) -> ReportResolved:
     code = parse_report_code(data.url)
@@ -104,10 +125,10 @@ def resolve_report(data: ReportResolveRequest, source: ReportSourceDep) -> Repor
             "Esse link não parece ser do Warcraft Logs. "
             "Ele deve começar com warcraftlogs.com/reports/",
         )
-    # "Atualizar lutas" (log ao vivo): lê a lista de novo; o cache só muda se der certo.
-    if data.refresh:
-        return refresh_report(source, code)
-    return load_report(source, code)
+    # Colar o link, "Atualizar lutas" e a atualização automática (luta subindo) leem a lista
+    # de novo, com ou sem `refresh`: o log pode ser ao vivo. Menos de 15 s depois da última
+    # busca vem a lista guardada; se a busca falhar, a guardada continua no cache.
+    return refresh_report(source, code)
 
 
 @router.get("/{code}/fights/{fight_id}/players")
@@ -116,3 +137,17 @@ def fight_players(code: str, fight_id: int, source: ReportSourceDep) -> FightPla
     report, fight = load_fight(source, code, fight_id)
     players = load_fight_players(source, report.code, fight.id)
     return FightPlayers(report_code=report.code, fight_id=fight.id, players=players)
+
+
+@router.post("/{code}/fights/{fight_id}/prefetch", status_code=202)
+def prefetch_fight(
+    code: str, fight_id: int, data: PrefetchRequest, source: ReportSourceDep
+) -> PrefetchStatus:
+    """Começa a baixar os eventos da luta do jogador (~12 pontos) assim que ele fica definido
+    na tela, para a análise não esperar por eles. Responde na hora, sem esperar a busca."""
+    report, fight = load_fight(source, code, fight_id)
+    player = load_player(source, report, fight, data.actor_id)
+    status = load_report(
+        _SourceCall(lambda: source.prefetch(report.code, fight.id, player.actor_id)), report.code
+    )
+    return PrefetchStatus(status=status)

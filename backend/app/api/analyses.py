@@ -5,7 +5,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 
 from app.api.deps import OptionalUserDep, SessionDep
-from app.api.reports import ReportSourceDep, load_fight, load_fight_players
+from app.api.reports import ReportSourceDep, load_fight, load_player
 from app.config import get_settings
 from app.errors import api_error
 from app.models import Analysis
@@ -35,15 +35,11 @@ def create_analysis(
     source: ReportSourceDep,
     analyzer: AnalyzerDep,
 ) -> AnalysisOut:
-    # Lista e Magos da luta saem do cache que a tela de escolher a luta já encheu.
+    # Lista e Magos da luta saem do cache que a tela de escolher a luta já encheu. Os eventos
+    # (quando o motor entrar) saem da pré-busca: ver `Analyzer` em services/sources.py.
     report, fight = load_fight(source, data.report_code, data.fight_id)
-    players = load_fight_players(source, report.code, fight.id)
     # Só os Magos Arcanos da luta: id de fora dela ou de outra spec cai aqui.
-    player = next((p for p in players if p.actor_id == data.actor_id), None)
-    if player is None:
-        raise api_error(
-            422, "no_arcane_mage", "Não achamos esse personagem entre os Magos Arcanos da luta."
-        )
+    player = load_player(source, report, fight, data.actor_id)
 
     limit = get_settings().free_monthly_limit
     if user is not None and analyses_this_month(session, user.id) >= limit:

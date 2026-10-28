@@ -2,6 +2,7 @@
 
 import copy
 import json
+import threading
 
 import httpx
 import pytest
@@ -14,15 +15,18 @@ from app.services.sources import (
     SHORT_FIGHT_REASON,
     UNSUPPORTED_BOSS_REASON,
     UNSUPPORTED_DIFFICULTY_REASON,
+    FightDataStore,
     ReportCache,
     ReportNotAvailableError,
     SampleReportSource,
     SourceUnavailableError,
     WclReportSource,
     build_report,
+    fight_data_store,
     get_report_source,
     players_cache,
     report_cache,
+    shutdown_prefetch,
 )
 from app.wcl.client import TOKEN_URL, WclClient, WclUnavailableError, close_shared_client
 from app.wcl.fetch import fetch_report
@@ -32,13 +36,19 @@ NEKZALI = 3470
 
 @pytest.fixture(autouse=True)
 def fresh_wcl_state():
-    """Caches e cliente do processo zerados: nada vaza de um teste para outro."""
+    """Caches, pré-buscas e cliente do processo zerados: nada vaza de um teste para outro.
+
+    `shutdown_prefetch` espera as threads da pré-busca terminarem: nenhuma fica solta.
+    """
     report_cache.clear()
     players_cache.clear()
+    fight_data_store.clear()
     close_shared_client()
     yield
+    shutdown_prefetch()
     report_cache.clear()
     players_cache.clear()
+    fight_data_store.clear()
     close_shared_client()
 
 
@@ -87,6 +97,9 @@ class FakeWcl:
         self.details: dict = {}
         self.status = status
         self.calls: list[str] = []
+        # Eventos da luta: com `gate`, cada página espera o teste liberar (busca "lenta").
+        self.gate: threading.Event | None = None
+        self.fetching = threading.Event()  # a busca de uma luta completa começou
 
     def handler(self, request: httpx.Request) -> httpx.Response:
         if str(request.url) == TOKEN_URL:
@@ -94,11 +107,19 @@ class FakeWcl:
         body = json.loads(request.content)
         name = body["query"].split("(")[0].split()[-1]
         self.calls.append(name)
+        if name == "FightMeta":
+            self.fetching.set()
+        if name == "Events" and self.gate is not None:
+            assert self.gate.wait(timeout=5), "o teste não liberou a busca"
         if self.status != 200:
             return httpx.Response(self.status, json={})
         if name == "ReportFights":
             return httpx.Response(200, json=report_body(self.report))
         fight_id = body["variables"]["fightID"]
+        if name == "FightMeta":
+            return httpx.Response(200, json=report_body(self.fight_meta(fight_id)))
+        if name == "Events":
+            return httpx.Response(200, json=report_body({"events": self.events(body)}))
         if name == "FightPlayerDetails":
             details = {"data": {"playerDetails": {"dps": self.details.get(fight_id, [])}}}
             return httpx.Response(200, json=report_body({"playerDetails": details}))
@@ -110,16 +131,48 @@ class FakeWcl:
             200, json=report_body({"fights": fights, "masterData": {"actors": self.mages}})
         )
 
+    def fight_meta(self, fight_id: int) -> dict:
+        """FIGHT_META: a luta, os atores e as habilidades do report."""
+        fights = [
+            f | {"size": 20, "phaseTransitions": []}
+            for f in self.report["fights"]
+            if f["id"] == fight_id
+        ]
+        actors = [a | {"petOwner": None, "gameID": 0} for a in self.mages]
+        details = {"data": {"playerDetails": {"dps": [{"id": a["id"]} for a in self.mages]}}}
+        return {"code": self.report["code"], "startTime": 0, "fights": fights, "phases": [],
+                "masterData": {"actors": actors,
+                               "abilities": [{"gameID": 30451, "name": "Arcane Blast"}]},
+                "playerDetails": details}  # fmt: skip
+
+    @staticmethod
+    def events(body: dict) -> dict:
+        """Uma página de eventos: um Arcane Blast do jogador nos casts, nada no resto."""
+        variables = body["variables"]
+        data = []
+        if variables["dataType"] == "Casts" and variables["sourceID"] is not None:
+            data = [{"timestamp": variables["startTime"] + 1000, "type": "cast",
+                     "sourceID": variables["sourceID"], "targetID": -1,
+                     "abilityGameID": 30451, "fight": variables["fightID"]}]  # fmt: skip
+        return {"data": data, "nextPageTimestamp": None}
+
+    def count(self, name: str) -> int:
+        return self.calls.count(name)
+
     def client(self) -> WclClient:
         return WclClient("id", "secret", transport=httpx.MockTransport(self.handler))
 
-    def source(self, cache: ReportCache | None = None) -> WclReportSource:
-        # Caches próprios por padrão: cada FakeWcl é uma API nova.
+    def source(
+        self, cache: ReportCache | None = None, fight_data: FightDataStore | None = None
+    ) -> WclReportSource:
+        # Caches próprios por padrão: cada FakeWcl é uma API nova. A pré-busca usa o
+        # executor do processo, que o `fresh_wcl_state` desliga no fim de cada teste.
         client = self.client()
         return WclReportSource(
             client_factory=lambda: client,
             cache=ReportCache() if cache is None else cache,
             players=ReportCache(),
+            fight_data=FightDataStore() if fight_data is None else fight_data,
         )
 
 
@@ -230,10 +283,13 @@ def test_fight_still_uploading_is_not_supported():
     report = copy.deepcopy(REPORT)
     report["fights"][1]["inProgress"] = True
 
-    fight = source_for(report).get_report("TESTE123").fights[1]
+    fights = source_for(report).get_report("TESTE123").fights
 
-    assert fight.supported is False
-    assert fight.unsupported_reason == IN_PROGRESS_REASON
+    assert fights[1].supported is False
+    assert fights[1].unsupported_reason == IN_PROGRESS_REASON
+    # A tela mostra a luta subindo diferente das não suportadas e atualiza sozinha.
+    assert fights[1].in_progress is True
+    assert [f.in_progress for f in fights if f.id != 2] == [False, False, False]
 
 
 def test_boss_without_rules_is_not_supported():
@@ -383,6 +439,21 @@ def test_fight_players_are_fetched_once_per_fight():
     source.get_fight_players("TESTE123", 4)
 
     assert wcl.calls == ["FightPlayers", "FightPlayers"]
+
+
+def test_empty_mage_list_is_not_cached():
+    # Logo depois da luta o WCL pode ainda não ter os dados de combate: "nenhum Arcano"
+    # guardado por 6 h esconderia o mago quando o WCL terminar.
+    wcl = FakeWcl()
+    wcl.fight_players[2] = ([], [], [])
+    source = wcl.source()
+    assert source.get_fight_players("TESTE123", 2) == []
+
+    wcl.fight_players[2] = FIGHT_PLAYERS[2]
+
+    assert [p.actor_id for p in source.get_fight_players("TESTE123", 2)] == [10, 13]
+    assert [p.actor_id for p in source.get_fight_players("TESTE123", 2)] == [10, 13]
+    assert wcl.calls == ["FightPlayers", "FightPlayers"]  # a lista com Magos ficou no cache
 
 
 def test_cache_is_shared_between_sources():
