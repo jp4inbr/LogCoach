@@ -1,18 +1,29 @@
 import threading
 
 import pytest
-from test_sources import FakeWcl, fresh_wcl_state, nekzali  # noqa: F401 (fixture autouse)
+from conftest import ANALYSIS
+from test_sources import (  # noqa: F401 (fixture autouse)
+    FakeWcl,
+    fake_client,
+    fresh_wcl_state,
+    nekzali,
+    wait_prefetch,
+)
 
+from app.api.reports import PREFETCH_LIMIT_MESSAGE
 from app.main import app
 from app.services.links import parse_report_code
 from app.services.sources import (
     IN_PROGRESS_REASON,
     REFRESH_MIN_INTERVAL_S,
+    UNSUPPORTED_BOSS_REASON,
+    PrefetchLimiter,
     ReportCache,
     SourceUnavailableError,
+    WclReportSource,
     get_report_source,
-    shutdown_prefetch,
 )
+from app.wcl.client import QUERY_MESSAGE
 
 SAMPLE_LINK = "https://www.warcraftlogs.com/reports/XhrmBaYkGCAQjH2D#fight=34"
 
@@ -144,7 +155,33 @@ def test_resolve_right_after_a_fetch_uses_the_cache(client):
     assert wcl.calls == ["ReportFights", "ReportFights"]
 
 
-def test_failed_resolve_shows_the_error_and_keeps_the_list(client):
+def test_failed_resolve_brings_the_cached_list_as_stale(client):
+    # WCL fora do ar ao colar de novo um link já aberto: a tela segue com a lista guardada.
+    now = [0.0]
+    wcl = FakeWcl()
+    use_wcl(wcl, now)
+    first = client.post("/reports/resolve", json=LINK).json()
+
+    wcl.status = 503
+    now[0] = 120
+    response = client.post("/reports/resolve", json=LINK)
+
+    body = response.json()
+    assert response.status_code == 200
+    assert (first["stale"], first["stale_message"]) == (False, None)
+    assert body["stale"] is True
+    assert "fora do ar" in body["stale_message"]
+    assert body["fetched_at"] == first["fetched_at"]
+    assert body["fights"] == first["fights"]
+    # A lista guardada continua valendo para a escolha da luta (Magos e análise).
+    wcl.status = 200
+    assert client.get("/reports/TESTE123/fights/2/players").status_code == 200
+    assert wcl.calls == ["ReportFights", "ReportFights", "FightPlayers"]
+
+
+def test_new_fight_with_wcl_down_is_not_fight_not_found(client):
+    # A luta pedida não está na lista guardada e a busca nova falhou: não dá para dizer que
+    # ela não existe.
     now = [0.0]
     wcl = FakeWcl()
     use_wcl(wcl, now)
@@ -152,14 +189,54 @@ def test_failed_resolve_shows_the_error_and_keeps_the_list(client):
 
     wcl.status = 503
     now[0] = 120
+    response = client.get("/reports/TESTE123/fights/5/players")
+
+    assert response.status_code == 503
+    assert response.json()["detail"]["code"] == "wcl_unavailable"
+
+
+def test_failed_resolve_without_cached_list_is_503(client):
+    use_wcl(FakeWcl(status=429), [0.0])
+
     response = client.post("/reports/resolve", json=LINK)
 
     assert response.status_code == 503
     assert response.json()["detail"]["code"] == "wcl_unavailable"
-    # A lista guardada continua valendo para a escolha da luta (Magos e análise).
-    wcl.status = 200
-    assert client.get("/reports/TESTE123/fights/2/players").status_code == 200
-    assert wcl.calls == ["ReportFights", "ReportFights", "FightPlayers"]
+
+
+def test_broken_query_is_unexpected_error_not_wcl_down(client):
+    # Bug nosso: "Tentar de novo" não resolve, então não sai como Warcraft Logs fora do ar.
+    broken = {"errors": [{"message": 'Cannot query field "x" on type "Report".'}]}
+    source = WclReportSource(
+        client_factory=lambda: fake_client(broken), cache=ReportCache(), players=ReportCache()
+    )
+    app.dependency_overrides[get_report_source] = lambda: source
+
+    response = client.post("/reports/resolve", json=LINK)
+
+    assert response.status_code == 500
+    assert response.json()["detail"] == {"code": "unexpected_error", "message": QUERY_MESSAGE}
+
+
+def test_other_boss_still_uploading_is_not_marked_as_uploading(client):
+    wcl = FakeWcl()
+    wcl.report["fights"].append(
+        {"id": 5, "encounterID": 9999, "name": "Outro Chefe", "difficulty": 5, "kill": False,
+         "startTime": 1_300_000, "endTime": 1_320_000, "inProgress": True}
+    )  # fmt: skip
+    use_wcl(wcl, [0.0])
+
+    fights = {f["id"]: f for f in client.post("/reports/resolve", json=LINK).json()["fights"]}
+    response = client.get("/reports/TESTE123/fights/5/players")
+
+    assert fights[5]["in_progress"] is False
+    assert fights[5]["unsupported_reason"] == UNSUPPORTED_BOSS_REASON
+    # 20 s até agora, mas o motivo é o chefe, não a luta curta.
+    assert response.status_code == 422
+    assert response.json()["detail"] == {
+        "code": "unsupported_fight",
+        "message": UNSUPPORTED_BOSS_REASON,
+    }
 
 
 def test_fight_in_progress_is_marked_and_not_clickable(client):
@@ -197,7 +274,7 @@ def test_prefetch_answers_202_without_waiting_the_download(client):
     assert wcl.fetching.wait(timeout=5)
     second = prefetch(client)
     wcl.gate.set()
-    shutdown_prefetch()
+    wait_prefetch()
 
     assert (first.status_code, first.json()) == (202, {"status": "started"})
     assert (second.status_code, second.json()) == (202, {"status": "running"})
@@ -213,6 +290,55 @@ def test_prefetch_of_the_sample_fight_is_ready(client):
     response = prefetch(client, 34, 455, "XhrmBaYkGCAQjH2D")
 
     assert (response.status_code, response.json()) == (202, {"status": "ready"})
+
+
+def test_prefetch_limit_per_client(client, auth_headers):
+    # Limite de 1 para o teste: o anônimo (IP) estoura, a conta logada tem o próprio limite.
+    wcl = FakeWcl()
+    source = wcl.source(limiter=PrefetchLimiter(max_calls=1))
+    app.dependency_overrides[get_report_source] = lambda: source
+
+    first = prefetch(client, 2, 10)
+    blocked = prefetch(client, 2, 13)
+    logged = client.post(
+        "/reports/TESTE123/fights/2/prefetch", json={"actor_id": 13}, headers=auth_headers
+    )
+    wait_prefetch()
+
+    assert first.json() == {"status": "started"}
+    assert blocked.status_code == 429
+    assert blocked.json()["detail"] == {"code": "prefetch_limit", "message": PREFETCH_LIMIT_MESSAGE}
+    assert logged.status_code == 202
+    # Do cache não conta: o anônimo, já no limite, ainda recebe "ready".
+    assert prefetch(client, 2, 10).json() == {"status": "ready"}
+
+
+def test_prefetch_with_no_analyses_left_is_plan_limit(client, auth_headers):
+    # Quem não vai poder analisar não gasta pontos do Warcraft Logs com a pré-busca.
+    for _ in range(5):
+        assert client.post("/analyses", json=ANALYSIS, headers=auth_headers).status_code == 201
+
+    response = client.post(
+        "/reports/XhrmBaYkGCAQjH2D/fights/34/prefetch", json={"actor_id": 455}, headers=auth_headers
+    )
+    blocked = client.post("/analyses", json=ANALYSIS, headers=auth_headers)
+
+    assert response.status_code == 403
+    assert response.json()["detail"] == blocked.json()["detail"]
+    assert response.json()["detail"]["code"] == "plan_limit"
+    # Sem login não há contagem.
+    assert prefetch(client, 34, 455, "XhrmBaYkGCAQjH2D").status_code == 202
+
+
+def test_prefetch_with_an_expired_token_is_anonymous(client):
+    # Login opcional: token inválido vale como sem login, como no /analyses.
+    response = client.post(
+        "/reports/XhrmBaYkGCAQjH2D/fights/34/prefetch",
+        json={"actor_id": 455},
+        headers={"Authorization": "Bearer token-vencido"},
+    )
+
+    assert response.status_code == 202
 
 
 @pytest.mark.parametrize(

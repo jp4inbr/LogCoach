@@ -4,9 +4,11 @@ eventos da luta do jogador (RF03, RF04)."""
 from collections.abc import Callable
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 
-from app.errors import api_error
+from app.api.deps import OptionalUserDep, SessionDep, check_plan_limit
+from app.errors import UNEXPECTED_ERROR_CODE, api_error
+from app.models import User
 from app.schemas import (
     FightOption,
     FightPlayers,
@@ -21,16 +23,27 @@ from app.services.sources import (
     IN_PROGRESS_REASON,
     MIN_FIGHT_S,
     SAMPLE_REPORT_CODE,
+    SHORT_FIGHT_REASON,
+    PrefetchLimitError,
     ReportNotAvailableError,
     ReportSource,
     SampleReportSource,
     SourceUnavailableError,
     get_report_source,
 )
+from app.wcl.client import UNAVAILABLE_MESSAGE
 
 router = APIRouter(prefix="/reports", tags=["análises"])
 
 ReportSourceDep = Annotated[ReportSource, Depends(get_report_source)]
+
+# Status de cada código da fonte: do Warcraft Logs (tentar de novo depois resolve) ou nosso.
+SOURCE_ERROR_STATUS = {"wcl_unavailable": 503, UNEXPECTED_ERROR_CODE: 500}
+
+PREFETCH_LIMIT_MESSAGE = (
+    "Você abriu muitas lutas em pouco tempo. Espere alguns minutos para abrir outras; "
+    "a análise continua funcionando, só pode demorar um pouco mais para começar."
+)
 
 
 def load_report(source: ReportSource, code: str) -> ReportResolved:
@@ -48,10 +61,11 @@ def load_report(source: ReportSource, code: str) -> ReportResolved:
             )
         raise api_error(404, "report_not_available", message) from None
     except SourceUnavailableError as exc:
-        # Limite de pontos, API fora do ar ou credencial do servidor: o relatório pode estar
-        # certo, então não mandamos o usuário conferir se ele é público. A mensagem vem do
-        # cliente do WCL, que sabe a causa.
-        raise api_error(503, "wcl_unavailable", exc.user_message) from None
+        # Limite de pontos, API fora do ar ou erro nosso (consulta com defeito, credencial do
+        # servidor): o relatório pode estar certo, então não mandamos o usuário conferir se
+        # ele é público. Código e mensagem vêm do cliente do WCL, que sabe a causa.
+        status = SOURCE_ERROR_STATUS.get(exc.error_code, 503)
+        raise api_error(status, exc.error_code, exc.user_message) from None
 
 
 class _SourceCall:
@@ -82,12 +96,17 @@ def load_fight(
         # Log ao vivo: a luta pode ter acabado depois da lista guardada. Busca a lista uma vez.
         report = refresh_report(source, code)
         fight = next((f for f in report.fights if f.id == fight_id), None)
+        if fight is None and report.stale:
+            # A busca nova falhou e veio a lista guardada: não dá para dizer que a luta não
+            # existe, só que o Warcraft Logs não respondeu.
+            raise api_error(503, "wcl_unavailable", report.stale_message or UNAVAILABLE_MESSAGE)
     if fight is None:
         raise api_error(404, "fight_not_found", "Essa luta não existe nesse relatório.")
     # Luta subindo: a duração ainda vai crescer, então o motivo é ela estar em andamento.
     if fight.in_progress:
         raise api_error(422, "unsupported_fight", fight.unsupported_reason or IN_PROGRESS_REASON)
-    if fight.duration_s < MIN_FIGHT_S:
+    # Curta só se esse é o motivo: luta de outro chefe ainda subindo tem duração parcial.
+    if fight.duration_s < MIN_FIGHT_S and fight.unsupported_reason in (None, SHORT_FIGHT_REASON):
         raise api_error(
             422, "fight_too_short", "A luta tem menos de 60 s. Escolha uma tentativa mais longa."
         )
@@ -126,8 +145,9 @@ def resolve_report(data: ReportResolveRequest, source: ReportSourceDep) -> Repor
             "Ele deve começar com warcraftlogs.com/reports/",
         )
     # Colar o link, "Atualizar lutas" e a atualização automática (luta subindo) leem a lista
-    # de novo, com ou sem `refresh`: o log pode ser ao vivo. Menos de 15 s depois da última
-    # busca vem a lista guardada; se a busca falhar, a guardada continua no cache.
+    # de novo, com ou sem `refresh`: o log pode ser ao vivo. Menos de 8 s depois da última
+    # busca vem a lista guardada. Se a busca falhar com o WCL fora do ar e houver lista
+    # guardada, ela vem com `stale` e `stale_message`; sem lista guardada, vem o erro.
     return refresh_report(source, code)
 
 
@@ -139,15 +159,44 @@ def fight_players(code: str, fight_id: int, source: ReportSourceDep) -> FightPla
     return FightPlayers(report_code=report.code, fight_id=fight.id, players=players)
 
 
+def prefetch_client(request: Request, user: User | None) -> str | None:
+    """Quem pediu a pré-busca, para o limite: a conta, ou sem login o IP do pedido.
+
+    Atrás de um proxy reverso, `request.client.host` é o IP do proxy (todos os anônimos
+    dividem o limite), a menos que o uvicorn rode com `--proxy-headers` e
+    `--forwarded-allow-ips` apontando para o proxy.
+    """
+    if user is not None:
+        return f"user:{user.id}"
+    return f"ip:{request.client.host}" if request.client else None
+
+
 @router.post("/{code}/fights/{fight_id}/prefetch", status_code=202)
 def prefetch_fight(
-    code: str, fight_id: int, data: PrefetchRequest, source: ReportSourceDep
+    code: str,
+    fight_id: int,
+    data: PrefetchRequest,
+    request: Request,
+    session: SessionDep,
+    user: OptionalUserDep,
+    source: ReportSourceDep,
 ) -> PrefetchStatus:
-    """Começa a baixar os eventos da luta do jogador (~12 pontos) assim que ele fica definido
-    na tela, para a análise não esperar por eles. Responde na hora, sem esperar a busca."""
+    """Põe na fila os eventos da luta do jogador (~12 pontos) assim que ele fica definido na
+    tela, para a análise não esperar por eles. Responde na hora, sem esperar a busca.
+
+    Login opcional. Conta sem análises no mês não pré-busca (403 `plan_limit`); cada cliente
+    tem uma pré-busca na fila (a nova tira a anterior) e no máximo `PREFETCH_LIMIT` novas
+    por janela (429 `prefetch_limit`). A tela ignora esses erros: a análise busca sozinha.
+    """
+    check_plan_limit(session, user)
     report, fight = load_fight(source, code, fight_id)
     player = load_player(source, report, fight, data.actor_id)
-    status = load_report(
-        _SourceCall(lambda: source.prefetch(report.code, fight.id, player.actor_id)), report.code
-    )
+    client = prefetch_client(request, user)
+    try:
+        status = load_report(
+            _SourceCall(lambda: source.prefetch(report.code, fight.id, player.actor_id, client)),
+            report.code,
+        )
+    except PrefetchLimitError:
+        raise api_error(429, "prefetch_limit", PREFETCH_LIMIT_MESSAGE) from None
     return PrefetchStatus(status=status)
