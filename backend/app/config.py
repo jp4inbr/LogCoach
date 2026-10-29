@@ -39,7 +39,10 @@ def resolve_sqlite_url(url: str) -> str:
     ):
         return url
     absolute = (BACKEND_DIR / path).resolve().as_posix()
-    return parsed.set(database=absolute).render_as_string(hide_password=False)
+    # O render_as_string troca o ":" de "C:/..." por "%3A". O SQLAlchemy lê de volta, mas a
+    # URL fica ilegível e os testes falham no Windows; por isso o caminho entra depois.
+    rendered = parsed.set(database="").render_as_string(hide_password=False)
+    return rendered.replace(":///", f":///{absolute}", 1)
 
 
 class Settings(BaseSettings):
