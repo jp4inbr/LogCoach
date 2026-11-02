@@ -15,10 +15,43 @@ from sqlmodel import Session, SQLModel, create_engine  # noqa: E402
 
 from app.db import create_tables, get_session  # noqa: E402
 from app.main import app  # noqa: E402
+from app.services.sources import (  # noqa: E402
+    fight_data_store,
+    players_cache,
+    prefetch_limiter,
+    query_limiter,
+    report_cache,
+    shutdown_prefetch,
+    wcl_cooldown,
+)
+from app.wcl.client import close_shared_client  # noqa: E402
 
 LINK = "https://www.warcraftlogs.com/reports/XhrmBaYkGCAQjH2D#fight=34"
 # Harmonist: ator 455 do report de referência.
 ANALYSIS = {"report_code": "XhrmBaYkGCAQjH2D", "fight_id": 34, "actor_id": 455}
+
+
+def _clear_wcl_state() -> None:
+    report_cache.clear()
+    players_cache.clear()
+    fight_data_store.clear()
+    prefetch_limiter.clear()
+    query_limiter.clear()
+    wcl_cooldown.clear()
+    close_shared_client()
+
+
+@pytest.fixture(autouse=True)
+def fresh_wcl_state():
+    """Caches, pré-buscas, limites, falha lembrada e cliente do processo zerados: nada vaza
+    entre testes.
+
+    `shutdown_prefetch` espera as threads da pré-busca terminarem: nenhuma fica solta.
+    """
+    _clear_wcl_state()
+    yield
+    shutdown_prefetch()
+    _clear_wcl_state()
 
 
 @pytest.fixture

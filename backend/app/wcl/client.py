@@ -112,7 +112,14 @@ def rate_limit_message(wait_s: float | None = None) -> str:
 
 
 class WclError(RuntimeError):
-    """Erro devolvido pela API do Warcraft Logs."""
+    """Erro devolvido pela API do Warcraft Logs.
+
+    `archived` marca o relatório arquivado no Warcraft Logs (a API não lê mais os dados dele).
+    """
+
+    def __init__(self, detail: str = "", archived: bool = False) -> None:
+        super().__init__(detail)
+        self.archived = archived
 
 
 class WclUnavailableError(WclError):
@@ -123,7 +130,8 @@ class WclUnavailableError(WclError):
     ausentes/recusadas. `user_message` é o texto pronto para o usuário (item 8.2) e
     `error_code` o código da API, escolhidos aqui pela causa; a rota só repassa.
     `rate_limited` marca o limite de pedidos e `retry_after_s` traz o `Retry-After` (429 ou
-    manutenção), para a fonte não chamar a API de novo antes da hora.
+    manutenção), para a fonte não chamar a API de novo antes da hora. `status` é o status HTTP
+    da resposta de erro, quando houve uma (None em timeout, rede ou erro de GraphQL).
     """
 
     def __init__(
@@ -133,12 +141,14 @@ class WclUnavailableError(WclError):
         error_code: str = WCL_UNAVAILABLE_CODE,
         rate_limited: bool = False,
         retry_after_s: float | None = None,
+        status: int | None = None,
     ) -> None:
         super().__init__(detail)
         self.user_message = user_message
         self.error_code = error_code
         self.rate_limited = rate_limited
         self.retry_after_s = retry_after_s
+        self.status = status
 
 
 # --- Classificação das respostas ------------------------------------------------
@@ -148,6 +158,9 @@ REPORT_ERRORS = ("this report does not exist", "you do not have permission to vi
 # Erros de GraphQL que são instabilidade do WCL (Lighthouse/Laravel sem detalhes).
 OUTAGE_ERRORS = ("internal server error", "server error", "service unavailable", "maintenance")
 RATE_LIMIT_ERRORS = ("rate limit", "too many requests")
+# Relatório arquivado: a API não lê mais os eventos dele. O texto exato do WCL não foi
+# observado (nenhum report arquivado à mão); "archiv" cobre "archived" e "archive".
+ARCHIVED_ERRORS = ("archiv",)
 # Validação do GraphQL: a consulta que montamos está errada (campo, argumento ou variável).
 QUERY_ERRORS = (
     "syntax error",
@@ -195,17 +208,23 @@ def _http_error(response: httpx.Response, what: str) -> WclError:
     if status == 429:
         # Limite de pontos da API e também o 1015 do Cloudflare (excesso de pedidos por IP).
         return WclUnavailableError(
-            detail, rate_limit_message(retry_after), rate_limited=True, retry_after_s=retry_after
+            detail,
+            rate_limit_message(retry_after),
+            rate_limited=True,
+            retry_after_s=retry_after,
+            status=status,
         )
     if status >= 500:
         # 500–504, 52x do Cloudflare (origem fora do ar ou sem resposta) e manutenção (que
         # pode trazer `Retry-After`).
-        return WclUnavailableError(detail, UNAVAILABLE_MESSAGE, retry_after_s=retry_after)
+        return WclUnavailableError(
+            detail, UNAVAILABLE_MESSAGE, retry_after_s=retry_after, status=status
+        )
     if status == 403 and ("cf-mitigated" in response.headers or _is_html(response)):
         # Página de desafio/bloqueio do Cloudflare na frente da API.
-        return WclUnavailableError(detail, BLOCKED_MESSAGE)
+        return WclUnavailableError(detail, BLOCKED_MESSAGE, status=status)
     logger.error("Resposta inesperada do Warcraft Logs (%s): %s", what, _snippet(response, 2000))
-    return WclUnavailableError(detail, UNEXPECTED_MESSAGE)
+    return WclUnavailableError(detail, UNEXPECTED_MESSAGE, status=status)
 
 
 def _config_error(detail: str) -> WclUnavailableError:
@@ -234,6 +253,9 @@ def _graphql_error(errors: list[Any], data: Any = None) -> WclError:
         return WclUnavailableError(detail, rate_limit_message(), rate_limited=True)
     if mentions(OUTAGE_ERRORS):
         return WclUnavailableError(detail, UNAVAILABLE_MESSAGE)
+    if mentions(ARCHIVED_ERRORS):
+        # Do report, como o privado, mas a mensagem ao usuário é outra.
+        return WclError(detail, archived=True)
     if mentions(QUERY_ERRORS):
         # Bug nosso (consulta desatualizada com o schema do WCL): tentar de novo não resolve.
         logger.error("Consulta ao Warcraft Logs com defeito: %s", detail[:BODY_LOG_CHARS])
@@ -273,6 +295,8 @@ class WclClient:
         self._token_expires_at = 0.0
         # Só uma thread renova o token; as outras esperam (até `token_wait_s`) e usam o novo.
         self._token_lock = threading.Lock()
+        # Ligado no desligamento do app: a busca de eventos para entre uma página e outra.
+        self._stopped = threading.Event()
 
     @classmethod
     def from_env(cls, **kwargs: Any) -> "WclClient":
@@ -288,6 +312,11 @@ class WclClient:
 
     def close(self) -> None:
         self._http.close()
+
+    def stop(self) -> None:
+        """Pede às buscas de eventos em andamento que parem na próxima página (desligamento:
+        a pré-busca não segura o servidor por dezenas de segundos)."""
+        self._stopped.set()
 
     def __enter__(self) -> "WclClient":
         return self
@@ -358,10 +387,15 @@ class WclClient:
         return token, float(expires_in)
 
     def _drop_token(self, token: str) -> None:
-        # Só descarta se ninguém renovou no meio tempo, para não jogar fora um token novo.
-        with self._token_lock:
+        # Só descarta se ninguém renovou no meio tempo, para não jogar fora um token novo. Se
+        # o lock não vem a tempo, outra thread já está renovando: segue e usa o token dela.
+        if not self._token_lock.acquire(timeout=self._token_wait_s):
+            return
+        try:
             if self._token == token:
                 self._token = None
+        finally:
+            self._token_lock.release()
 
     def query(
         self,
@@ -381,8 +415,18 @@ class WclClient:
                 self._drop_token(token)
                 continue
             break
+        if response.status_code == 404 and _is_html(response):
+            # 404 em HTML de novo, já com o token novo: a credencial passou no endpoint do
+            # token (credencial errada vem de lá, 401 invalid_client), então não é
+            # configuração nossa, e sim o WCL respondendo errado.
+            logger.error("404 em HTML na API mesmo com token novo: %s", _snippet(response, 200))
+            raise WclUnavailableError(
+                f"404 em HTML na API com token novo: {_snippet(response, 200)}",
+                UNEXPECTED_MESSAGE,
+                status=404,
+            )
         if _token_refused(response):
-            # Recusado mesmo com token novo: credencial do servidor, não o report.
+            # 401 mesmo com token novo: credencial do servidor, não o report.
             raise _config_error(
                 f"Token recusado na API (HTTP {response.status_code}): {_snippet(response, 200)}"
             )
@@ -416,6 +460,8 @@ class WclClient:
         events: list[dict[str, Any]] = []
         cursor = start_time
         while cursor is not None:
+            if self._stopped.is_set():
+                raise WclUnavailableError("Parando", UNAVAILABLE_MESSAGE)
             data = self.query(
                 EVENTS_QUERY,
                 {
@@ -458,6 +504,14 @@ def shared_client() -> WclClient:
         if _shared is None:
             _shared = WclClient.from_env()
         return _shared
+
+
+def stop_shared_client() -> None:
+    """Pede ao cliente do processo que pare as buscas de eventos (desligamento do app). Não
+    cria o cliente se ele ainda não existe."""
+    with _shared_lock:
+        if _shared is not None:
+            _shared.stop()
 
 
 def close_shared_client() -> None:

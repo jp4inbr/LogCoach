@@ -14,7 +14,7 @@ ORIGIN = "http://localhost:5173"
 
 
 class BrokenSource:
-    def get_report(self, code: str, refresh: bool = False):
+    def get_report(self, code: str, refresh: bool = False, client=None):
         raise RuntimeError("bug de propósito")
 
 
@@ -65,3 +65,14 @@ def test_validation_errors_pass_untouched(client):
 def test_unexpected_message_is_in_portuguese_and_says_what_to_do():
     assert "LogCoach" in UNEXPECTED_ERROR_MESSAGE
     assert "recarregue a página" in UNEXPECTED_ERROR_MESSAGE
+
+
+def test_shutdown_stops_the_events_then_the_prefetch_then_closes_the_client(monkeypatch):
+    calls: list[str] = []
+    for name in ("stop_shared_client", "shutdown_prefetch", "close_shared_client"):
+        monkeypatch.setattr(f"app.main.{name}", lambda name=name: calls.append(name))
+
+    with TestClient(app):
+        assert calls == []
+
+    assert calls == ["stop_shared_client", "shutdown_prefetch", "close_shared_client"]

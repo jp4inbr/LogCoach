@@ -50,13 +50,15 @@ query Rankings(
 
 # Lista de lutas de chefe ao colar o link (1 ponto no report de referência): só o que decide
 # se a luta é suportada. Nada de jogadores: o log pode ter o dia inteiro (outras raides,
-# masmorras) e os Magos só são buscados na luta escolhida (FIGHT_PLAYERS).
+# masmorras) e os Magos só são buscados na luta escolhida (FIGHT_PLAYERS). O `endTime` do
+# report (ms desde 1970, hora do último evento) diz se o log ainda está recebendo dados.
 REPORT_FIGHTS = """
 query ReportFights($code: String!) {
   reportData {
     report(code: $code) {
       code
       title
+      endTime
       fights(killType: Encounters) {
         id encounterID name difficulty kill startTime endTime inProgress
       }

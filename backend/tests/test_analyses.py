@@ -10,6 +10,8 @@ from app.models import Analysis
 from app.schemas import AnalysisResult, FightOption, PlayerOption, ReportResolved
 from app.services.plan import month_start
 from app.services.sources import (
+    QUERY_LIMIT,
+    REFRESH_MIN_INTERVAL_S,
     SAMPLE_REPORT_CODE,
     SAMPLES_DIR,
     SourceUnavailableError,
@@ -102,6 +104,47 @@ def test_t08_sixth_analysis_in_the_month_is_blocked(client, auth_headers):
     assert response.json()["detail"]["code"] == "plan_limit"
 
 
+def test_plan_limit_is_checked_before_asking_the_warcraft_logs(client, auth_headers):
+    # Quem já não pode analisar não gasta pontos: nem a lista nem os Magos são buscados.
+    for _ in range(5):
+        assert client.post("/analyses", json=ANALYSIS, headers=auth_headers).status_code == 201
+    wcl = FakeWcl()
+    source = wcl.source()
+    app.dependency_overrides[get_report_source] = lambda: source
+
+    response = client.post(
+        "/analyses",
+        json={**ANALYSIS, "report_code": "TESTE123", "fight_id": 2, "actor_id": 10},
+        headers=auth_headers,
+    )
+
+    assert response.status_code == 403
+    assert response.json()["detail"]["code"] == "plan_limit"
+    assert wcl.calls == []
+
+
+def test_analysis_counts_in_the_query_limit(client):
+    now = [0.0]
+    wcl = FakeWcl()
+    source = wcl.source(clock=now)
+    app.dependency_overrides[get_report_source] = lambda: source
+    for _ in range(QUERY_LIMIT):
+        now[0] += REFRESH_MIN_INTERVAL_S
+        assert (
+            client.post(
+                "/reports/resolve", json={"url": "https://www.warcraftlogs.com/reports/TESTE123"}
+            ).status_code
+            == 200
+        )
+
+    response = client.post("/analyses", json={**ANALYSIS, "report_code": "TESTE123", "fight_id": 2,
+                                              "actor_id": 10})  # fmt: skip
+
+    assert response.status_code == 429
+    assert response.json()["detail"]["code"] == "query_limit"
+    assert wcl.count("FightPlayers") == 0
+
+
 def test_t08_previous_month_does_not_count(client, auth_headers, engine):
     analysis_id = client.post("/analyses", json=ANALYSIS, headers=auth_headers).json()["id"]
     with Session(engine) as session:
@@ -183,7 +226,7 @@ class OneFightSource:
 
     players: list[PlayerOption] = []
 
-    def get_report(self, code: str, refresh: bool = False) -> ReportResolved:
+    def get_report(self, code: str, refresh: bool = False, client=None) -> ReportResolved:
         fight = FightOption(
             id=34,
             boss="Nek'zali, a Enrosca-almas",
@@ -196,7 +239,7 @@ class OneFightSource:
             code=SAMPLE_REPORT_CODE, title="Sintético", sample=True, fights=[fight]
         )
 
-    def get_fight_players(self, code: str, fight_id: int) -> list[PlayerOption]:
+    def get_fight_players(self, code: str, fight_id: int, client=None) -> list[PlayerOption]:
         return self.players
 
 
@@ -244,11 +287,11 @@ RAW_PLAYERS = {
 
 
 class RawReportSource:
-    def get_report(self, code: str, refresh: bool = False) -> ReportResolved:
+    def get_report(self, code: str, refresh: bool = False, client=None) -> ReportResolved:
         encounters = {3470: {"boss_npc_id": None, "difficulties": [5]}}
         return ReportResolved.model_validate(build_report(RAW_REPORT, encounters, {}))
 
-    def get_fight_players(self, code: str, fight_id: int) -> list[PlayerOption]:
+    def get_fight_players(self, code: str, fight_id: int, client=None) -> list[PlayerOption]:
         raw = {"fight_id": fight_id, "players": RAW_PLAYERS[fight_id], "actors": RAW_ACTORS}
         return [PlayerOption.model_validate(p) for p in build_players(raw)]
 
@@ -306,10 +349,10 @@ def test_harmonist_in_sample_fight_still_gets_the_result(client):
 
 
 class DownSource:
-    def get_report(self, code: str, refresh: bool = False) -> ReportResolved:
+    def get_report(self, code: str, refresh: bool = False, client=None) -> ReportResolved:
         raise SourceUnavailableError(code)
 
-    def get_fight_players(self, code: str, fight_id: int) -> list[PlayerOption]:
+    def get_fight_players(self, code: str, fight_id: int, client=None) -> list[PlayerOption]:
         raise SourceUnavailableError(code)
 
 

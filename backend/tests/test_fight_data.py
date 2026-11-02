@@ -13,10 +13,9 @@ import threading
 from concurrent.futures import ThreadPoolExecutor
 
 import pytest
-from test_sources import (  # noqa: F401 (fixture autouse)
+from test_sources import (
     FakeWcl,
     LockProbe,
-    fresh_wcl_state,
     wait_prefetch,
 )
 
@@ -30,10 +29,11 @@ from app.services.sources import (
     SAMPLES_DIR,
     SHUTDOWN_MESSAGE,
     WCL_COOLDOWN_S,
+    ClientLimiter,
     FightDataNotAvailableError,
     FightDataStore,
     FightKey,
-    PrefetchLimiter,
+    FightNotFoundError,
     PrefetchLimitError,
     ReportNotAvailableError,
     SampleReportSource,
@@ -185,11 +185,12 @@ def test_failed_fight_data_raises_and_is_not_cached():
     assert source.get_fight_data(*FIGHT)["player"]["actor"]["id"] == 10
 
 
-def test_fight_missing_in_wcl_is_report_not_available():
+def test_fight_missing_in_wcl_is_fight_not_found():
+    # O report abriu, só não tem a luta: não é "confira se está público" nem pausa.
     wcl = FakeWcl()
     wcl.report["fights"] = []
 
-    with pytest.raises(ReportNotAvailableError):
+    with pytest.raises(FightNotFoundError):
         wcl.source().get_fight_data(*FIGHT)
 
 
@@ -388,10 +389,27 @@ def test_same_fight_again_keeps_its_place_in_the_queue(busy_pool):
     assert wcl.count("FightMeta") == 1
 
 
+def test_prefetch_of_a_cached_fight_takes_the_queued_one_out(busy_pool):
+    # Trocou de jogador para um que já está no cache: a pré-busca anterior sai da fila, como
+    # quando o novo ainda precisa baixar.
+    pool, gate = busy_pool
+    wcl = FakeWcl()
+    source = wcl.source(executor=pool)
+    source.get_fight_data("TESTE123", 2, 13)
+
+    assert source.prefetch("TESTE123", 2, 10, client="ana") == "started"
+    assert source.prefetch("TESTE123", 2, 13, client="ana") == "ready"
+    # A do ator 10 saiu da fila: quem pede de novo começa outra, não "running".
+    assert source.prefetch("TESTE123", 2, 10, client="bia") == "started"
+    drain(pool, gate)
+
+    assert wcl.count("FightMeta") == 2
+
+
 def test_prefetch_limit_counts_only_new_fetches(busy_pool):
     pool, gate = busy_pool
     wcl = FakeWcl()
-    source = wcl.source(executor=pool, limiter=PrefetchLimiter(max_calls=2))
+    source = wcl.source(executor=pool, limiter=ClientLimiter(max_calls=2))
 
     assert source.prefetch("TESTE123", 2, 10, client="ana") == "started"  # 1ª
     assert source.prefetch("TESTE123", 2, 10, client="ana") == "running"  # não conta
@@ -410,7 +428,7 @@ def test_prefetch_limit_counts_only_new_fetches(busy_pool):
 
 def test_limiter_window_slides():
     now = [0.0]
-    limiter = PrefetchLimiter(max_calls=2, window_s=600, clock=lambda: now[0])
+    limiter = ClientLimiter(max_calls=2, window_s=600, clock=lambda: now[0])
 
     assert [limiter.take("ana"), limiter.take("ana"), limiter.take("ana")] == [True, True, False]
     assert limiter.take("bia") is True
@@ -424,7 +442,7 @@ def test_limiter_window_slides():
 def test_limiter_defaults():
     # 10 pré-buscas novas a cada 10 min por cliente.
     now = [0.0]
-    limiter = PrefetchLimiter(clock=lambda: now[0])
+    limiter = ClientLimiter(clock=lambda: now[0])
 
     assert all(limiter.take("ana") for _ in range(10))
     assert limiter.take("ana") is False
@@ -435,7 +453,7 @@ def test_limiter_defaults():
 def test_limiter_global_cap_sums_every_client():
     # Muitos IPs (IPv6 troca fácil) não somam pontos sem teto.
     now = [0.0]
-    limiter = PrefetchLimiter(global_max_calls=3, global_window_s=3600, clock=lambda: now[0])
+    limiter = ClientLimiter(global_max_calls=3, global_window_s=3600, clock=lambda: now[0])
 
     assert [limiter.take(f"ip:{n}") for n in range(4)] == [True, True, True, False]
     assert limiter.take(None) is False  # sem cliente também conta no teto
@@ -447,7 +465,7 @@ def test_limiter_global_cap_sums_every_client():
 
 def test_limiter_denied_by_one_limit_does_not_spend_the_other():
     now = [0.0]
-    limiter = PrefetchLimiter(max_calls=1, global_max_calls=2, clock=lambda: now[0])
+    limiter = ClientLimiter(max_calls=1, global_max_calls=2, clock=lambda: now[0])
 
     assert limiter.take("ana") is True
     assert limiter.take("ana") is False  # negada pelo limite dela: não gasta o do processo
@@ -460,14 +478,14 @@ def test_limiter_denied_by_one_limit_does_not_spend_the_other():
 def test_limiter_global_defaults():
     # 40 pré-buscas novas por hora no processo (~480 pontos, metade dos 1000/h do WCL).
     assert (PREFETCH_GLOBAL_LIMIT, PREFETCH_GLOBAL_WINDOW_S) == (40, 3600)
-    limiter = PrefetchLimiter(clock=lambda: 0.0)
+    limiter = ClientLimiter(clock=lambda: 0.0)
 
     assert all(limiter.take(f"ip:{n}") for n in range(40))
     assert limiter.take("ip:40") is False
 
 
 def test_limiter_forgets_the_oldest_client_above_the_maximum():
-    limiter = PrefetchLimiter(max_clients=2, clock=lambda: 0.0)
+    limiter = ClientLimiter(max_clients=2, clock=lambda: 0.0)
     for client in ("ana", "bia", "ana", "caio"):  # a "ana" pediu de novo: a mais antiga é a bia
         assert limiter.take(client) is True
 
@@ -476,7 +494,7 @@ def test_limiter_forgets_the_oldest_client_above_the_maximum():
 
 def test_limiter_prunes_idle_clients_at_most_once_a_minute():
     now = [0.0]
-    limiter = PrefetchLimiter(window_s=10, clock=lambda: now[0])
+    limiter = ClientLimiter(window_s=10, clock=lambda: now[0])
     limiter.take("ana")
 
     now[0] = 11  # a ana venceu, mas a limpeza só roda a cada PREFETCH_PRUNE_INTERVAL_S
@@ -491,7 +509,7 @@ def test_limiter_prunes_idle_clients_at_most_once_a_minute():
 def test_limiter_prune_stops_at_the_first_active_client():
     # Os clientes ficam na ordem da última pré-busca: a limpeza não varre os ativos.
     now = [0.0]
-    limiter = PrefetchLimiter(window_s=600, clock=lambda: now[0])
+    limiter = ClientLimiter(window_s=600, clock=lambda: now[0])
     limiter.take("ana")
     now[0] = 500
     limiter.take("bia")
