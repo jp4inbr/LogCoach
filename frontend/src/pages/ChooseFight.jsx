@@ -23,11 +23,18 @@ const AUTO_STOP_AFTER = 3;
 // Warcraft Logs com cliques exploratórios.
 const PREFETCH_DELAY_MS = 1000;
 // Erros em que vale oferecer "Tentar de novo" sem mexer no link: Warcraft Logs ou LogCoach fora
-// do ar, sem conexão. unexpected_error também (o usuário pode tentar), mas ele cobre ainda
-// credenciais do servidor e consulta com defeito, que só passam com correção do nosso lado:
-// por isso os textos em volta do botão não prometem que vai funcionar; quem diz o que fazer é
-// a mensagem do servidor.
+// do ar, sem conexão. query_limit (limite de consultas ao Warcraft Logs) fica de fora: tentar
+// na hora não resolve, e a mensagem do servidor já diz em quantos minutos. unexpected_error
+// também entra (o usuário pode tentar), mas ele cobre ainda credenciais do servidor e consulta
+// com defeito, que só passam com correção do nosso lado: por isso os textos em volta do botão
+// não prometem que vai funcionar; quem diz o que fazer é a mensagem do servidor.
 const TEMPORARY_ERRORS = new Set(["wcl_unavailable", "unexpected_error", "network"]);
+// Luta que estava subindo, mas a lista não está mais sendo acompanhada (lista guardada ou
+// automática parada): a tela não afirma que ainda sobe.
+const UNWATCHED_TEXT =
+  "Ela estava subindo na última consulta. Clique em Atualizar lutas para ver se já terminou.";
+// Erros da pré-busca em que repetir não adianta (teto de pré-buscas ou de análises do plano).
+const PREFETCH_FINAL_ERRORS = new Set(["prefetch_limit", "plan_limit"]);
 
 // Dentro do relatório o personagem é o id do ator do WCL (homônimos de reinos diferentes
 // têm ids diferentes). É esse id que vai no POST /analyses.
@@ -63,19 +70,20 @@ function formatSeconds(ms) {
 }
 
 // O servidor sempre consulta o Warcraft Logs de novo (com uma trava de 8 s: dentro dela
-// devolve a mesma lista, com o mesmo fetched_at). Se o Warcraft Logs falhar e houver lista
-// guardada, ela volta com stale: true, a mensagem do erro (stale_message), o código (stale_code,
-// se vier) e o fetched_at antigo. Serve para abrir, atualizar e para a atualização automática.
+// devolve a mesma lista, com o mesmo fetched_at), sem precisar de "refresh". Se o Warcraft
+// Logs falhar e houver lista guardada, ela volta com stale: true, a mensagem do erro
+// (stale_message), o código (stale_code, se vier, ex.: query_limit) e o fetched_at antigo.
+// Serve para abrir, atualizar e para a atualização automática.
 function resolveReport(code) {
   return api.post("/reports/resolve", {
     url: `https://www.warcraftlogs.com/reports/${code}`,
-    refresh: true,
   });
 }
 
 // O que mudou entre duas listas: lutas com id novo, lutas que passaram a poder ser analisadas
 // (ex.: terminaram de subir para o Warcraft Logs), lutas que começaram a subir e lutas que
-// terminaram de subir (mesmo sem poder ser analisadas, ex.: outro chefe).
+// terminaram de subir (mesmo sem poder ser analisadas, ex.: outro chefe). Luta que parou de
+// receber dados no meio (upload_paused) não terminou: não conta como novidade.
 function compareFights(before, after) {
   const known = new Map(before.map((item) => [item.id, item]));
   let added = 0;
@@ -91,11 +99,12 @@ function compareFights(before, after) {
     }
     if (!previous.supported && item.supported) unlocked += 1;
     if (!previous.in_progress && item.in_progress) started += 1;
-    if (previous.in_progress && !item.in_progress) finished += 1;
+    if (previous.in_progress && !item.in_progress && !item.upload_paused) finished += 1;
   }
   return { added, unlocked, started, finished };
 }
 
+// Luta pausada (upload_paused) vem com in_progress: false, então não conta aqui.
 function hasUploading(fights) {
   return fights.some((item) => item.in_progress);
 }
@@ -125,10 +134,11 @@ function newsText({ added, unlocked }) {
 
 function refreshText(refresh) {
   // Clique com a lista guardada: o servidor continua sem conseguir a lista nova. A hora com
-  // segundos mostra que o clique foi atendido. unexpected_error é do nosso lado, não do WCL.
+  // segundos mostra que o clique foi atendido. unexpected_error é do nosso lado e query_limit
+  // é o limite de consultas (o Warcraft Logs respondeu): nos dois o texto fica neutro.
   if (refresh.status === "stale") {
     const time = formatSeconds(refresh.at);
-    if (refresh.code === "unexpected_error") {
+    if (refresh.code === "unexpected_error" || refresh.code === "query_limit") {
       return `${refresh.again ? "Ainda não" : "Não"} deu para atualizar (${time})`;
     }
     return `${refresh.again ? "Ainda sem" : "Sem"} resposta do Warcraft Logs (${time})`;
@@ -142,7 +152,7 @@ function refreshText(refresh) {
 // os Magos Arcanos são buscados quando o usuário escolhe a luta. "Atualizar lutas" traz os
 // pulls novos de um log ao vivo, e a lista se refaz sozinha a cada 4 min (com aviso na tela)
 // enquanto houver luta subindo ou depois de uma luta liberada nesta sessão, até 3 atualizações
-// seguidas sem novidade. Com luta e jogador definidos por 1 s, os
+// seguidas sem novidade. Com luta escolhida e personagem clicado, parados por 1 s, os
 // eventos são pré-buscados em segundo plano. Depois do clique em Analisar, a mesma tela
 // mostra o andamento em etapas (Tela 3) e abre o resultado quando termina.
 export default function ChooseFight({ code }) {
@@ -154,7 +164,10 @@ export default function ChooseFight({ code }) {
   // Magos de cada luta já buscada: { [id]: { status, players | error } }; status "empty"
   // (nenhum Arcano) é buscado de novo.
   const [playersByFight, setPlayersByFight] = useState({});
+  // Personagem clicado pelo usuário (null até o clique; volta a null ao trocar de luta).
   const [chosenPlayer, setChosenPlayer] = useState(null);
+  // Cliques em personagem: clicar de novo no mesmo refaz a pré-busca que tinha falhado.
+  const [picks, setPicks] = useState(0);
   const [run, setRun] = useState({ status: "idle" });
   const [step, setStep] = useState(0);
   const [resultId, setResultId] = useState(null);
@@ -204,9 +217,10 @@ export default function ChooseFight({ code }) {
   const player = players.find((p) => playerKey(p) === selectedKey) ?? null;
   const demoBlocked = !token && load(DEMO_KEY, false);
   const uploading = Boolean(data && hasUploading(data.fights));
-  // Log ao vivo: luta subindo agora ou já vista nesta sessão (entre um pull e outro a lista
-  // fica sem luta subindo, e o próximo costuma começar em 1–2 min).
-  const live = uploading || followingLive;
+  // Log ao vivo: luta subindo agora, já vista nesta sessão (entre um pull e outro a lista fica
+  // sem luta subindo, e o próximo costuma começar em 1–2 min) ou log que recebeu dados nos
+  // últimos 10 min (data.live: link colado entre dois pulls já liga a automática).
+  const live = uploading || followingLive || Boolean(data?.live);
   const autoStopped = live && autoMisses >= AUTO_STOP_AFTER;
   const autoActive = live && !autoStopped;
   const autoState = !live ? "off" : autoStopped ? "stopped" : uploading ? "uploading" : "waiting";
@@ -287,13 +301,17 @@ export default function ChooseFight({ code }) {
     };
   }, [autoActive, busy, lastDoneAt]);
 
-  // Pré-busca dos eventos quando luta e jogador ficam definidos (clicado, único Arcano ou
-  // personagem lembrado) e parados por 1 s, para a análise sair mais rápido. É só otimização:
-  // falha em silêncio (inclusive prefetch_limit e plan_limit), porque o erro de verdade
-  // aparece no /analyses. Uma vez por luta e jogador; não dispara com a análise rodando.
+  // Pré-busca dos eventos só quando o usuário CLICA no personagem (luta e personagem parados
+  // por 1 s), para a análise sair mais rápido. Personagem marcado sozinho (único Arcano ou
+  // lembrado) não dispara: a busca fica para o Analisar, sem gastar pontos do Warcraft Logs
+  // com quem só está olhando. É só otimização: falha em silêncio, porque o erro de verdade
+  // aparece no /analyses. Uma vez por luta e jogador; se falhar, sai do Set e o próximo
+  // clique tenta de novo, menos com prefetch_limit e plan_limit (repetir não adianta). Não
+  // dispara com a análise rodando.
+  const clickedPlayer = player && chosenPlayer === playerKey(player) ? player : null;
   const prefetchCode = data?.code ?? null;
-  const prefetchFight = fight && player ? fight.id : null;
-  const prefetchActor = fight && player ? player.actor_id : null;
+  const prefetchFight = fight && clickedPlayer ? fight.id : null;
+  const prefetchActor = fight && clickedPlayer ? clickedPlayer.actor_id : null;
   const analyzing = run.status === "running";
   useEffect(() => {
     if (!prefetchCode || prefetchFight === null || prefetchActor === null) return undefined;
@@ -308,10 +326,12 @@ export default function ChooseFight({ code }) {
           { actor_id: prefetchActor },
           token,
         )
-        .catch(() => {});
+        .catch((error) => {
+          if (!PREFETCH_FINAL_ERRORS.has(error?.code)) prefetched.current.delete(key);
+        });
     }, PREFETCH_DELAY_MS);
     return () => clearTimeout(timer);
-  }, [prefetchCode, prefetchFight, prefetchActor, demoBlocked, analyzing, token]);
+  }, [prefetchCode, prefetchFight, prefetchActor, demoBlocked, analyzing, token, picks]);
 
   // Avança as etapas enquanto a análise roda; a última espera o resultado chegar.
   useEffect(() => {
@@ -384,6 +404,12 @@ export default function ChooseFight({ code }) {
     if (!["ok", "loading"].includes(playersByFight[item.id]?.status)) loadPlayers(item.id);
   }
 
+  function pickPlayer(option) {
+    setChosenPlayer(playerKey(option));
+    setPicks((current) => current + 1);
+    setRun({ status: "idle" });
+  }
+
   function startAnalysis() {
     setRun({ status: "running" });
     setStep(0);
@@ -408,6 +434,10 @@ export default function ChooseFight({ code }) {
       })
       .catch((error) => setRun({ status: "error", error }));
   }
+
+  // Sem consulta ao log em andamento (lista guardada ou automática parada), a tela não pode
+  // afirmar que uma luta está subindo: só que estava, na última consulta.
+  const unwatched = Boolean(data.stale) || autoState === "stopped";
 
   // Falha passageira na análise: o botão principal vira "Tentar de novo" (mesma ação).
   const retryAnalysis = run.status === "error" && TEMPORARY_ERRORS.has(run.error.code);
@@ -492,10 +522,12 @@ export default function ChooseFight({ code }) {
               {item.in_progress ? (
                 // Luta subindo: ainda não dá para escolher, mas vai dar. Fica focável
                 // (aria-disabled em vez de disabled) para o leitor de tela ler o motivo.
+                // Sem acompanhamento (unwatched), selo estático e texto no passado.
                 <button
                   type="button"
-                  className="fight fight-uploading"
+                  className={`fight fight-uploading ${unwatched ? "fight-unwatched" : ""}`}
                   aria-disabled="true"
+                  aria-describedby={`fight-reason-${item.id}`}
                   onClick={() => chooseFight(item)}
                 >
                   <span className="fight-main">
@@ -504,14 +536,44 @@ export default function ChooseFight({ code }) {
                       {item.difficulty} · luta {item.id}
                     </span>
                   </span>
-                  <span className="pill pill-uploading">Subindo…</span>
-                  <span className="fight-reason">{item.unsupported_reason}</span>
+                  {unwatched ? (
+                    <span className="pill pill-unwatched">Sem atualização</span>
+                  ) : (
+                    <span className="pill pill-uploading">Subindo…</span>
+                  )}
+                  <span className="fight-reason" id={`fight-reason-${item.id}`}>
+                    {unwatched ? UNWATCHED_TEXT : item.unsupported_reason}
+                  </span>
+                </button>
+              ) : item.upload_paused ? (
+                // Luta que parou de receber dados no meio do upload: nem subindo nem pronta.
+                // Selo próprio, sem animação, e o motivo do servidor em texto.
+                <button
+                  type="button"
+                  className="fight fight-paused"
+                  aria-disabled="true"
+                  aria-describedby={`fight-reason-${item.id}`}
+                  onClick={() => chooseFight(item)}
+                >
+                  <span className="fight-main">
+                    <strong>{item.boss}</strong>
+                    <span className="muted">
+                      {item.difficulty} · luta {item.id}
+                    </span>
+                  </span>
+                  <span className="pill pill-paused">Upload pausado</span>
+                  <span className="fight-reason" id={`fight-reason-${item.id}`}>
+                    {item.unsupported_reason}
+                  </span>
                 </button>
               ) : (
+                // Não suportada: aria-disabled em vez de disabled, para continuar focável e o
+                // leitor de tela ler o motivo; o clique é ignorado em chooseFight.
                 <button
                   type="button"
                   className={`fight ${item.id === fightId ? "fight-selected" : ""}`}
-                  disabled={!item.supported}
+                  aria-disabled={item.supported ? undefined : "true"}
+                  aria-describedby={item.supported ? undefined : `fight-reason-${item.id}`}
                   aria-pressed={item.id === fightId}
                   onClick={() => chooseFight(item)}
                 >
@@ -525,7 +587,9 @@ export default function ChooseFight({ code }) {
                     {item.kill ? "Kill" : "Wipe"}
                   </span>
                   {!item.supported && (
-                    <span className="fight-reason">{item.unsupported_reason}</span>
+                    <span className="fight-reason" id={`fight-reason-${item.id}`}>
+                      {item.unsupported_reason}
+                    </span>
                   )}
                 </button>
               )}
@@ -583,10 +647,10 @@ export default function ChooseFight({ code }) {
                     name="player"
                     value={playerKey(option)}
                     checked={selectedKey === playerKey(option)}
-                    onChange={() => {
-                      setChosenPlayer(playerKey(option));
-                      setRun({ status: "idle" });
-                    }}
+                    // onClick também: clicar no personagem que já veio marcado sozinho não
+                    // dispara onChange, mas é escolha de propósito (libera a pré-busca).
+                    onChange={() => pickPlayer(option)}
+                    onClick={() => pickPlayer(option)}
                   />
                   <span>
                     <span className="player-name">
