@@ -8,17 +8,19 @@ demo sem internet e fonte do CI). O "wcl" usa um cliente só por processo: ao co
 Magos Arcanos dela; os dois ficam em cache (`ReportCache`). Quando o jogador fica definido,
 a pré-busca baixa em segundo plano os eventos da luta dele (`FightDataStore`), que o motor
 lê com `get_fight_data`; a pré-busca tem limite por cliente e um teto do processo
-(`PrefetchLimiter`). Uma falha do Warcraft Logs fica lembrada por alguns segundos (ou pelo
+(`prefetch_limiter`). Uma falha do Warcraft Logs fica lembrada por alguns segundos (ou pelo
 `Retry-After` do limite de pedidos) e, nesse tempo, nenhuma consulta vai à API
-(`WclCooldown`). O analisador ainda é o de exemplo até o motor (frente C) ficar pronto; aí
-basta trocá-lo em `get_analyzer`. O modo exemplo também tem os eventos do kill de referência
-(`app/samples/fight_*.json.gz`).
+(`WclCooldown`). Cada cliente (conta ou IP) tem um limite de consultas que vão mesmo à API
+(`query_limiter`); cache não conta. O analisador ainda é o de exemplo até o motor (frente C)
+ficar pronto; aí basta trocá-lo em `get_analyzer`. O modo exemplo também tem os eventos do
+kill de referência (`app/samples/fight_*.json.gz`).
 """
 
 import copy
 import gzip
 import json
 import logging
+import math
 import re
 import threading
 import time
@@ -50,7 +52,9 @@ from app.wcl.client import (
     rate_limit_message,
     shared_client,
 )
+from app.wcl.fetch import FightNotFoundError as WclFightNotFoundError
 from app.wcl.fetch import fetch_fight, fetch_fight_players, fetch_report
+from app.wcl.players import PlayerNotFoundError as WclPlayerNotFoundError
 
 logger = logging.getLogger(__name__)
 
@@ -71,6 +75,14 @@ UNSUPPORTED_DIFFICULTY_REASON = "Dificuldade ainda não suportada para esse chef
 IN_PROGRESS_REASON = (
     "A luta ainda está subindo para o Warcraft Logs. Ela fica disponível aqui assim que terminar."
 )
+# Luta que estava subindo, mas o log parou de receber dados (`LIVE_WINDOW_S`).
+UPLOAD_PAUSED_REASON = (
+    "O envio deste log parou no Warcraft Logs (nada novo há mais de 10 min). "
+    "Se o uploader voltar a enviar, clique em Atualizar lutas."
+)
+# Log ao vivo: nada novo há 10 min = uploader parado; uma luta ou uma M+ em andamento manda
+# dados o tempo todo.
+LIVE_WINDOW_S = 10 * 60
 # Pré-busca que estava na fila quando o servidor desligou (--reload, deploy).
 SHUTDOWN_MESSAGE = (
     "O LogCoach está reiniciando e a busca dos eventos da luta foi interrompida. "
@@ -84,7 +96,23 @@ ARCANE_LABEL = "Mago Arcano"
 
 
 class ReportNotAvailableError(Exception):
-    """O relatório não pôde ser aberto (privado, inexistente ou fora do exemplo)."""
+    """O relatório não pôde ser aberto (privado, inexistente, arquivado ou fora do exemplo).
+
+    `archived`: o Warcraft Logs arquivou o relatório (a rota explica isso em vez de pedir
+    para conferir se ele é público).
+    """
+
+    def __init__(self, code: str, archived: bool = False) -> None:
+        super().__init__(code)
+        self.archived = archived
+
+
+class FightNotFoundError(Exception):
+    """O relatório existe, mas não tem a luta pedida."""
+
+
+class PlayerNotFoundError(Exception):
+    """O jogador pedido não está no relatório."""
 
 
 class SourceUnavailableError(Exception):
@@ -108,7 +136,32 @@ class SourceUnavailableError(Exception):
 
 
 class PrefetchLimitError(Exception):
-    """O cliente passou do limite de pré-buscas novas (`PrefetchLimiter`)."""
+    """O cliente passou do limite de pré-buscas novas (`prefetch_limiter`)."""
+
+
+QUERY_LIMIT_CODE = "query_limit"
+
+
+def query_limit_message(wait_s: float) -> str:
+    minutes = max(1, math.ceil(wait_s / 60))
+    return (
+        "Você fez muitas consultas ao Warcraft Logs em pouco tempo. Para o LogCoach não "
+        "estourar o limite de uso da API deles, cada pessoa pode fazer "
+        f"{QUERY_LIMIT} a cada {QUERY_WINDOW_S // 60} minutos. Tente de novo em {minutes} min."
+    )
+
+
+class QueryLimitError(Exception):
+    """O cliente passou do limite de consultas que vão à API (`query_limiter`).
+
+    `wait_s`: segundos até a consulta mais antiga dele sair da janela.
+    """
+
+    def __init__(self, code: str, wait_s: float) -> None:
+        super().__init__(code)
+        self.wait_s = wait_s
+        self.user_message = query_limit_message(wait_s)
+        self.error_code = QUERY_LIMIT_CODE
 
 
 class AnalysisNotAvailableError(Exception):
@@ -120,9 +173,16 @@ class FightDataNotAvailableError(AnalysisNotAvailableError):
 
 
 class ReportSource(Protocol):
-    def get_report(self, code: str, refresh: bool = False) -> ReportResolved: ...
+    """`client` (conta ou IP, de `request_client`) conta no limite de consultas por cliente
+    (`QueryLimitError`) quando a consulta vai mesmo ao Warcraft Logs."""
 
-    def get_fight_players(self, code: str, fight_id: int) -> list[PlayerOption]: ...
+    def get_report(
+        self, code: str, refresh: bool = False, client: Hashable | None = None
+    ) -> ReportResolved: ...
+
+    def get_fight_players(
+        self, code: str, fight_id: int, client: Hashable | None = None
+    ) -> list[PlayerOption]: ...
 
     def get_fight_data(self, code: str, fight_id: int, actor_id: int) -> dict[str, Any]:
         """Luta completa do jogador, no formato de `wcl.fetch.fetch_fight` (item 12.8)."""
@@ -181,10 +241,15 @@ class SampleReportSource:
             raise ReportNotAvailableError(code)
         return _load(f"report_{code}.json")
 
-    def get_report(self, code: str, refresh: bool = False) -> ReportResolved:
+    def get_report(
+        self, code: str, refresh: bool = False, client: Hashable | None = None
+    ) -> ReportResolved:
+        # Arquivo local: nada ao vivo nem pausado, e nada conta no limite de consultas.
         return ReportResolved.model_validate(self._data(code))
 
-    def get_fight_players(self, code: str, fight_id: int) -> list[PlayerOption]:
+    def get_fight_players(
+        self, code: str, fight_id: int, client: Hashable | None = None
+    ) -> list[PlayerOption]:
         players = self._data(code).get("players", {}).get(str(fight_id), [])
         return [PlayerOption.model_validate(p) for p in players]
 
@@ -261,11 +326,20 @@ def build_report(
     raw: dict[str, Any],
     encounters: dict[int, dict[str, Any]] | None = None,
     npc_names: dict[int, str] | None = None,
+    now_ms: float | None = None,
 ) -> dict[str, Any]:
     """Converte a saída de `wcl.fetch.fetch_report` no formato de `ReportResolved` (sem
-    jogadores: eles vêm por luta, em `build_players`)."""
+    jogadores: eles vêm por luta, em `build_players`).
+
+    O log é ao vivo (`live`) se o último evento dele (`end_time`) chegou no máximo
+    `LIVE_WINDOW_S` antes de `now_ms` (agora, por padrão). Luta que estaria subindo num log
+    que parou de receber dados fica pausada (`upload_paused`), e não "subindo" para sempre.
+    """
     encounters = supported_encounters() if encounters is None else encounters
     npc_names = npc_names_pt() if npc_names is None else npc_names
+    now_ms = time.time() * 1000 if now_ms is None else now_ms
+    end_time = raw.get("end_time")
+    live = end_time is not None and now_ms - end_time <= LIVE_WINDOW_S * 1000
 
     fights = []
     for fight in raw["fights"]:
@@ -273,6 +347,9 @@ def build_report(
         encounter = encounters.get(fight["encounterID"])
         difficulty = fight.get("difficulty")
         reason = _fight_reason(fight, duration_s, encounter)
+        paused = reason == IN_PROGRESS_REASON and not live
+        if paused:
+            reason = UPLOAD_PAUSED_REASON
         fights.append(
             {
                 "id": fight["id"],
@@ -283,6 +360,7 @@ def build_report(
                 "supported": reason is None,
                 "unsupported_reason": reason,
                 "in_progress": reason == IN_PROGRESS_REASON,
+                "upload_paused": paused,
             }
         )
 
@@ -290,6 +368,7 @@ def build_report(
         "code": raw["code"],
         "title": raw["title"],
         "sample": False,
+        "live": live,
         "fights": fights,
     }
 
@@ -351,6 +430,11 @@ PREFETCH_WINDOW_S = 10 * 60
 # (que buscam a luta sozinhas quando a pré-busca não veio).
 PREFETCH_GLOBAL_LIMIT = 40
 PREFETCH_GLOBAL_WINDOW_S = 60 * 60
+# Consultas por cliente que vão mesmo ao Warcraft Logs (lista de lutas e Magos de uma luta;
+# cache não conta): uma noite de raide ao vivo usa ~colar + 8 automáticas + ~10 lutas em
+# 30 min; segura abuso em ~80 pontos/h por cliente, de 1000.
+QUERY_LIMIT = 20
+QUERY_WINDOW_S = 30 * 60
 # Clientes lembrados pelo limitador: acima disso, esquece quem pediu há mais tempo.
 PREFETCH_CLIENTS_MAX = 10_000
 # A limpeza de quem não pede nada há uma janela roda no máximo uma vez por minuto.
@@ -518,21 +602,23 @@ class FightDataStore:
         """
         with self._lock:
             if self._cache.has(key):
-                return "ready"
-            flight = self._running.get(key)
-            if flight is None and admit is not None and not admit():
-                raise PrefetchLimitError(_report_code(key))
-            dropped = self._leave_queue(client, key)
-            if flight is not None:
-                state: PrefetchState = "running"
-                self._join_queue(client, key, flight)
+                # Já no cache: nada a buscar, mas a pré-busca anterior desse cliente sai da
+                # fila, como quando ele pede uma luta nova.
+                state: PrefetchState = "ready"
             else:
-                state = "started"
+                flight = self._running.get(key)
+                if flight is None and admit is not None and not admit():
+                    raise PrefetchLimitError(_report_code(key))
+                state = "running" if flight is not None else "started"
+            dropped = self._leave_queue(client, key)
+            if state == "running":
+                self._join_queue(client, key, flight)
+            elif state == "started":
                 flight = self._running[key] = _Flight()
                 self._join_queue(client, key, flight)
         if dropped is not None:
             dropped.cancel()
-        if state == "running":
+        if state != "started":
             return state
         try:
             job = executor.submit(self._background, key, flight, fetch)
@@ -632,7 +718,13 @@ class FightDataStore:
         # Na pré-busca ninguém espera a resposta: a falha só fica no log.
         try:
             self._run(key, flight, fetch)
-        except (ReportNotAvailableError, SourceUnavailableError, AnalysisNotAvailableError) as exc:
+        except (
+            ReportNotAvailableError,
+            FightNotFoundError,
+            PlayerNotFoundError,
+            SourceUnavailableError,
+            AnalysisNotAvailableError,
+        ) as exc:
             logger.warning("Pré-busca de %s falhou (o próximo pedido tenta de novo): %r", key, exc)
         except Exception:
             logger.exception("Pré-busca de %s falhou com erro inesperado", key)
@@ -646,9 +738,10 @@ def _expire(calls: deque[float], now: float, window_s: float) -> None:
         calls.popleft()
 
 
-class PrefetchLimiter:
-    """Pré-buscas novas numa janela deslizante, por cliente e no processo inteiro (em
-    memória do processo).
+class ClientLimiter:
+    """Chamadas numa janela deslizante, por cliente e, com `global_max_calls`, no processo
+    inteiro (em memória do processo). Os padrões são os da pré-busca (`prefetch_limiter`); o
+    `query_limiter` usa `QUERY_LIMIT` por cliente, sem teto do processo.
 
     "Cliente" é o usuário logado ou, sem login, o IP do pedido (IPv6 agrupado por /64; atrás
     de um proxy reverso, o IP é o do proxy e todos os anônimos dividem o limite). Os clientes
@@ -659,7 +752,7 @@ class PrefetchLimiter:
         self,
         max_calls: int = PREFETCH_LIMIT,
         window_s: float = PREFETCH_WINDOW_S,
-        global_max_calls: int = PREFETCH_GLOBAL_LIMIT,
+        global_max_calls: int | None = PREFETCH_GLOBAL_LIMIT,
         global_window_s: float = PREFETCH_GLOBAL_WINDOW_S,
         max_clients: int = PREFETCH_CLIENTS_MAX,
         clock: Callable[[], float] = time.monotonic,
@@ -677,21 +770,23 @@ class PrefetchLimiter:
         self._lock = threading.Lock()
 
     def take(self, client: Hashable | None) -> bool:
-        """Conta uma pré-busca nova, se o cliente e o processo ainda têm. Sem cliente, só o
-        teto do processo vale. Negada, não conta nada."""
+        """Conta uma chamada, se o cliente e o processo ainda têm. Sem cliente, só o teto do
+        processo vale (sem teto, sempre pode). Negada, não conta nada."""
+        global_max = self._global_max_calls
         with self._lock:
             now = self._clock()
             if now - self._pruned_at >= PREFETCH_PRUNE_INTERVAL_S:
                 self._prune(now)
             _expire(self._global, now, self._global_window_s)
-            if len(self._global) >= self._global_max_calls:
+            if global_max is not None and len(self._global) >= global_max:
                 return False
             calls = self._calls.get(client) if client is not None else None
             if calls is not None:
                 _expire(calls, now, self._window_s)
                 if len(calls) >= self._max_calls:
                     return False
-            self._global.append(now)
+            if global_max is not None:
+                self._global.append(now)
             if client is None:
                 return True
             if calls is None:
@@ -701,6 +796,17 @@ class PrefetchLimiter:
             while len(self._calls) > self._max_clients:
                 self._calls.popitem(last=False)  # quem pediu há mais tempo
             return True
+
+    def retry_in(self, client: Hashable | None) -> float:
+        """Segundos até a chamada mais antiga do cliente sair da janela (0 se ele tem vaga)."""
+        with self._lock:
+            now = self._clock()
+            # Sem alterar a fila do cliente (o `_prune` conta com ela nunca vazia).
+            calls = self._calls.get(client, ()) if client is not None else ()
+            recent = [t for t in calls if now - t < self._window_s]
+            if len(recent) < self._max_calls:
+                return 0.0
+            return max(0.0, self._window_s - (now - recent[-self._max_calls]))
 
     def _prune(self, now: float) -> None:
         # Esquece quem não pede nada há uma janela inteira: pela ordem, são os primeiros.
@@ -778,7 +884,8 @@ class WclCooldown:
 report_cache = ReportCache()
 players_cache = ReportCache(max_items=PLAYERS_CACHE_MAX)
 fight_data_store = FightDataStore()
-prefetch_limiter = PrefetchLimiter()
+prefetch_limiter = ClientLimiter()
+query_limiter = ClientLimiter(QUERY_LIMIT, QUERY_WINDOW_S, global_max_calls=None)
 wcl_cooldown = WclCooldown()
 
 # Threads da pré-busca: do processo, e não o BackgroundTasks do FastAPI, porque a busca
@@ -824,8 +931,9 @@ class WclReportSource:
         players: ReportCache | None = None,
         fight_data: FightDataStore | None = None,
         executor_factory: Callable[[], Executor] = prefetch_executor,
-        limiter: PrefetchLimiter | None = None,
+        limiter: ClientLimiter | None = None,
         cooldown: WclCooldown | None = None,
+        queries: ClientLimiter | None = None,
     ) -> None:
         self._client_factory = client_factory
         self._cache = report_cache if cache is None else cache
@@ -834,14 +942,18 @@ class WclReportSource:
         self._executor_factory = executor_factory
         self._limiter = prefetch_limiter if limiter is None else limiter
         self._cooldown = wcl_cooldown if cooldown is None else cooldown
+        self._queries = query_limiter if queries is None else queries
 
-    def get_report(self, code: str, refresh: bool = False) -> ReportResolved:
+    def get_report(
+        self, code: str, refresh: bool = False, client: Hashable | None = None
+    ) -> ReportResolved:
         """Lista de lutas. `refresh` busca de novo (lutas novas de um log ao vivo).
 
-        Se a busca falhar com o Warcraft Logs fora do ar (ou erro nosso) e houver lista no
-        cache, devolve a guardada com `stale`, a mensagem e o código do erro: o usuário
-        continua escolhendo a luta. Sem lista guardada, o erro sobe. Logo depois de uma
-        falha (`WclCooldown`), responde assim sem chamar a API.
+        Se a busca falhar com o Warcraft Logs fora do ar (ou erro nosso), ou o cliente
+        passar do limite de consultas, e houver lista no cache, devolve a guardada com
+        `stale`, a mensagem e o código do erro: o usuário continua escolhendo a luta. Sem
+        lista guardada, o erro sobe. Logo depois de uma falha (`WclCooldown`), responde assim
+        sem chamar a API.
         """
         cached = self._cache.get(code, REFRESH_MIN_INTERVAL_S if refresh else None)
         if cached is not None:
@@ -849,12 +961,11 @@ class WclReportSource:
         try:
             report, from_api = self._ask(
                 code,
-                lambda client: ReportResolved.model_validate(
-                    build_report(fetch_report(client, code))
-                ),
+                lambda wcl: ReportResolved.model_validate(build_report(fetch_report(wcl, code))),
                 lambda: SampleReportSource().get_report(code),
+                client=client,
             )
-        except SourceUnavailableError as exc:
+        except (SourceUnavailableError, QueryLimitError) as exc:
             stale = self._cache.get(code)
             if stale is None:
                 raise
@@ -865,7 +976,9 @@ class WclReportSource:
             self._cache.put(code, report)
         return report
 
-    def get_fight_players(self, code: str, fight_id: int) -> list[PlayerOption]:
+    def get_fight_players(
+        self, code: str, fight_id: int, client: Hashable | None = None
+    ) -> list[PlayerOption]:
         """Magos Arcanos de uma luta, com spec e item level dessa luta.
 
         Lista vazia não entra no cache: logo depois da luta o WCL pode ainda não ter
@@ -876,11 +989,12 @@ class WclReportSource:
             return cached
         players, from_api = self._ask(
             code,
-            lambda client: [
+            lambda wcl: [
                 PlayerOption.model_validate(p)
-                for p in build_players(fetch_fight_players(client, code, fight_id))
+                for p in build_players(fetch_fight_players(wcl, code, fight_id))
             ],
             lambda: SampleReportSource().get_fight_players(code, fight_id),
+            client=client,
         )
         if from_api and players:
             self._players.put((code, fight_id), players)
@@ -915,31 +1029,48 @@ class WclReportSource:
         return self._limiter.take(client)
 
     def _fight_fetch(self, code: str, fight_id: int, actor_id: int) -> Fetch:
+        # Sem `client`: a pré-busca tem limite próprio e a análise, o do plano.
         return lambda: self._ask(
             code,
-            lambda client: fetch_fight(client, code, fight_id, actor_id=actor_id),
+            lambda wcl: fetch_fight(wcl, code, fight_id, actor_id=actor_id),
             lambda: SampleReportSource().get_fight_data(code, fight_id, actor_id),
+            pauses=_heavy_fetch_pauses,
         )
 
     def _ask(
-        self, code: str, fetch: Callable[[WclClient], Any], sample: Callable[[], Any]
+        self,
+        code: str,
+        fetch: Callable[[WclClient], Any],
+        sample: Callable[[], Any],
+        client: Hashable | None = None,
+        pauses: Callable[[BaseException], bool] | None = None,
     ) -> tuple[Any, bool]:
         """Uma consulta ao WCL com os erros da fonte. Devolve (valor, veio da API?): o plano
         B do exemplo não entra no cache, para não "grudar" quando a API voltar.
 
         Logo depois de uma falha do WCL (`WclCooldown`), repete essa falha sem chamar a API.
+        Com `client`, a consulta que vai mesmo à API conta no limite dele (`QueryLimitError`
+        quando passa); o report de exemplo não conta. `pauses` decide se uma falha do WCL
+        liga a pausa (padrão: toda falha do lado dele).
         """
         blocked = self._cooldown.active()
         if blocked is not None:
             if code == SAMPLE_REPORT_CODE:
                 return sample(), False
             raise SourceUnavailableError(code, *blocked)
+        if client is not None and code != SAMPLE_REPORT_CODE and not self._queries.take(client):
+            raise QueryLimitError(code, self._queries.retry_in(client))
         try:
             # O cliente é do processo: não fecha aqui.
             return fetch(self._client_factory()), True
+        except WclFightNotFoundError as exc:
+            # O report abriu, só não tem essa luta: nem "confira se é público" nem pausa.
+            raise FightNotFoundError(code) from exc
+        except WclPlayerNotFoundError as exc:
+            raise PlayerNotFoundError(code) from exc
         except (WclError, httpx.HTTPError) as exc:
             unavailable = isinstance(exc, (WclUnavailableError, httpx.HTTPError))
-            if unavailable:
+            if unavailable and (pauses is None or pauses(exc)):
                 self._cooldown.fail(exc)
             logger.warning(
                 "Report %s %s: %s",
@@ -954,8 +1085,16 @@ class WclReportSource:
                 message = getattr(exc, "user_message", UNAVAILABLE_MESSAGE)
                 error_code = getattr(exc, "error_code", WCL_UNAVAILABLE_CODE)
                 raise SourceUnavailableError(code, message, error_code) from exc
-            # Privado ou inexistente: a API respondeu, mas sem o report.
-            raise ReportNotAvailableError(code) from exc
+            # Privado, inexistente ou arquivado: a API respondeu, mas sem o report.
+            raise ReportNotAvailableError(code, getattr(exc, "archived", False)) from exc
+
+
+def _heavy_fetch_pauses(exc: BaseException) -> bool:
+    """Falha da busca pesada (eventos da luta) só pausa o processo se for o limite de pedidos
+    ou 5xx do WCL: timeout ou rede numa busca de dezenas de segundos não dizem que as
+    consultas leves (lista, Magos) também vão falhar."""
+    status = getattr(exc, "status", None)
+    return bool(getattr(exc, "rate_limited", False)) or (status is not None and status >= 500)
 
 
 # --- Análise ------------------------------------------------------------------

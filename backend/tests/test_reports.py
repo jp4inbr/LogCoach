@@ -3,24 +3,38 @@ import threading
 import pytest
 from conftest import ANALYSIS
 from fastapi import Request
-from test_sources import (  # noqa: F401 (fixture autouse)
+from test_sources import (
     FakeWcl,
     fake_client,
-    fresh_wcl_state,
     nekzali,
+    now_ms,
+    report_body,
     wait_prefetch,
 )
 
-from app.api.reports import PREFETCH_LIMIT_MESSAGE, prefetch_client
+from app.api.reports import (
+    ARCHIVED_MESSAGE,
+    CLASSIC_LINK_MESSAGE,
+    FIGHT_NOT_FOUND_MESSAGE,
+    INVALID_LINK_MESSAGE,
+    NO_ARCANE_MAGE_MESSAGE,
+    PREFETCH_LIMIT_MESSAGE,
+    request_client,
+)
 from app.main import app
 from app.models import User
 from app.services.links import parse_report_code
 from app.services.sources import (
     IN_PROGRESS_REASON,
+    LIVE_WINDOW_S,
+    QUERY_LIMIT,
     REFRESH_MIN_INTERVAL_S,
     UNSUPPORTED_BOSS_REASON,
+    UPLOAD_PAUSED_REASON,
     WCL_COOLDOWN_S,
-    PrefetchLimiter,
+    ClientLimiter,
+    FightNotFoundError,
+    PlayerNotFoundError,
     ReportCache,
     SourceUnavailableError,
     WclReportSource,
@@ -37,7 +51,7 @@ SAMPLE_LINK = "https://www.warcraftlogs.com/reports/XhrmBaYkGCAQjH2D#fight=34"
         "https://www.warcraftlogs.com/reports/AbC123",  # T01 (entrada do item 10)
         "https://www.warcraftlogs.com/reports/XhrmBaYkGCAQjH2D#fight=34&type=damage-done",
         "warcraftlogs.com/reports/XhrmBaYkGCAQjH2D",
-        "  https://classic.warcraftlogs.com/reports/XhrmBaYkGCAQjH2D/  ",
+        "  https://www.warcraftlogs.com/reports/XhrmBaYkGCAQjH2D/  ",
     ],
 )
 def test_t01_link_validator_accepts_valid_links(url):
@@ -50,11 +64,33 @@ def test_t01_link_validator_accepts_valid_links(url):
         "https://google.com",  # T02
         "https://www.warcraftlogs.com/character/us/stormrage/harmonist",
         "https://warcraftlogs.com.golpe.net/reports/XhrmBaYkGCAQjH2D",
+        "https://classic.warcraftlogs.com/reports/XhrmBaYkGCAQjH2D",
+        "https://outro.warcraftlogs.com/reports/XhrmBaYkGCAQjH2D",
         "",
     ],
 )
 def test_t02_link_validator_rejects_other_links(url):
     assert parse_report_code(url) is None
+
+
+@pytest.mark.parametrize("sub", ["classic", "sod", "fresh", "vanilla", "era"])
+def test_classic_link_says_it_is_classic(client, sub):
+    url = f"https://{sub}.warcraftlogs.com/reports/XhrmBaYkGCAQjH2D#fight=3"
+
+    response = client.post("/reports/resolve", json={"url": url})
+
+    assert response.status_code == 422
+    assert response.json()["detail"] == {"code": "invalid_link", "message": CLASSIC_LINK_MESSAGE}
+
+
+@pytest.mark.parametrize(
+    "url", ["https://outro.warcraftlogs.com/reports/XhrmBaYkGCAQjH2D", "https://google.com"]
+)
+def test_other_links_keep_the_invalid_link_message(client, url):
+    response = client.post("/reports/resolve", json={"url": url})
+
+    assert response.status_code == 422
+    assert response.json()["detail"] == {"code": "invalid_link", "message": INVALID_LINK_MESSAGE}
 
 
 def test_resolve_lists_fights_and_marks_unsupported(client):
@@ -300,7 +336,7 @@ def test_prefetch_of_the_sample_fight_is_ready(client):
 def test_prefetch_limit_per_client(client, auth_headers):
     # Limite de 1 para o teste: o anônimo (IP) estoura, a conta logada tem o próprio limite.
     wcl = FakeWcl()
-    source = wcl.source(limiter=PrefetchLimiter(max_calls=1))
+    source = wcl.source(limiter=ClientLimiter(max_calls=1))
     app.dependency_overrides[get_report_source] = lambda: source
 
     first = prefetch(client, 2, 10)
@@ -404,10 +440,10 @@ def test_fight_players_from_wcl_come_once_per_fight(client):
 class DownSource:
     """Fonte com o Warcraft Logs fora do ar (limite de pontos, 5xx, rede ou credenciais)."""
 
-    def get_report(self, code: str, refresh: bool = False):
+    def get_report(self, code: str, refresh: bool = False, client=None):
         raise SourceUnavailableError(code)
 
-    def get_fight_players(self, code: str, fight_id: int):
+    def get_fight_players(self, code: str, fight_id: int, client=None):
         raise SourceUnavailableError(code)
 
 
@@ -506,7 +542,7 @@ def test_prefetch_during_the_pause_is_wcl_unavailable(client):
 def test_prefetch_global_cap(client, auth_headers):
     # O teto do processo vale para todos: a conta logada não escapa dele.
     wcl = FakeWcl()
-    source = wcl.source(limiter=PrefetchLimiter(global_max_calls=1))
+    source = wcl.source(limiter=ClientLimiter(global_max_calls=1))
     app.dependency_overrides[get_report_source] = lambda: source
 
     first = prefetch(client, 2, 10)
@@ -536,11 +572,234 @@ def request_from(host: str | None) -> Request:
         (None, None),
     ],
 )
-def test_prefetch_client_groups_ipv6_by_64(host, expected):
-    assert prefetch_client(request_from(host), None) == expected
+def test_request_client_groups_ipv6_by_64(host, expected):
+    assert request_client(request_from(host), None) == expected
 
 
-def test_prefetch_client_prefers_the_account():
+def test_request_client_prefers_the_account():
     user = User(id="u7", email="jogador@exemplo.com", password_hash="x")
 
-    assert prefetch_client(request_from("2001:db8::1"), user) == "user:u7"
+    assert request_client(request_from("2001:db8::1"), user) == "user:u7"
+
+
+# --- Luta que estava subindo na lista guardada ------------------------------------------
+
+
+def test_fight_that_finished_after_the_cached_list_is_accepted(client):
+    # A lista guardada é de quando a luta subia; a busca nova já a traz terminada.
+    now = [0.0]
+    wcl = FakeWcl()
+    wcl.report["fights"].append(nekzali(5, 1_300_000, 1_320_000, inProgress=True))
+    use_wcl(wcl, now)
+    fights = {f["id"]: f for f in client.post("/reports/resolve", json=LINK).json()["fights"]}
+    assert fights[5]["in_progress"] is True
+
+    wcl.report["fights"][-1] = nekzali(5, 1_300_000, 1_700_000, kill=True)
+    now[0] = REFRESH_MIN_INTERVAL_S + 1
+    response = client.get("/reports/TESTE123/fights/5/players")
+
+    assert response.status_code == 200
+    assert wcl.calls == ["ReportFights", "ReportFights", "FightPlayers"]
+
+
+def test_fight_still_uploading_is_refused_after_one_new_search(client):
+    now = [0.0]
+    wcl = FakeWcl()
+    wcl.report["fights"].append(nekzali(5, 1_300_000, 1_320_000, inProgress=True))
+    use_wcl(wcl, now)
+    client.post("/reports/resolve", json=LINK)
+
+    now[0] = REFRESH_MIN_INTERVAL_S + 1
+    response = client.get("/reports/TESTE123/fights/5/players")
+
+    assert response.status_code == 422
+    assert response.json()["detail"] == {"code": "unsupported_fight", "message": IN_PROGRESS_REASON}
+    assert wcl.calls == ["ReportFights", "ReportFights"]  # uma busca nova só
+
+
+def test_fight_of_a_paused_upload_is_refused(client):
+    # O uploader parou há mais de 10 min: a luta não fica "subindo" para sempre.
+    now = [0.0]
+    wcl = FakeWcl()
+    wcl.report["fights"].append(nekzali(5, 1_300_000, 1_320_000, inProgress=True))
+    wcl.end_time = now_ms() - (LIVE_WINDOW_S + 60) * 1000
+    use_wcl(wcl, now)
+
+    body = client.post("/reports/resolve", json=LINK).json()
+    fight = {f["id"]: f for f in body["fights"]}[5]
+    now[0] = REFRESH_MIN_INTERVAL_S + 1
+    response = client.get("/reports/TESTE123/fights/5/players")
+
+    assert body["live"] is False
+    assert (fight["in_progress"], fight["upload_paused"], fight["supported"]) == (
+        False,
+        True,
+        False,
+    )
+    assert fight["unsupported_reason"] == UPLOAD_PAUSED_REASON
+    assert response.status_code == 422
+    assert response.json()["detail"] == {
+        "code": "unsupported_fight",
+        "message": UPLOAD_PAUSED_REASON,
+    }
+    assert wcl.calls == ["ReportFights", "ReportFights"]
+
+
+def test_resolve_of_a_live_log_says_it_is_live(client):
+    use_wcl(FakeWcl(), [0.0])
+
+    assert client.post("/reports/resolve", json=LINK).json()["live"] is True
+
+
+# --- Limite de consultas por cliente ----------------------------------------------------
+
+
+def spend_resolves(client, now: list[float], headers: dict | None = None) -> None:
+    for _ in range(QUERY_LIMIT):
+        now[0] += REFRESH_MIN_INTERVAL_S
+        assert client.post("/reports/resolve", json=LINK, headers=headers).status_code == 200
+
+
+def test_query_over_the_limit_is_429(client):
+    now = [0.0]
+    wcl = FakeWcl()
+    use_wcl(wcl, now)
+    spend_resolves(client, now)
+
+    response = client.get("/reports/TESTE123/fights/2/players")
+
+    assert response.status_code == 429
+    detail = response.json()["detail"]
+    assert detail["code"] == "query_limit"
+    assert detail["message"].startswith("Você fez muitas consultas ao Warcraft Logs")
+    assert detail["message"].endswith("min.")
+    assert wcl.count("FightPlayers") == 0
+
+
+def test_resolve_over_the_limit_brings_the_cached_list_as_stale(client):
+    now = [0.0]
+    wcl = FakeWcl()
+    use_wcl(wcl, now)
+    spend_resolves(client, now)
+
+    now[0] += REFRESH_MIN_INTERVAL_S
+    response = client.post("/reports/resolve", json=LINK)
+
+    body = response.json()
+    assert response.status_code == 200
+    assert (body["stale"], body["stale_code"]) == (True, "query_limit")
+    assert wcl.count("ReportFights") == QUERY_LIMIT
+
+
+def test_resolve_over_the_limit_without_cached_list_is_429(client):
+    now = [0.0]
+    wcl = FakeWcl()
+    use_wcl(wcl, now)
+    spend_resolves(client, now)
+
+    response = client.post(
+        "/reports/resolve", json={"url": "https://www.warcraftlogs.com/reports/OUTRO1234"}
+    )
+
+    assert response.status_code == 429
+    assert response.json()["detail"]["code"] == "query_limit"
+
+
+def test_query_limit_is_per_account(client, auth_headers):
+    # Sem login conta o IP; com login, a conta: um não gasta o do outro.
+    now = [0.0]
+    wcl = FakeWcl()
+    use_wcl(wcl, now)
+    spend_resolves(client, now)
+
+    response = client.get("/reports/TESTE123/fights/2/players", headers=auth_headers)
+
+    assert response.status_code == 200
+
+
+def test_cached_answers_do_not_count_in_the_query_limit(client):
+    now = [0.0]
+    wcl = FakeWcl()
+    use_wcl(wcl, now)
+    for _ in range(QUERY_LIMIT + 5):
+        assert client.post("/reports/resolve", json=LINK).status_code == 200  # trava de 8 s
+        assert client.get("/reports/TESTE123/fights/2/players").status_code == 200
+
+    assert wcl.calls == ["ReportFights", "FightPlayers"]
+
+
+def test_sample_mode_does_not_count_in_the_query_limit(client):
+    for _ in range(QUERY_LIMIT + 5):
+        assert client.post("/reports/resolve", json={"url": SAMPLE_LINK}).status_code == 200
+
+
+# --- Erros mapeados certo -------------------------------------------------------------
+
+
+class FightGoneSource:
+    """A lista tem a luta 2, mas a consulta dos Magos diz outra coisa."""
+
+    def __init__(self, error: Exception) -> None:
+        self.error = error
+        self.wcl = FakeWcl()
+        self.source = self.wcl.source()
+
+    def get_report(self, code: str, refresh: bool = False, client=None):
+        return self.source.get_report(code, refresh=refresh, client=client)
+
+    def get_fight_players(self, code: str, fight_id: int, client=None):
+        raise self.error
+
+
+@pytest.mark.parametrize(
+    ("error", "status", "code", "message"),
+    [
+        (FightNotFoundError("TESTE123"), 404, "fight_not_found", FIGHT_NOT_FOUND_MESSAGE),
+        (PlayerNotFoundError("TESTE123"), 422, "no_arcane_mage", NO_ARCANE_MAGE_MESSAGE),
+    ],
+)
+def test_missing_fight_or_player_is_not_report_not_available(client, error, status, code, message):
+    source = FightGoneSource(error)
+    app.dependency_overrides[get_report_source] = lambda: source
+
+    response = client.get("/reports/TESTE123/fights/2/players")
+
+    assert response.status_code == status
+    assert response.json()["detail"] == {"code": code, "message": message}
+
+
+def test_fight_missing_in_the_wcl_players_query_is_fight_not_found(client):
+    # A lista guardada tem a luta, mas o WCL não a acha na consulta dos Magos.
+    wcl = FakeWcl()
+    use_wcl(wcl, [0.0])
+    client.post("/reports/resolve", json=LINK)
+    wcl.report["fights"] = [f for f in wcl.report["fights"] if f["id"] != 2]
+
+    response = client.get("/reports/TESTE123/fights/2/players")
+
+    assert response.status_code == 404
+    assert response.json()["detail"]["code"] == "fight_not_found"
+
+
+def test_archived_report_says_it_was_archived(client):
+    body = report_body(
+        None, [{"message": "This report is archived.", "path": ["reportData", "report"]}]
+    )
+    source = WclReportSource(
+        client_factory=lambda: fake_client(body), cache=ReportCache(), players=ReportCache()
+    )
+    app.dependency_overrides[get_report_source] = lambda: source
+
+    response = client.post("/reports/resolve", json=LINK)
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == {
+        "code": "report_not_available",
+        "message": ARCHIVED_MESSAGE,
+    }
+
+
+def test_old_clients_sending_refresh_still_work(client):
+    response = client.post("/reports/resolve", json={"url": SAMPLE_LINK, "refresh": True})
+
+    assert response.status_code == 200

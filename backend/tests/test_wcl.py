@@ -17,6 +17,7 @@ from app.wcl.client import (
     WclUnavailableError,
     close_shared_client,
     shared_client,
+    stop_shared_client,
 )
 from app.wcl.fetch import bracket_index, bracket_range
 
@@ -260,6 +261,50 @@ def test_close_shared_client_creates_a_new_one(wcl_credentials):
     close_shared_client()
 
     assert shared_client() is not first
+
+
+def test_stop_ends_the_events_between_pages():
+    # Desligamento do app: a busca de eventos para na próxima página, sem baixar o resto.
+    client: WclClient
+    pages: list[float] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        if str(request.url) == TOKEN_URL:
+            return token_response()
+        start = json.loads(request.content)["variables"]["startTime"]
+        pages.append(start)
+        client.stop()  # o desligamento chega enquanto a 1ª página baixa
+        page = {"data": [{"timestamp": start}], "nextPageTimestamp": start + 1}
+        return httpx.Response(200, json={"data": {"reportData": {"report": {"events": page}}}})
+
+    client = make_client(handler)
+    with pytest.raises(WclUnavailableError) as info:
+        client.events("CODE", 1, 0, 10, "Casts")
+
+    assert pages == [0]
+    assert info.value.error_code == "wcl_unavailable"
+
+
+def test_stop_shared_client_does_not_create_one(wcl_credentials):
+    stop_shared_client()  # sem cliente ainda: nada a parar, nada criado
+    client = shared_client()
+    stop_shared_client()
+
+    assert client._stopped.is_set()
+
+
+def test_drop_token_does_not_wait_forever_for_the_lock():
+    # Outra thread está renovando o token (lock preso): quem foi recusado não trava.
+    client = WclClient("id", "secret", token_wait_s=0.05)
+    client._token = "velho"
+    client._token_lock.acquire()
+    try:
+        client._drop_token("velho")
+    finally:
+        client._token_lock.release()
+
+    assert client._token == "velho"  # quem renova é a outra thread
+    client.close()
 
 
 def test_shared_client_retries_after_missing_credentials(wcl_credentials):

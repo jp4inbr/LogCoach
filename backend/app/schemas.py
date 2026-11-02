@@ -47,16 +47,15 @@ class Me(BaseModel):
 
 
 class ReportResolveRequest(BaseModel):
+    # Colar o link, "Atualizar lutas" e a atualização automática buscam a lista de novo no
+    # Warcraft Logs (com a trava de 8 s). O antigo campo `refresh`, se vier, é ignorado.
     url: str
-    # Mantido por compatibilidade: colar o link, "Atualizar lutas" e a atualização automática
-    # já buscam a lista de novo no Warcraft Logs (com a trava de 15 s), com ou sem ele.
-    refresh: bool = False
 
 
 class PlayerOption(BaseModel):
     # Na escolha da luta o nome não é ocultado: o usuário está escolhendo a si mesmo.
     # Id do ator no report do WCL (masterData.actors): chave do jogador do resolve até o motor.
-    actor_id: int | None = None
+    actor_id: int
     name: str
     # O mesmo nome se repete entre reinos: na tela o reino diferencia; na API vale o actor_id.
     server: str | None = None
@@ -76,6 +75,9 @@ class FightOption(BaseModel):
     # Luta ainda subindo para o Warcraft Logs (log ao vivo): não suportada por enquanto, mas
     # a tela mostra diferente e atualiza a lista sozinha enquanto houver uma assim.
     in_progress: bool = False
+    # Luta que estava subindo, mas o log parou de receber dados (nada novo há mais de 10 min):
+    # não suportada, com `unsupported_reason` dizendo para atualizar se o envio voltar.
+    upload_paused: bool = False
     # Sem jogadores: os Magos Arcanos vêm por luta, em GET /reports/{code}/fights/{id}/players.
 
 
@@ -87,9 +89,12 @@ class ReportResolved(BaseModel):
     # Quando a lista foi lida do Warcraft Logs (UTC); a tela mostra "lista de 21:04".
     fetched_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     fights: list[FightOption]
+    # Log ao vivo: o Warcraft Logs recebeu dados dele há menos de 10 min.
+    live: bool = False
     # Lista guardada: a busca nova falhou (Warcraft Logs fora do ar, limite de pontos ou erro
     # nosso) e veio a última lista lida, de `fetched_at`. `stale_message` diz o porquê e
-    # `stale_code` é o código do erro (`wcl_unavailable` ou `unexpected_error`, item 12.3).
+    # `stale_code` é o código do erro (`wcl_unavailable`, `unexpected_error` ou
+    # `query_limit`, item 12.3).
     stale: bool = False
     stale_message: str | None = None
     stale_code: str | None = None

@@ -11,7 +11,7 @@ from app.config import get_settings
 from app.db import create_tables
 from app.errors import UNEXPECTED_ERROR_CODE, UNEXPECTED_ERROR_MESSAGE, error_response
 from app.services.sources import shutdown_prefetch
-from app.wcl.client import close_shared_client
+from app.wcl.client import close_shared_client, stop_shared_client
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +21,9 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     # Sem migrações no MVP: as tabelas são criadas na subida se ainda não existirem.
     create_tables()
     yield
-    # A pré-busca termina antes de o cliente do WCL fechar.
+    # As buscas de eventos param na próxima página, a fila da pré-busca é cancelada e só
+    # então o cliente do WCL fecha.
+    stop_shared_client()
     shutdown_prefetch()
     close_shared_client()
 

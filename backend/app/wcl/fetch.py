@@ -13,6 +13,10 @@ from app.wcl.players import find_player
 MYTHIC = 5
 
 
+class FightNotFoundError(WclError):
+    """O report existe, mas não tem a luta pedida."""
+
+
 def bracket_index(item_level: float, bracket_min: int, bucket: int) -> int:
     """Índice do bracket do WCL (começa em 1). Ex.: min 272, bucket 3 → 327 cai no 19 (326–328)."""
     return int((int(item_level) - bracket_min) // bucket) + 1
@@ -38,11 +42,20 @@ def _player_details(details: dict[str, Any], actor_id: int) -> dict[str, Any] | 
 
 
 def fetch_report(client: WclClient, code: str) -> dict[str, Any]:
-    """Lutas de chefe de um report (consulta leve, sem jogadores). Tempos em ms do report."""
+    """Lutas de chefe de um report (consulta leve, sem jogadores). Tempos em ms do report.
+
+    `end_time` é o `endTime` do report (ms desde 1970): hora do último evento recebido, que
+    num log ao vivo avança enquanto chegam dados.
+    """
     report = client.query(queries.REPORT_FIGHTS, {"code": code})["reportData"]["report"]
     if report is None:
         raise WclError(f"Report {code} não encontrado.")
-    return {"code": report["code"], "title": report["title"], "fights": report["fights"] or []}
+    return {
+        "code": report["code"],
+        "title": report["title"],
+        "end_time": report.get("endTime"),
+        "fights": report["fights"] or [],
+    }
 
 
 def fetch_fight_players(client: WclClient, code: str, fight_id: int) -> dict[str, Any]:
@@ -56,7 +69,7 @@ def fetch_fight_players(client: WclClient, code: str, fight_id: int) -> dict[str
     if report is None:
         raise WclError(f"Report {code} não encontrado.")
     if not report["fights"]:
-        raise WclError(f"Luta {fight_id} não existe no report {code}.")
+        raise FightNotFoundError(f"Luta {fight_id} não existe no report {code}.")
     fight = report["fights"][0]
     ids = fight.get("friendlyPlayers") or []
     specs = fight.get("friendlySpecs") or []
@@ -102,7 +115,7 @@ def fetch_fight(
     if report is None:
         raise WclError(f"Report {code} não encontrado.")
     if not report["fights"]:
-        raise WclError(f"Luta {fight_id} não existe no report {code}.")
+        raise FightNotFoundError(f"Luta {fight_id} não existe no report {code}.")
     fight = report["fights"][0]
     actors = report["masterData"]["actors"]
     player = find_player(actors, actor_id=actor_id, name=name, server=server)

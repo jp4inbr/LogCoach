@@ -12,16 +12,23 @@ from app.config import Settings, get_settings
 from app.services import sources
 from app.services.sources import (
     IN_PROGRESS_REASON,
+    LIVE_WINDOW_S,
+    QUERY_LIMIT,
+    QUERY_WINDOW_S,
     REFRESH_MIN_INTERVAL_S,
     SAMPLE_REPORT_CODE,
     SHORT_FIGHT_REASON,
     UNSUPPORTED_BOSS_REASON,
     UNSUPPORTED_DIFFICULTY_REASON,
+    UPLOAD_PAUSED_REASON,
     WCL_COOLDOWN_MAX_S,
     WCL_COOLDOWN_S,
     WCL_RATE_LIMIT_COOLDOWN_S,
+    ClientLimiter,
     FightDataStore,
-    PrefetchLimiter,
+    FightNotFoundError,
+    PlayerNotFoundError,
+    QueryLimitError,
     ReportCache,
     ReportNotAvailableError,
     SampleReportSource,
@@ -29,13 +36,7 @@ from app.services.sources import (
     WclCooldown,
     WclReportSource,
     build_report,
-    fight_data_store,
     get_report_source,
-    players_cache,
-    prefetch_limiter,
-    report_cache,
-    shutdown_prefetch,
-    wcl_cooldown,
 )
 from app.wcl.client import (
     CONFIG_MESSAGE,
@@ -44,34 +45,10 @@ from app.wcl.client import (
     UNAVAILABLE_MESSAGE,
     WclClient,
     WclUnavailableError,
-    close_shared_client,
 )
 from app.wcl.fetch import fetch_report
 
 NEKZALI = 3470
-
-
-@pytest.fixture(autouse=True)
-def fresh_wcl_state():
-    """Caches, pré-buscas, limite, falha lembrada e cliente do processo zerados: nada vaza
-    entre testes.
-
-    `shutdown_prefetch` espera as threads da pré-busca terminarem: nenhuma fica solta.
-    """
-    report_cache.clear()
-    players_cache.clear()
-    fight_data_store.clear()
-    prefetch_limiter.clear()
-    wcl_cooldown.clear()
-    close_shared_client()
-    yield
-    shutdown_prefetch()
-    report_cache.clear()
-    players_cache.clear()
-    fight_data_store.clear()
-    prefetch_limiter.clear()
-    wcl_cooldown.clear()
-    close_shared_client()
 
 
 def wait_prefetch() -> None:
@@ -121,6 +98,10 @@ FIGHT_PLAYERS = {
 }
 
 
+def now_ms() -> float:
+    return time.time() * 1000
+
+
 class FakeWcl:
     """API falsa que responde cada consulta pelo nome e conta as chamadas."""
 
@@ -130,8 +111,12 @@ class FakeWcl:
         self.fight_players = copy.deepcopy(FIGHT_PLAYERS)
         self.details: dict = {}
         self.status = status
+        # `endTime` do report (último evento recebido). None = agora: log ao vivo.
+        self.end_time: float | None = None
         self.headers: dict[str, str] = {}  # da resposta de erro (ex.: Retry-After)
         self.calls: list[str] = []
+        # Consulta (pelo nome) → exceção levantada no transporte (timeout, rede).
+        self.raise_on: dict[str, Exception] = {}
         # Eventos da luta: com `gate`, cada página espera o teste liberar (busca "lenta").
         self.gate: threading.Event | None = None
         self.fetching = threading.Event()  # a busca de uma luta completa começou
@@ -142,6 +127,8 @@ class FakeWcl:
         body = json.loads(request.content)
         name = body["query"].split("(")[0].split()[-1]
         self.calls.append(name)
+        if name in self.raise_on:
+            raise self.raise_on[name]
         if name == "FightMeta":
             self.fetching.set()
         if name == "Events" and self.gate is not None:
@@ -149,7 +136,8 @@ class FakeWcl:
         if self.status != 200:
             return httpx.Response(self.status, json={}, headers=self.headers)
         if name == "ReportFights":
-            return httpx.Response(200, json=report_body(self.report))
+            end_time = now_ms() if self.end_time is None else self.end_time
+            return httpx.Response(200, json=report_body(self.report | {"endTime": end_time}))
         fight_id = body["variables"]["fightID"]
         if name == "FightMeta":
             return httpx.Response(200, json=report_body(self.fight_meta(fight_id)))
@@ -202,8 +190,9 @@ class FakeWcl:
         cache: ReportCache | None = None,
         fight_data: FightDataStore | None = None,
         executor=None,
-        limiter: PrefetchLimiter | None = None,
+        limiter: ClientLimiter | None = None,
         clock=None,
+        queries: ClientLimiter | None = None,
     ) -> WclReportSource:
         # Caches, limite e falha lembrada próprios por padrão: cada FakeWcl é uma API nova.
         # `clock` (lista de um número, como nos outros testes) vale para o cache da lista e
@@ -217,10 +206,15 @@ class FakeWcl:
             cache=ReportCache(clock=tick) if cache is None else cache,
             players=ReportCache(),
             fight_data=FightDataStore() if fight_data is None else fight_data,
-            limiter=PrefetchLimiter() if limiter is None else limiter,
+            limiter=ClientLimiter() if limiter is None else limiter,
             cooldown=WclCooldown(clock=tick),
+            queries=query_limiter_for(tick) if queries is None else queries,
             **extra,
         )
+
+
+def query_limiter_for(clock) -> ClientLimiter:
+    return ClientLimiter(QUERY_LIMIT, QUERY_WINDOW_S, global_max_calls=None, clock=clock)
 
 
 def fake_client(body: dict, status: int = 200, calls: list | None = None) -> WclClient:
@@ -327,7 +321,7 @@ def test_short_fight_is_not_supported():
 
 def test_fight_still_uploading_is_not_supported():
     # Log ao vivo: a luta em andamento ainda vai crescer. Atualizar as lutas libera ela.
-    report = copy.deepcopy(REPORT)
+    report = copy.deepcopy(REPORT) | {"endTime": now_ms()}  # recebendo dados agora
     report["fights"][1]["inProgress"] = True
 
     fights = source_for(report).get_report("TESTE123").fights
@@ -341,7 +335,7 @@ def test_fight_still_uploading_is_not_supported():
 
 def test_fight_still_uploading_with_few_seconds_is_not_short():
     # A duração parcial (41 s até agora) ainda vai crescer: o motivo é estar subindo.
-    report = copy.deepcopy(REPORT)
+    report = copy.deepcopy(REPORT) | {"endTime": now_ms()}
     report["fights"][0]["inProgress"] = True
 
     fight = source_for(report).get_report("TESTE123").fights[0]
@@ -355,7 +349,7 @@ def test_fight_still_uploading_with_few_seconds_is_not_short():
 )
 def test_unsupported_fight_still_uploading_is_not_marked_as_uploading(fight_id, reason):
     # Outro chefe ou Nek'zali Normal terminariam cinza de qualquer jeito: nada de "subindo".
-    report = copy.deepcopy(REPORT)
+    report = copy.deepcopy(REPORT) | {"endTime": now_ms()}
     for fight in report["fights"]:
         fight["inProgress"] = True
         if fight["id"] == fight_id:
@@ -787,7 +781,7 @@ def test_remembered_failure_also_holds_players_and_fight_data():
 def test_remembered_failure_does_not_spend_the_prefetch_limit():
     now = [0.0]
     wcl = FakeWcl(status=503)
-    limiter = PrefetchLimiter(max_calls=1, clock=lambda: now[0])
+    limiter = ClientLimiter(max_calls=1, clock=lambda: now[0])
     source = wcl.source(clock=now, limiter=limiter)
     with pytest.raises(SourceUnavailableError):
         source.get_report("TESTE123")
@@ -1093,3 +1087,283 @@ def test_sample_analysis_without_local_file_keeps_names_hidden(tmp_path):
     fill_real_names(result, tmp_path / "nao-existe.json")
 
     assert all(p.name is None for p in result.comparison.players)
+
+
+# --- Log ao vivo e envio parado (build_report) -----------------------------------------
+
+LIVE_ENCOUNTERS = {NEKZALI: {"boss_npc_id": None, "difficulties": [5]}}
+NOW_MS = 2_000_000_000_000.0
+
+
+def live_raw(end_time: float | None) -> dict:
+    # Luta 5: Nek'zali Mítico subindo; luta 6: outro chefe subindo.
+    other = {"id": 6, "encounterID": 9999, "name": "Outro Chefe", "difficulty": 5,
+             "kill": False, "startTime": 0, "endTime": 20_000, "inProgress": True}  # fmt: skip
+    fights = [nekzali(2, 0, 415_000, kill=True), nekzali(5, 0, 20_000, inProgress=True), other]
+    return {"code": "TESTE123", "title": "Ao vivo", "end_time": end_time, "fights": fights}
+
+
+def built(end_time: float | None) -> dict:
+    report = build_report(live_raw(end_time), LIVE_ENCOUNTERS, {}, now_ms=NOW_MS)
+    return report | {"fights": {f["id"]: f for f in report["fights"]}}
+
+
+def test_log_receiving_data_is_live_and_its_fight_is_uploading():
+    report = built(NOW_MS - LIVE_WINDOW_S * 1000)  # último evento há 10 min: ainda vale
+
+    assert report["live"] is True
+    fight = report["fights"][5]
+    assert (fight["in_progress"], fight["upload_paused"]) == (True, False)
+    assert fight["unsupported_reason"] == IN_PROGRESS_REASON
+
+
+def test_log_without_new_data_pauses_the_uploading_fight():
+    report = built(NOW_MS - LIVE_WINDOW_S * 1000 - 1)
+
+    assert report["live"] is False
+    fight = report["fights"][5]
+    assert (fight["in_progress"], fight["upload_paused"], fight["supported"]) == (
+        False,
+        True,
+        False,
+    )
+    assert fight["unsupported_reason"] == UPLOAD_PAUSED_REASON
+    # As lutas que terminaram não mudam.
+    assert report["fights"][2]["supported"] is True
+    assert report["fights"][2]["upload_paused"] is False
+
+
+@pytest.mark.parametrize("end_time", [NOW_MS, NOW_MS - 3_600_000])
+def test_other_boss_uploading_stays_plain_unsupported(end_time):
+    fight = built(end_time)["fights"][6]
+
+    assert (fight["in_progress"], fight["upload_paused"]) == (False, False)
+    assert fight["unsupported_reason"] == UNSUPPORTED_BOSS_REASON
+
+
+def test_report_without_end_time_is_not_live():
+    report = built(None)
+
+    assert report["live"] is False
+    assert report["fights"][5]["upload_paused"] is True
+
+
+def test_fetch_report_passes_the_end_time():
+    body = report_body(REPORT | {"endTime": NOW_MS})
+
+    assert fetch_report(fake_client(body), "TESTE123")["end_time"] == NOW_MS
+
+
+def test_live_comes_in_the_report():
+    wcl = FakeWcl()
+    assert wcl.source().get_report("TESTE123").live is True
+
+    wcl.end_time = now_ms() - (LIVE_WINDOW_S + 60) * 1000
+    assert wcl.source().get_report("TESTE123").live is False
+
+
+def test_sample_report_is_not_live_and_has_no_paused_fight():
+    report = SampleReportSource().get_report(SAMPLE_REPORT_CODE)
+
+    assert report.live is False
+    assert not any(f.upload_paused for f in report.fights)
+
+
+# --- Limite de consultas por cliente ---------------------------------------------------
+
+
+def spend_queries(source: WclReportSource, now: list[float], client: str = "ana") -> None:
+    """Gasta as `QUERY_LIMIT` consultas do cliente, todas indo à API (passada a trava)."""
+    for _ in range(QUERY_LIMIT):
+        now[0] += REFRESH_MIN_INTERVAL_S
+        source.get_report("TESTE123", refresh=True, client=client)
+
+
+def test_query_limit_per_client():
+    now = [0.0]
+    wcl = FakeWcl()
+    source = wcl.source(clock=now)
+    spend_queries(source, now)
+    assert wcl.count("ReportFights") == QUERY_LIMIT
+
+    with pytest.raises(QueryLimitError) as info:
+        source.get_fight_players("TESTE123", 2, client="ana")
+
+    assert wcl.count("FightPlayers") == 0
+    # A 1ª foi em t=8 e agora é t=160: faltam 30 min - 152 s (~28 min).
+    assert info.value.wait_s == QUERY_WINDOW_S - (now[0] - REFRESH_MIN_INTERVAL_S)
+    assert info.value.error_code == "query_limit"
+    assert "20 a cada 30 minutos" in info.value.user_message
+    assert info.value.user_message.endswith("Tente de novo em 28 min.")
+
+
+def test_query_limit_window_slides():
+    now = [0.0]
+    source = FakeWcl().source(clock=now)
+    spend_queries(source, now)
+
+    now[0] = REFRESH_MIN_INTERVAL_S + QUERY_WINDOW_S  # a 1ª saiu da janela
+    assert source.get_fight_players("TESTE123", 2, client="ana")
+
+
+def test_query_limit_message_has_at_least_one_minute():
+    assert QueryLimitError("X", 5).user_message.endswith("Tente de novo em 1 min.")
+
+
+def test_cache_hit_does_not_count_in_the_query_limit():
+    now = [0.0]
+    wcl = FakeWcl()
+    source = wcl.source(clock=now)
+    for _ in range(QUERY_LIMIT + 5):
+        source.get_report("TESTE123", client="ana")  # da lista guardada
+        source.get_report("TESTE123", refresh=True, client="ana")  # menos de 8 s depois
+
+    assert wcl.count("ReportFights") == 1
+    assert source.get_fight_players("TESTE123", 2, client="ana")
+
+
+def test_query_limit_brings_the_cached_list_as_stale():
+    now = [0.0]
+    wcl = FakeWcl()
+    source = wcl.source(clock=now)
+    spend_queries(source, now)
+
+    now[0] += REFRESH_MIN_INTERVAL_S
+    report = source.get_report("TESTE123", refresh=True, client="ana")
+
+    assert wcl.count("ReportFights") == QUERY_LIMIT
+    assert (report.stale, report.stale_code) == (True, "query_limit")
+    assert "20 a cada 30 minutos" in report.stale_message
+
+
+def test_query_limit_without_cached_list_raises():
+    now = [0.0]
+    source = FakeWcl().source(clock=now)
+    for _ in range(QUERY_LIMIT):
+        source.get_fight_players("TESTE123", 4, client="ana")  # vem vazia: não fica no cache
+
+    with pytest.raises(QueryLimitError):
+        source.get_report("TESTE123", client="ana")
+
+
+def test_query_limit_is_per_client():
+    now = [0.0]
+    wcl = FakeWcl()
+    source = wcl.source(clock=now)
+    spend_queries(source, now, client="ana")
+
+    assert source.get_fight_players("TESTE123", 2, client="bia")
+    assert wcl.count("FightPlayers") == 1
+
+
+def test_sample_report_does_not_count_in_the_query_limit():
+    now = [0.0]
+    wcl = FakeWcl()
+    source = wcl.source(clock=now)
+    for _ in range(QUERY_LIMIT + 5):
+        now[0] += REFRESH_MIN_INTERVAL_S
+        source.get_report(SAMPLE_REPORT_CODE, refresh=True, client="ana")
+
+    assert wcl.count("ReportFights") == QUERY_LIMIT + 5
+    assert source.get_fight_players("TESTE123", 2, client="ana")
+
+
+def test_without_client_there_is_no_query_limit():
+    # Pré-busca e motor (get_fight_data) não passam cliente: têm o próprio limite.
+    now = [0.0]
+    wcl = FakeWcl()
+    source = wcl.source(clock=now)
+    for _ in range(QUERY_LIMIT + 5):
+        now[0] += REFRESH_MIN_INTERVAL_S
+        source.get_report("TESTE123", refresh=True)
+
+    assert wcl.count("ReportFights") == QUERY_LIMIT + 5
+
+
+def test_query_limit_defaults():
+    assert (QUERY_LIMIT, QUERY_WINDOW_S) == (20, 30 * 60)
+    assert sources.query_limiter.take("ana") is True  # zerado entre testes
+
+
+# --- Luta e jogador que não existem; relatório arquivado -------------------------------
+
+
+def test_fight_missing_in_the_players_query_is_fight_not_found():
+    wcl = FakeWcl()
+    source = wcl.source()
+
+    with pytest.raises(FightNotFoundError):
+        source.get_fight_players("TESTE123", 99)
+    # A API respondeu: nada de pausa.
+    assert source.get_report("TESTE123")
+
+
+def test_player_missing_in_the_fight_data_is_player_not_found():
+    with pytest.raises(PlayerNotFoundError):
+        FakeWcl().source().get_fight_data("TESTE123", 2, 999)
+
+
+def test_archived_report_is_report_not_available_marked_archived():
+    errors = [{"message": "This report has been archived.", "path": ["reportData", "report"]}]
+
+    with pytest.raises(ReportNotAvailableError) as info:
+        source_for(None, errors).get_report("TESTE123")
+
+    assert info.value.archived is True
+
+
+def test_private_report_is_not_archived():
+    errors = [{"message": "You do not have permission to view this report."}]
+
+    with pytest.raises(ReportNotAvailableError) as info:
+        source_for(None, errors).get_report("TESTE123")
+
+    assert info.value.archived is False
+
+
+# --- Pausa depois de falha da busca pesada ---------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "error", [httpx.ReadTimeout("lento"), httpx.ConnectError("sem rede")], ids=["timeout", "rede"]
+)
+def test_heavy_fetch_timeout_or_network_does_not_pause(error):
+    wcl = FakeWcl()
+    wcl.raise_on["FightMeta"] = error
+    source = wcl.source()
+
+    with pytest.raises(SourceUnavailableError):
+        source.get_fight_data("TESTE123", 2, 10)
+
+    # A lista e os Magos continuam indo à API.
+    assert source.get_report("TESTE123")
+    assert source.get_fight_players("TESTE123", 2)
+    assert wcl.count("ReportFights") == wcl.count("FightPlayers") == 1
+
+
+@pytest.mark.parametrize("status", [429, 503])
+def test_heavy_fetch_rate_limit_or_5xx_pauses(status):
+    wcl = FakeWcl(status=status)
+    source = wcl.source()
+
+    with pytest.raises(SourceUnavailableError):
+        source.get_fight_data("TESTE123", 2, 10)
+    wcl.status = 200
+
+    with pytest.raises(SourceUnavailableError):
+        source.get_report("TESTE123")
+    assert wcl.count("ReportFights") == 0
+
+
+def test_light_query_timeout_still_pauses():
+    wcl = FakeWcl()
+    wcl.raise_on["ReportFights"] = httpx.ReadTimeout("lento")
+    source = wcl.source()
+
+    with pytest.raises(SourceUnavailableError):
+        source.get_report("TESTE123")
+    del wcl.raise_on["ReportFights"]
+
+    with pytest.raises(SourceUnavailableError):
+        source.get_fight_players("TESTE123", 2)
+    assert wcl.count("FightPlayers") == 0

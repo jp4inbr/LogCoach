@@ -277,8 +277,18 @@ def test_invalid_token_404_html_gets_new_token_and_retries():
     assert client_for(api, token=token).query("{ ok }") == {"ok": 1}
 
 
-def test_token_refused_twice_is_config_error():
+def test_404_html_twice_is_wcl_side_not_config():
+    # O token novo passou no endpoint do token (credencial certa): o 404 de novo é o WCL
+    # respondendo errado, não configuração nossa.
     response = httpx.Response(404, headers=HTML, text=NOT_FOUND_HTML)
+
+    error = raised(client_for(response))
+    assert isinstance(error, WclUnavailableError)
+    assert (error.user_message, error.error_code) == (UNEXPECTED_MESSAGE, "wcl_unavailable")
+
+
+def test_token_refused_twice_with_401_is_config_error():
+    response = httpx.Response(401, json={"error": "Unauthenticated."})
 
     assert user_message(client_for(response)) == CONFIG_MESSAGE
 
@@ -391,6 +401,24 @@ def test_events_on_missing_report_is_report_error():
         client_for(httpx.Response(200, json=body)).events("X", 1, 0, 10, "Casts")
 
     assert not isinstance(info.value, WclUnavailableError)
+
+
+@pytest.mark.parametrize(
+    "message", ["This report has been archived.", "Report is ARCHIVED and cannot be viewed"]
+)
+def test_archived_report_is_report_error_marked_archived(message):
+    # Texto exato do WCL não observado: qualquer mensagem com "archiv" vale.
+    body = {"errors": [{"message": message, "path": ["reportData", "report"]}],
+            "data": {"reportData": {"report": None}}}  # fmt: skip
+
+    error = raised(client_for(httpx.Response(200, json=body)))
+
+    assert not isinstance(error, WclUnavailableError)
+    assert error.archived is True
+
+
+def test_private_report_is_not_archived():
+    assert raised(client_for(httpx.Response(200, json=NOT_FOUND_BODY))).archived is False
 
 
 # --- Tempos de espera -------------------------------------------------------------------

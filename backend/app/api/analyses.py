@@ -2,10 +2,10 @@
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 
 from app.api.deps import OptionalUserDep, SessionDep, check_plan_limit
-from app.api.reports import ReportSourceDep, load_fight, load_player
+from app.api.reports import ReportSourceDep, load_fight, load_player, request_client
 from app.errors import api_error
 from app.models import Analysis
 from app.schemas import AnalysisOut, AnalysisRequest, AnalysisResult
@@ -28,18 +28,22 @@ def _to_out(analysis: Analysis) -> AnalysisOut:
 @router.post("", status_code=201)
 def create_analysis(
     data: AnalysisRequest,
+    request: Request,
     session: SessionDep,
     user: OptionalUserDep,
     source: ReportSourceDep,
     analyzer: AnalyzerDep,
 ) -> AnalysisOut:
+    # Antes de qualquer consulta: não gasta pontos do Warcraft Logs com quem já não pode
+    # analisar.
+    check_plan_limit(session, user)
+
     # Lista e Magos da luta saem do cache que a tela de escolher a luta já encheu. Os eventos
     # (quando o motor entrar) saem da pré-busca: ver `Analyzer` em services/sources.py.
-    report, fight = load_fight(source, data.report_code, data.fight_id)
+    client = request_client(request, user)
+    report, fight = load_fight(source, data.report_code, data.fight_id, client)
     # Só os Magos Arcanos da luta: id de fora dela ou de outra spec cai aqui.
-    player = load_player(source, report, fight, data.actor_id)
-
-    check_plan_limit(session, user)
+    player = load_player(source, report, fight, data.actor_id, client)
 
     try:
         result = analyzer.analyze(report, fight, player)
