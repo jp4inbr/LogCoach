@@ -1,29 +1,36 @@
 # 9. Relatório sobre o Uso da Inteligência Artificial
 
-> Entrega da RT03. Esqueleto pronto; completar com exemplos reais de prompts e código.
+> Entrega da RT03. Seções 9.2 e 9.3 com os exemplos das frentes A, E e F; falta a parte do Arthur (frentes B, C e D).
 
 ## 9.1 Ferramentas utilizadas
 
 | Ferramenta | Onde | Para quê |
 |---|---|---|
-| Claude (Anthropic) | Desenvolvimento | Comparação de temas, escopo, pesquisa de mercado, rascunho da documentação, plano de tarefas, apoio no código |
+| Claude (Anthropic), no chat do claude.ai e como agente na IDE (Claude Code) | Desenvolvimento | Comparação de temas, escopo, pesquisa de mercado, rascunho da documentação, plano de tarefas, escrita de código e testes |
 | Gemini via Vertex AI (Google Cloud) | Dentro do produto | Explicar e priorizar os erros do jogador em português |
-| _outras (Copilot etc.), se usadas_ |  |  |
 
 ## 9.2 Como o Claude foi usado no desenvolvimento
 
-- Comparação entre o tema antigo (Central de Rotinas) e o LogCoach.
+- Comparação entre o tema antigo (HIO) e o LogCoach.
 - Pesquisa de mercado: ferramentas concorrentes, premiações (MDI, AWC), API do Warcraft Logs.
 - Rascunho da documentação retroativa (itens 1 a 7) e reorganização no formato deste GitBook.
 - Plano de tarefas da RT03.
-- Apoio na escrita de código e testes: _detalhar_.
+- Escrita de código e testes. Em todos os casos, um integrante descreveu o que precisava, o Claude escreveu o código numa branch separada, o CI rodou lint e testes, e o código só entrou na `main` depois de testado no computador e revisado num pull request.
+  - **Base técnica (frente A, Pedro, PR #1):** estrutura do backend e do frontend, linters, pre-commit e CI. O Claude no chat montou o plano e as instruções, e o agente do Claude na IDE do Pedro escreveu os arquivos. O Pedro conferiu cada etapa rodando o projeto no próprio computador.
+  - **Contas, histórico e telas (frentes E e F, Pedro, PR #2):** cadastro e login, limite do plano, rotas de análise, 29 testes e as telas em React. O Claude escreveu o código e os testes; o Pedro testou o fluxo no PC e no celular; o Arthur revisou e ajustou antes do merge (ver 9.3).
+  - **Documentação da RT03:** rascunho dos itens 8.1 (prints tirados da alfa), 8.3 (roteiro do teste e SUS), 10 e 12, revisados pelo grupo.
+  - _Arthur: acrescentar o uso na frente dele (cliente do Warcraft Logs, regras do Arcano e do Nek'zali, guias)._
 
 ## 9.3 Trechos gerados por IA
 
 | Trecho | Gerado por | O que foi alterado pelo time |
 |---|---|---|
-| _ex.: prompt do coach_ |  |  |
-| _ex.: regra de tempo parado_ |  |  |
+| Estrutura inicial do backend e do frontend, linters e CI (PR #1) | Claude (chat) + Claude Code (IDE) | O Pedro rodou backend e frontend no PC antes de abrir o PR; o ESLint foi fixado na versão 9 porque o plugin de React pedido no item 7 não funciona na 10; o arquivo de instruções da IA e a pasta `*.egg-info` ficaram fora do Git |
+| Backend de contas: cadastro, login com JWT, senha com argon2, histórico e limite de 5 análises/mês (PR #2) | Claude | Na revisão, o Arthur passou a tratar token vencido como "sem login" nas rotas públicas, aumentou a chave JWT dos testes para 32+ bytes e acrescentou a escolha do jogador por nome + reino (erro `player_ambiguous`) |
+| Telas em React: início, escolha da luta, andamento, resultado, perfil e planos (PR #2) | Claude | O Pedro testou o fluxo no PC e no celular. O Arthur acrescentou a lista dos comparados com o botão de olho (RF25, requisito novo), a distinção de Magos com o mesmo nome em reinos diferentes e a checagem da sessão vencida ao abrir o site |
+| Resultado de exemplo usado pelas telas antes do motor (`app/samples/analysis_*.json`) | Claude | Os números eram ilustrativos. O Arthur trocou o DPS pelos valores calculados do kill real e apontou na revisão que os erros listados somavam 8,2% de perda contra uma diferença real de −14,8%; a correção está com ele |
+| Roteiro do teste de usabilidade e questionário SUS (item 8.3) | Claude | Revisão do grupo antes do teste; o exemplo de cálculo da nota SUS foi conferido refazendo a conta |
+| _Arthur: cliente do Warcraft Logs, regras e guias_ |  |  |
 
 ## 9.4 Prompt do coach (produto)
 

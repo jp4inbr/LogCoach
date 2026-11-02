@@ -1,27 +1,38 @@
+---
+description: Organização das tarefas e prazos do time.
+---
+
 # 6. Planejamento de Tarefas (Cronograma)
 
+**Planilha de entregas:** controle de prazos mantido pelo Luiz.
+
+{% embed url="https://docs.google.com/spreadsheets/d/1usVGNxfKOdTOzPsQEzIczHR9qQlqXamn/edit?gid=2102548923#gid=2102548923" %}
+
 **Quadro oficial:** GitHub Projects do repositório (_link a adicionar_), com colunas *Backlog → A fazer → Fazendo → Revisão → Feito*.
+
+**Tarefas:** cada frente de trabalho é uma issue no GitHub, de #3 a #17, com responsável, situação e dependências: [issues com o rótulo `frente`](https://github.com/jp4inbr/LogCoach/issues?q=label%3Afrente). As concluídas ficam fechadas. O rótulo `RT03` marca o que é da entrega de 28/10 e `banca`, o que fica para o fim de novembro.
 
 **Meta da RT03 (28/10/2026):** versão alfa rodando com o 1º chefe (Nek'zali), documentação consolidada, relatório de IA, testes e roteiro da banca.
 
 ## 6.1 Papéis
 
-> Cada "Membro" abaixo é uma frente de trabalho. Os integrantes se inscrevem nas frentes de acordo com o que conseguem entregar.
+> Cada linha é uma frente de trabalho. As frentes "a definir" estão abertas: os integrantes se inscrevem de acordo com o que conseguem entregar.
 
-| Pessoa        | Papel                                | Entregas                                                                                                                                 |
-| ------------- | ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| **Arthur**    | Líder técnico + especialista do jogo | Motor de análise, regras do Mago Arcano e do encontro (mapa do Nek'zali), integração com Warcraft Logs e IA, validação de todo conteúdo de WoW |
-| **Membro 2**  | Frontend + qualidade                 | Linters, CI, telas em React ligadas ao backend                                                                                           |
-| **João**      | GitBook                              | Organização e revisão das páginas no GitBook                                                                                             |
-| **Luiz**      | Gestão                               | Quadro no GitHub Projects, checagem de prazos, roteiro dos slides                                                                        |
-| **Membro 5**  | Design                               | Mockups das 5 telas + planos no Figma                                                                                                    |
-| **Membro 6**  | Design + teste                       | Apoio no Figma; teste de usabilidade e nota SUS                                                                                          |
-| **Membro 7**  | Pesquisa                             | Formulário com jogadores brasileiros (evidências do problema)                                                                            |
-| **Membro 8**  | Relatório de IA                      | Item 9, a partir dos prompts, interações e relatórios dos membros do grupo.                                                              |
-| **Membro 9**  | Casos de teste                       | Entender o sistema e contexto para criar cenários de erro e validação em linguagem simples (base dos testes Pytest) e manter o item 10. |
-| **Membro 10** | Aplicação da Usabilidade             | Entender como os princípios da usabilidade será integrado pela aplicação, atuando junto ao front/backend, e manter o item 08.           |
-| **Membro 11** | Qualidade da Apresentação            | Elaborar os slides e garantir que o material estará disponível e correto na hora da apresentação à banca.                                |
-| **Membro 12** | Diagramas                            | Converter os fluxogramas em Mermaid (arquitetura, fluxo de telas, motor de análise, cronograma) em diagramas apresentáveis (Figma, draw.io ou Excalidraw) para o GitBook e os slides. |
+| Pessoa | Papel | Entregas |
+|---|---|---|
+| **Arthur** | Líder técnico + especialista do jogo | Motor de análise, regras do Mago Arcano e do encontro (mapa do Nek'zali), integração com Warcraft Logs e IA, validação de todo conteúdo de WoW |
+| **Pedro** | Frontend, backend de contas e qualidade | Base técnica (linters, CI), telas em React ligadas ao backend, contas, histórico e limite do plano; evidências de usabilidade (8.1) e métricas (11) |
+| **João** | GitBook | Organização e revisão das páginas no GitBook |
+| **Luiz** | Gestão | Planilha de entregas, quadro no GitHub Projects, checagem de prazos |
+| **Danilo** | Design | Mockups das telas no Figma (item 3) |
+| **Matheus Damasceno** | Planejamento estratégico | Product Vision Board (item 2.B) |
+| **Matheus Morgado** | Qualidade da Apresentação | Elaborar os slides e garantir que o material estará disponível e correto na hora da apresentação à banca |
+| **Arthur** | Relatório de IA | Item 9, a partir dos prompts, interações e relatórios dos membros do grupo |
+| **Arthur** | Casos de teste | Cenários de erro e validação em linguagem simples (base dos testes Pytest) e item 10 |
+| _a definir_ | Teste de usabilidade | Aplicar o roteiro e o questionário SUS (8.3) e registrar os resultados |
+| _a definir_ | Pesquisa | Formulário com jogadores brasileiros (evidências do problema) |
+| _a definir_ | Aplicação da Usabilidade | Acompanhar como os princípios de usabilidade entram na aplicação, junto ao front/backend, e manter o item 8 |
+| _a definir_ | Diagramas | Converter os fluxogramas em Mermaid (arquitetura, fluxo de telas, motor de análise, cronograma) em diagramas apresentáveis para o GitBook e os slides |
 
 ## 6.2 Cronograma
 

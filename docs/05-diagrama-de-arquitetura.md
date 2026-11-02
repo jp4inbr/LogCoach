@@ -1,3 +1,7 @@
+---
+description: Como frontend, backend, banco de dados e IA se conectam.
+---
+
 # 5. Diagrama de Arquitetura
 
 ```mermaid
@@ -41,16 +45,16 @@ flowchart LR
 
 ## Componentes
 
-| Componente | Tecnologia | Responsabilidade |
-|---|---|---|
-| Frontend | React + Vite | Telas, validação de entrada, exibição do relatório |
-| Backend | FastAPI (Python) | Rotas, autenticação, orquestração da análise |
-| Motor de análise | Python (módulo do backend) | Linha do tempo, regras do encontro e da especialização, correlação e comparação por fase (ver item 12) |
-| Banco | PostgreSQL (Cloud SQL) / SQLite em dev | Usuários, análises, cache dos top logs |
-| IA | Gemini via Vertex AI | Explicar e priorizar os erros em português |
-| Fonte de dados | API Warcraft Logs v2 (GraphQL) | Eventos da luta e rankings |
+| Componente       | Tecnologia                             | Responsabilidade                                                                                       |
+| ---------------- | -------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| Frontend         | React + Vite                           | Telas, validação de entrada, exibição do relatório                                                     |
+| Backend          | FastAPI (Python)                       | Rotas, autenticação, orquestração da análise                                                           |
+| Motor de análise | Python (módulo do backend)             | Linha do tempo, regras do encontro e da especialização, correlação e comparação por fase (ver item 12) |
+| Banco            | PostgreSQL (Cloud SQL) / SQLite em dev | Usuários, análises, cache dos top logs                                                                 |
+| IA               | Gemini via Vertex AI                   | Explicar e priorizar os erros em português                                                             |
+| Fonte de dados   | API Warcraft Logs v2 (GraphQL)         | Eventos da luta e rankings                                                                             |
 
 ## Ambientes
 
-- **Desenvolvimento:** SQLite local e dados de exemplo salvos em arquivo.
-- **Apresentação:** backend no Cloud Run e banco no Cloud SQL, com um log de exemplo já processado como reserva caso a internet falhe.
+* **Desenvolvimento:** SQLite local e dados de exemplo salvos em arquivo.
+* **Apresentação:** backend no Cloud Run e banco no Cloud SQL, com um log de exemplo já processado como reserva caso a internet falhe.
