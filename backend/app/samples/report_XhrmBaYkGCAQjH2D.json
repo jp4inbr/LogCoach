@@ -1,5 +1,5 @@
 {
-  "_nota": "Exemplo montado à mão para a alfa. A luta 34 e o jogador Harmonist são o kill de referência do CLAUDE.md; as outras lutas existem só para mostrar os estados da tela (luta curta e chefe não suportado). O reino fica nulo porque as fixtures não guardam reino (anonimização). Fica como fonte offline (DATA_SOURCE=exemplo e WCL fora do ar): plano B da demo e fonte do CI.",
+  "_nota": "Exemplo montado à mão para a alfa. A luta 34 e o jogador Harmonist são o kill de referência do CLAUDE.md; as outras lutas existem só para mostrar os estados da tela (luta curta e chefe não suportado). Os Magos ficam em `players`, por id da luta, só nas lutas suportadas (como a busca da luta escolhida no Warcraft Logs). O reino fica nulo porque as fixtures não guardam reino (anonimização). Fica como fonte offline (DATA_SOURCE=exemplo e WCL fora do ar): plano B da demo e fonte do CI.",
   "code": "XhrmBaYkGCAQjH2D",
   "title": "The Venomous Abyss — Mítico",
   "sample": true,
@@ -11,8 +11,7 @@
       "kill": false,
       "duration_s": 41.0,
       "supported": false,
-      "unsupported_reason": "A luta tem menos de 60 s. Escolha uma tentativa mais longa",
-      "players": [{ "name": "Harmonist", "server": null, "spec": "Mago Arcano", "item_level": 327 }]
+      "unsupported_reason": "A luta tem menos de 60 s. Escolha uma tentativa mais longa"
     },
     {
       "id": 34,
@@ -21,8 +20,7 @@
       "kill": true,
       "duration_s": 415.6,
       "supported": true,
-      "unsupported_reason": null,
-      "players": [{ "name": "Harmonist", "server": null, "spec": "Mago Arcano", "item_level": 327 }]
+      "unsupported_reason": null
     },
     {
       "id": 41,
@@ -31,8 +29,7 @@
       "kill": false,
       "duration_s": 238.0,
       "supported": false,
-      "unsupported_reason": "Chefe ainda não suportado",
-      "players": [{ "name": "Harmonist", "server": null, "spec": "Mago Arcano", "item_level": 327 }]
+      "unsupported_reason": "Chefe ainda não suportado"
     },
     {
       "id": 47,
@@ -41,8 +38,10 @@
       "kill": true,
       "duration_s": 312.0,
       "supported": false,
-      "unsupported_reason": "Chefe ainda não suportado",
-      "players": [{ "name": "Harmonist", "server": null, "spec": "Mago Arcano", "item_level": 327 }]
+      "unsupported_reason": "Chefe ainda não suportado"
     }
-  ]
+  ],
+  "players": {
+    "34": [{ "actor_id": 455, "name": "Harmonist", "server": null, "spec": "Mago Arcano", "item_level": 327 }]
+  }
 }

@@ -32,13 +32,20 @@ from app.wcl.fetch import (  # noqa: E402
     fetch_rankings,
 )
 
-# Kill de referência (ver CLAUDE.md).
-REFERENCE = {"report": "XhrmBaYkGCAQjH2D", "fight": 34, "player": "Harmonist"}
+# Kill de referência (ver CLAUDE.md). Buscado pelo id do ator, como o motor faz.
+REFERENCE = {"report": "XhrmBaYkGCAQjH2D", "fight": 34, "player": "Harmonist", "actor_id": 455}
 ENCOUNTER_ID = 3470
 CLASS_NAME, SPEC_NAME = "Mage", "Arcane"
 TOP_N = 10
 
 FIXTURES = BACKEND / "tests" / "fixtures"
+# Cópia do kill de referência que o modo exemplo (plano B) lê; vai junto com o app.
+SAMPLE_FIGHT = (
+    BACKEND
+    / "app"
+    / "samples"
+    / f"fight_{REFERENCE['report']}_{REFERENCE['fight']}_{REFERENCE['actor_id']}.json.gz"
+)
 NAMES_FILE = FIXTURES / "names.local.json"
 RULES_FILE = BACKEND / "app" / "rules" / "arcane_mage.yaml"
 
@@ -87,7 +94,11 @@ def main() -> None:
     names: dict[str, Any] = {}
     with WclClient.from_env() as client:
         print(f"Baixando referência {REFERENCE['report']} luta {REFERENCE['fight']}…")
-        ref = fetch_fight(client, REFERENCE["report"], REFERENCE["fight"], REFERENCE["player"])
+        ref = fetch_fight(
+            client, REFERENCE["report"], REFERENCE["fight"], actor_id=REFERENCE["actor_id"]
+        )
+        if ref["player"]["actor"]["name"] != REFERENCE["player"]:
+            raise SystemExit(f"O ator {REFERENCE['actor_id']} não é o {REFERENCE['player']}.")
         ilvl = ref["player"]["details"]["maxItemLevel"]
         brackets = fetch_brackets(client, ENCOUNTER_ID)
         index = bracket_index(ilvl, brackets["min"], brackets["bucket"])
@@ -99,6 +110,7 @@ def main() -> None:
         )
         names["reference_harmonist.json.gz"] = ref_names
         write_json(out_dir / "reference_harmonist.json.gz", ref_anon, args.force)
+        write_json(SAMPLE_FIGHT, ref_anon, force=True)  # mesma luta, mesmos bytes
         summarize("referência", ref, expected_ids)
 
         index_data: dict[str, Any] = {
@@ -129,8 +141,8 @@ def main() -> None:
                     client,
                     ranking["report"]["code"],
                     ranking["report"]["fightID"],
-                    ranking["name"],
-                    server,
+                    name=ranking["name"],
+                    server=server,
                 )
                 fight_anon, fight_names = anonymize_fight(fight, label)
                 public, real = anonymize_ranking(ranking, label)

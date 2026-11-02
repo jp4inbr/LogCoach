@@ -6,11 +6,15 @@ Os tempos ficam em ms do report, como vêm da API. Quem converte para
 
 from typing import Any
 
-from app.services.players import normalize_server
 from app.wcl import queries
-from app.wcl.client import WclClient, WclError
+from app.wcl.client import EVENTS_TIMEOUT, WclClient, WclError
+from app.wcl.players import find_player
 
 MYTHIC = 5
+
+
+class FightNotFoundError(WclError):
+    """O report existe, mas não tem a luta pedida."""
 
 
 def bracket_index(item_level: float, bracket_min: int, bucket: int) -> int:
@@ -21,15 +25,6 @@ def bracket_index(item_level: float, bracket_min: int, bucket: int) -> int:
 def bracket_range(index: int, bracket_min: int, bucket: int) -> tuple[int, int]:
     low = bracket_min + (index - 1) * bucket
     return low, low + bucket - 1
-
-
-def find_player(actors: list[dict[str, Any]], name: str, server: str | None = None) -> dict:
-    players = [a for a in actors if a["type"] == "Player" and a["name"] == name]
-    if len(players) > 1 and server:
-        players = [a for a in players if normalize_server(a["server"]) == normalize_server(server)]
-    if len(players) != 1:
-        raise WclError(f"Jogador {name!r} não encontrado (ou ambíguo) no report.")
-    return players[0]
 
 
 def _details_by_id(details: dict[str, Any] | None) -> dict[int, dict[str, Any]]:
@@ -47,10 +42,10 @@ def _player_details(details: dict[str, Any], actor_id: int) -> dict[str, Any] | 
 
 
 def fetch_report(client: WclClient, code: str) -> dict[str, Any]:
-    """Lutas de chefe e jogadores de um report inteiro (uma consulta só).
+    """Lutas de chefe de um report (consulta leve, sem jogadores). Tempos em ms do report.
 
-    Os tempos ficam em ms do report. `details` é o playerDetails somado de todas as
-    lutas de chefe (specs com contagem, minItemLevel/maxItemLevel), por id do ator.
+    `end_time` é o `endTime` do report (ms desde 1970): hora do último evento recebido, que
+    num log ao vivo avança enquanto chegam dados.
     """
     report = client.query(queries.REPORT_FIGHTS, {"code": code})["reportData"]["report"]
     if report is None:
@@ -58,25 +53,72 @@ def fetch_report(client: WclClient, code: str) -> dict[str, Any]:
     return {
         "code": report["code"],
         "title": report["title"],
+        "end_time": report.get("endTime"),
         "fights": report["fights"] or [],
-        "actors": [
-            a for a in (report["masterData"] or {}).get("actors") or [] if a["type"] == "Player"
-        ],
-        "details": _details_by_id(report.get("playerDetails")),
     }
 
 
-def fetch_fight(
-    client: WclClient, code: str, fight_id: int, player_name: str, server: str | None = None
-) -> dict[str, Any]:
-    report = client.query(queries.FIGHT_META, {"code": code, "fightID": fight_id})["reportData"][
-        "report"
-    ]
+def fetch_fight_players(client: WclClient, code: str, fight_id: int) -> dict[str, Any]:
+    """Magos de uma luta: `players` traz id, spec e item level de cada jogador da luta e
+    `actors` os Magos do report (nome, reino). A spec é a da luta, não a da noite.
+
+    Se a luta vier sem spec de algum jogador, completa com o playerDetails da luta.
+    """
+    variables = {"code": code, "fightID": fight_id}
+    report = client.query(queries.FIGHT_PLAYERS, variables)["reportData"]["report"]
+    if report is None:
+        raise WclError(f"Report {code} não encontrado.")
     if not report["fights"]:
-        raise WclError(f"Luta {fight_id} não existe no report {code}.")
+        raise FightNotFoundError(f"Luta {fight_id} não existe no report {code}.")
+    fight = report["fights"][0]
+    ids = fight.get("friendlyPlayers") or []
+    specs = fight.get("friendlySpecs") or []
+    item_levels = fight.get("friendlyItemLevels") or []
+    players = [
+        {
+            "id": pid,
+            "spec": specs[i] if i < len(specs) else None,
+            "item_level": item_levels[i] if i < len(item_levels) else None,
+        }
+        for i, pid in enumerate(ids)
+    ]
+    actors = [a for a in (report["masterData"] or {}).get("actors") or [] if a["type"] == "Player"]
+    mages = {a["id"] for a in actors}
+    if any(p["spec"] is None for p in players if p["id"] in mages):
+        data = client.query(queries.FIGHT_PLAYER_DETAILS, variables)["reportData"]["report"]
+        details = _details_by_id((data or {}).get("playerDetails"))
+        for player in players:
+            entry = details.get(player["id"])
+            if player["spec"] is None and entry:
+                player["spec"] = next((s["spec"] for s in entry.get("specs") or []), None)
+                player["item_level"] = player["item_level"] or entry.get("maxItemLevel")
+    return {"fight_id": fight["id"], "players": players, "actors": actors}
+
+
+def fetch_fight(
+    client: WclClient,
+    code: str,
+    fight_id: int,
+    *,
+    actor_id: int | None = None,
+    name: str | None = None,
+    server: str | None = None,
+) -> dict[str, Any]:
+    """Luta completa de um jogador: pelo id do ator (jogador analisado) ou por nome + reino
+    (top 10, que o ranking traz sem id). Ver `wcl/players.py`.
+    """
+    # Parte da busca pesada (masterData e playerDetails de um log que pode ser do dia
+    # inteiro): espera como as páginas de eventos, não como as consultas pequenas.
+    variables = {"code": code, "fightID": fight_id}
+    data = client.query(queries.FIGHT_META, variables, timeout=EVENTS_TIMEOUT)
+    report = data["reportData"]["report"]
+    if report is None:
+        raise WclError(f"Report {code} não encontrado.")
+    if not report["fights"]:
+        raise FightNotFoundError(f"Luta {fight_id} não existe no report {code}.")
     fight = report["fights"][0]
     actors = report["masterData"]["actors"]
-    player = find_player(actors, player_name, server)
+    player = find_player(actors, actor_id=actor_id, name=name, server=server)
     phase_names = next(
         (p["phases"] for p in report["phases"] or [] if p["encounterID"] == fight["encounterID"]),
         [],

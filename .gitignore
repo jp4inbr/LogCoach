@@ -27,3 +27,6 @@ dist/
 .vscode/
 .idea/
 .obsidian/
+
+# Worktrees temporárias dos agentes do Claude Code
+.claude/worktrees/
