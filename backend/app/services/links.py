@@ -8,7 +8,8 @@ _REPORT_LINK = re.compile(
     r"^(?:https?://)?(?:(?P<sub>[a-z]+)\.)?warcraftlogs\.com/reports/"
     r"(?P<code>[A-Za-z0-9]{6,40})(?:[/?#].*)?$"
 )
-# Só o World of Warcraft atual: www. ou sem subdomínio.
+# Só o World of Warcraft atual: www., sem subdomínio ou um de idioma de 2 letras (de., fr.,
+# ko., cn., br.: o site traduzido, com o mesmo código de relatório).
 RETAIL_SUBDOMAINS = {None, "www"}
 # Warcraft Logs Classic (Cataclysm/MoP Classic, Season of Discovery, Fresh, Vanilla/Era): o
 # link tem o mesmo formato, mas o log é de outro jogo e a API é outra.
@@ -19,10 +20,14 @@ def _match(url: str) -> re.Match[str] | None:
     return _REPORT_LINK.match(url.strip())
 
 
+def _is_retail(sub: str | None) -> bool:
+    return sub in RETAIL_SUBDOMAINS or (len(sub) == 2 and sub not in CLASSIC_SUBDOMAINS)
+
+
 def parse_report_code(url: str) -> str | None:
     """Devolve o código do relatório, ou None se o link não for do Warcraft Logs do WoW atual."""
     match = _match(url)
-    if match is None or match.group("sub") not in RETAIL_SUBDOMAINS:
+    if match is None or not _is_retail(match.group("sub")):
         return None
     return match.group("code")
 

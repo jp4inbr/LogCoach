@@ -52,6 +52,8 @@ SAMPLE_LINK = "https://www.warcraftlogs.com/reports/XhrmBaYkGCAQjH2D#fight=34"
         "https://www.warcraftlogs.com/reports/XhrmBaYkGCAQjH2D#fight=34&type=damage-done",
         "warcraftlogs.com/reports/XhrmBaYkGCAQjH2D",
         "  https://www.warcraftlogs.com/reports/XhrmBaYkGCAQjH2D/  ",
+        "https://de.warcraftlogs.com/reports/XhrmBaYkGCAQjH2D",  # site em outro idioma
+        "https://ko.warcraftlogs.com/reports/XhrmBaYkGCAQjH2D#fight=34",
     ],
 )
 def test_t01_link_validator_accepts_valid_links(url):
@@ -703,6 +705,20 @@ def test_resolve_over_the_limit_without_cached_list_is_429(client):
 
     assert response.status_code == 429
     assert response.json()["detail"]["code"] == "query_limit"
+
+
+def test_prefetch_route_counts_its_queries_in_the_limit(client):
+    # A pré-busca direto, sem a tela ter aberto a luta, também gasta a lista e os Magos.
+    now = [0.0]
+    wcl = FakeWcl()
+    use_wcl(wcl, now)
+    spend_resolves(client, now)
+
+    response = client.post("/reports/TESTE123/fights/2/prefetch", json={"actor_id": 10})
+
+    assert response.status_code == 429
+    assert response.json()["detail"]["code"] == "query_limit"
+    assert wcl.count("FightPlayers") == 0
 
 
 def test_query_limit_is_per_account(client, auth_headers):

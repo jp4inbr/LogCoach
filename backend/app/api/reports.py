@@ -263,9 +263,10 @@ def prefetch_fight(
     `prefetch_limit` nos dois). A tela ignora esses erros: a análise busca sozinha.
     """
     check_plan_limit(session, user)
-    report, fight = load_fight(source, code, fight_id)
-    player = load_player(source, report, fight, data.actor_id)
     client = request_client(request, user)
+    # Lista e Magos da luta contam no limite de consultas como nas outras rotas (cache não).
+    report, fight = load_fight(source, code, fight_id, client)
+    player = load_player(source, report, fight, data.actor_id, client)
     try:
         status = load_report(
             _SourceCall(lambda: source.prefetch(report.code, fight.id, player.actor_id, client)),
