@@ -668,8 +668,10 @@ label {
   background: var(--surface-2);
 }
 
-/* Prevenção de erros: luta que não pode ser analisada aparece cinza, com o motivo. */
-.fight:disabled {
+/* Prevenção de erros: luta que não pode ser analisada aparece cinza, com o motivo. É
+   aria-disabled (focável, para o leitor de tela ler o motivo); subindo e pausada têm visual
+   próprio. */
+.fight[aria-disabled="true"]:not(.fight-uploading, .fight-paused) {
   cursor: not-allowed;
   opacity: 0.55;
   filter: grayscale(1);
@@ -716,6 +718,55 @@ label {
   .pill-uploading::before {
     animation: none;
   }
+}
+
+/* Luta que estava subindo, mas a lista não está sendo acompanhada (lista guardada ou
+   automática parada): não dá para afirmar que ainda sobe. Selo estático, sem o ponto. */
+.fight-unwatched {
+  cursor: not-allowed;
+  border-color: var(--border);
+  background: var(--surface);
+}
+
+.fight-unwatched .fight-reason {
+  color: var(--muted);
+}
+
+.pill-unwatched {
+  background: var(--surface-2);
+  color: var(--muted);
+  box-shadow: inset 0 0 0 1px var(--border);
+}
+
+/* Upload pausado: a luta parou de receber dados no meio. Nem "subindo" (sem animação) nem
+   cinza como as não suportadas: borda tracejada e selo no tom de atenção, com o motivo em
+   texto. */
+.fight-paused {
+  cursor: not-allowed;
+  border-style: dashed;
+  border-color: rgb(251 191 36 / 40%);
+  background: var(--warn-bg);
+}
+
+.fight-paused .fight-reason {
+  color: var(--text);
+}
+
+.pill-paused {
+  gap: 6px;
+  background: var(--warn-bg);
+  color: var(--warn);
+  box-shadow: inset 0 0 0 1px rgb(251 191 36 / 35%);
+}
+
+/* Sinal de pausa (duas barras), estático. */
+.pill-paused::before {
+  content: "";
+  width: 7px;
+  height: 8px;
+  border-left: 2px solid currentcolor;
+  border-right: 2px solid currentcolor;
+  box-sizing: border-box;
 }
 
 /* Aviso da atualização automática (luta subindo). Pausado pelo teto: borda tracejada e
