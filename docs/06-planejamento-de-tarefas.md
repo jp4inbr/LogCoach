@@ -10,7 +10,7 @@ O grupo acompanha o trabalho em dois lugares, que se completam:
 
 {% embed url="https://docs.google.com/spreadsheets/d/1usVGNxfKOdTOzPsQEzIczHR9qQlqXamn/edit?gid=2102548923#gid=2102548923" %}
 
-**Quadro de tarefas (GitHub Projects):** _link a adicionar_. Colunas *A fazer → Fazendo → Revisão → Feito*. Cada cartão é uma frente de trabalho; quem é responsável move o próprio cartão, e a frente concluída vai sozinha para *Feito* quando a issue é fechada.
+**Quadro de tarefas (GitHub Projects):** [LogCoach — A3](https://github.com/users/pedroasnogueira/projects/2) (público). Colunas *A fazer → Fazendo → Revisão → Feito*. Cada cartão é uma frente de trabalho; quem é responsável move o próprio cartão, *Revisão* é a frente pronta num PR esperando revisão ou merge, e a frente concluída vai sozinha para *Feito* quando a issue é fechada.
 
 **Detalhe de cada frente:** cada cartão do quadro é uma issue no GitHub, de #3 a #17, com responsável, situação e dependências: [issues com o rótulo `frente`](https://github.com/jp4inbr/LogCoach/issues?q=label%3Afrente). As concluídas ficam fechadas. O rótulo `RT03` marca o que é da entrega de 28/10 e `banca`, o que fica para o fim de novembro.
 
