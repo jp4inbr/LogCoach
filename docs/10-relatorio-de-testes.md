@@ -42,8 +42,26 @@ T03–T05, T07 e T11–T14 dependem do motor e da IA (frentes C e D).
 
 ## 10.3 Resultado
 
+Execução no CI do GitHub, com `pytest -v --cov=app` (PR #22 com a `main` de 03/11/2026, Python 3.12, pytest 9.2). As imagens abaixo reproduzem trechos do log do job `backend (ubuntu-latest)`; no Windows o resultado foi o mesmo.
+
 | Total | Passaram | Falharam | Cobertura |
 | ----- | -------- | -------- | --------- |
-|       |          |          |           |
+| 434   | 434      | 0        | 98% do backend; 98% do motor de análise (`app/engine/`) |
 
-_Inserir print da saída do `pytest -v`._
+O único aviso da execução ("1 warning") é de uma biblioteca de teste (o cliente de testes do FastAPI anuncia uma troca de dependência no futuro). Não é falha.
+
+O número de testes passa dos 120 de 28/10 para 434 com a integração completa com o Warcraft Logs (PRs #25 e #26). O total conta cada caso dos testes parametrizados (o mesmo teste com entradas diferentes).
+
+Os arquivos com menos cobertura são `app/wcl/fetch.py` (84%), que faz as chamadas reais ao Warcraft Logs e é testado com dados salvos em arquivo, `app/wcl/anonymize.py` (93%) e `app/engine/prismatic_bolt.py` (94%).
+
+**Início da execução: 434 testes coletados**
+
+![Saída do pytest no CI: plataforma, plugin de cobertura e "collected 434 items", seguido dos primeiros testes com PASSED](.gitbook/assets/10-3-pytest-inicio.jpg)
+
+**Cobertura por arquivo**
+
+![Tabela de cobertura do pytest-cov com os arquivos da API, do motor e dos serviços](.gitbook/assets/10-3-pytest-cobertura.jpg)
+
+**Resumo: 434 passaram, cobertura total de 98%**
+
+![Final da tabela de cobertura com TOTAL 1717 linhas, 34 sem teste, 98%, e a linha "434 passed, 1 warning in 8.60s"](.gitbook/assets/10-3-pytest-resumo.jpg)

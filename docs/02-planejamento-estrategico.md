@@ -40,7 +40,7 @@ A ordem de implementação segue a complexidade de cada luta. Quanto mais alvos 
 
 {% stepper %}
 {% step %}
-#### Alfa · RT03 (28/10/2026)
+#### Alfa · RT03 (04/11/2026)
 
 Análise elaborada da luta contra Nek'zali, explicação por IA e histórico de análises.
 {% endstep %}
