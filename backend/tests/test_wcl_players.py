@@ -118,6 +118,15 @@ class _FakeFightClient:
 
     def events(self, code, fight_id, start, end, data_type, **filters):
         self.calls.append((data_type, filters))
+        if data_type == "CombatantInfo":
+            return [
+                {
+                    "type": "combatantinfo",
+                    "intellect": 3575,
+                    "gear": [{"id": 1}],
+                    "auras": [{"ability": 1236616, "stacks": 1, "source": 10, "name": "Poção"}],
+                }
+            ]
         if data_type == "DamageTaken":
             # Golpe do chefe (source 99) no jogador e um golpe em outro jogador.
             return [
@@ -136,3 +145,18 @@ def test_damage_taken_filters_by_the_player_as_source():
 
     assert ("DamageTaken", {"source_id": 10}) in client.calls
     assert [e["targetID"] for e in fight["events"]["damage_taken"]] == [10]
+
+
+def test_fight_brings_pull_stats_and_auras_and_every_death():
+    """CombatantInfo: intelecto e auras do pull, sem gear nem nomes. Mortes sem filtro, porque
+    o WCL ignora targetID e sourceID nelas (conferido em 03/11); o motor separa as do jogador."""
+    from app.wcl.fetch import fetch_fight
+
+    client = _FakeFightClient()
+    fight = fetch_fight(client, "CODE", 1, actor_id=10)
+
+    assert fight["player"]["combatant"] == {
+        "stats": {"intellect": 3575},
+        "auras": [{"ability": 1236616, "stacks": 1, "source": 10}],
+    }
+    assert ("Deaths", {}) in client.calls

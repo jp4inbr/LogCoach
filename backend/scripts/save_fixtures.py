@@ -75,6 +75,14 @@ def summarize(label: str, fight: dict[str, Any], expected_ids: dict[str, int]) -
         f"ilvl={details.get('maxItemLevel')}"
     )
     print(f"    eventos: {counts}")
+    stats = (fight["player"].get("combatant") or {}).get("stats") or {}
+    active = fight["player"].get("active_time_ms")
+    print(
+        f"    intelecto={stats.get('intellect')}, "
+        f"tempo ativo WCL={100 * active / fight['meta']['duration_ms']:.1f}%"
+        if active
+        else f"    intelecto={stats.get('intellect')}, tempo ativo WCL=—"
+    )
     if missing:
         print(f"    ATENÇÃO: não apareceram no log: {', '.join(missing)}")
 

@@ -69,7 +69,9 @@ def test_fight_data_comes_in_the_engine_format_and_once():
     assert again == data
     assert wcl.count("FightMeta") == 1
     events = wcl.count("Events")
-    assert events == len(data["events"])  # uma página de cada tipo, só na primeira vez
+    # Uma página de cada tipo mais o CombatantInfo, só na primeira vez.
+    assert events == len(data["events"]) + 1
+    assert wcl.count("FightActiveTime") == 1
 
 
 def test_fight_data_is_a_copy():

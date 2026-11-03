@@ -41,6 +41,41 @@ def _player_details(details: dict[str, Any], actor_id: int) -> dict[str, Any] | 
     return _details_by_id(details).get(actor_id)
 
 
+# Atributos do CombatantInfo que o motor pode usar; gear e talentos ficam de fora do arquivo.
+COMBATANT_STATS = ("intellect", "critSpell", "hasteSpell", "mastery", "versatilityDamageDone")
+
+
+def _combatant(event: dict[str, Any] | None) -> dict[str, Any] | None:
+    """Atributos e auras do jogador no pull (evento CombatantInfo).
+
+    As auras são o que já estava ativo quando a luta começou (poção tomada antes do pull,
+    defensivo, Salvo montado...): a linha do tempo de buffs só vê o que muda depois do pull.
+    """
+    if not event:
+        return None
+    return {
+        "stats": {k: event[k] for k in COMBATANT_STATS if k in event},
+        "auras": [
+            {"ability": a["ability"], "stacks": a.get("stacks", 1), "source": a.get("source")}
+            for a in event.get("auras") or []
+            if "ability" in a
+        ],
+    }
+
+
+def fetch_active_time_ms(client: WclClient, code: str, fight_id: int, actor_id: int) -> int | None:
+    """Tempo ativo do jogador como o Warcraft Logs mostra (tabela de casts, `activeTime`).
+
+    A conta própria (`engine/uptime.py`) dava 93,8% no Harmonist contra 98,6% do WCL (03/11);
+    o número do WCL vira a régua e a conta própria fica de reserva."""
+    data = client.query(
+        queries.FIGHT_ACTIVE_TIME, {"code": code, "fightID": fight_id}, timeout=EVENTS_TIMEOUT
+    )
+    table = (((data["reportData"]["report"] or {}).get("table") or {}).get("data")) or {}
+    entry = next((e for e in table.get("entries") or [] if e.get("id") == actor_id), None)
+    return entry.get("activeTime") if entry else None
+
+
 def fetch_report(client: WclClient, code: str) -> dict[str, Any]:
     """Lutas de chefe de um report (consulta leve, sem jogadores). Tempos em ms do report.
 
@@ -130,6 +165,7 @@ def fetch_fight(
         )
 
     pid = player["id"]
+    combatant = events("CombatantInfo", source_id=pid)
     fight_events = {
         "casts": events("Casts", source_id=pid),
         # Em buffs, o WCL trata o dono da aura como "source": com targetID só viriam os buffs
@@ -144,7 +180,9 @@ def fetch_fight(
         "damage_taken": [
             e for e in events("DamageTaken", source_id=pid) if e.get("targetID") == pid
         ],
-        "deaths": events("Deaths", target_id=pid),
+        # Em Deaths o WCL ignora os filtros (com targetID vinham as mortes da raide inteira e
+        # com sourceID nada, conferido em 03/11): vêm todas e o motor separa as do jogador.
+        "deaths": events("Deaths"),
         "boss_casts": events("Casts", hostility_type="Enemies"),
     }
     for kind, kind_events in fight_events.items():
@@ -176,6 +214,8 @@ def fetch_fight(
         "player": {
             "actor": player,
             "details": _player_details(report["playerDetails"], pid),
+            "combatant": _combatant(combatant[0] if combatant else None),
+            "active_time_ms": fetch_active_time_ms(client, code, fight_id, pid),
         },
         "events": fight_events,
     }

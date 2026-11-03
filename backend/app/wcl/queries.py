@@ -96,3 +96,15 @@ query FightPlayerDetails($code: String!, $fightID: Int!) {
   }
 }
 """
+
+# Tempo ativo de cada jogador na luta (~1,5 ponto): `activeTime` da tabela de casts, o mesmo
+# número da página da luta no Warcraft Logs.
+FIGHT_ACTIVE_TIME = """
+query FightActiveTime($code: String!, $fightID: Int!) {
+  reportData {
+    report(code: $code) {
+      table(fightIDs: [$fightID], dataType: Casts)
+    }
+  }
+}
+"""
