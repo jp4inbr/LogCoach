@@ -99,6 +99,8 @@ overlaps:
     personal: true            # só vale para quem está com o debuff
     abilities: [1287434]
     expect_defensive: true    # TODO: medir no log em quais pulls isso coincidiu
+    # O Essence Rend aparece no dano recebido do jogador (23 golpes no Harmonist, 03/11):
+    # dá para medir sem buscar debuffs.
 
 # Candidata a regra (TODO: medir): estar conjurando quando o Invoke termina
 # = interrupção + 3 s de silêncio, perda direta de dano na Fase 2.

@@ -157,8 +157,9 @@ consumables:
     ability_id: 1236616
     cooldown_s: 300
     duration_s: 30
-    # Reserva de bônus de dano enquanto dura (+695 de intelecto ÷ 3.575 do Harmonist, medido
-    # em 28/10). O combatantInfo vem vazio nas fixtures; com ele, o motor pode usar o do jogador.
+    intellect: 695            # intelecto a mais enquanto dura
+    # Bônus de dano = intellect ÷ intelecto do jogador no pull (CombatantInfo). Reserva para
+    # quando faltar o atributo: +695 ÷ 3.575 do Harmonist (medido em 28/10, conferido em 03/11).
     damage_bonus: 0.19
     aligned_within_s: 5       # poção a até 5 s de um Surge (ou do lust) conta como junto
     # Tops usam a 2ª poção por volta de 5:00 porque o 4º Surge deles cai ali. Segurar a

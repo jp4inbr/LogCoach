@@ -1,6 +1,13 @@
 """Tempo ativo: quanto da luta o jogador passou conjurando alguma coisa.
 
-O limite não é fixo (03/11): o tempo ativo é comparado com a mediana dos tops. Por isso a
+A régua é o "Active Time" do Warcraft Logs (`player.active_time_ms`, tabela de casts), desde
+03/11: a conta própria abaixo dava 93,8% no Harmonist contra 98,6% do WCL e 96,6–98,5% nos
+tops contra 99,2–99,8%, quase triplicando a diferença dele. Do número do WCL saem o tempo
+morto e as fases sem alvo (o WCL não conta como ativo o tempo morto, então ficar morto não
+pesa duas vezes: a morte já tem regra própria).
+
+A conta própria fica de reserva para lutas sem o número do WCL (fixtures antigas). O limite
+não é fixo (03/11): o tempo ativo é comparado com a mediana dos tops. Por isso a
 conta só precisa ser a mesma para todos, não idêntica à do Warcraft Logs:
 - cast com tempo de conjuração: ocupado do `begincast` ao `cast` (no mínimo um GCD);
 - instantâneo: ocupado por um GCD;
@@ -74,7 +81,6 @@ def _busy_intervals(fight: dict[str, Any], rules: dict[str, Any], gcd_ms: float)
 def active_time_pct(
     fight: dict[str, Any], rules: dict[str, Any], encounter: dict[str, Any] | None = None
 ) -> float:
-    gcd_ms = estimate_gcd_s(fight, rules) * 1000
     start, end = start_ms(fight), end_ms(fight)
 
     excluded = [
@@ -94,11 +100,16 @@ def active_time_pct(
                 merged.append([a, b])
         return merged
 
-    busy = clip(_busy_intervals(fight, rules, gcd_ms), LATENCY_S * 1000)
     out = clip(excluded)
     counted = (end - start) - sum(b - a for a, b in out)
     if counted <= 0:
         return 100.0
+    wcl_active = (fight.get("player") or {}).get("active_time_ms")
+    if wcl_active is not None:
+        return 100 * min(1.0, wcl_active / counted)
+
+    gcd_ms = estimate_gcd_s(fight, rules) * 1000
+    busy = clip(_busy_intervals(fight, rules, gcd_ms), LATENCY_S * 1000)
     # Ocupado dentro de trecho excluído não conta (nem para mais, nem para menos).
     busy_in_out = sum(max(0.0, min(b, d) - max(a, c)) for a, b in busy for c, d in out)
     active = sum(b - a for a, b in busy) - busy_in_out

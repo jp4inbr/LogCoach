@@ -10,7 +10,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from app.engine.fight import amount, casts, duration_s, fight_s
-from app.engine.timeline import buff_windows
+from app.engine.timeline import buff_windows, initial_stacks
 
 
 @dataclass(frozen=True)
@@ -28,6 +28,7 @@ class PotionStats:
     uses: list[PotionUse]
     expected: int  # quantas cabiam na luta, a partir do primeiro lust (ou do pull)
     first_lust_s: float | None
+    damage_bonus: float  # dano a mais enquanto dura (intelecto da poção ÷ o do jogador)
 
     @property
     def missing(self) -> int:
@@ -54,9 +55,16 @@ def potion_stats(fight: dict[str, Any], rules: dict[str, Any]) -> PotionStats:
         fight_s(fight, e["timestamp"]) for e in casts(fight, rules["abilities"]["arcane_surge"])
     ]
 
+    times = [fight_s(fight, e["timestamp"]) for e in casts(fight, potion["ability_id"])]
+    if initial_stacks(fight, potion["ability_id"]):
+        # Tomada antes do pull: o cast fica fora da luta, só o buff aparece (top09, 03/11).
+        # Hora estimada pela saída do buff; conta como no pull.
+        windows = buff_windows(fight, potion["ability_id"])
+        ends = fight_s(fight, windows[0][1]) if windows else potion["duration_s"]
+        times.insert(0, min(0.0, ends - potion["duration_s"]))
+
     uses = []
-    for event in casts(fight, potion["ability_id"]):
-        t = fight_s(fight, event["timestamp"])
+    for t in times:
         if any(abs(t - lust) <= near for lust in lusts):
             uses.append(PotionUse(t, "lust"))
         elif any(abs(t - surge) <= near for surge in surges):
@@ -68,7 +76,21 @@ def potion_stats(fight: dict[str, Any], rules: dict[str, Any]) -> PotionStats:
     # lust, ou o pull se não houve lust). Cabe uma 2ª se o CD volta antes do fim da luta.
     anchor = uses[0].time_s if uses else (lusts[0] if lusts else 0.0)
     expected = 1 + int(anchor + potion["cooldown_s"] + near <= duration_s(fight))
-    return PotionStats(uses, expected, lusts[0] if lusts else None)
+    return PotionStats(uses, expected, lusts[0] if lusts else None, damage_bonus(fight, rules))
+
+
+def damage_bonus(fight: dict[str, Any], rules: dict[str, Any]) -> float:
+    """Intelecto da poção ÷ intelecto do jogador no pull (CombatantInfo). Se ele entrou na
+    luta com a poção ativa, o intelecto do pull já a inclui. Sem o atributo, vale a reserva
+    do YAML (19%, medida no Harmonist)."""
+    potion = rules["consumables"][0]
+    stats = ((fight.get("player") or {}).get("combatant") or {}).get("stats") or {}
+    intellect = stats.get("intellect")
+    if not intellect or not potion.get("intellect"):
+        return potion["damage_bonus"]
+    if initial_stacks(fight, potion["ability_id"]):
+        intellect -= potion["intellect"]
+    return potion["intellect"] / intellect if intellect > 0 else potion["damage_bonus"]
 
 
 def surge_followup_rates(

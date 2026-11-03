@@ -23,7 +23,8 @@ NEKZALI = load_encounter_rules(3470)
 PID = 10
 SURGE, TOUCH, BARRAGE, BLAST, POTION = 365350, 321507, 44425, 30451, 1236616
 SURGE_BUFF, PI, TIME_WARP, BARRIER, BOLT_PROC = 365362, 10060, 80353, 235450, 1295942
-POSSESSION, DEPTHS = 1292034, 1293214
+POSSESSION, DEPTHS, RITE = 1292034, 1293214, 1288772
+STAGE_TWO = [(1, 0), (3, 20)]  # Grasping Depths só vale na Fase 3 (Stage Two)
 
 
 def fight(
@@ -89,6 +90,13 @@ def reference_checks():
 
 
 # --- T03 e T12: tempo ativo ------------------------------------------------------------
+
+
+def test_active_time_comes_from_the_warcraft_logs_when_present():
+    """Com o número do WCL (tabela de casts), ele vale no lugar da conta própria."""
+    data = fight(casts=[(BARRAGE, t) for t in range(30)])
+    data["player"]["active_time_ms"] = 57_000
+    assert active_time_pct(data, RULES) == pytest.approx(95)
 
 
 def test_t03_idle_time_is_measured():
@@ -175,7 +183,7 @@ def test_short_hold_is_not_listed():
 
 def test_t13_overlap_without_defensive_is_attention():
     """T13: Possession Barrage + Grasping Depths em 2 s, sem defensivo."""
-    data = fight(taken=[(POSSESSION, 30), (DEPTHS, 32)])
+    data = fight(taken=[(POSSESSION, 30), (DEPTHS, 32)], transitions=STAGE_TWO)
     hits = overlap_hits(data, RULES, NEKZALI)
     assert [(h.time_s, h.defended) for h in hits] == [(30, False)]
     defensive = check(
@@ -189,8 +197,33 @@ def test_overlap_with_barrier_is_covered():
     data = fight(
         taken=[(POSSESSION, 30), (DEPTHS, 32)],
         buffs=[(BARRIER, "applybuff", 28), (BARRIER, "removebuff", 40)],
+        transitions=STAGE_TWO,
     )
     assert overlap_hits(data, RULES, NEKZALI)[0].defended is True
+
+
+def test_barrier_active_since_the_pull_covers_the_overlap():
+    """Barreira posta antes do pull: só a saída aparece na luta."""
+    data = fight(
+        taken=[(POSSESSION, 30), (DEPTHS, 32)],
+        buffs=[(BARRIER, "removebuff", 40)],
+        transitions=STAGE_TWO,
+    )
+    assert overlap_hits(data, RULES, NEKZALI)[0].defended is True
+
+
+def test_overlap_outside_its_phase_is_ignored():
+    """O overlap do Stage Two (Fase 3) não vale na Fase 1."""
+    data = fight(taken=[(POSSESSION, 30), (DEPTHS, 32)])
+    assert overlap_hits(data, RULES, NEKZALI) == []
+
+
+def test_two_overlaps_on_the_same_peak_count_once():
+    """Possession Barrage com o DoT e o Grasping Depths juntos: um pico só (os dois overlaps
+    postos na mesma fase para o teste)."""
+    data = fight(taken=[(POSSESSION, 30), (DEPTHS, 31), (RITE, 31)], transitions=[(3, 0)])
+    same_phase = {**NEKZALI, "overlaps": [{**o, "phase": 3} for o in NEKZALI["overlaps"]]}
+    assert [h.time_s for h in overlap_hits(data, RULES, same_phase)] == [30]
 
 
 def test_isolated_mechanic_needs_no_defensive():
@@ -222,6 +255,35 @@ def test_second_potion_away_from_surge_is_misaligned():
     stats = potion_stats(data, RULES)
     assert [u.with_ for u in stats.uses] == ["lust", None]
     assert stats.misaligned == 1
+
+
+def test_potion_taken_before_the_pull_counts():
+    """Poção antes do pull (top09): o cast fica fora da luta, só a saída do buff aparece."""
+    data = fight(
+        end_s=420,
+        casts=[(SURGE, 0), (SURGE, 300), (POTION, 300)],
+        buffs=[
+            (POTION, "removebuff", 28),
+            (POTION, "applybuff", 300),
+            (POTION, "removebuff", 330),
+            (TIME_WARP, "applybuff", 1),
+            (TIME_WARP, "removebuff", 41),
+        ],
+    )
+    stats = potion_stats(data, RULES)
+    assert [(u.time_s, u.with_) for u in stats.uses] == [(-2, "lust"), (300, "Surto Arcano")]
+    assert (stats.expected, stats.missing, stats.misaligned) == (2, 0, 0)
+
+
+def test_potion_bonus_uses_the_player_intellect():
+    data = fight()
+    assert potion_stats(data, RULES).damage_bonus == RULES["consumables"][0]["damage_bonus"]
+    data["player"]["combatant"] = {"stats": {"intellect": 3475}, "auras": []}
+    assert potion_stats(data, RULES).damage_bonus == pytest.approx(695 / 3475)
+    # Entrou com a poção ativa: o intelecto do pull já tem os 695 dela.
+    data["player"]["combatant"]["auras"] = [{"ability": POTION, "stacks": 1}]
+    data["player"]["combatant"]["stats"]["intellect"] = 3475 + 695
+    assert potion_stats(data, RULES).damage_bonus == pytest.approx(695 / 3475)
 
 
 def test_power_infusion_right_before_surge_counts_with_surge():

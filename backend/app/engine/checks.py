@@ -321,7 +321,7 @@ def _potion(p: FightMeasures, tops: list[FightMeasures], rules: dict[str, Any]) 
     potion = rules["consumables"][0]
     stats = p.potions
     rate_in, rate_out = p.surge_followup
-    bonus, duration = potion["damage_bonus"], potion["duration_s"]
+    bonus, duration = stats.damage_bonus, potion["duration_s"]
     loss = stats.missing * bonus * rate_in * duration
     loss += stats.misaligned * bonus * max(0.0, rate_in - rate_out) * duration
     top_aligned = sum(u.aligned for t in tops for u in t.potions.uses)
