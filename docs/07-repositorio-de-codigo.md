@@ -22,7 +22,7 @@ LogCoach/
 │   │   └── ai/       # integração com Vertex AI
 │   └── tests/        # Pytest
 ├── frontend/         # React + Vite
-└── .github/workflows # CI: lint + testes
+└── .github/workflows # CI: lint + testes (Ubuntu e Windows)
 ```
 
 ## Linters e formatadores

@@ -2,22 +2,14 @@
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 
-from app.api.deps import OptionalUserDep, SessionDep
-from app.api.reports import ReportSourceDep, load_report
-from app.config import get_settings
+from app.api.deps import OptionalUserDep, SessionDep, check_plan_limit
+from app.api.reports import ReportSourceDep, load_fight, load_player, request_client
 from app.errors import api_error
 from app.models import Analysis
 from app.schemas import AnalysisOut, AnalysisRequest, AnalysisResult
-from app.services.plan import analyses_this_month
-from app.services.players import AmbiguousPlayerError, PlayerNotFoundError, match_player
-from app.services.sources import (
-    MIN_FIGHT_S,
-    AnalysisNotAvailableError,
-    Analyzer,
-    get_analyzer,
-)
+from app.services.sources import AnalysisNotAvailableError, Analyzer, get_analyzer
 
 router = APIRouter(prefix="/analyses", tags=["análises"])
 
@@ -36,43 +28,22 @@ def _to_out(analysis: Analysis) -> AnalysisOut:
 @router.post("", status_code=201)
 def create_analysis(
     data: AnalysisRequest,
+    request: Request,
     session: SessionDep,
     user: OptionalUserDep,
     source: ReportSourceDep,
     analyzer: AnalyzerDep,
 ) -> AnalysisOut:
-    report = load_report(source, data.report_code)
-    fight = next((f for f in report.fights if f.id == data.fight_id), None)
-    if fight is None:
-        raise api_error(404, "fight_not_found", "Essa luta não existe nesse relatório.")
-    if fight.duration_s < MIN_FIGHT_S:
-        raise api_error(
-            422, "fight_too_short", "A luta tem menos de 60 s. Escolha uma tentativa mais longa."
-        )
-    if not fight.supported:
-        raise api_error(
-            422, "unsupported_fight", fight.unsupported_reason or "Chefe ainda não suportado."
-        )
-    try:
-        player = match_player(fight.players, data.player_name, data.server)
-    except PlayerNotFoundError:
-        raise api_error(
-            422, "no_arcane_mage", "Não achamos nenhum Mago Arcano com esse nome."
-        ) from None
-    except AmbiguousPlayerError:
-        raise api_error(
-            422,
-            "player_ambiguous",
-            "Há mais de um Mago Arcano com esse nome nessa luta. Escolha pelo reino.",
-        ) from None
+    # Antes de qualquer consulta: não gasta pontos do Warcraft Logs com quem já não pode
+    # analisar.
+    check_plan_limit(session, user)
 
-    limit = get_settings().free_monthly_limit
-    if user is not None and analyses_this_month(session, user.id) >= limit:
-        raise api_error(
-            403,
-            "plan_limit",
-            f"Você usou suas {limit} análises do mês. Veja o plano Pro.",
-        )
+    # Lista e Magos da luta saem do cache que a tela de escolher a luta já encheu. Os eventos
+    # (quando o motor entrar) saem da pré-busca: ver `Analyzer` em services/sources.py.
+    client = request_client(request, user)
+    report, fight = load_fight(source, data.report_code, data.fight_id, client)
+    # Só os Magos Arcanos da luta: id de fora dela ou de outra spec cai aqui.
+    player = load_player(source, report, fight, data.actor_id, client)
 
     try:
         result = analyzer.analyze(report, fight, player)

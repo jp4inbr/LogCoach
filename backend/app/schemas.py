@@ -4,10 +4,10 @@
 (frente do Arthur) devolve um objeto nesse formato, e as telas só leem dele.
 """
 
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Literal
 
-from pydantic import BaseModel, EmailStr, Field, model_validator
+from pydantic import BaseModel, EmailStr, Field, computed_field, model_validator
 
 Status = Literal["ok", "atencao", "erro"]
 
@@ -47,16 +47,41 @@ class Me(BaseModel):
 
 
 class ReportResolveRequest(BaseModel):
+    # Colar o link, "Atualizar lutas" e a atualização automática buscam a lista de novo no
+    # Warcraft Logs (com a trava de 8 s). O antigo campo `refresh`, se vier, é ignorado.
     url: str
 
 
 class PlayerOption(BaseModel):
     # Na escolha da luta o nome não é ocultado: o usuário está escolhendo a si mesmo.
+    # Id do ator no report do WCL (masterData.actors): chave do jogador do resolve até o motor.
+    actor_id: int
     name: str
-    # O mesmo nome se repete entre reinos; o reino desempata (services/players.py).
+    # O mesmo nome se repete entre reinos: na tela o reino diferencia; na API vale o actor_id.
     server: str | None = None
     spec: str
     item_level: int | None = None
+
+
+# Motivo para a luta aparecer em cinza (item 8.2), como código fixo: a lógica compara o
+# código, e o texto da tela sai de `FIGHT_REASON_MESSAGES`, num lugar só.
+FightReasonCode = Literal[
+    "short", "unsupported_boss", "unsupported_difficulty", "in_progress", "upload_paused"
+]
+FIGHT_REASON_MESSAGES: dict[FightReasonCode, str] = {
+    "short": "A luta tem menos de 60 s. Escolha uma tentativa mais longa",
+    "unsupported_boss": "Chefe ainda não suportado",
+    "unsupported_difficulty": "Dificuldade ainda não suportada para esse chefe",
+    "in_progress": (
+        "A luta ainda está subindo para o Warcraft Logs. "
+        "Ela fica disponível aqui assim que terminar."
+    ),
+    # Luta que estava subindo, mas o log parou de receber dados (nada novo há mais de 10 min).
+    "upload_paused": (
+        "O envio deste log parou no Warcraft Logs (nada novo há mais de 10 min). "
+        "Se o uploader voltar a enviar, clique em Atualizar lutas."
+    ),
+}
 
 
 class FightOption(BaseModel):
@@ -66,9 +91,31 @@ class FightOption(BaseModel):
     kill: bool
     duration_s: float
     supported: bool
-    # Motivo para a luta aparecer em cinza (item 8.2), quando supported é falso.
-    unsupported_reason: str | None = None
-    players: list[PlayerOption] = []
+    # Motivo da luta em cinza como código fixo (item 8.2), quando supported é falso. A lógica
+    # compara ele, nunca o texto.
+    unsupported_code: FightReasonCode | None = None
+    # Luta ainda subindo para o Warcraft Logs (log ao vivo): não suportada por enquanto, mas
+    # a tela mostra diferente e atualiza a lista sozinha enquanto houver uma assim.
+    in_progress: bool = False
+    # Luta que estava subindo, mas o log parou de receber dados (nada novo há mais de 10 min):
+    # não suportada, com o motivo dizendo para atualizar se o envio voltar.
+    upload_paused: bool = False
+    # Sem jogadores: os Magos Arcanos vêm por luta, em GET /reports/{code}/fights/{id}/players.
+
+    @model_validator(mode="after")
+    def _code_matches_supported(self) -> "FightOption":
+        # Luta em cinza sempre tem código (a lógica decide por ele); suportada nunca tem.
+        if self.supported != (self.unsupported_code is None):
+            raise ValueError("supported e unsupported_code não combinam")
+        return self
+
+    @computed_field
+    @property
+    def unsupported_reason(self) -> str | None:
+        """Texto do motivo para a tela, montado a partir de `unsupported_code`."""
+        if self.unsupported_code is None:
+            return None
+        return FIGHT_REASON_MESSAGES[self.unsupported_code]
 
 
 class ReportResolved(BaseModel):
@@ -76,7 +123,42 @@ class ReportResolved(BaseModel):
     title: str
     # Verdadeiro enquanto os dados vêm do arquivo de exemplo e não da API real.
     sample: bool
+    # Quando a lista foi lida do Warcraft Logs (UTC); a tela mostra "lista de 21:04".
+    fetched_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     fights: list[FightOption]
+    # Log ao vivo: o Warcraft Logs recebeu dados dele há menos de 10 min.
+    live: bool = False
+    # Lista guardada: a busca nova falhou (Warcraft Logs fora do ar, limite de pontos ou erro
+    # nosso) e veio a última lista lida, de `fetched_at`. `stale_message` diz o porquê e
+    # `stale_code` é o código do erro (`wcl_unavailable`, `unexpected_error` ou
+    # `query_limit`, item 12.3).
+    stale: bool = False
+    stale_message: str | None = None
+    stale_code: str | None = None
+
+
+class FightPlayers(BaseModel):
+    """Magos Arcanos de uma luta, com spec e item level dessa luta (RF04)."""
+
+    report_code: str
+    fight_id: int
+    players: list[PlayerOption]
+
+
+class PrefetchRequest(BaseModel):
+    # Jogador já definido na tela (escolhido, único Arcano da luta ou personagem lembrado).
+    actor_id: int
+
+
+# started: a busca entrou na fila agora; running: já estava na fila ou baixando; ready: já
+# está no cache.
+PrefetchState = Literal["started", "running", "ready"]
+
+
+class PrefetchStatus(BaseModel):
+    """Resposta da pré-busca dos eventos da luta (202): a análise depois aproveita a busca."""
+
+    status: PrefetchState
 
 
 # --- Resultado da análise --------------------------------------------------
@@ -225,9 +307,8 @@ class AnalysisResult(BaseModel):
 class AnalysisRequest(BaseModel):
     report_code: str = Field(min_length=1, max_length=40)
     fight_id: int
-    player_name: str = Field(min_length=1, max_length=40)
-    # Reino do jogador; só é preciso quando o nome se repete na luta.
-    server: str | None = Field(default=None, max_length=40)
+    # Jogador escolhido: o actor_id do PlayerOption (sem ambiguidade entre homônimos).
+    actor_id: int
 
 
 class AnalysisOut(BaseModel):

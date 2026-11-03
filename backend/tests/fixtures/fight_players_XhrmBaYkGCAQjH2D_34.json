@@ -1,0 +1,126 @@
+{
+ "_nota": "Resposta real do FIGHT_PLAYERS (report XhrmBaYkGCAQjH2D, luta 34), consultada em 28/10/2026. Nomes dos outros Magos trocados por pseudônimos de anonymize.py (por ordem de id, só entre os Magos do report: não batem com os raid_NN de reference_harmonist); reino removido de todos. O resto veio como a API mandou.",
+ "data": {
+  "reportData": {
+   "report": {
+    "fights": [
+     {
+      "id": 34,
+      "friendlyPlayers": [
+       286,
+       285,
+       2,
+       3,
+       289,
+       292,
+       5,
+       282,
+       283,
+       459,
+       455,
+       281,
+       1,
+       280,
+       284,
+       290,
+       294,
+       288,
+       287,
+       291
+      ],
+      "friendlySpecs": [
+       "Restoration",
+       "Arms",
+       "Restoration",
+       "Balance",
+       "Demonology",
+       "Holy",
+       "Windwalker",
+       "Subtlety",
+       "Protection",
+       "Elemental",
+       "Arcane",
+       "Balance",
+       "Unholy",
+       "Guardian",
+       "Preservation",
+       "Retribution",
+       "Marksmanship",
+       "Devourer",
+       "Devourer",
+       "Arcane"
+      ],
+      "friendlyItemLevels": [
+       325,
+       326,
+       327,
+       329,
+       326,
+       323,
+       329,
+       325,
+       328,
+       328,
+       327,
+       324,
+       330,
+       320,
+       327,
+       326,
+       329,
+       328,
+       322,
+       327
+      ]
+     }
+    ],
+    "masterData": {
+     "actors": [
+      {
+       "id": 99,
+       "type": "Player",
+       "subType": "Mage",
+       "name": "raid_01"
+      },
+      {
+       "id": 115,
+       "type": "Player",
+       "subType": "Mage",
+       "name": "raid_02"
+      },
+      {
+       "id": 137,
+       "type": "Player",
+       "subType": "Mage",
+       "name": "raid_03"
+      },
+      {
+       "id": 201,
+       "type": "Player",
+       "subType": "Mage",
+       "name": "raid_04"
+      },
+      {
+       "id": 203,
+       "type": "Player",
+       "subType": "Mage",
+       "name": "raid_05"
+      },
+      {
+       "id": 291,
+       "type": "Player",
+       "subType": "Mage",
+       "name": "raid_06"
+      },
+      {
+       "id": 455,
+       "type": "Player",
+       "subType": "Mage",
+       "name": "Harmonist"
+      }
+     ]
+    }
+   }
+  }
+ }
+}
