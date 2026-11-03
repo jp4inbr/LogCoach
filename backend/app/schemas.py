@@ -7,7 +7,7 @@
 from datetime import UTC, datetime
 from typing import Literal
 
-from pydantic import BaseModel, EmailStr, Field, model_validator
+from pydantic import BaseModel, EmailStr, Field, computed_field, model_validator
 
 Status = Literal["ok", "atencao", "erro"]
 
@@ -63,6 +63,27 @@ class PlayerOption(BaseModel):
     item_level: int | None = None
 
 
+# Motivo para a luta aparecer em cinza (item 8.2), como código fixo: a lógica compara o
+# código, e o texto da tela sai de `FIGHT_REASON_MESSAGES`, num lugar só.
+FightReasonCode = Literal[
+    "short", "unsupported_boss", "unsupported_difficulty", "in_progress", "upload_paused"
+]
+FIGHT_REASON_MESSAGES: dict[FightReasonCode, str] = {
+    "short": "A luta tem menos de 60 s. Escolha uma tentativa mais longa",
+    "unsupported_boss": "Chefe ainda não suportado",
+    "unsupported_difficulty": "Dificuldade ainda não suportada para esse chefe",
+    "in_progress": (
+        "A luta ainda está subindo para o Warcraft Logs. "
+        "Ela fica disponível aqui assim que terminar."
+    ),
+    # Luta que estava subindo, mas o log parou de receber dados (nada novo há mais de 10 min).
+    "upload_paused": (
+        "O envio deste log parou no Warcraft Logs (nada novo há mais de 10 min). "
+        "Se o uploader voltar a enviar, clique em Atualizar lutas."
+    ),
+}
+
+
 class FightOption(BaseModel):
     id: int
     boss: str
@@ -70,15 +91,24 @@ class FightOption(BaseModel):
     kill: bool
     duration_s: float
     supported: bool
-    # Motivo para a luta aparecer em cinza (item 8.2), quando supported é falso.
-    unsupported_reason: str | None = None
+    # Motivo da luta em cinza como código fixo (item 8.2), quando supported é falso. A lógica
+    # compara ele, nunca o texto.
+    unsupported_code: FightReasonCode | None = None
     # Luta ainda subindo para o Warcraft Logs (log ao vivo): não suportada por enquanto, mas
     # a tela mostra diferente e atualiza a lista sozinha enquanto houver uma assim.
     in_progress: bool = False
     # Luta que estava subindo, mas o log parou de receber dados (nada novo há mais de 10 min):
-    # não suportada, com `unsupported_reason` dizendo para atualizar se o envio voltar.
+    # não suportada, com o motivo dizendo para atualizar se o envio voltar.
     upload_paused: bool = False
     # Sem jogadores: os Magos Arcanos vêm por luta, em GET /reports/{code}/fights/{id}/players.
+
+    @computed_field
+    @property
+    def unsupported_reason(self) -> str | None:
+        """Texto do motivo para a tela, montado a partir de `unsupported_code`."""
+        if self.unsupported_code is None:
+            return None
+        return FIGHT_REASON_MESSAGES[self.unsupported_code]
 
 
 class ReportResolved(BaseModel):

@@ -11,6 +11,7 @@ from app.api.deps import OptionalUserDep, SessionDep, check_plan_limit
 from app.errors import UNEXPECTED_ERROR_CODE, api_error
 from app.models import User
 from app.schemas import (
+    FIGHT_REASON_MESSAGES,
     FightOption,
     FightPlayers,
     PlayerOption,
@@ -21,12 +22,9 @@ from app.schemas import (
 )
 from app.services.links import is_classic_link, parse_report_code
 from app.services.sources import (
-    IN_PROGRESS_REASON,
     MIN_FIGHT_S,
     QUERY_LIMIT_CODE,
     SAMPLE_REPORT_CODE,
-    SHORT_FIGHT_REASON,
-    UPLOAD_PAUSED_REASON,
     FightNotFoundError,
     PlayerNotFoundError,
     PrefetchLimitError,
@@ -46,6 +44,8 @@ ReportSourceDep = Annotated[ReportSource, Depends(get_report_source)]
 # Status de cada código da fonte: do Warcraft Logs (tentar de novo depois resolve), nosso, ou
 # o limite de consultas do cliente.
 SOURCE_ERROR_STATUS = {WCL_UNAVAILABLE_CODE: 503, UNEXPECTED_ERROR_CODE: 500, QUERY_LIMIT_CODE: 429}
+# Luta subindo ou com o envio parado: vale buscar a lista de novo antes de recusar.
+UPLOAD_WAIT_CODES = ("in_progress", "upload_paused")
 
 PREFETCH_LIMIT_MESSAGE = (
     "Você abriu muitas lutas em pouco tempo. Espere alguns minutos para abrir outras; "
@@ -146,24 +146,24 @@ def load_fight(
             )
     if fight is None:
         raise api_error(404, "fight_not_found", FIGHT_NOT_FOUND_MESSAGE)
-    if (fight.in_progress or fight.upload_paused) and not refreshed:
+    if fight.unsupported_code in UPLOAD_WAIT_CODES and not refreshed:
         # A lista guardada pode ser de quando a luta ainda subia (ou o envio estava parado):
         # busca uma vez antes de recusar. A trava de 8 s e a pausa depois de falha evitam gasto.
         report = refresh_report(source, code, client)
         fight = _find(report, fight_id) or fight
     # Luta subindo: a duração ainda vai crescer, então o motivo é ela estar em andamento.
-    if fight.in_progress:
-        raise api_error(422, "unsupported_fight", fight.unsupported_reason or IN_PROGRESS_REASON)
-    if fight.upload_paused:
-        raise api_error(422, "unsupported_fight", UPLOAD_PAUSED_REASON)
+    if fight.unsupported_code in UPLOAD_WAIT_CODES:
+        raise api_error(422, "unsupported_fight", fight.unsupported_reason)
     # Curta só se esse é o motivo: luta de outro chefe ainda subindo tem duração parcial.
-    if fight.duration_s < MIN_FIGHT_S and fight.unsupported_reason in (None, SHORT_FIGHT_REASON):
+    if fight.duration_s < MIN_FIGHT_S and fight.unsupported_code in (None, "short"):
         raise api_error(
             422, "fight_too_short", "A luta tem menos de 60 s. Escolha uma tentativa mais longa."
         )
     if not fight.supported:
         raise api_error(
-            422, "unsupported_fight", fight.unsupported_reason or "Chefe ainda não suportado."
+            422,
+            "unsupported_fight",
+            fight.unsupported_reason or FIGHT_REASON_MESSAGES["unsupported_boss"],
         )
     return report, fight
 

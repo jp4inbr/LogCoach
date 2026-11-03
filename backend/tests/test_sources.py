@@ -4,23 +4,20 @@ import copy
 import json
 import threading
 import time
+from typing import get_args
 
 import httpx
 import pytest
 
 from app.config import Settings, get_settings
+from app.schemas import FIGHT_REASON_MESSAGES, FightReasonCode
 from app.services import sources
 from app.services.sources import (
-    IN_PROGRESS_REASON,
     LIVE_WINDOW_S,
     QUERY_LIMIT,
     QUERY_WINDOW_S,
     REFRESH_MIN_INTERVAL_S,
     SAMPLE_REPORT_CODE,
-    SHORT_FIGHT_REASON,
-    UNSUPPORTED_BOSS_REASON,
-    UNSUPPORTED_DIFFICULTY_REASON,
-    UPLOAD_PAUSED_REASON,
     WCL_COOLDOWN_MAX_S,
     WCL_COOLDOWN_S,
     WCL_RATE_LIMIT_COOLDOWN_S,
@@ -260,6 +257,7 @@ def test_report_is_mapped_from_wcl():
     assert fight.kill is True
     assert fight.duration_s == 415.6
     assert fight.supported is True
+    assert fight.unsupported_code is None
     assert fight.unsupported_reason is None
 
 
@@ -316,7 +314,8 @@ def test_short_fight_is_not_supported():
 
     assert fight.duration_s == 41.0
     assert fight.supported is False
-    assert fight.unsupported_reason == SHORT_FIGHT_REASON
+    assert fight.unsupported_code == "short"
+    assert fight.unsupported_reason == FIGHT_REASON_MESSAGES["short"]
 
 
 def test_fight_still_uploading_is_not_supported():
@@ -327,7 +326,8 @@ def test_fight_still_uploading_is_not_supported():
     fights = source_for(report).get_report("TESTE123").fights
 
     assert fights[1].supported is False
-    assert fights[1].unsupported_reason == IN_PROGRESS_REASON
+    assert fights[1].unsupported_code == "in_progress"
+    assert fights[1].unsupported_reason == FIGHT_REASON_MESSAGES["in_progress"]
     # A tela mostra a luta subindo diferente das não suportadas e atualiza sozinha.
     assert fights[1].in_progress is True
     assert [f.in_progress for f in fights if f.id != 2] == [False, False, False]
@@ -340,14 +340,15 @@ def test_fight_still_uploading_with_few_seconds_is_not_short():
 
     fight = source_for(report).get_report("TESTE123").fights[0]
 
-    assert (fight.in_progress, fight.unsupported_reason) == (True, IN_PROGRESS_REASON)
+    assert (fight.in_progress, fight.unsupported_code) == (True, "in_progress")
+    assert fight.unsupported_reason == FIGHT_REASON_MESSAGES["in_progress"]
 
 
 @pytest.mark.parametrize(
-    ("fight_id", "reason"),
-    [(3, UNSUPPORTED_BOSS_REASON), (4, UNSUPPORTED_DIFFICULTY_REASON)],
+    ("fight_id", "code"),
+    [(3, "unsupported_boss"), (4, "unsupported_difficulty")],
 )
-def test_unsupported_fight_still_uploading_is_not_marked_as_uploading(fight_id, reason):
+def test_unsupported_fight_still_uploading_is_not_marked_as_uploading(fight_id, code):
     # Outro chefe ou Nek'zali Normal terminariam cinza de qualquer jeito: nada de "subindo".
     report = copy.deepcopy(REPORT) | {"endTime": now_ms()}
     for fight in report["fights"]:
@@ -359,7 +360,8 @@ def test_unsupported_fight_still_uploading_is_not_marked_as_uploading(fight_id, 
 
     assert fight.in_progress is False
     assert fight.supported is False
-    assert fight.unsupported_reason == reason
+    assert fight.unsupported_code == code
+    assert fight.unsupported_reason == FIGHT_REASON_MESSAGES[code]
 
 
 def test_boss_without_rules_is_not_supported():
@@ -367,7 +369,13 @@ def test_boss_without_rules_is_not_supported():
 
     assert fight.boss == "Outro Chefe"  # sem tradução: nome do Warcraft Logs
     assert fight.supported is False
-    assert fight.unsupported_reason == UNSUPPORTED_BOSS_REASON
+    assert fight.unsupported_code == "unsupported_boss"
+    assert fight.unsupported_reason == FIGHT_REASON_MESSAGES["unsupported_boss"]
+
+
+def test_every_fight_reason_code_has_a_message():
+    # Código novo no Literal sem texto quebraria a tela com KeyError.
+    assert set(get_args(FightReasonCode)) == set(FIGHT_REASON_MESSAGES)
 
 
 def test_difficulty_in_portuguese():
@@ -388,7 +396,8 @@ def test_only_mythic_nekzali_is_supported():
 
     # Luta 4: Nek'zali no Normal, com mais de 60 s. O YAML só traz regras do Mítico.
     assert fights[4].supported is False
-    assert fights[4].unsupported_reason == UNSUPPORTED_DIFFICULTY_REASON
+    assert fights[4].unsupported_code == "unsupported_difficulty"
+    assert fights[4].unsupported_reason == FIGHT_REASON_MESSAGES["unsupported_difficulty"]
 
 
 def test_sample_report_opens_when_wcl_is_down():
@@ -1114,7 +1123,7 @@ def test_log_receiving_data_is_live_and_its_fight_is_uploading():
     assert report["live"] is True
     fight = report["fights"][5]
     assert (fight["in_progress"], fight["upload_paused"]) == (True, False)
-    assert fight["unsupported_reason"] == IN_PROGRESS_REASON
+    assert fight["unsupported_code"] == "in_progress"
 
 
 def test_log_without_new_data_pauses_the_uploading_fight():
@@ -1127,7 +1136,7 @@ def test_log_without_new_data_pauses_the_uploading_fight():
         True,
         False,
     )
-    assert fight["unsupported_reason"] == UPLOAD_PAUSED_REASON
+    assert fight["unsupported_code"] == "upload_paused"
     # As lutas que terminaram não mudam.
     assert report["fights"][2]["supported"] is True
     assert report["fights"][2]["upload_paused"] is False
@@ -1138,7 +1147,7 @@ def test_other_boss_uploading_stays_plain_unsupported(end_time):
     fight = built(end_time)["fights"][6]
 
     assert (fight["in_progress"], fight["upload_paused"]) == (False, False)
-    assert fight["unsupported_reason"] == UNSUPPORTED_BOSS_REASON
+    assert fight["unsupported_code"] == "unsupported_boss"
 
 
 def test_report_without_end_time_is_not_live():

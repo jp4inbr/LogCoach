@@ -38,6 +38,7 @@ from app.config import get_settings
 from app.schemas import (
     AnalysisResult,
     FightOption,
+    FightReasonCode,
     PlayerOption,
     PrefetchState,
     ReportResolved,
@@ -69,17 +70,6 @@ SAMPLE_ACTOR_ID = 455
 
 # Item 8.2: lutas com menos de 60 s não são analisadas.
 MIN_FIGHT_S = 60
-SHORT_FIGHT_REASON = "A luta tem menos de 60 s. Escolha uma tentativa mais longa"
-UNSUPPORTED_BOSS_REASON = "Chefe ainda não suportado"
-UNSUPPORTED_DIFFICULTY_REASON = "Dificuldade ainda não suportada para esse chefe"
-IN_PROGRESS_REASON = (
-    "A luta ainda está subindo para o Warcraft Logs. Ela fica disponível aqui assim que terminar."
-)
-# Luta que estava subindo, mas o log parou de receber dados (`LIVE_WINDOW_S`).
-UPLOAD_PAUSED_REASON = (
-    "O envio deste log parou no Warcraft Logs (nada novo há mais de 10 min). "
-    "Se o uploader voltar a enviar, clique em Atualizar lutas."
-)
 # Log ao vivo: nada novo há 10 min = uploader parado; uma luta ou uma M+ em andamento manda
 # dados o tempo todo.
 LIVE_WINDOW_S = 10 * 60
@@ -302,23 +292,25 @@ def npc_names_pt() -> dict[int, str]:
     return {int(k): v for k, v in (data.get("npcs") or {}).items()}
 
 
-def _encounter_reason(fight: dict[str, Any], encounter: dict | None) -> str | None:
+def _encounter_reason(fight: dict[str, Any], encounter: dict | None) -> FightReasonCode | None:
     if encounter is None:
-        return UNSUPPORTED_BOSS_REASON
+        return "unsupported_boss"
     if encounter["difficulties"] and fight.get("difficulty") not in encounter["difficulties"]:
-        return UNSUPPORTED_DIFFICULTY_REASON
+        return "unsupported_difficulty"
     return None
 
 
-def _fight_reason(fight: dict[str, Any], duration_s: float, encounter: dict | None) -> str | None:
+def _fight_reason(
+    fight: dict[str, Any], duration_s: float, encounter: dict | None
+) -> FightReasonCode | None:
     # Luta ainda subindo (log ao vivo): chefe e dificuldade já são definitivos, a duração
     # não. Chefe sem regras não fica "subindo" (terminaria cinza do mesmo jeito) e a
     # duração parcial não vale como "curta": só a luta que seria suportada fica subindo.
     if fight.get("inProgress"):
-        return _encounter_reason(fight, encounter) or IN_PROGRESS_REASON
+        return _encounter_reason(fight, encounter) or "in_progress"
     # Mesma ordem da rota /analyses: primeiro a duração, depois o chefe.
     if duration_s < MIN_FIGHT_S:
-        return SHORT_FIGHT_REASON
+        return "short"
     return _encounter_reason(fight, encounter)
 
 
@@ -346,10 +338,10 @@ def build_report(
         duration_s = round((fight["endTime"] - fight["startTime"]) / 1000, 1)
         encounter = encounters.get(fight["encounterID"])
         difficulty = fight.get("difficulty")
-        reason = _fight_reason(fight, duration_s, encounter)
-        paused = reason == IN_PROGRESS_REASON and not live
+        code = _fight_reason(fight, duration_s, encounter)
+        paused = code == "in_progress" and not live
         if paused:
-            reason = UPLOAD_PAUSED_REASON
+            code = "upload_paused"
         fights.append(
             {
                 "id": fight["id"],
@@ -357,9 +349,9 @@ def build_report(
                 "difficulty": DIFFICULTIES.get(difficulty, f"Dificuldade {difficulty}"),
                 "kill": bool(fight.get("kill")),
                 "duration_s": duration_s,
-                "supported": reason is None,
-                "unsupported_reason": reason,
-                "in_progress": reason == IN_PROGRESS_REASON,
+                "supported": code is None,
+                "unsupported_code": code,
+                "in_progress": code == "in_progress",
                 "upload_paused": paused,
             }
         )
