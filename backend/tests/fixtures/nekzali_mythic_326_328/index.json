@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-10-28T16:07:53+00:00",
+ "generated_at": "2026-11-03T23:54:35+00:00",
  "encounter_id": 3470,
  "difficulty": 5,
  "spec": "Arcane Mage",
@@ -12,7 +12,8 @@
   "file": "reference_harmonist.json.gz",
   "report": "XhrmBaYkGCAQjH2D",
   "fight": 34,
-  "player": "Harmonist"
+  "player": "Harmonist",
+  "actor_id": 455
  },
  "top": [
   {

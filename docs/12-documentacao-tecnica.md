@@ -204,7 +204,7 @@ Código em `backend/app/wcl/`.
 | `players.py` | `find_player()` acha o jogador nos atores do report pelo id ou por nome + reino (homônimos desempatados pelo reino; ambíguo ou inexistente dá `PlayerNotFoundError`, um `WclError`) e `normalize_server()`. |
 | `anonymize.py` | Troca os nomes de jogadores por pseudônimos antes de salvar. |
 
-**Limite da API:** 1000 pontos por hora. Lista de lutas ~1 ponto; Magos de uma luta ~2 (com `playerDetails` seriam ~3); a consulta antiga, com atores e `playerDetails` da noite inteira, custava ~3 e crescia com o tamanho do log. Uma luta completa custa ~12 pontos; o kill de referência + top 10 custa ~130. Medido no report de referência; cada consulta custa no mínimo 1 ponto.
+**Limite da API:** 1000 pontos por hora. Lista de lutas ~1 ponto; Magos de uma luta ~2 (com `playerDetails` seriam ~3); a consulta antiga, com atores e `playerDetails` da noite inteira, custava ~3 e crescia com o tamanho do log. Uma luta completa custa ~14 pontos (eventos, `CombatantInfo` e a tabela de casts para o tempo ativo); o kill de referência + top 10 custa ~150 (medido em 03/11). Medido no report de referência; cada consulta custa no mínimo 1 ponto.
 
 **Formato de uma luta** (`fetch_fight`). Os tempos ficam em **ms do report**, como vêm da API. A conversão para "segundos desde o início da fase" é do motor, usando `meta.fight.phaseTransitions`.
 
@@ -213,11 +213,12 @@ Código em `backend/app/wcl/`.
 | `meta` | Código do report, `fight` (id, encontro, dificuldade, kill, início/fim, `phaseTransitions`), `duration_ms` |
 | `phases` | Nomes das fases do encontro (`id`, `name`, `isIntermission`) |
 | `actors`, `abilities` | Só os que aparecem nos eventos desta luta |
-| `player` | Ator do jogador + `details` (spec, `minItemLevel`/`maxItemLevel`) |
+| `player` | Ator do jogador + `details` (spec, `minItemLevel`/`maxItemLevel`; `potionUse` e `healthstoneUse` vêm sempre 0 e não são usados) + `combatant` (evento `CombatantInfo`: `stats` com intelecto, crítico, aceleração, maestria e versatilidade, e `auras` ativas no pull, sem gear nem talentos) + `active_time_ms` (`activeTime` da tabela de casts, o "Active Time" da página da luta) |
 | `events.casts` | Casts do jogador (`begincast` e `cast`) |
-| `events.buffs` | Buffs no jogador, com stacks (`applybuffstack`/`removebuffstack` trazem `stack`) |
+| `events.buffs` | Buffs no jogador, com stacks (`applybuffstack`/`removebuffstack` trazem `stack`). Filtro `sourceID` do jogador: no WCL o "source" do filtro de buffs é o dono da aura, então vêm também os externos (PI, lust) |
 | `events.damage_done` | Dano do jogador (sem a lista de buffs por golpe, que já está em `buffs`) |
-| `events.damage_taken`, `events.deaths` | Dano recebido e mortes do jogador (defensivo nos overlaps) |
+| `events.damage_taken` | Dano recebido pelo jogador (filtro `sourceID`, mesma convenção dos buffs; atacante em `sourceID`, jogador em `targetID`) |
+| `events.deaths` | Mortes da raide inteira: o WCL ignora `targetID` e `sourceID` em `Deaths` (conferido em 03/11); o motor separa as do jogador |
 | `events.boss_casts` | Casts dos inimigos (habilidades do chefe e dos adds do `nekzali.yaml`) |
 
 **Fixtures.** `cd backend && python scripts/save_fixtures.py` baixa o kill de referência e os top 10 do mesmo bracket para `tests/fixtures/nekzali_mythic_<min>_<max>/` (`--only-reference` só a referência, `--force` para sobrescrever). Cada luta é um `.json.gz`; o `index.json` lista o bracket e o DPS/duração de cada top. Servem para os testes, para desenvolver sem internet e como plano B da demo.
@@ -316,10 +317,14 @@ Escopo fechado com o Arthur em 03/11. `measures.py` lê a luta uma vez e devolve
 | `overlap_defensive`: defensivo nos overlaps (política do encontro) | fixa | `null` (risco) |
 | `power_infusion`, `deaths` | contexto / fixa | mortes: tempo morto |
 
-**Diferença para os tops (`gap`).** Em % do dano do jogador: total = DPS médio dos tops ÷ DPS do jogador − 1; erros = soma dos impactos; sorte = (procs de Bolt esperados − recebidos) × dano médio do Bolt; não explicado = o resto (RF23). No kill de referência: **20,0% = 9,1% de erros + 9,5% de sorte + 1,4% não explicado**.
+**Diferença para os tops (`gap`).** Em % do dano do jogador: total = DPS médio dos tops ÷ DPS do jogador − 1; erros = soma dos impactos; sorte = (procs de Bolt esperados − recebidos) × dano médio do Bolt; não explicado = o resto (RF23). No kill de referência (fixtures de 03/11): **20,0% = 6,6% de erros + 9,5% de sorte + 3,9% não explicado**.
 
-**Tempo ativo.** Conta própria, igual para todos: cast com tempo de conjuração ocupa do início ao fim (no mínimo um GCD), instantâneo ocupa um GCD, o Missiles ocupa até o último tick; buracos de até 0,3 s são latência. O GCD é a mediana do intervalo depois de cada Barrage. Nas fixtures, tops de 96,6% a 98,5%; Harmonist 93,8%.
+**Tempo ativo.** Vem do Warcraft Logs (`player.active_time_ms`), dividido pela duração da luta menos o tempo morto e as fases sem alvo. Nas fixtures: Harmonist 98,6%, tops de 99,2% a 99,8% (impacto ~1,0%). Até 03/11 era uma conta própria (cast com tempo de conjuração do início ao fim, instantâneo um GCD, Missiles até o último tick, 0,3 s de latência) que dava Harmonist 93,8% e tops 96,6% a 98,5%, quase triplicando a diferença; ela fica só de reserva para lutas sem o número do WCL.
+
+**Buffs ativos no pull.** Poção tomada antes do pull, defensivo, Mirror Image e Salvo montado não têm `applybuff` na luta: o primeiro evento é a saída. A linha do tempo (`engine/timeline.py`, `initial_stacks`) começa com o estado do pull: um primeiro `removebuffstack`/`applybuffstack` dá os acúmulos exatos; fora isso valem as auras do `CombatantInfo`; sem elas, `removebuff` ou `refreshbuff` sem entrada = ativo desde o pull. O ganho do pull não conta em `stack_gains`. **Poção antes do pull** conta como uso (hora estimada pela saída do buff, ex.: top09 aos −2 s). O bônus de dano da poção é +695 de intelecto ÷ intelecto do jogador no pull (`CombatantInfo`, descontando a poção se ele entrou com ela); a reserva de 19% vale sem o atributo.
+
+**Defensivo nos overlaps.** Cada overlap vale só na fase dele (`phase` do YAML) e overlaps diferentes no mesmo pico (até `overlap_window_s`) contam uma vez. Com o dano recebido real: Harmonist 1 de 6 picos com defensivo, tops 7 de 52. O Essence Rend pessoal aparece no dano recebido (1287434), sem precisar buscar debuffs, mas a regra dele ainda é TODO.
 
 **Clearcasting.** Não há chance fixa por hit (a maior parte vem do Barrage e do Missiles, que dependem da rotação). Levantamento de 03/11: 14,8 a 17,4 ganhos por minuto nas 11 fixtures. A "sorte de Clearcasting" usa a régua dos tops sobre os ganhos por minuto.
 
-**Dano recebido.** Até 03/11 a busca pedia `DamageTaken` com `targetID` do jogador e vinha só o dano que ele causou nele mesmo: no WCL, o "source" desse filtro é quem recebe o dano. Corrigido em `wcl/fetch.py`; as fixtures precisam ser baixadas de novo para o defensivo nos overlaps aparecer no kill de referência.
+**Dano recebido.** Até 03/11 a busca pedia `DamageTaken` com `targetID` do jogador e vinha só o dano que ele causou nele mesmo: no WCL, o "source" desse filtro é quem recebe o dano. Corrigido em `wcl/fetch.py` e fixtures baixadas de novo em 03/11 (Harmonist: 1.364 golpes recebidos, antes 533).
