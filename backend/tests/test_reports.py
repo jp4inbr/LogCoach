@@ -23,14 +23,12 @@ from app.api.reports import (
 )
 from app.main import app
 from app.models import User
+from app.schemas import FIGHT_REASON_MESSAGES
 from app.services.links import parse_report_code
 from app.services.sources import (
-    IN_PROGRESS_REASON,
     LIVE_WINDOW_S,
     QUERY_LIMIT,
     REFRESH_MIN_INTERVAL_S,
-    UNSUPPORTED_BOSS_REASON,
-    UPLOAD_PAUSED_REASON,
     WCL_COOLDOWN_S,
     ClientLimiter,
     FightNotFoundError,
@@ -107,6 +105,7 @@ def test_resolve_lists_fights_and_marks_unsupported(client):
     # Só a lista de lutas: os Magos vêm por luta, na rota de jogadores.
     assert "players" not in fights[34]
     assert fights[41]["supported"] is False
+    assert fights[41]["unsupported_code"] == "unsupported_boss"
     assert fights[41]["unsupported_reason"] == "Chefe ainda não suportado"
 
 
@@ -273,12 +272,13 @@ def test_other_boss_still_uploading_is_not_marked_as_uploading(client):
     response = client.get("/reports/TESTE123/fights/5/players")
 
     assert fights[5]["in_progress"] is False
-    assert fights[5]["unsupported_reason"] == UNSUPPORTED_BOSS_REASON
+    assert fights[5]["unsupported_code"] == "unsupported_boss"
+    assert fights[5]["unsupported_reason"] == FIGHT_REASON_MESSAGES["unsupported_boss"]
     # 20 s até agora, mas o motivo é o chefe, não a luta curta.
     assert response.status_code == 422
     assert response.json()["detail"] == {
         "code": "unsupported_fight",
-        "message": UNSUPPORTED_BOSS_REASON,
+        "message": FIGHT_REASON_MESSAGES["unsupported_boss"],
     }
 
 
@@ -292,11 +292,42 @@ def test_fight_in_progress_is_marked_and_not_clickable(client):
 
     assert fights[5]["in_progress"] is True
     assert fights[5]["supported"] is False
-    assert fights[5]["unsupported_reason"] == IN_PROGRESS_REASON
+    assert fights[5]["unsupported_code"] == "in_progress"
+    assert fights[5]["unsupported_reason"] == FIGHT_REASON_MESSAGES["in_progress"]
     assert fights[2]["in_progress"] is False
     # Menos de 60 s até agora, mas o motivo é estar subindo, não ser curta.
     assert response.status_code == 422
-    assert response.json()["detail"] == {"code": "unsupported_fight", "message": IN_PROGRESS_REASON}
+    assert response.json()["detail"] == {
+        "code": "unsupported_fight",
+        "message": FIGHT_REASON_MESSAGES["in_progress"],
+    }
+
+
+def test_fight_reason_logic_does_not_depend_on_the_text(client, monkeypatch):
+    # A rota decide pelo código do motivo: trocar o texto não muda o erro, só a mensagem.
+    for code in ("short", "unsupported_boss", "in_progress"):
+        monkeypatch.setitem(FIGHT_REASON_MESSAGES, code, f"texto trocado ({code})")
+    wcl = FakeWcl()
+    wcl.report["fights"].append(nekzali(5, 1_300_000, 1_320_000, inProgress=True))
+    use_wcl(wcl, [0.0])
+    client.post("/reports/resolve", json=LINK)
+
+    # Luta 1: curta; luta 3: outro chefe; luta 5: subindo (lista recém-buscada).
+    short = client.get("/reports/TESTE123/fights/1/players")
+    boss = client.get("/reports/TESTE123/fights/3/players")
+    uploading = client.get("/reports/TESTE123/fights/5/players")
+
+    assert (short.status_code, short.json()["detail"]["code"]) == (422, "fight_too_short")
+    assert boss.status_code == 422
+    assert boss.json()["detail"] == {
+        "code": "unsupported_fight",
+        "message": "texto trocado (unsupported_boss)",
+    }
+    assert uploading.status_code == 422
+    assert uploading.json()["detail"] == {
+        "code": "unsupported_fight",
+        "message": "texto trocado (in_progress)",
+    }
 
 
 # --- Pré-busca dos eventos -----------------------------------------------------------
@@ -615,7 +646,10 @@ def test_fight_still_uploading_is_refused_after_one_new_search(client):
     response = client.get("/reports/TESTE123/fights/5/players")
 
     assert response.status_code == 422
-    assert response.json()["detail"] == {"code": "unsupported_fight", "message": IN_PROGRESS_REASON}
+    assert response.json()["detail"] == {
+        "code": "unsupported_fight",
+        "message": FIGHT_REASON_MESSAGES["in_progress"],
+    }
     assert wcl.calls == ["ReportFights", "ReportFights"]  # uma busca nova só
 
 
@@ -638,11 +672,12 @@ def test_fight_of_a_paused_upload_is_refused(client):
         True,
         False,
     )
-    assert fight["unsupported_reason"] == UPLOAD_PAUSED_REASON
+    assert fight["unsupported_code"] == "upload_paused"
+    assert fight["unsupported_reason"] == FIGHT_REASON_MESSAGES["upload_paused"]
     assert response.status_code == 422
     assert response.json()["detail"] == {
         "code": "unsupported_fight",
-        "message": UPLOAD_PAUSED_REASON,
+        "message": FIGHT_REASON_MESSAGES["upload_paused"],
     }
     assert wcl.calls == ["ReportFights", "ReportFights"]
 

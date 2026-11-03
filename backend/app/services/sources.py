@@ -38,6 +38,7 @@ from app.config import get_settings
 from app.schemas import (
     AnalysisResult,
     FightOption,
+    FightReasonCode,
     PlayerOption,
     PrefetchState,
     ReportResolved,
@@ -69,25 +70,9 @@ SAMPLE_ACTOR_ID = 455
 
 # Item 8.2: lutas com menos de 60 s não são analisadas.
 MIN_FIGHT_S = 60
-SHORT_FIGHT_REASON = "A luta tem menos de 60 s. Escolha uma tentativa mais longa"
-UNSUPPORTED_BOSS_REASON = "Chefe ainda não suportado"
-UNSUPPORTED_DIFFICULTY_REASON = "Dificuldade ainda não suportada para esse chefe"
-IN_PROGRESS_REASON = (
-    "A luta ainda está subindo para o Warcraft Logs. Ela fica disponível aqui assim que terminar."
-)
-# Luta que estava subindo, mas o log parou de receber dados (`LIVE_WINDOW_S`).
-UPLOAD_PAUSED_REASON = (
-    "O envio deste log parou no Warcraft Logs (nada novo há mais de 10 min). "
-    "Se o uploader voltar a enviar, clique em Atualizar lutas."
-)
 # Log ao vivo: nada novo há 10 min = uploader parado; uma luta ou uma M+ em andamento manda
 # dados o tempo todo.
 LIVE_WINDOW_S = 10 * 60
-# Pré-busca que estava na fila quando o servidor desligou (--reload, deploy).
-SHUTDOWN_MESSAGE = (
-    "O LogCoach está reiniciando e a busca dos eventos da luta foi interrompida. "
-    "Tente de novo em alguns instantes."
-)
 
 # Dificuldades de raide no Warcraft Logs, com os nomes do cliente pt-BR.
 DIFFICULTIES = {1: "Localizador", 3: "Normal", 4: "Heroico", 5: "Mítico", 10: "Mítica+"}
@@ -302,23 +287,25 @@ def npc_names_pt() -> dict[int, str]:
     return {int(k): v for k, v in (data.get("npcs") or {}).items()}
 
 
-def _encounter_reason(fight: dict[str, Any], encounter: dict | None) -> str | None:
+def _encounter_reason(fight: dict[str, Any], encounter: dict | None) -> FightReasonCode | None:
     if encounter is None:
-        return UNSUPPORTED_BOSS_REASON
+        return "unsupported_boss"
     if encounter["difficulties"] and fight.get("difficulty") not in encounter["difficulties"]:
-        return UNSUPPORTED_DIFFICULTY_REASON
+        return "unsupported_difficulty"
     return None
 
 
-def _fight_reason(fight: dict[str, Any], duration_s: float, encounter: dict | None) -> str | None:
+def _fight_reason(
+    fight: dict[str, Any], duration_s: float, encounter: dict | None
+) -> FightReasonCode | None:
     # Luta ainda subindo (log ao vivo): chefe e dificuldade já são definitivos, a duração
     # não. Chefe sem regras não fica "subindo" (terminaria cinza do mesmo jeito) e a
     # duração parcial não vale como "curta": só a luta que seria suportada fica subindo.
     if fight.get("inProgress"):
-        return _encounter_reason(fight, encounter) or IN_PROGRESS_REASON
+        return _encounter_reason(fight, encounter) or "in_progress"
     # Mesma ordem da rota /analyses: primeiro a duração, depois o chefe.
     if duration_s < MIN_FIGHT_S:
-        return SHORT_FIGHT_REASON
+        return "short"
     return _encounter_reason(fight, encounter)
 
 
@@ -346,10 +333,10 @@ def build_report(
         duration_s = round((fight["endTime"] - fight["startTime"]) / 1000, 1)
         encounter = encounters.get(fight["encounterID"])
         difficulty = fight.get("difficulty")
-        reason = _fight_reason(fight, duration_s, encounter)
-        paused = reason == IN_PROGRESS_REASON and not live
+        code = _fight_reason(fight, duration_s, encounter)
+        paused = code == "in_progress" and not live
         if paused:
-            reason = UPLOAD_PAUSED_REASON
+            code = "upload_paused"
         fights.append(
             {
                 "id": fight["id"],
@@ -357,9 +344,9 @@ def build_report(
                 "difficulty": DIFFICULTIES.get(difficulty, f"Dificuldade {difficulty}"),
                 "kill": bool(fight.get("kill")),
                 "duration_s": duration_s,
-                "supported": reason is None,
-                "unsupported_reason": reason,
-                "in_progress": reason == IN_PROGRESS_REASON,
+                "supported": code is None,
+                "unsupported_code": code,
+                "in_progress": code == "in_progress",
                 "upload_paused": paused,
             }
         )
@@ -531,7 +518,8 @@ class _Flight:
     __slots__ = ("future", "claimed", "job", "clients")
 
     def __init__(self) -> None:
-        self.future: Future = Future()  # quem espera a busca lê daqui
+        # Quem espera a busca lê daqui (só busca assumida: a da fila não tem quem espere).
+        self.future: Future = Future()
         # Alguém já assumiu a busca (a thread da pré-busca ou quem precisa dos dados), ou ela
         # saiu da fila. Enquanto falso, a busca está só na fila.
         self.claimed = False
@@ -546,7 +534,8 @@ class FightDataStore:
     vez de baixar de novo. A pré-busca que ainda está na fila (atrás de outras) não segura
     ninguém: quem precisa dos dados assume a busca e baixa na hora. Cada cliente tem no
     máximo uma pré-busca na fila; uma nova dele tira a anterior da fila. Falha não entra no
-    cache (o próximo pedido tenta de novo); quem estava esperando recebe o mesmo erro.
+    cache (o próximo pedido tenta de novo); quem estava esperando recebe o mesmo erro. Só se
+    espera busca assumida: a que sai da fila sem rodar não tem a quem avisar.
     """
 
     def __init__(self, cache: ReportCache | None = None) -> None:
@@ -622,14 +611,11 @@ class FightDataStore:
             return state
         try:
             job = executor.submit(self._background, key, flight, fetch)
-        except RuntimeError as exc:  # executor já desligado (app saindo)
+        except RuntimeError:  # executor já desligado (app saindo)
             with self._lock:
-                mine = not flight.claimed  # se alguém já assumiu, a busca é dele
-                if mine:
+                if not flight.claimed:  # se alguém já assumiu, a busca é dele
                     self._claim(key, flight)
                     self._forget(key, flight)
-            if mine:
-                flight.future.set_exception(exc)
             raise
         with self._lock:
             # Alguém pode ter assumido (ou tirado da fila) antes de a tarefa existir.
@@ -662,7 +648,6 @@ class FightDataStore:
             return None  # outro cliente também pediu essa luta
         job = self._claim(old, flight)
         self._forget(old, flight)
-        flight.future.cancel()  # ninguém espera busca da fila (quem precisa assume)
         return job
 
     def _claim(self, key: Hashable, flight: _Flight) -> Future | None:
@@ -680,8 +665,9 @@ class FightDataStore:
             del self._running[key]
 
     def _job_done(self, key: Hashable, flight: _Flight, job: Future) -> None:
-        """Tarefa cancelada na fila (desligamento com `cancel_futures`): a busca falha, para
-        ninguém ficar esperando por ela e o próximo pedido buscar de novo."""
+        """Tarefa cancelada na fila (desligamento com `cancel_futures`): a busca sai de
+        "baixando", para o próximo pedido buscar de novo. Ninguém espera busca da fila (quem
+        precisa assume), então não há a quem avisar."""
         if not job.cancelled():
             return
         with self._lock:
@@ -689,7 +675,6 @@ class FightDataStore:
                 return  # alguém assumiu ou ela já saiu da fila
             self._claim(key, flight)
             self._forget(key, flight)
-        flight.future.set_exception(SourceUnavailableError(_report_code(key), SHUTDOWN_MESSAGE))
 
     def _run(self, key: Hashable, flight: _Flight, fetch: Fetch) -> Any:
         try:
@@ -910,8 +895,8 @@ def shutdown_prefetch() -> None:
     """Desliga o executor da pré-busca (desligamento do app e testes).
 
     As da fila são canceladas (com `--reload` ou SIGTERM, rodar a fila inteira levaria
-    minutos) e falham com `SHUTDOWN_MESSAGE` no store: quem esperasse por elas recebe erro
-    em vez de travar. Só as que já estão baixando (no máximo PREFETCH_WORKERS) terminam.
+    minutos) e saem do store (o próximo pedido busca de novo); ninguém espera busca da fila.
+    Só as que já estão baixando (no máximo PREFETCH_WORKERS) terminam.
     """
     global _prefetch_executor
     with _prefetch_lock:

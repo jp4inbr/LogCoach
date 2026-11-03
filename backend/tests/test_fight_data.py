@@ -1,7 +1,8 @@
 """Eventos da luta do jogador: cache, single-flight e pré-busca (nada aqui acessa a internet).
 
 As buscas "lentas" esperam um `threading.Event` que o teste libera; nenhum teste depende de
-sleep, e o `fresh_wcl_state` desliga o executor da pré-busca no fim de cada um. A fila é um
+sleep para acertar a ordem (no máximo esperam uma condição com prazo), e o
+`fresh_wcl_state` desliga o executor da pré-busca no fim de cada um. A fila é um
 executor de 1 thread ocupado por uma tarefa presa (`busy_pool`): o que entra depois fica na
 fila até o teste liberar.
 """
@@ -10,6 +11,7 @@ import gzip
 import json
 import logging
 import threading
+import time
 from concurrent.futures import ThreadPoolExecutor
 
 import pytest
@@ -27,7 +29,6 @@ from app.services.sources import (
     SAMPLE_ACTOR_ID,
     SAMPLE_REPORT_CODE,
     SAMPLES_DIR,
-    SHUTDOWN_MESSAGE,
     WCL_COOLDOWN_S,
     ClientLimiter,
     FightDataNotAvailableError,
@@ -523,9 +524,9 @@ def test_limiter_prune_stops_at_the_first_active_client():
 # --- Desligamento -------------------------------------------------------------------
 
 
-def test_shutdown_cancels_the_queue_and_fails_its_fetches():
+def test_shutdown_cancels_the_queue_without_fetching():
     # Os workers do processo estão ocupados; a pré-busca fica na fila. Desligar não roda a
-    # fila: a busca falha com SHUTDOWN_MESSAGE (ninguém trava esperando) e nada é baixado.
+    # fila: a busca sai do store (ninguém espera busca da fila) e nada é baixado.
     gate = threading.Event()
     busy = threading.Barrier(PREFETCH_WORKERS + 1)
 
@@ -541,24 +542,39 @@ def test_shutdown_cancels_the_queue_and_fails_its_fetches():
     store = FightDataStore()
     source = wcl.source(fight_data=store)
     assert source.prefetch(*FIGHT, client="ana") == "started"
-    flight = store._running[FightKey(*FIGHT)]
+    key = FightKey(*FIGHT)
 
     stopping = threading.Thread(target=shutdown_prefetch)
     stopping.start()
     try:
-        # Falha antes de os workers ocupados terminarem: não esperou a fila.
-        error = flight.future.exception(timeout=5)
+        # Sai do store antes de os workers ocupados terminarem: não esperou a fila.
+        deadline = time.monotonic() + 5
+        while key in store._running and time.monotonic() < deadline:
+            time.sleep(0.01)
+        assert key not in store._running
     finally:
         gate.set()
         stopping.join(timeout=5)
 
     assert not stopping.is_alive()
-    assert isinstance(error, SourceUnavailableError)
-    assert error.user_message == SHUTDOWN_MESSAGE
-    assert str(error) == "TESTE123"
+    assert "ana" not in store._queued
     assert wcl.count("FightMeta") == 0
     # Nada fica "running" para sempre: a próxima pré-busca começa de novo.
     assert source.prefetch(*FIGHT, client="ana") == "started"
+
+
+def test_start_with_executor_already_shut_down_leaves_nothing_behind():
+    # App saindo: o executor recusa a tarefa; a busca não fica "baixando" nem na fila.
+    store = FightDataStore()
+    key = FightKey(*FIGHT)
+    executor = ThreadPoolExecutor(max_workers=1)
+    executor.shutdown()
+
+    with pytest.raises(RuntimeError):
+        store.start(key, lambda: pytest.fail("não pode baixar"), executor, client="ana")
+
+    assert key not in store._running
+    assert "ana" not in store._queued
 
 
 # --- Modo exemplo -------------------------------------------------------------------

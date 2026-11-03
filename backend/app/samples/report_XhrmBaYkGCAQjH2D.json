@@ -11,7 +11,7 @@
       "kill": false,
       "duration_s": 41.0,
       "supported": false,
-      "unsupported_reason": "A luta tem menos de 60 s. Escolha uma tentativa mais longa"
+      "unsupported_code": "short"
     },
     {
       "id": 34,
@@ -20,7 +20,7 @@
       "kill": true,
       "duration_s": 415.6,
       "supported": true,
-      "unsupported_reason": null
+      "unsupported_code": null
     },
     {
       "id": 41,
@@ -29,7 +29,7 @@
       "kill": false,
       "duration_s": 238.0,
       "supported": false,
-      "unsupported_reason": "Chefe ainda não suportado"
+      "unsupported_code": "unsupported_boss"
     },
     {
       "id": 47,
@@ -38,7 +38,7 @@
       "kill": true,
       "duration_s": 312.0,
       "supported": false,
-      "unsupported_reason": "Chefe ainda não suportado"
+      "unsupported_code": "unsupported_boss"
     }
   ],
   "players": {
