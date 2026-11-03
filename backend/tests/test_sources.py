@@ -8,9 +8,10 @@ from typing import get_args
 
 import httpx
 import pytest
+from pydantic import ValidationError
 
 from app.config import Settings, get_settings
-from app.schemas import FIGHT_REASON_MESSAGES, FightReasonCode
+from app.schemas import FIGHT_REASON_MESSAGES, FightOption, FightReasonCode
 from app.services import sources
 from app.services.sources import (
     LIVE_WINDOW_S,
@@ -376,6 +377,14 @@ def test_boss_without_rules_is_not_supported():
 def test_every_fight_reason_code_has_a_message():
     # Código novo no Literal sem texto quebraria a tela com KeyError.
     assert set(get_args(FightReasonCode)) == set(FIGHT_REASON_MESSAGES)
+
+
+@pytest.mark.parametrize(("supported", "code"), [(False, None), (True, "short")])
+def test_fight_option_refuses_code_that_does_not_match_supported(supported, code):
+    # Luta em cinza sem código cairia num motivo errado (ex.: chave antiga no exemplo).
+    with pytest.raises(ValidationError):
+        FightOption(id=1, boss="Chefe", difficulty="Mítico", kill=True, duration_s=300.0,
+                    supported=supported, unsupported_code=code)  # fmt: skip
 
 
 def test_difficulty_in_portuguese():

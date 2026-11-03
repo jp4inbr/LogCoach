@@ -102,6 +102,13 @@ class FightOption(BaseModel):
     upload_paused: bool = False
     # Sem jogadores: os Magos Arcanos vêm por luta, em GET /reports/{code}/fights/{id}/players.
 
+    @model_validator(mode="after")
+    def _code_matches_supported(self) -> "FightOption":
+        # Luta em cinza sempre tem código (a lógica decide por ele); suportada nunca tem.
+        if self.supported != (self.unsupported_code is None):
+            raise ValueError("supported e unsupported_code não combinam")
+        return self
+
     @computed_field
     @property
     def unsupported_reason(self) -> str | None:

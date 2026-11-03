@@ -11,7 +11,6 @@ from app.api.deps import OptionalUserDep, SessionDep, check_plan_limit
 from app.errors import UNEXPECTED_ERROR_CODE, api_error
 from app.models import User
 from app.schemas import (
-    FIGHT_REASON_MESSAGES,
     FightOption,
     FightPlayers,
     PlayerOption,
@@ -151,11 +150,7 @@ def load_fight(
             422, "fight_too_short", "A luta tem menos de 60 s. Escolha uma tentativa mais longa."
         )
     if not fight.supported:
-        raise api_error(
-            422,
-            "unsupported_fight",
-            fight.unsupported_reason or FIGHT_REASON_MESSAGES["unsupported_boss"],
-        )
+        raise api_error(422, "unsupported_fight", fight.unsupported_reason)
     return report, fight
 
 
