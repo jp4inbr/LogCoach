@@ -278,3 +278,19 @@ Regras do Arthur (28/10/2026), conferidas nas 11 fixtures. Código em `backend/a
 | Procs esperados por minuto no Soul (decisão) | 1,0 | 1,2 |
 
 A falta de Seta do Harmonist é em parte decisão (entrar no Soul com pouco Salvo) e em grande parte azar. Um ranking de melhores logs tende a escolher lutas com sorte, e o relatório precisa dizer isso.
+
+## 12.11 Motor: fases, referência dos tops e tabelas
+
+Base do motor (passo 4, PR `feat/motor-base`). Tudo em `backend/app/engine/`, lendo a luta no formato de `wcl.fetch.fetch_fight` (tempos em ms do report).
+
+| Módulo | O que faz |
+|---|---|
+| `fight.py` | Fases da luta a partir de `phaseTransitions` + nomes do WCL (`PhaseSpan`: id, nome em português, início, fim, intermissão). Uma fase que se repete vira dois trechos com o mesmo id; as tabelas somam os dois. Também: segundos desde o início da luta, dano com o absorvido, casts concluídos |
+| `names.py` | Nome em português por ID (`pt_br.yaml`: magias, NPCs e fases); o que não estiver lá sai em inglês, como veio do WCL |
+| `baseline.py` | Régua de cada métrica de desempenho a partir dos tops (decisão de 03/11): **atenção** = pior que 3 de cada 4 tops (quartil do lado ruim); **erro** = pior que o pior top. Com menos de 5 tops, usa os valores reserva do YAML. `text()` diz ao usuário de onde saiu a régua ("mediana dos 10 tops: 6%") |
+| `abilities.py` | Tabela por habilidade e por fase (RF22): casts por minuto e % do dano, jogador × média dos tops que tiveram a fase. Cast e dano com IDs diferentes viram uma linha só (`ability_groups` em `arcane_mage.yaml`; ex.: Mísseis conjurado como 5143, dano como 7268). Linhas com menos de 1% do dano ficam fora |
+| `targets.py` | Dano por alvo e por fase, em %: o chefe primeiro (`boss_npc_id` do encontro), depois os adds, agrupados pelo NPC. Bater em add não é erro; a tabela mostra onde o jogador concentrou o dano e serve à IA para apontar padding |
+
+Cada luta vira um **perfil** (`ability_profile`, `target_profile`). É o perfil, e não os eventos, que se guarda dos tops no cache de 24 h. A tabela junta o perfil do jogador com os dos tops.
+
+**Conferido no kill de referência:** a tabela por habilidade reproduz os números medidos em 28/10 (ex.: Fase 2, Mísseis 30,9% × 35,3% do dano dos tops; Seta 14,5% × 24,0%). Na intermissão, o dano vai para o Eco de Jawae (78% no Harmonist, 73% nos tops) e os Amani; o chefe não recebe dano.

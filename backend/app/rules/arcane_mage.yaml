@@ -40,6 +40,19 @@ abilities:
   shimmer: 212653
   time_warp: 80353
 
+# Tabela por habilidade (RF22): o cast e o dano de uma habilidade podem ter IDs diferentes
+# (conferido nas 11 fixtures em 03/11). Cada grupo vira uma linha, com o nome do ID do cast
+# (ou do 1º de dano, se não há cast). O que não estiver aqui vira linha pelo próprio ID.
+ability_groups:
+  arcane_missiles:   { cast: 5143,    damage: [7268] }
+  arcane_barrage:    { cast: 44425,   damage: [44425, 450499] }
+  prismatic_bolt:    { cast: 1295924, damage: [1295924, 1295939] }
+  meteorite:         { damage: [449569, 456139] }   # sai do Barrage, sem cast próprio
+  touch_of_the_magi: { cast: 321507,  damage: [210833] }
+  arcane_blast:      { cast: 30451,   damage: [30451] }
+  arcane_orb:        { cast: 153626,  damage: [153640] }
+  arcane_surge:      { cast: 365350,  damage: [365350, 453326] }
+
 # Buffs lidos do log (stacks vêm nos eventos applybuffstack/removebuffstack).
 buffs:
   arcane_salvo: 1242974       # stacks gastos pelo Arcane Barrage (cap 25 no Sunfury)

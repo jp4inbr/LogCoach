@@ -35,6 +35,7 @@ import httpx
 import yaml
 
 from app.config import get_settings
+from app.engine.names import npc_names as pt_br_npc_names
 from app.schemas import (
     AnalysisResult,
     FightOption,
@@ -62,7 +63,6 @@ logger = logging.getLogger(__name__)
 APP_DIR = Path(__file__).resolve().parent.parent
 SAMPLES_DIR = APP_DIR / "samples"
 ENCOUNTERS_DIR = APP_DIR / "encounters"
-PT_BR_FILE = APP_DIR / "i18n" / "pt_br.yaml"
 
 # Kill de referência do CLAUDE.md: Nek'zali Mítico, luta 34, jogador Harmonist.
 SAMPLE_REPORT_CODE = "XhrmBaYkGCAQjH2D"
@@ -281,12 +281,6 @@ def supported_encounters() -> dict[int, dict[str, Any]]:
     return encounters
 
 
-@lru_cache
-def npc_names_pt() -> dict[int, str]:
-    data = yaml.safe_load(PT_BR_FILE.read_text(encoding="utf-8"))
-    return {int(k): v for k, v in (data.get("npcs") or {}).items()}
-
-
 def _encounter_reason(fight: dict[str, Any], encounter: dict | None) -> FightReasonCode | None:
     if encounter is None:
         return "unsupported_boss"
@@ -323,7 +317,7 @@ def build_report(
     que parou de receber dados fica pausada (`upload_paused`), e não "subindo" para sempre.
     """
     encounters = supported_encounters() if encounters is None else encounters
-    npc_names = npc_names_pt() if npc_names is None else npc_names
+    npc_names = pt_br_npc_names() if npc_names is None else npc_names
     now_ms = time.time() * 1000 if now_ms is None else now_ms
     end_time = raw.get("end_time")
     live = end_time is not None and now_ms - end_time <= LIVE_WINDOW_S * 1000
