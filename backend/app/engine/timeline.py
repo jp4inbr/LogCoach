@@ -48,3 +48,23 @@ def stacks_before(fight: dict[str, Any], buff_id: int, times: list[float]) -> li
 
 def inside(time: float, windows: list[tuple[float, float]]) -> bool:
     return any(start <= time <= end for start, end in windows)
+
+
+def stack_gains(fight: dict[str, Any], buff_id: int) -> int:
+    """Quantas vezes o buff ganhou carga (aplicado do zero ou um acúmulo a mais)."""
+    gains, current = 0, 0
+    events = sorted(
+        (e for e in fight["events"]["buffs"] if e["abilityGameID"] == buff_id),
+        key=lambda e: e["timestamp"],
+    )
+    for event in events:
+        if event["type"] == "applybuff":
+            gains, current = gains + 1, event.get("stack", 1)
+        elif event["type"] == "applybuffstack":
+            gains += event["stack"] > current
+            current = event["stack"]
+        elif event["type"] == "removebuffstack":
+            current = event["stack"]
+        elif event["type"] == "removebuff":
+            current = 0
+    return gains

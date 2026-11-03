@@ -92,3 +92,47 @@ def test_reference_harmonist_is_actor_455():
 def test_normalize_server():
     assert normalize_server("Area 52") == normalize_server("area-52") == "area52"
     assert normalize_server(None) == ""
+
+
+class _FakeFightClient:
+    """Responde ao FIGHT_META e guarda os filtros de cada busca de eventos."""
+
+    def __init__(self) -> None:
+        self.calls: list[tuple[str, dict]] = []
+
+    def query(self, query, variables, timeout=None):
+        return {
+            "reportData": {
+                "report": {
+                    "startTime": 0,
+                    "fights": [{"id": 1, "encounterID": 3470, "startTime": 0, "endTime": 1000}],
+                    "masterData": {
+                        "actors": [{**actor(10, "Harmonist", "Azralon"), "petOwner": None}],
+                        "abilities": [],
+                    },
+                    "phases": [],
+                    "playerDetails": {"data": {"playerDetails": {}}},
+                }
+            }
+        }
+
+    def events(self, code, fight_id, start, end, data_type, **filters):
+        self.calls.append((data_type, filters))
+        if data_type == "DamageTaken":
+            # Golpe do chefe (source 99) no jogador e um golpe em outro jogador.
+            return [
+                {"type": "damage", "sourceID": 99, "targetID": 10, "abilityGameID": 1},
+                {"type": "damage", "sourceID": 99, "targetID": 11, "abilityGameID": 1},
+            ]
+        return []
+
+
+def test_damage_taken_filters_by_the_player_as_source():
+    """No DamageTaken do WCL o "source" do filtro é quem recebe o dano (corrigido em 03/11)."""
+    from app.wcl.fetch import fetch_fight
+
+    client = _FakeFightClient()
+    fight = fetch_fight(client, "CODE", 1, actor_id=10)
+
+    assert ("DamageTaken", {"source_id": 10}) in client.calls
+    assert [e["targetID"] for e in fight["events"]["damage_taken"]] == [10]

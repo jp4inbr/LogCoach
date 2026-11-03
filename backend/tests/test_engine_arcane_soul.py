@@ -76,7 +76,9 @@ def test_reference_soul_entries(reference):
     entries = soul_entries(reference)
 
     assert [e.salvo for e in entries] == [0, 20, 1, 18, 22]
-    assert [e.mistake for e in entries] == [True, False, True, True, False]
+    # Regra de 03/11: erro abaixo de 12; de 12 a 19 só fica abaixo do ideal (20).
+    assert [e.mistake for e in entries] == [True, False, True, False, False]
+    assert [e.below_ideal for e in entries] == [True, False, True, True, False]
     assert entries[0].barrage_in_last_gcds is True
 
 

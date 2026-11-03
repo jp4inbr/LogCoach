@@ -137,7 +137,13 @@ def fetch_fight(
         # Bloodlust...); o filtro garante que são buffs no jogador.
         "buffs": [e for e in events("Buffs", source_id=pid) if e.get("targetID") == pid],
         "damage_done": events("DamageDone", source_id=pid),
-        "damage_taken": events("DamageTaken", target_id=pid),
+        # Em DamageTaken vale a mesma convenção: o "source" do filtro é quem recebe o dano.
+        # Com targetID vinha só o dano que o próprio jogador causou nele mesmo (Refraction),
+        # sem nenhum golpe do chefe (corrigido em 03/11). Os eventos continuam com o
+        # atacante em sourceID e o jogador em targetID.
+        "damage_taken": [
+            e for e in events("DamageTaken", source_id=pid) if e.get("targetID") == pid
+        ],
         "deaths": events("Deaths", target_id=pid),
         "boss_casts": events("Casts", hostility_type="Enemies"),
     }

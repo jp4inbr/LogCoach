@@ -93,3 +93,24 @@ def bolt_procs(
         expected_per_min=expected / minutes,
         received_per_min=received / minutes,
     )
+
+
+@dataclass(frozen=True)
+class BoltMunch:
+    """Munch (03/11): um proc de Bolt chega com outro ainda ativo (Barrage antes de gastar o
+    Bolt) e o anterior se perde. No log é o `refreshbuff` do proc."""
+
+    procs: int  # procs recebidos, contando os perdidos
+    munched: int
+
+    @property
+    def pct(self) -> float:
+        return 100 * self.munched / self.procs if self.procs else 0.0
+
+
+def bolt_munch(fight: dict[str, Any], rules: dict[str, Any] | None = None) -> BoltMunch:
+    rules = rules or load_spec_rules()
+    proc = rules["buffs"]["prismatic_bolt_proc"]
+    kinds = [e["type"] for e in fight["events"]["buffs"] if e["abilityGameID"] == proc]
+    munched = kinds.count("refreshbuff")
+    return BoltMunch(procs=kinds.count("applybuff") + munched, munched=munched)

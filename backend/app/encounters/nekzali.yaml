@@ -30,6 +30,10 @@ untargetable:
     priority_targets:
       - { name: Echo of Jawae, npc_id: 263050 }
 
+# Fases sem nada para bater, que saem da conta do tempo ativo. Aqui nenhuma: na intermissão
+# há o Echo of Jawae e os Amani, então ficar parado nela é tempo parado.
+downtime_excluded_phases: []
+
 adds:
   - { name: Restless Amani, npc_id: 261509 }      # vão até o poço e dão energia ao chefe
   - { name: Echo of Jawae, npc_id: 263050 }       # alvo da intermissão
@@ -76,6 +80,10 @@ damage_sources:
 # sozinhos são cura de AoE, não defensivo. Overlaps medidos em janelas de 4 s
 # no kill de referência (média da luta: ~5 m de dano na raide por janela).
 single_hits_need_defensive: false
+# Política de defensivo do encontro (03/11): uma por chefe. Padrão geral: overlaps e
+# mecânicas que miram o jogador. No Nek'zali, o 1º chefe, só os overlaps abaixo.
+defensive_policy: overlaps
+overlap_window_s: 4           # as duas mecânicas batendo no jogador em até 4 s = overlap
 overlaps:
   - name: Possession Barrage + Grasping Depths (Stage Two)
     phase: 3

@@ -294,3 +294,32 @@ Base do motor (passo 4, PR `feat/motor-base`). Tudo em `backend/app/engine/`, le
 Cada luta vira um **perfil** (`ability_profile`, `target_profile`). É o perfil, e não os eventos, que se guarda dos tops no cache de 24 h. A tabela junta o perfil do jogador com os dos tops.
 
 **Conferido no kill de referência:** a tabela por habilidade reproduz os números medidos em 28/10 (ex.: Fase 2, Mísseis 30,9% × 35,3% do dano dos tops; Seta 14,5% × 24,0%). Na intermissão, o dano vai para o Eco de Jawae (78% no Harmonist, 73% nos tops) e os Amani; o chefe não recebe dano.
+
+## 12.12 Motor: regras, impacto e diferença para os tops
+
+Escopo fechado com o Arthur em 03/11. `measures.py` lê a luta uma vez e devolve um `FightMeasures` (é isso que se guarda dos tops); `checks.py` transforma as medidas em regras (`Check`: status, valor do jogador, dos tops, de onde saiu a régua, `impact_pct` e os fatos para o texto e para a IA).
+
+| Regra (`id`) | Régua | Impacto em % do dano do jogador |
+|---|---|---|
+| `surge_touch_combo`: Touch até 3,5 s depois do Surge | fixa (YAML) | dano médio de um Touch casado − o do Touch que ficou fora |
+| `touch_uses`, `surge_uses`: usos × possíveis (no CD desde o pull) | atenção se perdeu mais usos que a mediana dos tops | usos a mais perdidos × dano de um Touch / dano a mais de uma janela de Surge |
+| `touch_drift`: atraso médio do Touch | tops | — (o custo está nos usos) |
+| `surge_hold`: Surge segurado | fixa: mais de 10 s é atenção; mais de 15 s sem poção, lust, PI ou fase é erro | — |
+| `barrage_low_salvo`: % de Barrage com menos de 12 | tops | `null`: o custo é o snowball |
+| `soul_entry`: entrada no Arcane Soul com menos de 12 | fixa: cada entrada é erro; 20+ é o ideal | Barrages no Soul × acúmulos a menos até 20 × (dano por Salvo + 2% × dano do Bolt) |
+| `surge_empty_handed`: menos de 12 de Salvo e sem Clearcasting | fixa | `null` (já está no Blast) |
+| `surge_blasts`: Blasts por janela de Surge | tops; com pouca Clearcasting recebida não passa de atenção | Blasts acima da mediana dos tops × (Missiles − Blast) |
+| `prismatic_bolt`: procs esperados por minuto (decisão) | tops | `null`; o azar vai para a linha de sorte |
+| `bolt_munch`: proc de Bolt perdido | tops | munch acima da mediana × dano do Bolt |
+| `potion`: 1ª com o primeiro lust, 2ª com um Surge | fixa | poção a menos ou fora do Surge × bônus (19%) × DPS pós-Surge × 30 s |
+| `active_time`: tempo ativo | tops (mediana) | mediana ÷ tempo do jogador − 1 |
+| `overlap_defensive`: defensivo nos overlaps (política do encontro) | fixa | `null` (risco) |
+| `power_infusion`, `deaths` | contexto / fixa | mortes: tempo morto |
+
+**Diferença para os tops (`gap`).** Em % do dano do jogador: total = DPS médio dos tops ÷ DPS do jogador − 1; erros = soma dos impactos; sorte = (procs de Bolt esperados − recebidos) × dano médio do Bolt; não explicado = o resto (RF23). No kill de referência: **20,0% = 9,1% de erros + 9,5% de sorte + 1,4% não explicado**.
+
+**Tempo ativo.** Conta própria, igual para todos: cast com tempo de conjuração ocupa do início ao fim (no mínimo um GCD), instantâneo ocupa um GCD, o Missiles ocupa até o último tick; buracos de até 0,3 s são latência. O GCD é a mediana do intervalo depois de cada Barrage. Nas fixtures, tops de 96,6% a 98,5%; Harmonist 93,8%.
+
+**Clearcasting.** Não há chance fixa por hit (a maior parte vem do Barrage e do Missiles, que dependem da rotação). Levantamento de 03/11: 14,8 a 17,4 ganhos por minuto nas 11 fixtures. A "sorte de Clearcasting" usa a régua dos tops sobre os ganhos por minuto.
+
+**Dano recebido.** Até 03/11 a busca pedia `DamageTaken` com `targetID` do jogador e vinha só o dano que ele causou nele mesmo: no WCL, o "source" desse filtro é quem recebe o dano. Corrigido em `wcl/fetch.py`; as fixtures precisam ser baixadas de novo para o defensivo nos overlaps aparecer no kill de referência.
