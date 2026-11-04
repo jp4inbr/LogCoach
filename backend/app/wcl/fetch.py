@@ -102,10 +102,14 @@ def fetch_fight_tables(
     - `damage`: dano oficial (`total`, `total_time_ms`, `dps` e `rdps_taken`, o dano que o WCL
       credita a quem apoiou o jogador, como o Evocador Aumentação). É o DPS do ranking: a
       soma dos eventos inclui esse dano (top03 das fixtures: +11%, revisão de 04/11).
+    - `damage.credited`: crédito a quem apoiou, por id de habilidade (como nos eventos), da
+      tabela filtrada pelo jogador; só as que têm crédito.
     Sem a linha do jogador numa tabela, o campo vem nulo.
     """
     data = client.query(
-        queries.FIGHT_TABLES, {"code": code, "fightID": fight_id}, timeout=EVENTS_TIMEOUT
+        queries.FIGHT_TABLES,
+        {"code": code, "fightID": fight_id, "actorID": actor_id},
+        timeout=EVENTS_TIMEOUT,
     )
     report = data["reportData"]["report"]
     _, casts = _table_entry(report, "casts", actor_id)
@@ -118,8 +122,23 @@ def fetch_fight_tables(
             "total_time_ms": total_time,
             "dps": damage["total"] / total_time * 1000,
             "rdps_taken": damage.get("totalRDPSTaken") or 0,
+            "credited": _credited_by_ability(report),
         }
     return {"active_time_ms": casts.get("activeTime"), "damage": official}
+
+
+def _credited_by_ability(report: dict[str, Any] | None) -> dict[str, float]:
+    """Crédito ao Evocador por id de habilidade. Linhas agrupadas (`composite`, ex.: Touch,
+    Prismatic Bolt) trazem os ids dos eventos nas `subentries`. Chave em texto (JSON)."""
+    entries = ((((report or {}).get("own") or {}).get("data")) or {}).get("entries") or []
+    credited: dict[str, float] = {}
+    for entry in entries:
+        for leaf in entry.get("subentries") or [entry]:
+            amount = leaf.get("totalRDPSTaken") or 0
+            if amount:
+                key = str(leaf["guid"])
+                credited[key] = credited.get(key, 0) + amount
+    return credited
 
 
 def fetch_report(client: WclClient, code: str) -> dict[str, Any]:

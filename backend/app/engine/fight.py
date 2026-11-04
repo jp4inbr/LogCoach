@@ -80,20 +80,25 @@ def amount(event: dict[str, Any]) -> float:
 
 
 def damage_done(fight: dict[str, Any], rules: dict[str, Any] | None = None) -> list[dict[str, Any]]:
-    """Dano do jogador, sem o que o Warcraft Logs credita a quem o apoiou
-    (`damage_credited_to_others` das regras da spec: habilidades do Evocador nos eventos do
-    Mago). Sem `rules`, as do Arcano."""
+    """Dano do jogador sem o que o Warcraft Logs credita a quem o apoiou (Evocador
+    Aumentação): sem as habilidades do Evocador que aparecem nos eventos do Mago
+    (`damage_credited_to_others`) e com o crédito do Ebon Might/Prescience/Shifting Sands
+    descontado dos golpes dados com apoio (`engine/support.py`). Sem `rules`, as do Arcano.
+
+    Com os números do WCL, a soma bate com o dano oficial; sem eles (luta antiga), só as
+    habilidades do Evocador saem."""
+    from app.engine.support import without_support  # support.py usa este módulo
+
     rules = rules or load_spec_rules()
     credited = frozenset(rules.get("damage_credited_to_others") or ())
-    return [e for e in fight["events"]["damage_done"] if e["abilityGameID"] not in credited]
+    events = [e for e in fight["events"]["damage_done"] if e["abilityGameID"] not in credited]
+    return without_support(fight, events, frozenset(rules.get("support_buffs") or ()))
 
 
 def total_damage(fight: dict[str, Any], rules: dict[str, Any] | None = None) -> float:
-    """Soma dos eventos de dano: serve para proporções (% por habilidade, alvo, impacto). O
-    DPS oficial é o do Warcraft Logs (`official_dps`), que desconta também o ganho do apoio
-    nas magias do próprio jogador (Ebon Might, Prescience...). Esse ganho não é igual em todas
-    as magias (top03: Touch +46%, média +9%), então a proporção do Touch de quem teve Evocador
-    fica um pouco inflada (revisão de 04/11: +0,2 ponto na média dos tops)."""
+    """Dano do jogador pelos eventos, sem o creditado a quem o apoiou (`damage_done`): base
+    das proporções (% por habilidade, alvo, impacto). Com os números do WCL, igual ao total
+    oficial; o DPS em si vem do WCL (`official_dps`)."""
     return sum(amount(e) for e in damage_done(fight, rules))
 
 

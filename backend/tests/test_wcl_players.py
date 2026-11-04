@@ -199,11 +199,11 @@ def damage_table(entries, total_time=415_640):
         (damage_table([{"id": 10, "total": 0}]), None),
         (
             damage_table([{"id": 10, "total": 93_802_105}]),
-            {"total": 93_802_105, "total_time_ms": 415_640, "rdps_taken": 0},
+            {"total": 93_802_105, "total_time_ms": 415_640, "rdps_taken": 0, "credited": {}},
         ),
         (
             damage_table([{"id": 10, "total": 1_000_000, "totalRDPSTaken": 120_000}]),
-            {"total": 1_000_000, "total_time_ms": 415_640, "rdps_taken": 120_000},
+            {"total": 1_000_000, "total_time_ms": 415_640, "rdps_taken": 120_000, "credited": {}},
         ),
     ],
 )

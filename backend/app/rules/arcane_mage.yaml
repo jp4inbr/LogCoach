@@ -154,6 +154,10 @@ defensives:
 # (Evocador Aumentação): Fate Mirror, Breath of Eons e Bombardments. Fica fora do total e das
 # tabelas; o ranking também não conta (revisão de 04/11: top03, top04, top07 e top09).
 damage_credited_to_others: [404908, 409632, 434481]
+# Buffs do Augmentation no jogador (Ebon Might, Prescience, Shifting Sands): o ganho de dano
+# deles nas magias do Mago também é creditado ao Evocador. O motor desconta esse crédito dos
+# golpes dados com algum deles ativo (engine/support.py, decisão de 04/11).
+support_buffs: [395152, 410089, 413984]
 
 # Lust da raide (o buff no jogador). A 1ª poção vai junto do primeiro lust da luta (03/11):
 # nos tops, quem teve lust tarde não tomou poção no pull e tomou junto do lust.
