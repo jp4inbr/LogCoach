@@ -22,7 +22,7 @@ from app.engine.cooldowns import (
     surge_window_extra,
 )
 from app.engine.damage import CastDamage, cast_damage
-from app.engine.defensives import OverlapHit, overlap_hits
+from app.engine.defensives import DamagePeak, avoidable_pct_hp_per_min, damage_peaks
 from app.engine.fight import amount, casts, duration_s, fight_s, total_damage
 from app.engine.potion import PotionStats, potion_stats, surge_followup_rates
 from app.engine.prismatic_bolt import (
@@ -63,7 +63,8 @@ class FightMeasures:
     active_wcl_pct: float | None  # régua do Warcraft Logs (None sem o número)
     active_own_pct: float  # conta própria, usada quando alguma luta não tem o do WCL
     deaths: list[Death]
-    overlaps: list[OverlapHit]
+    peaks: list[DamagePeak]
+    avoidable_pct_hp_per_min: float  # dano de mecânica evitável, % da vida máxima por minuto
     externals: list[ExternalBuff]
     clearcasting_per_min: float
     cast: CastDamage
@@ -160,7 +161,8 @@ def measure(
         active_wcl_pct=wcl_active_pct(fight, encounter),
         active_own_pct=own_active_pct(fight, rules, encounter),
         deaths=deaths(fight),
-        overlaps=overlap_hits(fight, rules, encounter),
+        peaks=damage_peaks(fight, rules, encounter),
+        avoidable_pct_hp_per_min=avoidable_pct_hp_per_min(fight, encounter),
         externals=external_buffs(fight, rules),
         clearcasting_per_min=(
             stack_gains(fight, rules["clearcasting"]["buff_id"]) / minutes if minutes else 0.0

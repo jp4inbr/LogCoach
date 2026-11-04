@@ -1,4 +1,7 @@
-"""Regras do motor (checks.py): casos do item 10 (T03, T04, T11–T13) e o kill de referência."""
+"""Regras do motor (checks.py): casos do item 10 (T03, T04, T11, T12) e o kill de referência.
+
+O T13 (defensivo nos picos de dano) fica em test_engine_peaks.py.
+"""
 
 import gzip
 import json
@@ -11,7 +14,6 @@ import pytest
 from app.engine.checks import gap, num, run_checks
 from app.engine.context import deaths, external_buffs
 from app.engine.cooldowns import cooldown_stats, surge_holds
-from app.engine.defensives import overlap_hits
 from app.engine.measures import measure
 from app.engine.potion import potion_stats
 from app.engine.prismatic_bolt import bolt_munch
@@ -24,8 +26,6 @@ NEKZALI = load_encounter_rules(3470)
 PID = 10
 SURGE, TOUCH, BARRAGE, BLAST, POTION = 365350, 321507, 44425, 30451, 1236616
 SURGE_BUFF, PI, TIME_WARP, BARRIER, BOLT_PROC = 365362, 10060, 80353, 235450, 1295942
-POSSESSION, DEPTHS, RITE = 1292034, 1293214, 1288772
-STAGE_TWO = [(1, 0), (3, 20)]  # Grasping Depths só vale na Fase 3 (Stage Two)
 
 
 def fight(
@@ -202,59 +202,6 @@ def test_short_hold_is_not_listed():
     assert surge_holds(data, cooldown_stats(data, SURGE, 90), RULES, NEKZALI) == []
 
 
-# --- T13: defensivo nos overlaps --------------------------------------------------------------
-
-
-def test_t13_overlap_without_defensive_is_attention():
-    """T13: Possession Barrage + Grasping Depths em 2 s, sem defensivo."""
-    data = fight(taken=[(POSSESSION, 30), (DEPTHS, 32)], transitions=STAGE_TWO)
-    hits = overlap_hits(data, RULES, NEKZALI)
-    assert [(h.time_s, h.defended) for h in hits] == [(30, False)]
-    defensive = check(
-        run_checks(measure(data, RULES, NEKZALI), [], RULES, NEKZALI), "overlap_defensive"
-    )
-    assert defensive.status == "atencao"
-    assert defensive.impact_pct is None  # risco, não perda de dano
-
-
-def test_overlap_with_barrier_is_covered():
-    data = fight(
-        taken=[(POSSESSION, 30), (DEPTHS, 32)],
-        buffs=[(BARRIER, "applybuff", 28), (BARRIER, "removebuff", 40)],
-        transitions=STAGE_TWO,
-    )
-    assert overlap_hits(data, RULES, NEKZALI)[0].defended is True
-
-
-def test_barrier_active_since_the_pull_covers_the_overlap():
-    """Barreira posta antes do pull: só a saída aparece na luta."""
-    data = fight(
-        taken=[(POSSESSION, 30), (DEPTHS, 32)],
-        buffs=[(BARRIER, "removebuff", 40)],
-        transitions=STAGE_TWO,
-    )
-    assert overlap_hits(data, RULES, NEKZALI)[0].defended is True
-
-
-def test_overlap_outside_its_phase_is_ignored():
-    """O overlap do Stage Two (Fase 3) não vale na Fase 1."""
-    data = fight(taken=[(POSSESSION, 30), (DEPTHS, 32)])
-    assert overlap_hits(data, RULES, NEKZALI) == []
-
-
-def test_two_overlaps_on_the_same_peak_count_once():
-    """Possession Barrage com o DoT e o Grasping Depths juntos: um pico só (os dois overlaps
-    postos na mesma fase para o teste)."""
-    data = fight(taken=[(POSSESSION, 30), (DEPTHS, 31), (RITE, 31)], transitions=[(3, 0)])
-    same_phase = {**NEKZALI, "overlaps": [{**o, "phase": 3} for o in NEKZALI["overlaps"]]}
-    assert [h.time_s for h in overlap_hits(data, RULES, same_phase)] == [30]
-
-
-def test_isolated_mechanic_needs_no_defensive():
-    data = fight(taken=[(POSSESSION, 30), (DEPTHS, 50)])
-    assert overlap_hits(data, RULES, NEKZALI) == []
-
-
 # --- Poção, PI e munch -------------------------------------------------------------------------
 
 
@@ -368,7 +315,7 @@ def test_reference_kill_impacts_and_gap():
 
 def test_reference_kill_wcl_data_since_the_fixtures_of_0311():
     """Dados da validação com o WCL (03/11): tempo ativo do WCL, poção antes do pull,
-    intelecto de cada um e overlaps por fase."""
+    intelecto de cada um."""
     player, tops, checks = reference_checks()
     assert player.active_wcl_pct == pytest.approx(98.6, abs=0.1)
     assert [round(t.active_wcl_pct, 1) for t in tops] == [
@@ -382,9 +329,6 @@ def test_reference_kill_wcl_data_since_the_fixtures_of_0311():
     assert (top09.potions.expected, top09.potions.missing) == (2, 0)
     assert player.potions.damage_bonus == pytest.approx(695 / 3575)
     assert top09.potions.damage_bonus == pytest.approx(695 / (4107 - 695))
-    assert (sum(h.defended for h in player.overlaps), len(player.overlaps)) == (1, 6)
-    assert sum(h.defended for t in tops for h in t.overlaps) == 7
-    assert sum(len(t.overlaps) for t in tops) == 52
 
 
 def test_tops_are_never_errors_against_a_reference_that_includes_them():

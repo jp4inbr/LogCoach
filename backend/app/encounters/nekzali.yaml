@@ -75,32 +75,56 @@ damage_sources:
   - { name: Uncoiling, ability_id: 1292315, phase: 3 }
   - { name: Corpse Blight, ability_id: 1307939 }
 
-# Defensivo só é esperado em OVERLAP (duas mecânicas juntas). Nenhuma fonte
-# isolada mata, nem no Mítico (regra do Arthur): o DoT e o Possession Barrage
-# sozinhos são cura de AoE, não defensivo. Overlaps medidos em janelas de 4 s
-# no kill de referência (média da luta: ~5 m de dano na raide por janela).
-single_hits_need_defensive: false
-# Política de defensivo do encontro (03/11): uma por chefe. Padrão geral: overlaps e
-# mecânicas que miram o jogador. No Nek'zali, o 1º chefe, só os overlaps abaixo.
-defensive_policy: overlaps
-overlap_window_s: 4           # as duas mecânicas batendo no jogador em até 4 s = overlap
+# Picos de dano (03/11, decisão do Arthur): o motor acha os picos no próprio log e explica de
+# onde veio o dano, se um defensivo cabia ou se faltou cura. Pico = perder `damage_pct_hp` da
+# vida máxima em `window_s` (dano depois da mitigação, contando escudos) OU ficar abaixo de
+# `low_hp_pct`. Vale para todo encontro; aqui ficam os limites e a classe de cada mecânica.
+defensive_policy: peaks
+peaks:
+  window_s: 4
+  damage_pct_hp: 60
+  low_hp_pct: 35
+  heal_window_s: 5            # cura recebida logo depois do pico
+  low_hp_s: 3                 # vida baixa por mais que isso com pouca cura = faltou cura
+  low_heal_pct_hp: 20         # "pouca cura" = menos que isso da vida máxima na janela
+  avoidable_share: 0.5        # pico com mais da metade do dano evitável = evitável
+  danger_hp_pct: 50           # defensivo só "cabia" se a vida caiu abaixo disso (03/11: com
+                              # 50%, Harmonist 1 pico e tops 13 em 10 lutas; com 60%, 2 e 23)
+  # Dano evitável (% da vida por minuto) com menos de 5 tops. Nos tops de 03/11: de 0 a 15,2,
+  # mediana 4,7; Harmonist 25,9.
+  avoidable_reserve: { warn: 6, error: 15 }
+
+# Classe de cada mecânica que bate nos jogadores (dano recebido). Fontes: Mythic Trap e
+# WowCarry (Patch 12.1; o que está no Heroico vale no Mítico) e as 11 fixtures de 03/11
+# (dano por minuto: evitável = quase zero nos tops).
+# - avoidable: posicionamento; tomar é erro do jogador.
+# - targeted: cai em jogadores sorteados; defensivo pessoal cabe.
+# - assigned: depende da função na raide (soak, poço); não comparar com os tops.
+# - raid: dano de raide inevitável; cura e, no pico, defensivo.
+mechanics:
+  - { name: Latent Cultist, ability_id: 1288554, class: avoidable }   # poça do Essence Rend: ficar longe (tops: mediana 18 mil/min, Harmonist 175 mil)
+  - { name: Anguished Echoes, ability_id: 1294846, class: avoidable } # impacto de 5 m no Soulcoil Ignition: espalhar antes (tops: 0)
+  - { name: Melee, ability_id: 1, class: avoidable }                  # golpe corpo a corpo do chefe/adds
+  - { name: Essence Rend, ability_id: 1287434, class: targeted }      # debuff em jogadores sorteados
+  - { name: Hungering Pyre, ability_id: 1289855, class: assigned }    # soak
+  - { name: Vessel of Awakening, ability_id: 1297630, class: assigned }
+  - { name: Soulcoil Rite, ability_id: 1288772, class: raid }
+  - { name: Corpse Blight, ability_id: 1307939, class: raid }
+  - { name: Corpse Blight, ability_id: 1294729, class: raid }
+  - { name: Grasping Depths, ability_id: 1293214, class: raid }
+  - { name: Possession Barrage, ability_id: 1292034, class: raid }    # só evitável para quem entra na linha; na prática todos tomam (~270 mil/min)
+  - { name: Uncoiling, ability_id: 1292315, class: raid }
+  - { name: Slithering Flame, ability_id: 1294933, class: raid }      # DoT de quem não fez o soak
+  - { name: Cremation, ability_id: 1289875, class: raid }
+
+# Combinações que costumam somar (descritivo, para a IA; o motor acha os picos sozinho).
 overlaps:
   - name: Possession Barrage + Grasping Depths (Stage Two)
     phase: 3
     abilities: [1292034, 1293214]
-    peak_vs_avg: 2.1          # 10,0–10,8 m em 4 s (aos 5:48 e 6:40 do kill)
-    expect_defensive: true
   - name: Possession Barrage + aplicação do Soulcoil Rite (Stage One)
     phase: 1
     abilities: [1292034, 1288772]
-    peak_vs_avg: 2.0          # 9,9 m em 4 s (aos 0:36)
-    expect_defensive: true
-  - name: Essence Rend no jogador + um dos picos acima
-    personal: true            # só vale para quem está com o debuff
-    abilities: [1287434]
-    expect_defensive: true    # TODO: medir no log em quais pulls isso coincidiu
-    # O Essence Rend aparece no dano recebido do jogador (23 golpes no Harmonist, 03/11):
-    # dá para medir sem buscar debuffs.
 
 # Candidata a regra (TODO: medir): estar conjurando quando o Invoke termina
 # = interrupção + 3 s de silêncio, perda direta de dano na Fase 2.

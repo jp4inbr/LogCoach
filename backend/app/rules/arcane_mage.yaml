@@ -141,12 +141,14 @@ clearcasting:
 
 # Defensivos do Mago: buff que conta como "defensivo ativo" num pico de dano. Quando cobrar é
 # do encontro (`defensive_policy` no YAML do chefe).
+# Recarga em segundos, para saber se havia um defensivo pronto num pico de dano. "baseline":
+# todo Arcano tem; os outros só contam como disponíveis se o jogador os usou na luta (talento).
 defensives:
-  - { name: Prismatic Barrier, ability_id: 235450, buff_id: 235450 }  # tops: de 0 a 11 por kill
-  - { name: Ice Cold, ability_id: 414658, buff_id: 414658 }
-  - { name: Ice Block, ability_id: 45438, buff_id: 45438 }
-  - { name: Alter Time, ability_id: 342245, buff_id: 342246 }
-  - { name: Mirror Image, ability_id: 55342, buff_id: 55342 }
+  - { name: Prismatic Barrier, ability_id: 235450, buff_id: 235450, cooldown_s: 25, baseline: true }  # tops: de 0 a 11 por kill
+  - { name: Ice Cold, ability_id: 414658, buff_id: 414658, cooldown_s: 240 }
+  - { name: Ice Block, ability_id: 45438, buff_id: 45438, cooldown_s: 240 }
+  - { name: Alter Time, ability_id: 342245, buff_id: 342246, cooldown_s: 50 }
+  - { name: Mirror Image, ability_id: 55342, buff_id: 55342, cooldown_s: 120 }
 
 # Lust da raide (o buff no jogador). A 1ª poção vai junto do primeiro lust da luta (03/11):
 # nos tops, quem teve lust tarde não tomou poção no pull e tomou junto do lust.

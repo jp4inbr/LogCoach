@@ -370,23 +370,75 @@ def _active(p: FightMeasures, tops: list[FightMeasures], rules: dict[str, Any]) 
     )
 
 
-def _defensive(p: FightMeasures, tops: list[FightMeasures]) -> Check:
-    open_hits = [h for h in p.overlaps if not h.defended]
-    top_defended = sum(h.defended for t in tops for h in t.overlaps)
-    top_total = sum(len(t.overlaps) for t in tops)
+VERDICT_TEXT = {
+    "evitavel": "evitável: a maior parte do dano veio de mecânica de posicionamento",
+    "defensivo": "defensivo cabia",
+    "cura": "faltou cura",
+    "ok": "ok",
+}
+
+
+def _peak_line(peak) -> str:
+    """Um pico em português, para a tela e para a IA."""
+    mechanics = ", ".join(
+        f"{m.name} {num(100 * m.share, 0)}%"
+        + (" (evitável)" if m.mechanic_class == "avoidable" else "")
+        for m in peak.mechanics
+        if m.share >= 0.1
+    )
+    if peak.verdict == "defensivo":
+        outcome = f"defensivo cabia ({', '.join(peak.defensives_ready)} disponível)"
+    elif peak.verdict == "cura":
+        outcome = f"faltou cura: vida baixa por {secs(peak.low_hp_s)} com pouca cura"
+    elif peak.verdict == "evitavel":
+        outcome = VERDICT_TEXT["evitavel"]
+    elif peak.defensive_active:
+        outcome = f"coberto ({peak.defensive_active})"
+    else:
+        outcome = "a cura segurou"
+    return (
+        f"{clock(peak.time_s)} ({peak.phase}): {pct(peak.damage_pct_hp, 0)} da vida em poucos "
+        f"segundos, vida mínima {pct(peak.min_hp_pct, 0)}. {mechanics}. Resultado: {outcome}"
+    )
+
+
+def _peaks(p: FightMeasures, tops: list[FightMeasures]) -> Check:
+    def count(peaks, verdict: str) -> int:
+        return sum(x.verdict == verdict for x in peaks)
+
+    defensive, avoidable, heal = (count(p.peaks, v) for v in ("defensivo", "evitavel", "cura"))
+    top_defensive = fmean(count(t.peaks, "defensivo") for t in tops) if tops else None
+    top_peaks = fmean(len(t.peaks) for t in tops) if tops else None
     return Check(
-        id="overlap_defensive",
-        name="Defensivo nos picos de dano (overlaps)",
-        status="atencao" if open_hits else "ok",
-        player_value=f"{len(p.overlaps) - len(open_hits)} de {len(p.overlaps)}",
-        top_value=f"{top_defended} de {top_total}" if tops else "—",
-        note="Risco, não perda de dano."
-        + (
-            " Os tops também quase não usam."
-            if top_total and top_defended / top_total < 0.25
-            else ""
+        id="damage_peaks",
+        name="Picos de dano: defensivo e posicionamento",
+        status="atencao" if defensive or avoidable else "ok",
+        player_value=(
+            f"{len(p.peaks)} picos: {defensive} sem defensivo, {avoidable} "
+            + ("evitável" if avoidable == 1 else "evitáveis")
+            + (f", {heal} com pouca cura" if heal else "")
         ),
-        details=tuple(f"{h.name} aos {clock(h.time_s)}" for h in open_hits),
+        top_value=(
+            f"{num(top_peaks)} picos por luta, {num(top_defensive)} sem defensivo" if tops else "—"
+        ),
+        note=(
+            "Risco, não perda de dano. Defensivo só é cobrado quando a vida caiu de verdade e"
+            " havia um pronto; quando faltou cura, o problema não é do Mago."
+        ),
+        details=tuple(_peak_line(x) for x in p.peaks if x.verdict != "ok"),
+    )
+
+
+def _avoidable(p: FightMeasures, tops: list[FightMeasures], encounter: dict[str, Any]) -> Check:
+    reserve = (encounter.get("peaks") or {}).get("avoidable_reserve") or {"warn": 6, "error": 15}
+    ref = reference([t.avoidable_pct_hp_per_min for t in tops], "lower", reserve)
+    return _ref_check(
+        "avoidable_damage",
+        "Dano evitável recebido (por minuto, em % da vida)",
+        p.avoidable_pct_hp_per_min,
+        ref,
+        pct,
+        note="Mecânicas de posicionamento (ex.: poças); a lista fica no arquivo do chefe.",
     )
 
 
@@ -458,8 +510,8 @@ def run_checks(
         _potion(p, tops, rules),
         _active(p, tops, rules),
     ]
-    if (encounter or {}).get("defensive_policy"):
-        checks.append(_defensive(p, tops))
+    if (encounter or {}).get("defensive_policy") == "peaks":
+        checks += [_peaks(p, tops), _avoidable(p, tops, encounter)]
     checks += [_externals(p, tops), _deaths(p)]
     return checks
 
