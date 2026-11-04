@@ -76,8 +76,8 @@ BRACKETS_TTL_S = 24 * 60 * 60
 # Quem precisa dos tops espera a busca em andamento (11 lutas: ~2 a 3 min, medido em 04/11).
 TOPS_WAIT_S = 300
 # Teto do processo: brackets novos buscados no WCL por hora, somando pré-busca e análise
-# (~150 pontos com 11 tops, medido em 04/11). Com as 30 pré-buscas de luta por hora (~18
-# cada), fica em ~840 dos 1000 pontos/hora. Acima dele a pré-busca para; a análise usa a
+# (~161 pontos com 11 tops, medido em 04/11). Com as 30 pré-buscas de luta por hora (~19
+# cada), fica em ~890 dos 1000 pontos/hora. Acima dele a pré-busca para; a análise usa a
 # cópia vencida, o exemplo ou dá erro.
 TOPS_FILL_LIMIT = 2
 TOPS_FILL_WINDOW_S = 60 * 60

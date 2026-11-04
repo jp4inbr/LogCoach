@@ -4,11 +4,14 @@ Os tempos ficam em ms do report, como vêm da API. Quem converte para
 "segundos desde o início da fase" é o motor.
 """
 
+import logging
 from typing import Any
 
 from app.wcl import queries
 from app.wcl.client import EVENTS_TIMEOUT, WclClient, WclError
 from app.wcl.players import find_player
+
+logger = logging.getLogger(__name__)
 
 MYTHIC = 5
 
@@ -124,6 +127,13 @@ def fetch_fight_tables(
             "rdps_taken": damage.get("totalRDPSTaken") or 0,
             "credited": _credited_by_ability(report),
         }
+        if official["rdps_taken"] and not official["credited"]:
+            # Sem o crédito por habilidade, o motor não desconta o apoio nas magias do jogador
+            # e as proporções dele vêm infladas (o DPS oficial continua certo).
+            logger.warning(
+                "Luta %s/%s, ator %s: crédito ao Evocador sem a tabela por habilidade",
+                code, fight_id, actor_id,
+            )  # fmt: skip
     return {"active_time_ms": casts.get("activeTime"), "damage": official}
 
 

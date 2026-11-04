@@ -244,7 +244,7 @@ def prefetch_fight(
     source: ReportSourceDep,
     tops: TopsSourceDep,
 ) -> PrefetchStatus:
-    """Põe na fila os eventos da luta do jogador (~18 pontos) assim que ele fica definido na
+    """Põe na fila os eventos da luta do jogador (~19 pontos) assim que ele fica definido na
     tela, para a análise não esperar por eles. Responde na hora, sem esperar a busca.
 
     Pede também, numa fila própria, os tops do bracket do jogador (item 12.13: ~135 pontos

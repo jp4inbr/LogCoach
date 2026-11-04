@@ -104,3 +104,81 @@ def test_buff_active_on_pull_and_until_the_end():
         buffs=[(EBON, "removebuff", 5_000, 1), (EBON, "applybuff", 90_000, 1)], end=100_000
     )
     assert support_windows(data, BUFFS) == [(0, 5_000), (90_000, 100_000)]
+
+
+def test_refresh_as_first_event_means_active_on_pull_and_does_not_close_a_window():
+    data = fight(
+        buffs=[
+            (EBON, "refreshbuff", 3_000, 1),
+            (EBON, "removebuff", 5_000, 1),
+            (EBON, "applybuff", 10_000, 1),
+            (EBON, "refreshbuff", 12_000, 1),
+            (EBON, "removebuff", 20_000, 1),
+        ]
+    )
+    assert support_windows(data, BUFFS) == [(0, 5_000), (10_000, 20_000)]
+
+
+def test_remove_and_apply_in_the_same_ms_keep_the_window_open():
+    data = fight(
+        buffs=[
+            (EBON, "applybuff", 10_000, 1),
+            (EBON, "applybuff", 20_000, 1),  # mesmo ms da saída, mas chega antes na lista
+            (EBON, "removebuff", 20_000, 1),
+            (EBON, "removebuff", 30_000, 1),
+        ]
+    )
+    assert support_windows(data, BUFFS) == [(10_000, 30_000)]
+
+
+def test_absorbed_is_scaled_with_the_amount():
+    data = fight(
+        buffs=[(EBON, "applybuff", 0, 7)],
+        damage=[(MISSILES, 5_000, 0)],
+        credited={str(MISSILES): 25},
+    )
+    data["events"]["damage_done"][0]["absorbed"] = 100
+    event = damage_done(data)[0]
+    assert (event["amount"], event["absorbed"]) == (0, 75)
+
+
+def test_real_hit_outside_the_support_windows_keeps_its_raw_value():
+    top03 = load("top03.json.gz")
+    windows = support_windows(top03, BUFFS)
+    raw = [e for e in top03["events"]["damage_done"] if e["abilityGameID"] == MISSILES]
+    outside = [
+        i for i, e in enumerate(raw) if not any(a <= e["timestamp"] <= b for a, b in windows)
+    ]
+    assert outside
+    kept = [e for e in damage_done(top03) if e["abilityGameID"] == MISSILES]
+    for i in outside:
+        assert kept[i]["amount"] == raw[i]["amount"]
+    assert any(kept[i]["amount"] < raw[i]["amount"] for i in range(len(raw)) if i not in outside)
+
+
+def test_credited_by_ability_reads_grouped_lines_and_sums_repeated_ids():
+    from app.wcl.fetch import _credited_by_ability
+
+    report = {
+        "own": {
+            "data": {
+                "entries": [
+                    {"guid": 7268, "total": 100, "totalRDPSTaken": 10},
+                    {
+                        "guid": 448659,  # Arcane Phoenix (pet): os ids dos eventos nas subentradas
+                        "composite": True,
+                        "totalRDPSTaken": 7,
+                        "subentries": [
+                            {"guid": 456139, "totalRDPSTaken": 5},
+                            {"guid": 450499, "totalRDPSTaken": 2},
+                        ],
+                    },
+                    {"guid": 450499, "totalRDPSTaken": 1},
+                    {"guid": 30451, "totalRDPSTaken": 0},
+                ]
+            }
+        }
+    }
+    assert _credited_by_ability(report) == {"7268": 10, "456139": 5, "450499": 3}
+    assert _credited_by_ability({"own": None}) == {}
+    assert _credited_by_ability(None) == {}

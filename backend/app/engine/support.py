@@ -27,7 +27,8 @@ def support_windows(fight: dict[str, Any], buff_ids: frozenset[int]) -> list[tup
     windows: list[tuple[float, float]] = []
     events = sorted(
         (e for e in fight["events"]["buffs"] if e["abilityGameID"] in buff_ids),
-        key=lambda e: e["timestamp"],
+        # No mesmo ms, a saída antes da entrada (como o WCL manda): a janela nova abre depois.
+        key=lambda e: (e["timestamp"], e["type"] == "applybuff"),
     )
     for event in events:
         key = (event["abilityGameID"], event.get("sourceID"))
