@@ -1,14 +1,14 @@
 # 11. Métricas de Qualidade
 
-> Entrega da RT03 / banca. Lint, carregamento e responsividade já medidos. Testes e cobertura entram com o motor; tempo da 1ª análise, SUS e taxa de sucesso vêm do teste de usabilidade (item 8.3).
+> Entrega da RT03 / banca. Lint, testes, carregamento, tempo de análise e responsividade já medidos (04/11, com o motor na `main`). A cobertura do motor ainda não foi medida (falta instalar o `pytest-cov`); tempo da 1ª análise, SUS e taxa de sucesso vêm do teste de usabilidade (item 8.3).
 
 | Métrica | Meta | Como medir | Resultado |
 |---|---|---|---|
-| Testes passando | 100% | `pytest` no CI | |
-| Cobertura de testes do motor de análise | ≥ 70% | `pytest --cov=app/engine` | |
+| Testes passando | 100% | `pytest` no CI | **100%** — 604 de 604 (04/11), 126 deles do motor (ver item 10.3) |
+| Cobertura de testes do motor de análise | ≥ 70% | `pytest --cov=app/engine` | Não medida: o `pytest-cov` ainda não está nas dependências |
 | Erros de lint | 0 | `ruff check` e `eslint` no CI | **0** — CI verde no backend e no frontend (commit `91531b0`, 27/10) |
 | Tempo de carregamento das páginas | < 3 s (RNF01) | DevTools do navegador | **0,7 s em 4G e 1,8 s em 3G rápido** — tela inicial, build de produção (mediana de 5 medições, ver 11.1) |
-| Tempo de uma análise completa | < 2 min (RNF02) | Log do backend | |
+| Tempo de uma análise completa | < 2 min (RNF02) | Log do backend | **~1,1 s** pela rota no modo exemplo (kill de referência); no modo real, com os eventos já pré-buscados e o bracket no cache, a análise só roda o motor. A primeira busca dos tops de um bracket leva até ~2,5 min, mas é feita na pré-busca, em segundo plano (ver 11.3) |
 | Tempo da 1ª análise por usuário novo | ≤ 5 min (RNF09) | Teste de usabilidade | |
 | Nota SUS | ≥ 68 | Questionário SUS (item 8) | |
 | Taxa de sucesso nas tarefas do teste | ≥ 80% | Teste de usabilidade | |
@@ -27,3 +27,8 @@ Telas conferidas a 360 px de largura (celular pequeno) e a 1100 px (desktop): in
 
 ![Tela inicial a 360 px](.gitbook/assets/11-celular-inicio.png) ![Escolha da luta a 360 px](.gitbook/assets/11-celular-lutas.png)
 
+## 11.3 Tempo de uma análise
+
+- **Modo exemplo** (`DATA_SOURCE=exemplo`): `POST /analyses` com o kill de referência (Harmonist, Nek'zali Mítico, 6:55) contra os 10 tops do bracket leva **~1,1 s** do pedido à resposta, com o motor completo.
+- **Modo real** (`DATA_SOURCE=wcl`): quando a pessoa escolhe o personagem, a pré-busca baixa os eventos da luta e, se o bracket ainda não estiver guardado, os tops (item 12.13). Na hora de analisar, eventos e tops já estão na memória ou no banco (24 h), e a análise roda só o motor.
+- **Primeira busca de um bracket:** os 11 tops levaram entre ~53 s e ~2,5 min nas medições de 04/11 (varia com o Warcraft Logs). Como acontece em segundo plano, enquanto a pessoa ainda está na tela de escolha, não entra no tempo da análise; quem analisa antes de ela terminar espera a mesma busca.
