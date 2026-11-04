@@ -11,9 +11,10 @@ lê com `get_fight_data`; a pré-busca tem limite por cliente e um teto do proce
 (`prefetch_limiter`). Uma falha do Warcraft Logs fica lembrada por alguns segundos (ou pelo
 `Retry-After` do limite de pedidos) e, nesse tempo, nenhuma consulta vai à API
 (`WclCooldown`). Cada cliente (conta ou IP) tem um limite de consultas que vão mesmo à API
-(`query_limiter`); cache não conta. O analisador ainda é o de exemplo até o motor (frente C)
-ficar pronto; aí basta trocá-lo em `get_analyzer`. O modo exemplo também tem os eventos do
-kill de referência (`app/samples/fight_*.json.gz`).
+(`query_limiter`); cache não conta. O analisador é o do motor (`EngineAnalyzer`, em
+`services/analyzer.py`), nos dois modos: lê os eventos daqui e os tops de `services/tops.py`.
+O modo exemplo tem os eventos do kill de referência (`app/samples/fight_*.json.gz`) e os
+tops do bracket dele (`app/samples/tops/`).
 """
 
 import copy
@@ -150,7 +151,8 @@ class QueryLimitError(Exception):
 
 
 class AnalysisNotAvailableError(Exception):
-    """Ainda não há análise para essa luta ou esse jogador (hoje: só o exemplo do Harmonist)."""
+    """O motor não sabe analisar essa luta: chefe sem regras, luta sem ids do encontro,
+    jogador sem item level, sem eventos (modo exemplo) ou sem tops (`TopsNotAvailableError`)."""
 
 
 class FightDataNotAvailableError(AnalysisNotAvailableError):
@@ -186,14 +188,15 @@ class ReportSource(Protocol):
 
 
 class Analyzer(Protocol):
-    """Monta o resultado de uma luta.
+    """Monta o resultado de uma luta: o `EngineAnalyzer` (services/analyzer.py), do motor.
 
-    O motor vai ler os eventos com `source.get_fight_data(report.code, fight.id,
-    player.actor_id)` (a fonte entra pelo construtor, em `get_analyzer`). A luta completa
-    custa ~19 pontos do Warcraft Logs (item 12.8), mas em geral já estará no cache: a tela
-    chama a pré-busca (`POST /reports/{code}/fights/{id}/prefetch`) assim que o jogador fica
-    definido. Se ela estiver baixando, o motor espera essa mesma busca terminar; se ainda
-    estiver na fila (atrás de outras), o motor busca ele mesmo, sem esperar a fila.
+    Ele lê os eventos com `source.get_fight_data(report.code, fight.id, player.actor_id)` (a
+    fonte entra pelo construtor, em `get_analyzer`) e os tops com `TopsSource.get_tops`. Erros:
+    os das fontes (`SourceUnavailableError`, `QueryLimitError`) ou `AnalysisNotAvailableError`.
+    A luta completa custa ~19 pontos do Warcraft Logs (item 12.8), mas em geral já estará no
+    cache: a tela chama a pré-busca (`POST /reports/{code}/fights/{id}/prefetch`) assim que o
+    jogador fica definido. Se ela estiver baixando, o motor espera essa mesma busca terminar;
+    se ainda estiver na fila (atrás de outras), o motor busca ele mesmo, sem esperar a fila.
     """
 
     def analyze(
@@ -1085,24 +1088,6 @@ def _heavy_fetch_pauses(exc: BaseException) -> bool:
 # --- Análise ------------------------------------------------------------------
 
 
-class SampleAnalyzer:
-    """Devolve o resultado de exemplo da luta de referência, só para o jogador do exemplo."""
-
-    def analyze(
-        self, report: ReportResolved, fight: FightOption, player: PlayerOption
-    ) -> AnalysisResult:
-        path = SAMPLES_DIR / f"analysis_{report.code}_{fight.id}.json"
-        if not path.exists():
-            raise AnalysisNotAvailableError(f"{report.code}/{fight.id}")
-        result = AnalysisResult.model_validate(_load(path.name))
-        # Outro Arcano da mesma luta (até um homônimo de outro reino) não pode receber a
-        # análise do Harmonist: o jogador foi escolhido pelo actor_id na rota.
-        if player.actor_id != SAMPLE_ACTOR_ID:
-            raise AnalysisNotAvailableError(f"{report.code}/{fight.id}/{player.name}")
-        fill_real_names(result, get_settings().names_file)
-        return result
-
-
 def fill_real_names(result: AnalysisResult, names_file: Path) -> None:
     """Põe o nome real dos tops a partir do names.local.json, se ele existir na máquina (RF25).
 
@@ -1125,7 +1110,3 @@ def get_report_source() -> ReportSource:
     if get_settings().data_source == "wcl":
         return WclReportSource()
     return SampleReportSource()
-
-
-def get_analyzer() -> Analyzer:
-    return SampleAnalyzer()

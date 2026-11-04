@@ -1069,12 +1069,11 @@ def test_dev_without_jwt_secret_uses_temporary_key(clean_settings):
 
 
 def test_sample_analysis_gets_real_names_from_local_file(tmp_path):
-    from app.schemas import AnalysisResult
-    from app.services.sources import SAMPLES_DIR, fill_real_names
+    from conftest import make_result
 
-    result = AnalysisResult.model_validate(
-        json.loads((SAMPLES_DIR / "analysis_XhrmBaYkGCAQjH2D_34.json").read_text(encoding="utf-8"))
-    )
+    from app.services.sources import fill_real_names
+
+    result = make_result()
     names = tmp_path / "names.local.json"
     names.write_text(
         json.dumps(
@@ -1095,12 +1094,11 @@ def test_sample_analysis_gets_real_names_from_local_file(tmp_path):
 
 
 def test_sample_analysis_without_local_file_keeps_names_hidden(tmp_path):
-    from app.schemas import AnalysisResult
-    from app.services.sources import SAMPLES_DIR, fill_real_names
+    from conftest import make_result
 
-    result = AnalysisResult.model_validate(
-        json.loads((SAMPLES_DIR / "analysis_XhrmBaYkGCAQjH2D_34.json").read_text(encoding="utf-8"))
-    )
+    from app.services.sources import fill_real_names
+
+    result = make_result()
 
     fill_real_names(result, tmp_path / "nao-existe.json")
 
