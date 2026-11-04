@@ -33,7 +33,7 @@ def _group(rules: dict[str, Any], name: str) -> dict[str, Any]:
 def per_cast(fight: dict[str, Any], rules: dict[str, Any], name: str) -> float:
     group = _group(rules, name)
     damage = set(group["damage"])
-    total = sum(amount(e) for e in damage_done(fight) if e["abilityGameID"] in damage)
+    total = sum(amount(e) for e in damage_done(fight, rules) if e["abilityGameID"] in damage)
     count = len(casts(fight, group["cast"]))
     return total / count if count else 0.0
 
@@ -51,7 +51,7 @@ def barrage_fit(fight: dict[str, Any], rules: dict[str, Any]) -> tuple[float, fl
         _group(rules, "meteorite")["damage"]
     )
     per = [0.0] * len(times)
-    for event in damage_done(fight):
+    for event in damage_done(fight, rules):
         if event["abilityGameID"] not in hits:
             continue
         i = bisect.bisect_right(times, event["timestamp"]) - 1

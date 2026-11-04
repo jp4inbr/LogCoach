@@ -85,7 +85,7 @@ def ability_profile(fight: dict[str, Any], rules: dict[str, Any] | None = None) 
             key = by_cast.get(event["abilityGameID"], event["abilityGameID"])
             phases[span.id].casts[key] += 1
             cast_keys.add(key)
-    for event in damage_done(fight):
+    for event in damage_done(fight, rules):
         span = phase_at(spans, event["timestamp"])
         if span is not None:
             key = by_damage.get(event["abilityGameID"], event["abilityGameID"])

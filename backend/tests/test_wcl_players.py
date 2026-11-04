@@ -196,6 +196,7 @@ def damage_table(entries, total_time=415_640):
         (damage_table([]), None),
         (damage_table([{"id": 11, "total": 5}]), None),
         (damage_table([{"id": 10, "total": 1000}], total_time=0), None),
+        (damage_table([{"id": 10, "total": 0}]), None),
         (
             damage_table([{"id": 10, "total": 93_802_105}]),
             {"total": 93_802_105, "total_time_ms": 415_640, "rdps_taken": 0},
@@ -222,6 +223,33 @@ def test_official_damage_comes_from_the_damage_done_table(report, expected):
         dps = damage.pop("dps")
         assert damage == expected
         assert dps == pytest.approx(expected["total"] / expected["total_time_ms"] * 1000)
+
+
+def test_tables_come_in_one_answer_with_both_aliases():
+    """Casts e dano num pedido só: cada número sai da sua tabela (o activeTime da DamageDone é
+    outro e não vale)."""
+    from app.wcl.fetch import fetch_fight_tables
+
+    report = {
+        "casts": {"data": {"entries": [{"id": 10, "activeTime": 409_950}]}},
+        "damage": {
+            "data": {
+                "entries": [{"id": 10, "total": 93_802_105, "activeTime": 414_004}],
+                "totalTime": 415_641,
+            }
+        },
+    }
+    calls = []
+
+    class Client:
+        def query(self, query, variables, timeout=None):
+            calls.append(query)
+            return {"reportData": {"report": report}}
+
+    tables = fetch_fight_tables(Client(), "CODE", 1, 10)
+    assert len(calls) == 1
+    assert tables["active_time_ms"] == 409_950
+    assert tables["damage"]["dps"] == pytest.approx(225_680.6, abs=0.1)
 
 
 def test_fight_without_combatant_info_has_no_combatant():

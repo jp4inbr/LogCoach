@@ -338,6 +338,29 @@ def test_without_the_warcraft_logs_number_dps_is_the_sum_of_the_events():
     assert measures.dps == pytest.approx(measures.damage / measures.duration_s)
 
 
+@pytest.mark.parametrize(
+    "name", ["reference_harmonist.json.gz"] + [f"top{i:02d}.json.gz" for i in range(1, 11)]
+)
+def test_events_add_up_to_the_official_damage_plus_what_was_credited(name):
+    """Soma bruta dos eventos = dano oficial + creditado a quem apoiou, na unidade, nas 11
+    fixtures. Pega uma mudança do WCL ou um dano novo creditado a outro jogador."""
+    from app.engine.fight import amount
+
+    fight = load(name)
+    official = fight["player"]["damage"]
+    raw = sum(amount(e) for e in fight["events"]["damage_done"])
+    assert raw == pytest.approx(official["total"] + official["rdps_taken"], abs=1)
+
+
+def test_tops_can_use_the_ranking_dps():
+    """O `EngineAnalyzer` passa o DPS do ranking dos tops: vale mesmo numa cópia sem o dano
+    oficial, sem cair na soma dos eventos (que no top03 inclui o apoio do Evocador)."""
+    fight = copy.deepcopy(load("top03.json.gz"))  # o load é cacheado
+    fight["player"].pop("damage")
+    assert measure(fight, RULES, NEKZALI).dps > 290_000  # soma: inflada pelo apoio
+    assert measure(fight, RULES, NEKZALI, dps=271_421.6).dps == 271_421.6
+
+
 def test_damage_credited_to_the_supporter_is_not_the_mages():
     """Fate Mirror, Breath of Eons e Bombardments aparecem nos eventos do Mago apoiado, mas
     são do Evocador (`damage_credited_to_others`): fora do total e das tabelas."""

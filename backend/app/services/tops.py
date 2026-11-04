@@ -2,7 +2,7 @@
 
 `get_tops_source()` escolhe pela DATA_SOURCE, como `get_report_source()`:
 - "wcl": `WclTopsSource` busca no Warcraft Logs os melhores do mesmo encontro, dificuldade e
-  bracket de item level, com a luta completa de cada um (~135 pontos). Guarda por 24 h no
+  bracket de item level, com a luta completa de cada um (~150 pontos). Guarda por 24 h no
   banco (um reinício do processo não gasta os pontos de novo) e, na frente, na memória (1 h,
   single-flight: quem pede um bracket que está baixando espera essa busca). A pré-busca
   (`prefetch_tops`) pede os tops em segundo plano quando o jogador fica definido.
@@ -75,10 +75,10 @@ TOPS_MEMORY_MAX = 16
 BRACKETS_TTL_S = 24 * 60 * 60
 # Quem precisa dos tops espera a busca em andamento (11 lutas: ~2 a 3 min, medido em 04/11).
 TOPS_WAIT_S = 300
-# Teto do processo: brackets novos buscados no WCL por hora (~135 pontos cada), somando
-# pré-busca e análise. Com as 30 pré-buscas de luta por hora (~18 cada), fica em ~810 dos
-# 1000 pontos/hora. Acima dele a pré-busca para; a análise usa a cópia vencida, o exemplo
-# ou dá erro.
+# Teto do processo: brackets novos buscados no WCL por hora, somando pré-busca e análise
+# (~150 pontos com 11 tops, medido em 04/11). Com as 30 pré-buscas de luta por hora (~18
+# cada), fica em ~840 dos 1000 pontos/hora. Acima dele a pré-busca para; a análise usa a
+# cópia vencida, o exemplo ou dá erro.
 TOPS_FILL_LIMIT = 2
 TOPS_FILL_WINDOW_S = 60 * 60
 # Uma busca de bracket que falhou (WCL fora do ar, timeout) não se repete por 5 min: cada

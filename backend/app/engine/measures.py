@@ -55,8 +55,8 @@ class FightMeasures:
     duration_s: float
     damage: float  # soma dos eventos: base das proporções (impacto, sorte, tabelas)
     official_dps: float | None  # DPS do Warcraft Logs (o do ranking); None em luta antiga
-    # % do dano oficial que o WCL creditou a quem apoiou o jogador (Evocador Aumentação):
-    # contexto para a IA explicar um top inflado pelo apoio. None sem o número do WCL.
+    # % do dano oficial que o WCL creditou ao Evocador Aumentação que apoiou o jogador:
+    # contexto de que ele teve apoio (o DPS oficial já desconta). None sem o número do WCL.
     support_pct: float | None
     surge: CooldownStats
     touch: CooldownStats
@@ -107,7 +107,7 @@ def _touch_damage(fight: dict[str, Any], rules: dict[str, Any]) -> list[tuple[fl
     group = rules["ability_groups"]["touch_of_the_magi"]
     times = [e["timestamp"] for e in casts(fight, group["cast"])]
     damage = [0.0] * len(times)
-    for event in damage_done(fight):
+    for event in damage_done(fight, rules):
         if event["abilityGameID"] not in group["damage"]:
             continue
         i = bisect.bisect_right(times, event["timestamp"]) - 1
@@ -149,7 +149,12 @@ def measure(
     fight: dict[str, Any],
     rules: dict[str, Any] | None = None,
     encounter: dict[str, Any] | None = None,
+    dps: float | None = None,
 ) -> FightMeasures:
+    """`dps`: DPS oficial já conhecido, que vale no lugar do da luta. Os tops usam o do
+    ranking (`TopEntry.dps`, que nunca falta e é igual ao da tabela DamageDone): uma cópia
+    antiga sem `player.damage` não mistura soma dos eventos com número do WCL na média
+    (revisão de 04/11: top03 pela soma levaria a diferença de 18,0% para 19,1%)."""
     rules = rules or load_spec_rules()
     abilities = rules["abilities"]
     by_name = {c["name"]: c for c in rules["cooldowns"]}
@@ -163,8 +168,8 @@ def measure(
     minutes = duration_s(fight) / 60
     return FightMeasures(
         duration_s=duration_s(fight),
-        damage=total_damage(fight),
-        official_dps=official_dps(fight),
+        damage=total_damage(fight, rules),
+        official_dps=official_dps(fight) if dps is None else dps,
         support_pct=_support_pct(fight),
         surge=surge,
         touch=touch,
@@ -192,7 +197,9 @@ def measure(
             stack_gains(fight, rules["clearcasting"]["buff_id"]) / minutes if minutes else 0.0
         ),
         cast=cast_damage(fight, rules),
-        surge_extra=surge_window_extra(fight, damage_done(fight), rules["surge_window"]["buff_id"]),
+        surge_extra=surge_window_extra(
+            fight, damage_done(fight, rules), rules["surge_window"]["buff_id"]
+        ),
         touch_damage=_touch_damage(fight, rules),
         abilities=ability_profile(fight, rules),
         targets=target_profile(fight),

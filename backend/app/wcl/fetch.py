@@ -112,7 +112,7 @@ def fetch_fight_tables(
     table, damage = _table_entry(report, "damage", actor_id)
     total_time = table.get("totalTime")
     official = None
-    if "total" in damage and total_time:
+    if damage.get("total") and total_time:
         official = {
             "total": damage["total"],
             "total_time_ms": total_time,

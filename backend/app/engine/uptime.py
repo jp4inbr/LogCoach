@@ -48,7 +48,7 @@ def _busy_intervals(fight: dict[str, Any], rules: dict[str, Any], gcd_ms: float)
     missiles_cast = rules["ability_groups"]["arcane_missiles"]["cast"]
     missiles_hits = set(rules["ability_groups"]["arcane_missiles"]["damage"])
     ticks = sorted(
-        e["timestamp"] for e in damage_done(fight) if e["abilityGameID"] in missiles_hits
+        e["timestamp"] for e in damage_done(fight, rules) if e["abilityGameID"] in missiles_hits
     )
     events = sorted(
         (e for e in fight["events"]["casts"] if e["type"] in ("cast", "begincast")),

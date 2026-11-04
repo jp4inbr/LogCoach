@@ -79,18 +79,22 @@ def amount(event: dict[str, Any]) -> float:
     return event.get("amount", 0) + event.get("absorbed", 0)
 
 
-def damage_done(fight: dict[str, Any]) -> list[dict[str, Any]]:
+def damage_done(fight: dict[str, Any], rules: dict[str, Any] | None = None) -> list[dict[str, Any]]:
     """Dano do jogador, sem o que o Warcraft Logs credita a quem o apoiou
-    (`damage_credited_to_others` do YAML: habilidades do Evocador nos eventos do Mago)."""
-    credited = frozenset(load_spec_rules().get("damage_credited_to_others") or ())
+    (`damage_credited_to_others` das regras da spec: habilidades do Evocador nos eventos do
+    Mago). Sem `rules`, as do Arcano."""
+    rules = rules or load_spec_rules()
+    credited = frozenset(rules.get("damage_credited_to_others") or ())
     return [e for e in fight["events"]["damage_done"] if e["abilityGameID"] not in credited]
 
 
-def total_damage(fight: dict[str, Any]) -> float:
+def total_damage(fight: dict[str, Any], rules: dict[str, Any] | None = None) -> float:
     """Soma dos eventos de dano: serve para proporções (% por habilidade, alvo, impacto). O
     DPS oficial é o do Warcraft Logs (`official_dps`), que desconta também o ganho do apoio
-    nas magias do próprio jogador (Ebon Might, Prescience...)."""
-    return sum(amount(e) for e in damage_done(fight))
+    nas magias do próprio jogador (Ebon Might, Prescience...). Esse ganho não é igual em todas
+    as magias (top03: Touch +46%, média +9%), então a proporção do Touch de quem teve Evocador
+    fica um pouco inflada (revisão de 04/11: +0,2 ponto na média dos tops)."""
+    return sum(amount(e) for e in damage_done(fight, rules))
 
 
 def official_dps(fight: dict[str, Any]) -> float | None:
