@@ -38,6 +38,7 @@ from app.services.sources import (
     WclReportSource,
     get_report_source,
 )
+from app.services.tops import get_tops_source
 from app.wcl.client import CONFIG_MESSAGE, QUERY_MESSAGE
 
 SAMPLE_LINK = "https://www.warcraftlogs.com/reports/XhrmBaYkGCAQjH2D#fight=34"
@@ -361,6 +362,35 @@ def test_prefetch_answers_202_without_waiting_the_download(client):
 
 
 def test_prefetch_of_the_sample_fight_is_ready(client):
+    response = prefetch(client, 34, 455, "XhrmBaYkGCAQjH2D")
+
+    assert (response.status_code, response.json()) == (202, {"status": "ready"})
+
+
+class RecordingTops:
+    def __init__(self, error: Exception | None = None) -> None:
+        self.calls: list[tuple] = []
+        self.error = error
+
+    def prefetch_tops(self, encounter_id, difficulty, item_level, own):
+        self.calls.append((encounter_id, difficulty, item_level, own))
+        if self.error is not None:
+            raise self.error
+
+
+def test_prefetch_also_asks_for_the_bracket_tops(client):
+    tops = RecordingTops()
+    app.dependency_overrides[get_tops_source] = lambda: tops
+
+    response = prefetch(client, 34, 455, "XhrmBaYkGCAQjH2D")
+
+    assert response.status_code == 202
+    assert tops.calls == [(3470, 5, 327, ("XhrmBaYkGCAQjH2D", 34))]
+
+
+def test_prefetch_tops_failure_does_not_change_the_answer(client):
+    app.dependency_overrides[get_tops_source] = lambda: RecordingTops(RuntimeError("bug"))
+
     response = prefetch(client, 34, 455, "XhrmBaYkGCAQjH2D")
 
     assert (response.status_code, response.json()) == (202, {"status": "ready"})

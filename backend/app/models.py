@@ -3,7 +3,7 @@
 import uuid
 from datetime import UTC, datetime
 
-from sqlalchemy import Column, ForeignKey, String
+from sqlalchemy import Column, ForeignKey, LargeBinary, String
 from sqlmodel import JSON, Field, SQLModel
 
 
@@ -45,3 +45,30 @@ class Analysis(SQLModel, table=True):
 
     # Resultado completo, no formato de app.schemas.analysis.AnalysisResult.
     result: dict = Field(sa_column=Column(JSON, nullable=False))
+
+
+class TopsSnapshot(SQLModel, table=True):
+    """Top 10 de um ranking (encontro, dificuldade, bracket ou geral) guardado por 24 h (RNF03).
+
+    Fica no banco para um reinício do processo não gastar de novo os ~180 pontos do Warcraft
+    Logs (item 12.13). As lutas ficam em `TopsLog`, uma linha por top.
+    """
+
+    key: str = Field(primary_key=True)  # "3470:5:19" ou "3470:5:geral"
+    fetched_at: float  # segundos desde 1970 (time.time()), sem fuso para o SQLite estragar
+    # Faixa do bracket, rótulo e `ranking_logs` (as lutas dos 10 primeiros do ranking).
+    info: dict = Field(sa_column=Column(JSON, nullable=False))
+
+
+class TopsLog(SQLModel, table=True):
+    """Um top de um `TopsSnapshot`: dados do ranking e a luta comprimida (~130 KB)."""
+
+    key: str = Field(
+        sa_column=Column(
+            String, ForeignKey("topssnapshot.key", ondelete="CASCADE"), primary_key=True
+        )
+    )
+    rank: int = Field(primary_key=True)
+    # Nome real, reino, item level, DPS, report e luta: nunca vai para a IA (RF25).
+    meta: dict = Field(sa_column=Column(JSON, nullable=False))
+    fight_gz: bytes = Field(sa_column=Column(LargeBinary, nullable=False))

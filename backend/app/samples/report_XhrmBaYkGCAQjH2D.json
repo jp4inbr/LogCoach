@@ -17,6 +17,8 @@
       "id": 34,
       "boss": "Nek'zali, a Enrosca-almas",
       "difficulty": "Mítico",
+      "encounter_id": 3470,
+      "difficulty_id": 5,
       "kill": true,
       "duration_s": 415.6,
       "supported": true,

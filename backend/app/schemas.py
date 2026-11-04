@@ -88,6 +88,10 @@ class FightOption(BaseModel):
     id: int
     boss: str
     difficulty: str
+    # Ids do Warcraft Logs (encontro e dificuldade): a pré-busca dos tops usa os dois. Nulos
+    # numa lista guardada antes deles existirem.
+    encounter_id: int | None = None
+    difficulty_id: int | None = None
     kill: bool
     duration_s: float
     supported: bool

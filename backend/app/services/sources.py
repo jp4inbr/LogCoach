@@ -336,6 +336,8 @@ def build_report(
                 "id": fight["id"],
                 "boss": npc_names.get((encounter or {}).get("boss_npc_id"), fight["name"]),
                 "difficulty": DIFFICULTIES.get(difficulty, f"Dificuldade {difficulty}"),
+                "encounter_id": fight["encounterID"],
+                "difficulty_id": difficulty,
                 "kill": bool(fight.get("kill")),
                 "duration_s": duration_s,
                 "supported": code is None,

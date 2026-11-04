@@ -2,6 +2,7 @@
 eventos da luta do jogador (RF03, RF04)."""
 
 import ipaddress
+import logging
 from collections.abc import Callable, Hashable
 from typing import Annotated
 
@@ -34,11 +35,15 @@ from app.services.sources import (
     SourceUnavailableError,
     get_report_source,
 )
+from app.services.tops import TopsSource, get_tops_source
 from app.wcl.client import UNAVAILABLE_MESSAGE, WCL_UNAVAILABLE_CODE
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/reports", tags=["análises"])
 
 ReportSourceDep = Annotated[ReportSource, Depends(get_report_source)]
+TopsSourceDep = Annotated[TopsSource, Depends(get_tops_source)]
 
 # Status de cada código da fonte: do Warcraft Logs (tentar de novo depois resolve), nosso, ou
 # o limite de consultas do cliente.
@@ -237,9 +242,14 @@ def prefetch_fight(
     session: SessionDep,
     user: OptionalUserDep,
     source: ReportSourceDep,
+    tops: TopsSourceDep,
 ) -> PrefetchStatus:
     """Põe na fila os eventos da luta do jogador (~18 pontos) assim que ele fica definido na
     tela, para a análise não esperar por eles. Responde na hora, sem esperar a busca.
+
+    Pede também, numa fila própria, os top 10 do bracket do jogador (item 12.13: ~190 pontos
+    quando o bracket não está no cache, com teto por hora no processo). Falha dessa parte
+    só vai para o log: a análise busca os tops sozinha.
 
     Login opcional. Conta sem análises no mês não pré-busca (403 `plan_limit`); cada cliente
     tem uma pré-busca na fila (a nova tira a anterior) e no máximo `PREFETCH_LIMIT` novas
@@ -257,4 +267,20 @@ def prefetch_fight(
         )
     except PrefetchLimitError:
         raise api_error(429, "prefetch_limit", PREFETCH_LIMIT_MESSAGE) from None
+    prefetch_tops(tops, report, fight, player)
     return PrefetchStatus(status=status)
+
+
+def prefetch_tops(
+    tops: TopsSource, report: ReportResolved, fight: FightOption, player: PlayerOption
+) -> None:
+    """Tops do bracket do jogador em segundo plano. Lista guardada antes dos ids do encontro
+    ou jogador sem item level: não há como achar o bracket, e a análise busca depois."""
+    if fight.encounter_id is None or fight.difficulty_id is None or player.item_level is None:
+        return
+    try:
+        tops.prefetch_tops(
+            fight.encounter_id, fight.difficulty_id, player.item_level, (report.code, fight.id)
+        )
+    except Exception:
+        logger.exception("Pré-busca dos tops de %s/%s não entrou na fila", report.code, fight.id)

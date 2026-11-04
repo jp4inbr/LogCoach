@@ -24,6 +24,12 @@ from app.services.sources import (  # noqa: E402
     shutdown_prefetch,
     wcl_cooldown,
 )
+from app.services.tops import (  # noqa: E402
+    brackets_cache,
+    shutdown_tops,
+    tops_fill_limiter,
+    tops_store,
+)
 from app.wcl.client import close_shared_client  # noqa: E402
 
 LINK = "https://www.warcraftlogs.com/reports/XhrmBaYkGCAQjH2D#fight=34"
@@ -38,6 +44,9 @@ def _clear_wcl_state() -> None:
     prefetch_limiter.clear()
     query_limiter.clear()
     wcl_cooldown.clear()
+    tops_store.clear()
+    brackets_cache.clear()
+    tops_fill_limiter.clear()
     close_shared_client()
 
 
@@ -51,6 +60,7 @@ def fresh_wcl_state():
     _clear_wcl_state()
     yield
     shutdown_prefetch()
+    shutdown_tops()
     _clear_wcl_state()
 
 

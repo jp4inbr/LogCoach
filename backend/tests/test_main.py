@@ -69,10 +69,11 @@ def test_unexpected_message_is_in_portuguese_and_says_what_to_do():
 
 def test_shutdown_stops_the_events_then_the_prefetch_then_closes_the_client(monkeypatch):
     calls: list[str] = []
-    for name in ("stop_shared_client", "shutdown_prefetch", "close_shared_client"):
+    names = ("stop_shared_client", "shutdown_prefetch", "shutdown_tops", "close_shared_client")
+    for name in names:
         monkeypatch.setattr(f"app.main.{name}", lambda name=name: calls.append(name))
 
     with TestClient(app):
         assert calls == []
 
-    assert calls == ["stop_shared_client", "shutdown_prefetch", "close_shared_client"]
+    assert calls == list(names)
