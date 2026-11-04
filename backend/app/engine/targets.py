@@ -11,7 +11,7 @@ from dataclasses import dataclass, field
 from statistics import fmean
 from typing import Any
 
-from app.engine.fight import amount, phase_at, phase_spans
+from app.engine.fight import amount, damage_done, phase_at, phase_spans
 from app.engine.names import npc_name
 
 MIN_DMG_PCT = 1.0
@@ -61,7 +61,7 @@ def target_profile(fight: dict[str, Any]) -> TargetProfile:
         phases.setdefault(span.id, TargetPhase(span.id, span.name))
     actors = {a["id"]: a for a in fight.get("actors") or []}
     names: dict[int, str] = {}
-    for event in fight["events"]["damage_done"]:
+    for event in damage_done(fight):
         span = phase_at(spans, event["timestamp"])
         actor = actors.get(event.get("targetID"))
         if span is None or actor is None or actor.get("type") != "NPC":

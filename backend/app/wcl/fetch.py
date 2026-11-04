@@ -85,17 +85,41 @@ def _combatant(event: dict[str, Any] | None) -> dict[str, Any] | None:
     }
 
 
-def fetch_active_time_ms(client: WclClient, code: str, fight_id: int, actor_id: int) -> int | None:
-    """Tempo ativo do jogador como o Warcraft Logs mostra (tabela de casts, `activeTime`).
-
-    A conta própria (`engine/uptime.py`) dava 93,8% no Harmonist contra 98,6% do WCL (03/11);
-    o número do WCL vira a régua e a conta própria fica de reserva."""
-    data = client.query(
-        queries.FIGHT_ACTIVE_TIME, {"code": code, "fightID": fight_id}, timeout=EVENTS_TIMEOUT
-    )
-    table = (((data["reportData"]["report"] or {}).get("table") or {}).get("data")) or {}
+def _table_entry(report: dict[str, Any] | None, alias: str, actor_id: int) -> tuple[dict, dict]:
+    """(dados da tabela, linha do jogador) de uma tabela do report."""
+    table = (((report or {}).get(alias) or {}).get("data")) or {}
     entry = next((e for e in table.get("entries") or [] if e.get("id") == actor_id), None)
-    return entry.get("activeTime") if entry else None
+    return table, entry or {}
+
+
+def fetch_fight_tables(
+    client: WclClient, code: str, fight_id: int, actor_id: int
+) -> dict[str, Any]:
+    """Números do jogador como o Warcraft Logs mostra, num pedido só (`FIGHT_TABLES`).
+
+    - `active_time_ms`: tempo ativo da tabela de casts. A conta própria (`engine/uptime.py`)
+      dava 93,8% no Harmonist contra 98,6% do WCL (03/11); ela fica de reserva.
+    - `damage`: dano oficial (`total`, `total_time_ms`, `dps` e `rdps_taken`, o dano que o WCL
+      credita a quem apoiou o jogador, como o Evocador Aumentação). É o DPS do ranking: a
+      soma dos eventos inclui esse dano (top03 das fixtures: +11%, revisão de 04/11).
+    Sem a linha do jogador numa tabela, o campo vem nulo.
+    """
+    data = client.query(
+        queries.FIGHT_TABLES, {"code": code, "fightID": fight_id}, timeout=EVENTS_TIMEOUT
+    )
+    report = data["reportData"]["report"]
+    _, casts = _table_entry(report, "casts", actor_id)
+    table, damage = _table_entry(report, "damage", actor_id)
+    total_time = table.get("totalTime")
+    official = None
+    if "total" in damage and total_time:
+        official = {
+            "total": damage["total"],
+            "total_time_ms": total_time,
+            "dps": damage["total"] / total_time * 1000,
+            "rdps_taken": damage.get("totalRDPSTaken") or 0,
+        }
+    return {"active_time_ms": casts.get("activeTime"), "damage": official}
 
 
 def fetch_report(client: WclClient, code: str) -> dict[str, Any]:
@@ -188,7 +212,7 @@ def fetch_fight(
 
     pid = player["id"]
     # Antes dos eventos: se esta consulta pequena falhar, não se perdem os ~12 pontos deles.
-    active_time_ms = fetch_active_time_ms(client, code, fight_id, pid)
+    tables = fetch_fight_tables(client, code, fight_id, pid)
     combatant = events("CombatantInfo", source_id=pid)
     fight_events = {
         "casts": events("Casts", source_id=pid),
@@ -246,7 +270,8 @@ def fetch_fight(
             "actor": player,
             "details": _player_details(report["playerDetails"], pid),
             "combatant": _combatant(combatant[0] if combatant else None),
-            "active_time_ms": active_time_ms,
+            "active_time_ms": tables["active_time_ms"],
+            "damage": tables["damage"],
         },
         "events": fight_events,
     }

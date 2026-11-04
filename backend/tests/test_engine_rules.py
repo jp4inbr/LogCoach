@@ -3,6 +3,7 @@
 O T13 (defensivo nos picos de dano) fica em test_engine_peaks.py.
 """
 
+import copy
 import gzip
 import json
 from dataclasses import replace
@@ -298,19 +299,54 @@ def test_reference_kill_rules():
 
 
 def test_reference_kill_impacts_and_gap():
-    """Números medidos em 03/11: Soul ~2,7%, Blast ~2,5%, sorte ~9,5%, diferença ~20%."""
+    """Números medidos em 03/11: Soul ~2,7%, Blast ~2,5%, sorte ~9,5%. Diferença de 18,0% desde
+    04/11 (DPS do WCL; pela soma dos eventos davam 20,0%, com o apoio do Evocador nos tops)."""
     player, tops, checks = reference_checks()
     assert check(checks, "soul_entry").impact_pct == pytest.approx(2.7, abs=0.2)
     assert check(checks, "surge_blasts").impact_pct == pytest.approx(2.5, abs=0.2)
     assert check(checks, "barrage_low_salvo").impact_pct is None  # snowball: sem conta
     parts = gap(player, tops, checks)
-    assert parts.total_pct == pytest.approx(20.0, abs=0.5)
+    assert parts.total_pct == pytest.approx(18.0, abs=0.1)
     assert parts.luck_pct == pytest.approx(9.5, abs=0.5)
     assert parts.total_pct == pytest.approx(
         parts.mistakes_pct + parts.luck_pct + parts.unexplained_pct
     )
     assert parts.mistakes_pct == pytest.approx(6.6, abs=0.3)
-    assert parts.unexplained_pct == pytest.approx(3.9, abs=0.5)
+    assert parts.unexplained_pct == pytest.approx(1.9, abs=0.5)
+
+
+def test_dps_is_the_warcraft_logs_one_the_same_as_the_ranking():
+    """O DPS vem da tabela DamageDone do WCL, igual ao do ranking. A soma dos eventos conta o
+    dano que o WCL credita ao Evocador que apoiou (top03 +11%, top09 +5%: revisão de 04/11)."""
+    player, tops, _ = reference_checks()
+    index = json.loads((FIXTURES / "index.json").read_text(encoding="utf-8"))
+    assert player.dps == pytest.approx(225_680.6, abs=0.1)
+    for top, ranked in zip(tops, index["top"], strict=True):
+        assert top.dps == pytest.approx(ranked["amount"], rel=1e-9)
+    assert [round(t.support_pct, 1) for t in tops] == [
+        0.0, 0.0, 11.2, 0.2, 0.0, 0.0, 0.2, 0.0, 5.0, 0.0,
+    ]  # fmt: skip
+    assert player.support_pct == 0.0
+
+
+def test_without_the_warcraft_logs_number_dps_is_the_sum_of_the_events():
+    """Luta sem o dano oficial (cache ou cópia antiga): DPS pela soma, sem o dano creditado."""
+    fight = copy.deepcopy(load("reference_harmonist.json.gz"))  # o load é cacheado
+    fight["player"].pop("damage")
+    measures = measure(fight, RULES, NEKZALI)
+    assert measures.official_dps is None and measures.support_pct is None
+    assert measures.dps == pytest.approx(measures.damage / measures.duration_s)
+
+
+def test_damage_credited_to_the_supporter_is_not_the_mages():
+    """Fate Mirror, Breath of Eons e Bombardments aparecem nos eventos do Mago apoiado, mas
+    são do Evocador (`damage_credited_to_others`): fora do total e das tabelas."""
+    from app.engine.fight import damage_done
+
+    top03 = load("top03.json.gz")
+    credited = set(RULES["damage_credited_to_others"])
+    assert any(e["abilityGameID"] in credited for e in top03["events"]["damage_done"])
+    assert not any(e["abilityGameID"] in credited for e in damage_done(top03))
 
 
 def test_reference_kill_wcl_data_since_the_fixtures_of_0311():

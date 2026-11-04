@@ -86,6 +86,14 @@ def summarize(label: str, fight: dict[str, Any], expected_ids: dict[str, int]) -
         if active
         else f"    intelecto={stats.get('intellect')}, tempo ativo WCL=—"
     )
+    official = fight["player"].get("damage")
+    if official:
+        print(
+            f"    DPS do WCL={official['dps']:,.0f}, creditado a quem apoiou="
+            f"{100 * official['rdps_taken'] / official['total']:.1f}%"
+        )
+    else:
+        print("    ATENÇÃO: sem o dano oficial do WCL (tabela DamageDone)")
     if missing:
         print(f"    ATENÇÃO: não apareceram no log: {', '.join(missing)}")
 

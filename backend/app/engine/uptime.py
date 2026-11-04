@@ -19,7 +19,7 @@ import statistics
 from typing import Any
 
 from app.engine.context import deaths
-from app.engine.fight import end_ms, phase_spans, start_ms
+from app.engine.fight import damage_done, end_ms, phase_spans, start_ms
 
 # GCD do Mago: 1,5 s sem haste; com muita haste, não abaixo de 0,75 s.
 GCD_MAX_S, GCD_MIN_S = 1.5, 0.75
@@ -48,9 +48,7 @@ def _busy_intervals(fight: dict[str, Any], rules: dict[str, Any], gcd_ms: float)
     missiles_cast = rules["ability_groups"]["arcane_missiles"]["cast"]
     missiles_hits = set(rules["ability_groups"]["arcane_missiles"]["damage"])
     ticks = sorted(
-        e["timestamp"]
-        for e in fight["events"]["damage_done"]
-        if e["abilityGameID"] in missiles_hits
+        e["timestamp"] for e in damage_done(fight) if e["abilityGameID"] in missiles_hits
     )
     events = sorted(
         (e for e in fight["events"]["casts"] if e["type"] in ("cast", "begincast")),

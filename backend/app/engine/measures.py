@@ -23,7 +23,15 @@ from app.engine.cooldowns import (
 )
 from app.engine.damage import CastDamage, cast_damage
 from app.engine.defensives import DamagePeak, avoidable_pct_hp_per_min, damage_peaks
-from app.engine.fight import amount, casts, duration_s, fight_s, total_damage
+from app.engine.fight import (
+    amount,
+    casts,
+    damage_done,
+    duration_s,
+    fight_s,
+    official_dps,
+    total_damage,
+)
 from app.engine.potion import PotionStats, potion_stats, surge_followup_rates
 from app.engine.prismatic_bolt import (
     BoltMunch,
@@ -45,7 +53,11 @@ SALVO_CAP = 25
 @dataclass(frozen=True)
 class FightMeasures:
     duration_s: float
-    damage: float
+    damage: float  # soma dos eventos: base das proporções (impacto, sorte, tabelas)
+    official_dps: float | None  # DPS do Warcraft Logs (o do ranking); None em luta antiga
+    # % do dano oficial que o WCL creditou a quem apoiou o jogador (Evocador Aumentação):
+    # contexto para a IA explicar um top inflado pelo apoio. None sem o número do WCL.
+    support_pct: float | None
     surge: CooldownStats
     touch: CooldownStats
     combos: list[Combo]
@@ -75,6 +87,9 @@ class FightMeasures:
 
     @property
     def dps(self) -> float:
+        """O DPS do Warcraft Logs; sem ele, a soma dos eventos (inclui o ganho do apoio)."""
+        if self.official_dps is not None:
+            return self.official_dps
         return self.damage / self.duration_s if self.duration_s else 0.0
 
     @property
@@ -92,7 +107,7 @@ def _touch_damage(fight: dict[str, Any], rules: dict[str, Any]) -> list[tuple[fl
     group = rules["ability_groups"]["touch_of_the_magi"]
     times = [e["timestamp"] for e in casts(fight, group["cast"])]
     damage = [0.0] * len(times)
-    for event in fight["events"]["damage_done"]:
+    for event in damage_done(fight):
         if event["abilityGameID"] not in group["damage"]:
             continue
         i = bisect.bisect_right(times, event["timestamp"]) - 1
@@ -123,6 +138,13 @@ def _soul_missing_salvo(
     return missing
 
 
+def _support_pct(fight: dict[str, Any]) -> float | None:
+    damage = (fight.get("player") or {}).get("damage")
+    if not damage or not damage["total"]:
+        return None
+    return 100 * damage["rdps_taken"] / damage["total"]
+
+
 def measure(
     fight: dict[str, Any],
     rules: dict[str, Any] | None = None,
@@ -142,6 +164,8 @@ def measure(
     return FightMeasures(
         duration_s=duration_s(fight),
         damage=total_damage(fight),
+        official_dps=official_dps(fight),
+        support_pct=_support_pct(fight),
         surge=surge,
         touch=touch,
         combos=combos(fight, rules),
@@ -168,9 +192,7 @@ def measure(
             stack_gains(fight, rules["clearcasting"]["buff_id"]) / minutes if minutes else 0.0
         ),
         cast=cast_damage(fight, rules),
-        surge_extra=surge_window_extra(
-            fight, fight["events"]["damage_done"], rules["surge_window"]["buff_id"]
-        ),
+        surge_extra=surge_window_extra(fight, damage_done(fight), rules["surge_window"]["buff_id"]),
         touch_damage=_touch_damage(fight, rules),
         abilities=ability_profile(fight, rules),
         targets=target_profile(fight),

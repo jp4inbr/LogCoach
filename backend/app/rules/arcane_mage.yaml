@@ -150,6 +150,11 @@ defensives:
   - { name: Alter Time, ability_id: 342245, buff_id: 342246, cooldown_s: 50 }
   - { name: Mirror Image, ability_id: 55342, buff_id: 55342, cooldown_s: 120 }
 
+# Dano que aparece nos eventos do Mago, mas que o Warcraft Logs credita a quem o apoiou
+# (Evocador Aumentação): Fate Mirror, Breath of Eons e Bombardments. Fica fora do total e das
+# tabelas; o ranking também não conta (revisão de 04/11: top03, top04, top07 e top09).
+damage_credited_to_others: [404908, 409632, 434481]
+
 # Lust da raide (o buff no jogador). A 1ª poção vai junto do primeiro lust da luta (03/11):
 # nos tops, quem teve lust tarde não tomou poção no pull e tomou junto do lust.
 lust_buffs: [2825, 32182, 80353, 264667, 390386]

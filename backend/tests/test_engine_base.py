@@ -161,9 +161,10 @@ def test_t05_top_value_is_the_mean_of_the_tops():
         expected.append(100 * phase.damage[MISSILES_CAST] / phase.total_damage)
     assert missiles.top_dmg_pct == pytest.approx(fmean(expected))
     assert missiles.name == "Mísseis Arcanos"
-    # Medido no kill de referência (28/10): 30,9% do dano no Harmonist, 35,3% nos tops.
+    # Medido no kill de referência (28/10): 30,9% do dano no Harmonist, 35,3% nos tops; 35,4%
+    # desde 04/11, sem o dano que o WCL credita ao Evocador que apoiou alguns tops.
     assert missiles.player_dmg_pct == pytest.approx(30.9, abs=0.05)
-    assert missiles.top_dmg_pct == pytest.approx(35.3, abs=0.05)
+    assert missiles.top_dmg_pct == pytest.approx(35.4, abs=0.05)
 
 
 def test_cast_and_damage_ids_become_one_line():

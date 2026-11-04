@@ -168,21 +168,60 @@ def test_fight_brings_pull_stats_and_auras_and_every_death():
     ("report", "expected"),
     [
         (None, None),
-        ({"table": None}, None),
-        ({"table": {"data": {"entries": []}}}, None),
-        ({"table": {"data": {"entries": [{"id": 11, "activeTime": 5}]}}}, None),
-        ({"table": {"data": {"entries": [{"id": 10, "activeTime": 409950}]}}}, 409950),
+        ({"casts": None}, None),
+        ({"casts": {"data": {"entries": []}}}, None),
+        ({"casts": {"data": {"entries": [{"id": 11, "activeTime": 5}]}}}, None),
+        ({"casts": {"data": {"entries": [{"id": 10, "activeTime": 409950}]}}}, 409950),
     ],
 )
 def test_active_time_is_none_when_the_table_has_no_player(report, expected):
     """Sem o número do WCL o motor cai na conta própria (para todos, ver checks._active)."""
-    from app.wcl.fetch import fetch_active_time_ms
+    from app.wcl.fetch import fetch_fight_tables
 
     class Client:
         def query(self, query, variables, timeout=None):
             return {"reportData": {"report": report}}
 
-    assert fetch_active_time_ms(Client(), "CODE", 1, 10) == expected
+    assert fetch_fight_tables(Client(), "CODE", 1, 10)["active_time_ms"] == expected
+
+
+def damage_table(entries, total_time=415_640):
+    return {"damage": {"data": {"entries": entries, "totalTime": total_time}}}
+
+
+@pytest.mark.parametrize(
+    ("report", "expected"),
+    [
+        (None, None),
+        (damage_table([]), None),
+        (damage_table([{"id": 11, "total": 5}]), None),
+        (damage_table([{"id": 10, "total": 1000}], total_time=0), None),
+        (
+            damage_table([{"id": 10, "total": 93_802_105}]),
+            {"total": 93_802_105, "total_time_ms": 415_640, "rdps_taken": 0},
+        ),
+        (
+            damage_table([{"id": 10, "total": 1_000_000, "totalRDPSTaken": 120_000}]),
+            {"total": 1_000_000, "total_time_ms": 415_640, "rdps_taken": 120_000},
+        ),
+    ],
+)
+def test_official_damage_comes_from_the_damage_done_table(report, expected):
+    """O DPS do ranking: total ÷ totalTime da tabela DamageDone (já sem o dano creditado ao
+    Evocador, que os eventos ainda trazem)."""
+    from app.wcl.fetch import fetch_fight_tables
+
+    class Client:
+        def query(self, query, variables, timeout=None):
+            return {"reportData": {"report": report}}
+
+    damage = fetch_fight_tables(Client(), "CODE", 1, 10)["damage"]
+    if expected is None:
+        assert damage is None
+    else:
+        dps = damage.pop("dps")
+        assert damage == expected
+        assert dps == pytest.approx(expected["total"] / expected["total_time_ms"] * 1000)
 
 
 def test_fight_without_combatant_info_has_no_combatant():

@@ -9,7 +9,7 @@ import bisect
 from dataclasses import dataclass
 from typing import Any
 
-from app.engine.fight import amount, casts
+from app.engine.fight import amount, casts, damage_done
 from app.engine.timeline import stacks_before
 
 # Golpes do Barrage e os Meteorites que ele derruba chegam até ~3 s depois do cast.
@@ -33,7 +33,7 @@ def _group(rules: dict[str, Any], name: str) -> dict[str, Any]:
 def per_cast(fight: dict[str, Any], rules: dict[str, Any], name: str) -> float:
     group = _group(rules, name)
     damage = set(group["damage"])
-    total = sum(amount(e) for e in fight["events"]["damage_done"] if e["abilityGameID"] in damage)
+    total = sum(amount(e) for e in damage_done(fight) if e["abilityGameID"] in damage)
     count = len(casts(fight, group["cast"]))
     return total / count if count else 0.0
 
@@ -51,7 +51,7 @@ def barrage_fit(fight: dict[str, Any], rules: dict[str, Any]) -> tuple[float, fl
         _group(rules, "meteorite")["damage"]
     )
     per = [0.0] * len(times)
-    for event in fight["events"]["damage_done"]:
+    for event in damage_done(fight):
         if event["abilityGameID"] not in hits:
             continue
         i = bisect.bisect_right(times, event["timestamp"]) - 1

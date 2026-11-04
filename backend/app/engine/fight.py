@@ -10,6 +10,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from app.engine.names import phase_name
+from app.engine.rules import load_spec_rules
 
 
 @dataclass(frozen=True)
@@ -78,8 +79,25 @@ def amount(event: dict[str, Any]) -> float:
     return event.get("amount", 0) + event.get("absorbed", 0)
 
 
+def damage_done(fight: dict[str, Any]) -> list[dict[str, Any]]:
+    """Dano do jogador, sem o que o Warcraft Logs credita a quem o apoiou
+    (`damage_credited_to_others` do YAML: habilidades do Evocador nos eventos do Mago)."""
+    credited = frozenset(load_spec_rules().get("damage_credited_to_others") or ())
+    return [e for e in fight["events"]["damage_done"] if e["abilityGameID"] not in credited]
+
+
 def total_damage(fight: dict[str, Any]) -> float:
-    return sum(amount(e) for e in fight["events"]["damage_done"])
+    """Soma dos eventos de dano: serve para proporções (% por habilidade, alvo, impacto). O
+    DPS oficial é o do Warcraft Logs (`official_dps`), que desconta também o ganho do apoio
+    nas magias do próprio jogador (Ebon Might, Prescience...)."""
+    return sum(amount(e) for e in damage_done(fight))
+
+
+def official_dps(fight: dict[str, Any]) -> float | None:
+    """DPS do Warcraft Logs (tabela DamageDone, o mesmo do ranking); None em luta sem ele
+    (fixtures e cópias antigas)."""
+    damage = (fight.get("player") or {}).get("damage")
+    return damage["dps"] if damage else None
 
 
 def casts(fight: dict[str, Any], ability_ids: int | Iterable[int] | None = None) -> list[dict]:

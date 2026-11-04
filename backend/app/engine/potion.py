@@ -9,7 +9,7 @@ não tomou poção no pull e tomou junto do lust; aí a luta pode não durar o b
 from dataclasses import dataclass
 from typing import Any
 
-from app.engine.fight import amount, casts, duration_s, fight_s
+from app.engine.fight import amount, casts, damage_done, duration_s, fight_s
 from app.engine.timeline import buff_windows, initial_stacks
 
 
@@ -102,7 +102,7 @@ def surge_followup_rates(
     faz a poção render mais junto do Surge."""
     windows = [(t, t + window_s) for t in surge_times_s]
     within = outside = 0.0
-    for event in fight["events"]["damage_done"]:
+    for event in damage_done(fight):
         t = fight_s(fight, event["timestamp"])
         if any(a <= t < b for a, b in windows):
             within += amount(event)

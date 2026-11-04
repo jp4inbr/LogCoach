@@ -12,7 +12,7 @@ from dataclasses import dataclass, field
 from statistics import fmean
 from typing import Any
 
-from app.engine.fight import amount, casts, phase_at, phase_spans
+from app.engine.fight import amount, casts, damage_done, phase_at, phase_spans
 from app.engine.names import spell_name, wcl_ability_names
 from app.engine.rules import load_spec_rules
 
@@ -85,7 +85,7 @@ def ability_profile(fight: dict[str, Any], rules: dict[str, Any] | None = None) 
             key = by_cast.get(event["abilityGameID"], event["abilityGameID"])
             phases[span.id].casts[key] += 1
             cast_keys.add(key)
-    for event in fight["events"]["damage_done"]:
+    for event in damage_done(fight):
         span = phase_at(spans, event["timestamp"])
         if span is not None:
             key = by_damage.get(event["abilityGameID"], event["abilityGameID"])
