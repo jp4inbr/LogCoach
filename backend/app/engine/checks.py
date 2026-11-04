@@ -353,6 +353,10 @@ def _active(p: FightMeasures, tops: list[FightMeasures], rules: dict[str, Any]) 
     values = [t.active_wcl_pct if wcl else t.active_own_pct for t in tops]
     reserve = rules["reserve"]["active_time_pct" if wcl else "active_time_pct_own"]
     ref = reference(values, "higher", reserve)
+    if ref.from_tops:
+        # Erro só a partir de N pontos abaixo do pior top (03/11): quem se afasta para fazer
+        # uma mecânica perde tempo ativo e ainda assim ajuda a raide a matar o chefe.
+        ref = replace(ref, error=ref.error - rules["active_time_error_margin_pts"])
     usual = ref.median if ref.from_tops else ref.warn
     impact = 100 * (usual / value - 1) if value and usual > value else None
     return _ref_check(

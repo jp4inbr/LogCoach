@@ -374,7 +374,9 @@ def test_reference_kill_wcl_data_since_the_fixtures_of_0311():
     assert [round(t.active_wcl_pct, 1) for t in tops] == [
         99.6, 99.8, 99.7, 99.7, 99.8, 99.2, 99.6, 99.5, 99.8, 99.6,
     ]  # fmt: skip
-    assert check(checks, "active_time").impact_pct == pytest.approx(1.0, abs=0.1)
+    active = check(checks, "active_time")
+    # 98,6% fica a 0,6 ponto do pior top (99,2%): atenção, não erro (margem de 2 pontos).
+    assert (active.status, active.impact_pct) == ("atencao", pytest.approx(1.0, abs=0.1))
     top09 = tops[8]
     assert [(round(u.time_s, 1), u.with_) for u in top09.potions.uses][0] == (-2.1, "Surto Arcano")
     assert (top09.potions.expected, top09.potions.missing) == (2, 0)
