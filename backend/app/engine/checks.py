@@ -87,14 +87,23 @@ def _combo(p: FightMeasures, tops: list[FightMeasures], rules: dict[str, Any]) -
     for combo in p.combos:
         if combo.aligned:
             continue
-        nxt = next(((t, d) for t, d in p.touch_damage if t > combo.surge_s), None)
+        # O Toque mais próximo do Surto, antes ou depois: é o que saiu fora do momento certo
+        # (decisão do Arthur, 04/11: mostrar onde ele foi usado).
+        near = min(p.touch_damage, key=lambda x: abs(x[0] - combo.surge_s), default=None)
+        if near is None:
+            details.append(f"Surto aos {clock(combo.surge_s)} sem Toque na luta")
+            continue
+        # Custo como antes (decidido em 03/11): o Touch seguinte ao Surto rende menos que um
+        # Touch casado. Só o texto aponta o mais próximo.
+        nxt = next((d for t, d in p.touch_damage if t > combo.surge_s), None)
         if nxt is not None and aligned_damage:
-            loss += max(0.0, fmean(aligned_damage) - nxt[1])
-            details.append(
-                f"Surto aos {clock(combo.surge_s)}: Toque só {secs(nxt[0] - combo.surge_s)} depois"
-            )
-        else:
-            details.append(f"Surto aos {clock(combo.surge_s)} sem Toque logo depois")
+            loss += max(0.0, fmean(aligned_damage) - nxt)
+        offset = near[0] - combo.surge_s
+        when = "depois" if offset >= 0 else "antes"
+        details.append(
+            f"Surto aos {clock(combo.surge_s)}: Toque {secs(abs(offset))} {when} "
+            f"(aos {clock(near[0])}), fora dos {secs(gap)} depois do Surto"
+        )
     missed = len(p.combos) - len(aligned)
     return Check(
         id="surge_touch_combo",
