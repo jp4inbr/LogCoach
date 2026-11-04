@@ -41,6 +41,27 @@ def _player_details(details: dict[str, Any], actor_id: int) -> dict[str, Any] | 
     return _details_by_id(details).get(actor_id)
 
 
+# Campos do dano recebido e da cura que o motor usa. Com includeResources o WCL manda também
+# posição, armadura, poder de ataque etc. de cada golpe; fora daqui, só pesariam nas fixtures.
+TAKEN_FIELDS = (
+    "timestamp", "type", "sourceID", "targetID", "abilityGameID", "amount", "absorbed",
+    "mitigated", "unmitigatedAmount", "overkill", "hitType", "tick", "isAoE", "buffs",
+    "hitPoints", "maxHitPoints",
+)  # fmt: skip
+HEAL_FIELDS = (
+    "timestamp", "type", "sourceID", "targetID", "abilityGameID", "amount", "overheal",
+    "absorbed", "tick",
+)  # fmt: skip
+
+
+def _slim_taken(event: dict[str, Any]) -> dict[str, Any]:
+    return {k: event[k] for k in TAKEN_FIELDS if k in event}
+
+
+def _slim_heal(event: dict[str, Any]) -> dict[str, Any]:
+    return {k: event[k] for k in HEAL_FIELDS if k in event}
+
+
 # Atributos do CombatantInfo que o motor pode usar; gear e talentos ficam de fora do arquivo.
 COMBATANT_STATS = ("intellect", "critSpell", "hasteSpell", "mastery", "versatilityDamageDone")
 
@@ -180,9 +201,16 @@ def fetch_fight(
         # Com targetID vinha só o dano que o próprio jogador causou nele mesmo (Refraction),
         # sem nenhum golpe do chefe (corrigido em 03/11). Os eventos continuam com o
         # atacante em sourceID e o jogador em targetID.
+        # Com a vida do jogador depois de cada golpe (`hitPoints`/`maxHitPoints`), para os picos
+        # de dano; dos recursos ficam só esses dois (ver `_slim_taken`).
         "damage_taken": [
-            e for e in events("DamageTaken", source_id=pid) if e.get("targetID") == pid
+            _slim_taken(e)
+            for e in events("DamageTaken", source_id=pid, include_resources=True)
+            if e.get("targetID") == pid
         ],
+        # Cura recebida: aqui o filtro funciona do jeito comum, por targetID (conferido em
+        # 03/11; com sourceID viria só a cura do próprio jogador nele mesmo).
+        "healing_taken": [_slim_heal(e) for e in events("Healing", target_id=pid)],
         # Em Deaths o WCL ignora os filtros (com targetID vinham as mortes da raide inteira e
         # com sourceID nada, conferido em 03/11): vêm todas e o motor separa as do jogador.
         "deaths": events("Deaths"),

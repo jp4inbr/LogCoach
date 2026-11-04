@@ -143,7 +143,9 @@ def test_damage_taken_filters_by_the_player_as_source():
     client = _FakeFightClient()
     fight = fetch_fight(client, "CODE", 1, actor_id=10)
 
-    assert ("DamageTaken", {"source_id": 10}) in client.calls
+    assert ("DamageTaken", {"source_id": 10, "include_resources": True}) in client.calls
+    # Na cura o filtro funciona do jeito comum: por quem recebe.
+    assert ("Healing", {"target_id": 10}) in client.calls
     assert [e["targetID"] for e in fight["events"]["damage_taken"]] == [10]
 
 

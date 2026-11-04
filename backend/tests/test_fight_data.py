@@ -479,12 +479,12 @@ def test_limiter_denied_by_one_limit_does_not_spend_the_other():
 
 
 def test_limiter_global_defaults():
-    # 40 pré-buscas novas por hora no processo (~480 pontos, metade dos 1000/h do WCL).
-    assert (PREFETCH_GLOBAL_LIMIT, PREFETCH_GLOBAL_WINDOW_S) == (40, 3600)
+    # 30 pré-buscas novas por hora no processo (~540 pontos, pouco mais da metade dos 1000/h).
+    assert (PREFETCH_GLOBAL_LIMIT, PREFETCH_GLOBAL_WINDOW_S) == (30, 3600)
     limiter = ClientLimiter(clock=lambda: 0.0)
 
-    assert all(limiter.take(f"ip:{n}") for n in range(40))
-    assert limiter.take("ip:40") is False
+    assert all(limiter.take(f"ip:{n}") for n in range(30))
+    assert limiter.take("ip:30") is False
 
 
 def test_limiter_forgets_the_oldest_client_above_the_maximum():

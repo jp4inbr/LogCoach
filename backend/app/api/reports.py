@@ -238,7 +238,7 @@ def prefetch_fight(
     user: OptionalUserDep,
     source: ReportSourceDep,
 ) -> PrefetchStatus:
-    """Põe na fila os eventos da luta do jogador (~14 pontos) assim que ele fica definido na
+    """Põe na fila os eventos da luta do jogador (~18 pontos) assim que ele fica definido na
     tela, para a análise não esperar por eles. Responde na hora, sem esperar a busca.
 
     Login opcional. Conta sem análises no mês não pré-busca (403 `plan_limit`); cada cliente
