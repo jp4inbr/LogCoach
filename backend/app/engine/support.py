@@ -20,9 +20,17 @@ Outros buffs só sobem atributos e não têm o que descontar.
 """
 
 import bisect
+import logging
 from typing import Any
 
 from app.engine.fight import amount, end_ms, start_ms
+
+logger = logging.getLogger(__name__)
+
+# Taxa máxima de um buff sobre o dano sob ele. Nas fixtures o maior é ~11% (Shifting Sands);
+# acima disso, a janela e a atribuição do WCL não casam (golpe na borda, pet logo depois da
+# saída do buff) e o que passar sai de todos os golpes da habilidade por igual.
+MAX_BUFF_RATE = 0.5
 
 
 def support_windows(fight: dict[str, Any], buff_ids: frozenset[int]) -> list[tuple[float, float]]:
@@ -73,7 +81,8 @@ def _scaled(event: dict[str, Any], factor: float) -> dict[str, Any]:
 
 def _credits(fight: dict[str, Any]) -> dict[int, dict[int, float]]:
     """{habilidade: {buff: crédito}}. Crédito sem buff identificado vai no buff 0. Aceita o
-    formato antigo {habilidade: crédito} (cópias de 04/11)."""
+    formato antigo {habilidade: crédito} (cópias de 04/11), que vira buff 0: desconto por
+    igual em todos os golpes da habilidade, sem separar o burst."""
     raw = ((fight.get("player") or {}).get("damage") or {}).get("credited") or {}
     credits: dict[int, dict[int, float]] = {}
     for ability, value in raw.items():
@@ -120,14 +129,18 @@ def without_support(
     flat: dict[int, float] = {}
     for g, by_buff in credits.items():
         if not totals.get(g):
+            # Id da tabela sem eventos: o total do motor fica acima do oficial.
+            logger.warning("Crédito ao Evocador na habilidade %s sem eventos: %s", g, by_buff)
             continue
         rates[g] = {}
         spread = 0.0
         for b, cut in by_buff.items():
             if g in uniform or not under.get((g, b)):
                 spread += cut
-            else:
-                rates[g][b] = cut / under[g, b]
+                continue
+            rate = min(cut / under[g, b], MAX_BUFF_RATE)
+            rates[g][b] = rate
+            spread += cut - rate * under[g, b]
         flat[g] = spread / totals[g]
     result = []
     for event, on in zip(events, active, strict=True):

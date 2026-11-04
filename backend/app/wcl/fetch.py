@@ -105,8 +105,9 @@ def fetch_fight_tables(
     - `damage`: dano oficial (`total`, `total_time_ms`, `dps` e `rdps_taken`, o dano que o WCL
       credita a quem apoiou o jogador, como o Evocador Aumentação). É o DPS do ranking: a
       soma dos eventos inclui esse dano (top03 das fixtures: +11%, revisão de 04/11).
-    - `damage.credited`: crédito a quem apoiou, por id de habilidade (como nos eventos), da
-      tabela filtrada pelo jogador; só as que têm crédito.
+    - `damage.credited`: crédito a quem apoiou, por id de habilidade (como nos eventos) e por
+      buff ({habilidade: {buff: crédito}}), da tabela filtrada pelo jogador; só as que têm
+      crédito.
     Sem a linha do jogador numa tabela, o campo vem nulo.
     """
     data = client.query(
@@ -150,7 +151,11 @@ def _credited_by_ability(report: dict[str, Any] | None) -> dict[str, dict[str, f
                 continue
             by_buff = credited.setdefault(str(leaf["guid"]), {})
             taken = [t for t in leaf.get("taken") or [] if t.get("total")]
-            for t in taken or [{"guid": 0, "total": total}]:
+            # O que o `taken` não explica (buff não listado) vai no buff "0", por igual.
+            rest = total - sum(t["total"] for t in taken)
+            if rest > 1e-6:
+                taken.append({"guid": 0, "total": rest})
+            for t in taken:
                 key = str(t["guid"])
                 by_buff[key] = by_buff.get(key, 0) + t["total"]
     return credited

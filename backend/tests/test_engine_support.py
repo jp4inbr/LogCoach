@@ -14,7 +14,7 @@ from app.engine.support import support_windows
 
 FIXTURES = Path(__file__).parent / "fixtures" / "nekzali_mythic_326_328"
 EBON, PRESCIENCE, SANDS = 395152, 410089, 413984
-MISSILES, TOUCH = 7268, 210833
+MISSILES, TOUCH, BARRAGE = 7268, 210833, 44425
 BUFFS = frozenset({EBON, PRESCIENCE, SANDS})
 
 
@@ -222,3 +222,61 @@ def test_credited_by_ability_reads_grouped_lines_and_sums_repeated_ids():
     }
     assert _credited_by_ability({"own": None}) == {}
     assert _credited_by_ability(None) == {}
+
+
+def test_buff_rate_above_the_cap_spreads_the_excess_evenly():
+    """Sands credita 50, mas só um golpe de 10 caiu na janela: taxa limitada a 50% e o resto
+    sai de todos os golpes por igual; nada se perde."""
+    data = fight(
+        buffs=[(SANDS, "applybuff", 10_000, 7), (SANDS, "removebuff", 11_000, 7)],
+        damage=[(MISSILES, 5_000, 100), (MISSILES, 10_500, 10)],
+        credited={str(MISSILES): {str(SANDS): 50}},
+    )
+    assert total_damage(data) == pytest.approx(110 - 50)
+    assert all(e["amount"] >= 0 for e in damage_done(data))
+
+
+def test_old_format_and_unknown_buffs_come_out_evenly():
+    data = fight(
+        buffs=[(EBON, "applybuff", 0, 7), (999, "applybuff", 0, 7)],
+        damage=[(MISSILES, 5_000, 100), (BARRAGE, 6_000, 100)],
+        credited={str(MISSILES): 15, str(BARRAGE): {"999": 10, "0": 10, str(EBON): 20}},
+    )
+    assert [e["amount"] for e in damage_done(data)] == pytest.approx([85, 60])
+
+
+def test_credit_of_an_ability_without_events_is_logged(caplog):
+    data = fight(damage=[(MISSILES, 5_000, 100)], credited={str(BARRAGE): {str(EBON): 50}})
+    assert [e["amount"] for e in damage_done(data)] == [100]
+    assert "sem eventos" in caplog.text
+
+
+@pytest.mark.parametrize("name", ["top03.json.gz", "top09.json.gz"])
+def test_each_ability_matches_its_official_total(name):
+    """Por habilidade: eventos − crédito = o que sai do motor (fixtures com Evocador)."""
+    data = load(name)
+    credited = data["player"]["damage"]["credited"]
+    raw, after = {}, {}
+    for e in data["events"]["damage_done"]:
+        raw[e["abilityGameID"]] = raw.get(e["abilityGameID"], 0) + amount(e)
+    for e in damage_done(data):
+        after[e["abilityGameID"]] = after.get(e["abilityGameID"], 0) + amount(e)
+    for ability, by_buff in credited.items():
+        assert after[int(ability)] == pytest.approx(
+            raw[int(ability)] - sum(by_buff.values()), abs=1
+        ), ability
+
+
+def test_taken_that_does_not_cover_the_credit_puts_the_rest_in_buff_0():
+    from app.wcl.fetch import _credited_by_ability
+
+    report = {
+        "own": {
+            "data": {
+                "entries": [
+                    {"guid": 7268, "totalRDPSTaken": 10, "taken": [{"guid": SANDS, "total": 6}]}
+                ]
+            }
+        }
+    }
+    assert _credited_by_ability(report) == {"7268": {str(SANDS): 6, "0": 4}}
