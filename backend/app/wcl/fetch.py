@@ -137,17 +137,22 @@ def fetch_fight_tables(
     return {"active_time_ms": casts.get("activeTime"), "damage": official}
 
 
-def _credited_by_ability(report: dict[str, Any] | None) -> dict[str, float]:
-    """Crédito ao Evocador por id de habilidade. Linhas agrupadas (`composite`, ex.: Touch,
-    Prismatic Bolt) trazem os ids dos eventos nas `subentries`. Chave em texto (JSON)."""
+def _credited_by_ability(report: dict[str, Any] | None) -> dict[str, dict[str, float]]:
+    """Crédito ao Evocador por id de habilidade e por buff (`taken`: Ebon Might, Prescience,
+    Shifting Sands). Linhas agrupadas (`composite`, ex.: Touch, Prismatic Bolt) trazem os ids
+    dos eventos nas `subentries`. Crédito sem `taken` vai no buff "0". Chaves em texto (JSON)."""
     entries = ((((report or {}).get("own") or {}).get("data")) or {}).get("entries") or []
-    credited: dict[str, float] = {}
+    credited: dict[str, dict[str, float]] = {}
     for entry in entries:
         for leaf in entry.get("subentries") or [entry]:
-            amount = leaf.get("totalRDPSTaken") or 0
-            if amount:
-                key = str(leaf["guid"])
-                credited[key] = credited.get(key, 0) + amount
+            total = leaf.get("totalRDPSTaken") or 0
+            if not total:
+                continue
+            by_buff = credited.setdefault(str(leaf["guid"]), {})
+            taken = [t for t in leaf.get("taken") or [] if t.get("total")]
+            for t in taken or [{"guid": 0, "total": total}]:
+                key = str(t["guid"])
+                by_buff[key] = by_buff.get(key, 0) + t["total"]
     return credited
 
 

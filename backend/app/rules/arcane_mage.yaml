@@ -156,8 +156,11 @@ defensives:
 damage_credited_to_others: [404908, 409632, 434481]
 # Buffs do Augmentation no jogador (Ebon Might, Prescience, Shifting Sands): o ganho de dano
 # deles nas magias do Mago também é creditado ao Evocador. O motor desconta esse crédito dos
-# golpes dados com algum deles ativo (engine/support.py, decisão de 04/11).
+# golpes dados com cada um deles ativo, pela taxa do buff (engine/support.py, decisão de 04/11).
 support_buffs: [395152, 410089, 413984]
+# O crédito do Touch vem do dano que o alimentou, não do buff na hora da explosão: sai de
+# todos os Touches por igual (id do dano do Touch of the Magi).
+support_uniform_abilities: [210833]
 
 # Lust da raide (o buff no jogador). A 1ª poção vai junto do primeiro lust da luta (03/11):
 # nos tops, quem teve lust tarde não tomou poção no pull e tomou junto do lust.

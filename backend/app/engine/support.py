@@ -2,14 +2,21 @@
 
 Os buffs do Augmentation (Ebon Might, Prescience, Shifting Sands) aumentam o dano das magias
 do próprio Mago, e o WCL tira esse ganho do Mago e credita ao Evocador. Os eventos de dano
-não trazem essa divisão; a tabela DamageDone filtrada pelo jogador traz, por habilidade,
-quanto foi creditado (`player.damage.credited`, item 12.8).
+não trazem essa divisão; a tabela DamageDone filtrada pelo jogador traz, por habilidade e por
+buff, quanto foi creditado (`player.damage.credited`: {habilidade: {buff: crédito}}, 12.8).
 
-Decisão do Arthur (04/11): o motor desconta esse crédito **só dos golpes dados com apoio**
-(algum buff de `support_buffs` ativo no jogador). Em cada habilidade, os golpes com apoio
-perdem a mesma fração, de modo que o total dela bate com o do WCL. Se o crédito passa do dano
-feito com apoio (ou não há golpe com apoio), ele sai de todos os golpes da habilidade por
-igual. Outros buffs só sobem atributos e não têm o que descontar.
+Decisão do Arthur (04/11), **desconto por buff**: em cada habilidade, cada buff tem uma taxa
+(crédito dele ÷ dano da habilidade feito com ele ativo), e cada golpe perde a soma das taxas
+dos buffs ativos naquele instante. O total de cada habilidade bate com o do WCL. O Ebon Might
+cobre ~96% da luta, mas o Shifting Sands (crédito ~10% por golpe) só ~26%: juntar as janelas
+espalhava o crédito do Sands pela luta inteira e descontava de menos no burst do Surge.
+
+Exceções:
+- habilidades de `support_uniform_abilities` (Touch of the Magi): o crédito vem do dano que
+  alimentou o Touch, não do buff na explosão; sai de todos os golpes por igual;
+- buff sem golpe da habilidade sob ele, ou crédito sem buff identificado: sai de todos os
+  golpes da habilidade por igual.
+Outros buffs só sobem atributos e não têm o que descontar.
 """
 
 import bisect
@@ -64,38 +71,70 @@ def _scaled(event: dict[str, Any], factor: float) -> dict[str, Any]:
     return scaled
 
 
+def _credits(fight: dict[str, Any]) -> dict[int, dict[int, float]]:
+    """{habilidade: {buff: crédito}}. Crédito sem buff identificado vai no buff 0. Aceita o
+    formato antigo {habilidade: crédito} (cópias de 04/11)."""
+    raw = ((fight.get("player") or {}).get("damage") or {}).get("credited") or {}
+    credits: dict[int, dict[int, float]] = {}
+    for ability, value in raw.items():
+        by_buff = value if isinstance(value, dict) else {"0": value}
+        by_buff = {int(b): v for b, v in by_buff.items() if v}
+        if by_buff:
+            credits[int(ability)] = by_buff
+    return credits
+
+
 def without_support(
-    fight: dict[str, Any], events: list[dict[str, Any]], buff_ids: frozenset[int]
+    fight: dict[str, Any],
+    events: list[dict[str, Any]],
+    buff_ids: frozenset[int],
+    uniform: frozenset[int] = frozenset(),
 ) -> list[dict[str, Any]]:
     """`events` (dano do jogador) sem o crédito do Augmentation. Sem os números do WCL (luta
-    antiga, jogador sem apoio), devolve os eventos como estão."""
-    credited = ((fight.get("player") or {}).get("damage") or {}).get("credited") or {}
-    credited = {int(k): v for k, v in credited.items() if v}
-    if not credited:
+    antiga, jogador sem apoio), devolve os eventos como estão. `uniform`: habilidades com o
+    crédito tirado de todos os golpes por igual (Touch)."""
+    credits = _credits(fight)
+    if not credits:
         return events
-    windows = support_windows(fight, buff_ids)
-    starts = [w[0] for w in windows]
-    supported = [
-        e["abilityGameID"] in credited and _inside(windows, starts, e["timestamp"]) for e in events
+    buffs = {b for by_buff in credits.values() for b in by_buff if b in buff_ids}
+    windows = {b: support_windows(fight, frozenset({b})) for b in buffs}
+    starts = {b: [w[0] for w in ws] for b, ws in windows.items()}
+    active = [
+        frozenset(b for b in buffs if _inside(windows[b], starts[b], e["timestamp"]))
+        if e["abilityGameID"] in credits
+        else frozenset()
+        for e in events
     ]
-    with_support: dict[int, float] = dict.fromkeys(credited, 0.0)
-    totals: dict[int, float] = dict.fromkeys(credited, 0.0)
-    for event, is_supported in zip(events, supported, strict=True):
+    # Dano de cada habilidade sob cada buff, e no total.
+    under: dict[tuple[int, int], float] = {}
+    totals: dict[int, float] = {}
+    for event, on in zip(events, active, strict=True):
         g = event["abilityGameID"]
-        if g in credited:
-            totals[g] += amount(event)
-            if is_supported:
-                with_support[g] += amount(event)
-    factors: dict[int, tuple[float, float]] = {}  # (com apoio, sem apoio)
-    for g, cut in credited.items():
-        if with_support[g] and cut <= with_support[g]:
-            factors[g] = ((with_support[g] - cut) / with_support[g], 1.0)
-        elif totals[g]:
-            uniform = max(0.0, totals[g] - cut) / totals[g]
-            factors[g] = (uniform, uniform)
+        if g not in credits:
+            continue
+        totals[g] = totals.get(g, 0.0) + amount(event)
+        for b in on:
+            under[g, b] = under.get((g, b), 0.0) + amount(event)
+    # Por habilidade: taxa de cada buff sobre o dano sob ele, e a parte que sai por igual.
+    rates: dict[int, dict[int, float]] = {}
+    flat: dict[int, float] = {}
+    for g, by_buff in credits.items():
+        if not totals.get(g):
+            continue
+        rates[g] = {}
+        spread = 0.0
+        for b, cut in by_buff.items():
+            if g in uniform or not under.get((g, b)):
+                spread += cut
+            else:
+                rates[g][b] = cut / under[g, b]
+        flat[g] = spread / totals[g]
     result = []
-    for event, is_supported in zip(events, supported, strict=True):
-        pair = factors.get(event["abilityGameID"])
-        factor = 1.0 if pair is None else pair[0 if is_supported else 1]
-        result.append(event if factor == 1.0 else _scaled(event, factor))
+    for event, on in zip(events, active, strict=True):
+        g = event["abilityGameID"]
+        if g not in rates:
+            result.append(event)
+            continue
+        cut = flat[g] + sum(rates[g].get(b, 0.0) for b in on)
+        result.append(_scaled(event, max(0.0, 1.0 - cut)) if cut else event)
     return result

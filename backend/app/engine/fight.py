@@ -83,7 +83,8 @@ def damage_done(fight: dict[str, Any], rules: dict[str, Any] | None = None) -> l
     """Dano do jogador sem o que o Warcraft Logs credita a quem o apoiou (Evocador
     Aumentação): sem as habilidades do Evocador que aparecem nos eventos do Mago
     (`damage_credited_to_others`) e com o crédito do Ebon Might/Prescience/Shifting Sands
-    descontado dos golpes dados com apoio (`engine/support.py`). Sem `rules`, as do Arcano.
+    descontado de cada golpe pelos buffs ativos nele (`engine/support.py`). Sem `rules`, as
+    do Arcano.
 
     Com os números do WCL, a soma bate com o dano oficial; sem eles (luta antiga), só as
     habilidades do Evocador saem."""
@@ -92,7 +93,12 @@ def damage_done(fight: dict[str, Any], rules: dict[str, Any] | None = None) -> l
     rules = rules or load_spec_rules()
     credited = frozenset(rules.get("damage_credited_to_others") or ())
     events = [e for e in fight["events"]["damage_done"] if e["abilityGameID"] not in credited]
-    return without_support(fight, events, frozenset(rules.get("support_buffs") or ()))
+    return without_support(
+        fight,
+        events,
+        frozenset(rules.get("support_buffs") or ()),
+        frozenset(rules.get("support_uniform_abilities") or ()),
+    )
 
 
 def total_damage(fight: dict[str, Any], rules: dict[str, Any] | None = None) -> float:

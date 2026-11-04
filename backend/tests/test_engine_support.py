@@ -1,6 +1,6 @@
-"""Desconto do crédito ao Evocador Aumentação (`engine/support.py`, decisão de 04/11): o
-crédito por habilidade do WCL sai só dos golpes dados com Ebon Might, Prescience ou Shifting
-Sands ativo; se não couber neles, sai de todos os golpes da habilidade por igual."""
+"""Desconto do crédito ao Evocador Aumentação (`engine/support.py`, decisão de 04/11): por
+buff. Em cada habilidade, o crédito de cada buff sai dos golpes dados com ele ativo (taxa =
+crédito ÷ dano sob o buff); o Touch e o crédito sem buff identificado saem por igual."""
 
 import gzip
 import json
@@ -13,9 +13,9 @@ from app.engine.fight import amount, damage_done, total_damage
 from app.engine.support import support_windows
 
 FIXTURES = Path(__file__).parent / "fixtures" / "nekzali_mythic_326_328"
-EBON, PRESCIENCE = 395152, 410089
+EBON, PRESCIENCE, SANDS = 395152, 410089, 413984
 MISSILES, TOUCH = 7268, 210833
-BUFFS = frozenset({EBON, PRESCIENCE, 413984})
+BUFFS = frozenset({EBON, PRESCIENCE, SANDS})
 
 
 @lru_cache
@@ -60,22 +60,51 @@ def test_only_supported_hits_lose_damage():
     data = fight(
         buffs=[(EBON, "applybuff", 10_000, 7), (EBON, "removebuff", 20_000, 7)],
         damage=[(MISSILES, 5_000, 100), (MISSILES, 15_000, 100), (MISSILES, 25_000, 100)],
-        credited={str(MISSILES): 30},
+        credited={str(MISSILES): {str(EBON): 30}},
     )
     assert [e["amount"] for e in damage_done(data)] == [100, 70, 100]
 
 
-def test_credit_larger_than_the_supported_damage_comes_out_of_every_hit():
+def test_each_buff_discounts_only_the_hits_under_it():
+    """Sands (taxa alta) só nos golpes sob ele; Ebon Might em todos sob o Ebon Might."""
+    data = fight(
+        buffs=[
+            (EBON, "applybuff", 0, 7),
+            (SANDS, "applybuff", 10_000, 7),
+            (SANDS, "removebuff", 20_000, 7),
+        ],
+        damage=[(MISSILES, 5_000, 100), (MISSILES, 15_000, 100), (MISSILES, 25_000, 100)],
+        credited={str(MISSILES): {str(EBON): 6, str(SANDS): 10}},
+    )
+    # Ebon Might: 6 sobre 300 = 2% de cada golpe; Sands: 10 sobre 100 = 10% do golpe sob ele.
+    assert [e["amount"] for e in damage_done(data)] == pytest.approx([98, 88, 98])
+    assert total_damage(data) == pytest.approx(300 - 16)
+
+
+def test_touch_credit_comes_out_of_every_touch_evenly():
+    """O crédito do Touch vem do dano que o alimentou, não do buff na explosão."""
+    data = fight(
+        buffs=[(SANDS, "applybuff", 10_000, 7), (SANDS, "removebuff", 20_000, 7)],
+        damage=[(TOUCH, 5_000, 100), (TOUCH, 15_000, 100)],
+        credited={str(TOUCH): {str(SANDS): 50}},
+    )
+    assert [e["amount"] for e in damage_done(data)] == [75, 75]
+
+
+def test_credit_without_a_known_buff_comes_out_of_every_hit():
     data = fight(
         buffs=[(EBON, "applybuff", 10_000, 7), (EBON, "removebuff", 20_000, 7)],
-        damage=[(TOUCH, 5_000, 100), (TOUCH, 15_000, 100)],
-        credited={str(TOUCH): 150},
+        damage=[(MISSILES, 5_000, 100), (MISSILES, 15_000, 100)],
+        credited={str(MISSILES): {"0": 50}},  # crédito sem buff identificado
     )
-    assert [e["amount"] for e in damage_done(data)] == [25, 25]
+    assert [e["amount"] for e in damage_done(data)] == [75, 75]
 
 
-def test_credit_with_no_supported_hit_comes_out_of_every_hit():
-    data = fight(damage=[(TOUCH, 5_000, 100), (TOUCH, 15_000, 300)], credited={str(TOUCH): 40})
+def test_credit_of_a_buff_with_no_hit_under_it_comes_out_of_every_hit():
+    data = fight(
+        damage=[(MISSILES, 5_000, 100), (MISSILES, 15_000, 300)],
+        credited={str(MISSILES): {str(EBON): 40}},
+    )
     assert [e["amount"] for e in damage_done(data)] == [90, 270]
 
 
@@ -135,7 +164,7 @@ def test_absorbed_is_scaled_with_the_amount():
     data = fight(
         buffs=[(EBON, "applybuff", 0, 7)],
         damage=[(MISSILES, 5_000, 0)],
-        credited={str(MISSILES): 25},
+        credited={str(MISSILES): {str(EBON): 25}},
     )
     data["events"]["damage_done"][0]["absorbed"] = 100
     event = damage_done(data)[0]
@@ -163,7 +192,14 @@ def test_credited_by_ability_reads_grouped_lines_and_sums_repeated_ids():
         "own": {
             "data": {
                 "entries": [
-                    {"guid": 7268, "total": 100, "totalRDPSTaken": 10},
+                    {
+                        "guid": 7268,
+                        "totalRDPSTaken": 10,
+                        "taken": [
+                            {"guid": SANDS, "total": 7},
+                            {"guid": EBON, "total": 3},
+                        ],
+                    },
                     {
                         "guid": 448659,  # Arcane Phoenix (pet): os ids dos eventos nas subentradas
                         "composite": True,
@@ -179,6 +215,10 @@ def test_credited_by_ability_reads_grouped_lines_and_sums_repeated_ids():
             }
         }
     }
-    assert _credited_by_ability(report) == {"7268": 10, "456139": 5, "450499": 3}
+    assert _credited_by_ability(report) == {
+        "7268": {str(SANDS): 7, str(EBON): 3},
+        "456139": {"0": 5},  # sem `taken`: buff não identificado
+        "450499": {"0": 3},
+    }
     assert _credited_by_ability({"own": None}) == {}
     assert _credited_by_ability(None) == {}
