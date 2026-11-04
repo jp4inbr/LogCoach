@@ -209,6 +209,10 @@ class Comparison(BaseModel):
     size: int
     player_in_top: bool  # RF21
     players: list[ComparedPlayer] = []  # em ordem de rank
+    # Tops de mais de 24 h (Warcraft Logs fora do ar) ou a cópia do exemplo (plano B): a tela
+    # avisa que a comparação não é a de hoje.
+    stale: bool = False
+    sample: bool = False
 
 
 class Summary(BaseModel):
@@ -217,6 +221,16 @@ class Summary(BaseModel):
     dps_gap_pct: float  # negativo quando o jogador fez menos dano que os tops
     active_time_pct: float
     top_active_time_pct: float
+
+
+class Gap(BaseModel):
+    """Quanto dano a mais os tops fizeram, em % do dano do próprio jogador (decisão de 03/11):
+    total = erros + sorte + não explicado. Ex.: 18,0 = 6,6 + 9,5 + 1,9 no kill de referência."""
+
+    total_pct: float  # DPS médio dos tops ÷ DPS do jogador − 1, em %
+    mistakes_pct: float  # soma dos impact_pct das regras
+    luck_pct: float  # procs de Prismatic Bolt abaixo do esperado (negativo = teve sorte)
+    unexplained_pct: float  # o resto (RF23), para a IA investigar
 
 
 class Coach(BaseModel):
@@ -253,6 +267,10 @@ class RuleCheck(BaseModel):
     top_value: str
     status: Status
     note: str | None = None
+    # De onde saiu o limite, para o usuário: "mediana dos 10 tops: 6%" (decisão de 03/11).
+    reference: str | None = None
+    impact_pct: float | None = None  # % do dano do jogador; None = sem conta (ou risco)
+    details: list[str] = []  # fatos da regra (ex.: "Surge aos 1:32 sem Touch em 3,5 s")
 
 
 class Phase(BaseModel):
@@ -289,6 +307,20 @@ class AbilityTable(BaseModel):
     rows: list[AbilityRow]
 
 
+class TargetRow(BaseModel):
+    """% do dano da fase num alvo (chefe ou add), jogador × média dos tops."""
+
+    name: str
+    boss: bool
+    player_pct: float
+    top_pct: float | None
+
+
+class TargetTable(BaseModel):
+    phase: str
+    rows: list[TargetRow]
+
+
 class AnalysisResult(BaseModel):
     source: Literal["exemplo", "motor"]
     report_code: str
@@ -303,6 +335,9 @@ class AnalysisResult(BaseModel):
     phases: list[Phase]
     timeline: list[TimelineTrack]  # RF11
     abilities: list[AbilityTable]  # RF22
+    # Do motor (passo 4.3); vazios/nulos nas análises gravadas antes deles existirem.
+    gap: Gap | None = None
+    targets: list[TargetTable] = []  # dano por alvo e por fase
 
 
 # --- Análises -------------------------------------------------------------

@@ -124,7 +124,7 @@ def _uses(
         name=f"Usos de {spell_name(ability_id)}",
         status=status,
         player_value=f"{player} de {possible} possíveis",
-        top_value=f"tops deixam de usar {num(usual, 1)} em média" if top_missed else "—",
+        top_value=f"mediana dos tops: deixam de usar {num(usual, 1)}" if top_missed else "—",
         impact_pct=_share((missed - usual) * cost_each, damage) if status != "ok" else None,
         note="Possível = usar no CD desde o pull até o fim da luta.",
     )
