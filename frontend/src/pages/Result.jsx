@@ -113,7 +113,7 @@ export default function Result({ id }) {
 
       {comparison.player_in_top && (
         <Notice title="Você está entre os 10 melhores do seu bracket">
-          Por isso a comparação abaixo é com o 1º colocado geral do chefe.
+          Por isso a comparação abaixo é com o top 10 geral do chefe.
         </Notice>
       )}
 
