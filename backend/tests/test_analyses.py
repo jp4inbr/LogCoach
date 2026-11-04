@@ -1,25 +1,44 @@
 from datetime import UTC, datetime, timedelta
 
 import pytest
-from conftest import ANALYSIS
+from conftest import ANALYSIS, make_result
 from sqlmodel import Session
 from test_sources import FakeWcl, nekzali
 
 from app.main import app
 from app.models import Analysis
 from app.schemas import AnalysisResult, FightOption, PlayerOption, ReportResolved
+from app.services import analyzer as analyzer_module
+from app.services.analyzer import get_analyzer
 from app.services.plan import month_start
 from app.services.sources import (
     QUERY_LIMIT,
     REFRESH_MIN_INTERVAL_S,
     SAMPLE_REPORT_CODE,
-    SAMPLES_DIR,
+    SampleReportSource,
     SourceUnavailableError,
     build_players,
     build_report,
-    get_analyzer,
     get_report_source,
 )
+
+
+@pytest.fixture
+def real_engine():
+    """Pede o motor de verdade (`engine.report.build_analysis`) em vez do falso."""
+
+
+@pytest.fixture(autouse=True)
+def fake_engine(request, monkeypatch):
+    """O motor falso devolve um resultado mínimo com o cabeçalho e a comparação que o
+    `EngineAnalyzer` montou (rotas, erros e histórico não dependem das contas do motor)."""
+    if "real_engine" in request.fixturenames:
+        return
+
+    def build(*, report_code, fight_info, player_info, comparison, **_):
+        return make_result(comparison, fight_info, player_info, report_code)
+
+    monkeypatch.setattr(analyzer_module, "build_analysis", build)
 
 
 def test_analysis_without_account_is_not_saved_to_history(client):
@@ -42,8 +61,9 @@ def test_rf25_player_is_never_hidden_and_tops_come_without_real_names(client):
     assert [t["display_name"] for t in tops] == [f"top{n:02d}" for n in range(1, 11)]
     # No exemplo não há nome real: o botão de mostrar nomes fica desabilitado.
     assert all(t["name"] is None for t in tops)
-    avg = sum(t["dps"] for t in tops) / len(tops)
-    assert result["summary"]["top_avg_dps"] == pytest.approx(avg, abs=0.1)
+    assert result["comparison"]["sample"] is True
+    assert result["comparison"]["size"] == 10
+    assert result["source"] == "motor"
 
 
 def test_invalid_token_on_public_route_counts_as_no_login(client):
@@ -55,17 +75,6 @@ def test_invalid_token_on_public_route_counts_as_no_login(client):
     assert response.json()["saved"] is False
 
 
-def test_t06_mistakes_come_sorted_by_impact(client):
-    mistakes = client.post("/analyses", json=ANALYSIS).json()["result"]["mistakes"]
-
-    # Regras do maior para o menor impacto (risco sem impacto no fim); hipóteses depois.
-    kinds = [m["kind"] for m in mistakes]
-    assert kinds == sorted(kinds, key=lambda kind: kind == "hipotese")
-    rules = [m["impact_pct"] for m in mistakes if m["kind"] == "regra"]
-    impacts = [-1 if impact is None else impact for impact in rules]
-    assert impacts == sorted(impacts, reverse=True)
-
-
 def test_analysis_with_account_goes_to_history(client, auth_headers):
     created = client.post("/analyses", json=ANALYSIS, headers=auth_headers).json()
 
@@ -75,7 +84,7 @@ def test_analysis_with_account_goes_to_history(client, auth_headers):
     assert created["saved"] is True
     assert [item["id"] for item in history] == [created["id"]]
     assert history[0]["boss"] == "Nek'zali, a Enrosca-almas"
-    assert history[0]["mistakes_count"] == 6
+    assert history[0]["mistakes_count"] == len(created["result"]["mistakes"])
     assert me["analyses_this_month"] == 1
 
 
@@ -204,14 +213,13 @@ def arcane(actor_id: int, name: str, server: str) -> PlayerOption:
 
 
 class SpyAnalyzer:
-    """Guarda o jogador que a rota escolheu e devolve o resultado de exemplo."""
+    """Guarda o jogador que a rota escolheu e devolve um resultado mínimo."""
 
     players: list[PlayerOption] = []
 
     def analyze(self, report, fight, player: PlayerOption) -> AnalysisResult:
         SpyAnalyzer.players.append(player)
-        path = SAMPLES_DIR / f"analysis_{SAMPLE_REPORT_CODE}_34.json"
-        return AnalysisResult.model_validate_json(path.read_text(encoding="utf-8"))
+        return make_result(report_code=report.code)
 
 
 @pytest.fixture
@@ -222,7 +230,8 @@ def spy_analyzer():
 
 
 class OneFightSource:
-    """Relatório sintético com a luta 34 e os Magos Arcanos dados."""
+    """Relatório sintético com a luta 34 e os Magos Arcanos dados; os eventos são os do
+    exemplo (só o Harmonist, ator 455, tem)."""
 
     players: list[PlayerOption] = []
 
@@ -231,6 +240,8 @@ class OneFightSource:
             id=34,
             boss="Nek'zali, a Enrosca-almas",
             difficulty="Mítico",
+            encounter_id=3470,
+            difficulty_id=5,
             kill=True,
             duration_s=415.0,
             supported=True,
@@ -241,6 +252,9 @@ class OneFightSource:
 
     def get_fight_players(self, code: str, fight_id: int, client=None) -> list[PlayerOption]:
         return self.players
+
+    def get_fight_data(self, code: str, fight_id: int, actor_id: int) -> dict:
+        return SampleReportSource().get_fight_data(code, fight_id, actor_id)
 
 
 class TwoHarmonistsSource(OneFightSource):
@@ -328,6 +342,7 @@ class HarmonistAndOtherSource(OneFightSource):
 
 
 def test_other_arcane_in_sample_fight_does_not_get_harmonist_result(client, auth_headers):
+    # Sem os eventos dele (só o Harmonist tem no exemplo): o motor não usa os de outro.
     app.dependency_overrides[get_report_source] = HarmonistAndOtherSource
 
     response = client.post("/analyses", json={**ANALYSIS, "actor_id": 456}, headers=auth_headers)
@@ -416,17 +431,38 @@ def test_analysis_with_wcl_down_is_wcl_unavailable(client, auth_headers):
     assert client.get("/me", headers=auth_headers).json()["analyses_this_month"] == 0
 
 
-def test_sample_analyzer_does_not_download_the_fight_events(client):
-    # Enquanto o motor não entra, o /analyses não gasta os ~12 pontos da luta completa.
-    wcl = FakeWcl()
-    wcl_source(wcl, [0.0])
+# --- Motor de verdade (modo exemplo: SampleReportSource + SampleTopsSource) -------------
 
-    response = client.post(
-        "/analyses", json={"report_code": "TESTE123", "fight_id": 2, "actor_id": 10}
+
+def test_e2e_harmonist_gets_the_engine_result(client, real_engine):
+    response = client.post("/analyses", json=ANALYSIS)
+
+    assert response.status_code == 201
+    result = response.json()["result"]
+    assert result["source"] == "motor"
+    assert result["player"]["display_name"] == result["player"]["name"] == "Harmonist"
+    comparison = result["comparison"]
+    assert (comparison["size"], comparison["sample"], comparison["player_in_top"]) == (
+        10,
+        True,
+        False,
     )
+    tops = comparison["players"]
+    assert [t["display_name"] for t in tops] == [f"top{n:02d}" for n in range(1, 11)]
+    avg = sum(t["dps"] for t in tops) / len(tops)
+    assert result["summary"]["top_avg_dps"] == pytest.approx(avg, abs=0.1)
+    assert result["gap"] is not None
 
-    assert response.json()["detail"]["code"] == "analysis_not_available"
-    assert wcl.calls == ["ReportFights", "FightPlayers"]
+
+def test_e2e_t06_mistakes_come_sorted_by_impact(client, real_engine):
+    mistakes = client.post("/analyses", json=ANALYSIS).json()["result"]["mistakes"]
+
+    # Regras do maior para o menor impacto (risco sem impacto no fim); hipóteses depois.
+    kinds = [m["kind"] for m in mistakes]
+    assert kinds == sorted(kinds, key=lambda kind: kind == "hipotese")
+    rules = [m["impact_pct"] for m in mistakes if m["kind"] == "regra"]
+    impacts = [-1 if impact is None else impact for impact in rules]
+    assert impacts == sorted(impacts, reverse=True)
 
 
 def test_month_start():

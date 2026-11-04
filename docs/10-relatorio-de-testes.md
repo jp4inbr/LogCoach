@@ -26,7 +26,7 @@ pytest -v
 | T03 | Regra de tempo parado                   | Luta de exemplo com 8% de tempo parado             | Status "erro"                                     |                                     |
 | T04 | Regra de uso de cooldowns               | Luta com cooldown usado menos vezes que o possível | Status "atenção"                                  |                                     |
 | T05 | Comparador                              | Jogador vs. média dos top logs de exemplo          | Diferença calculada corretamente                  |                                     |
-| T06 | Ordenação dos erros                     | 5 erros com impactos diferentes                    | Ordenados do maior para o menor impacto           | Passou (com o resultado de exemplo) |
+| T06 | Ordenação dos erros                     | 5 erros com impactos diferentes                    | Ordenados do maior para o menor impacto           | Passou (motor, `test_e2e_t06_mistakes_come_sorted_by_impact`) |
 | T07 | Falha da IA                             | IA simulando erro                                  | Relatório só com as regras                        |                                     |
 | T08 | Limite do plano grátis                  | 6ª análise no mês                                  | Bloqueada                                         | Passou                              |
 | T09 | Luta curta                              | Luta de 40 s                                       | Mensagem de luta curta                            | Passou                              |

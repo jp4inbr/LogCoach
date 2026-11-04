@@ -11,9 +11,10 @@ lê com `get_fight_data`; a pré-busca tem limite por cliente e um teto do proce
 (`prefetch_limiter`). Uma falha do Warcraft Logs fica lembrada por alguns segundos (ou pelo
 `Retry-After` do limite de pedidos) e, nesse tempo, nenhuma consulta vai à API
 (`WclCooldown`). Cada cliente (conta ou IP) tem um limite de consultas que vão mesmo à API
-(`query_limiter`); cache não conta. O analisador ainda é o de exemplo até o motor (frente C)
-ficar pronto; aí basta trocá-lo em `get_analyzer`. O modo exemplo também tem os eventos do
-kill de referência (`app/samples/fight_*.json.gz`).
+(`query_limiter`); cache não conta. O analisador é o do motor (`EngineAnalyzer`, em
+`services/analyzer.py`), nos dois modos: lê os eventos daqui e os tops de `services/tops.py`.
+O modo exemplo tem os eventos do kill de referência (`app/samples/fight_*.json.gz`) e os
+tops do bracket dele (`app/samples/tops/`).
 """
 
 import copy
@@ -35,6 +36,7 @@ import httpx
 import yaml
 
 from app.config import get_settings
+from app.engine.names import npc_names as pt_br_npc_names
 from app.schemas import (
     AnalysisResult,
     FightOption,
@@ -62,7 +64,6 @@ logger = logging.getLogger(__name__)
 APP_DIR = Path(__file__).resolve().parent.parent
 SAMPLES_DIR = APP_DIR / "samples"
 ENCOUNTERS_DIR = APP_DIR / "encounters"
-PT_BR_FILE = APP_DIR / "i18n" / "pt_br.yaml"
 
 # Kill de referência do CLAUDE.md: Nek'zali Mítico, luta 34, jogador Harmonist.
 SAMPLE_REPORT_CODE = "XhrmBaYkGCAQjH2D"
@@ -150,7 +151,8 @@ class QueryLimitError(Exception):
 
 
 class AnalysisNotAvailableError(Exception):
-    """Ainda não há análise para essa luta ou esse jogador (hoje: só o exemplo do Harmonist)."""
+    """O motor não sabe analisar essa luta: chefe sem regras, luta sem ids do encontro,
+    jogador sem item level, sem eventos (modo exemplo) ou sem tops (`TopsNotAvailableError`)."""
 
 
 class FightDataNotAvailableError(AnalysisNotAvailableError):
@@ -186,14 +188,15 @@ class ReportSource(Protocol):
 
 
 class Analyzer(Protocol):
-    """Monta o resultado de uma luta.
+    """Monta o resultado de uma luta: o `EngineAnalyzer` (services/analyzer.py), do motor.
 
-    O motor vai ler os eventos com `source.get_fight_data(report.code, fight.id,
-    player.actor_id)` (a fonte entra pelo construtor, em `get_analyzer`). A luta completa
-    custa ~12 pontos do Warcraft Logs (item 12.8), mas em geral já estará no cache: a tela
-    chama a pré-busca (`POST /reports/{code}/fights/{id}/prefetch`) assim que o jogador fica
-    definido. Se ela estiver baixando, o motor espera essa mesma busca terminar; se ainda
-    estiver na fila (atrás de outras), o motor busca ele mesmo, sem esperar a fila.
+    Ele lê os eventos com `source.get_fight_data(report.code, fight.id, player.actor_id)` (a
+    fonte entra pelo construtor, em `get_analyzer`) e os tops com `TopsSource.get_tops`. Erros:
+    os das fontes (`SourceUnavailableError`, `QueryLimitError`) ou `AnalysisNotAvailableError`.
+    A luta completa custa ~19 pontos do Warcraft Logs (item 12.8), mas em geral já estará no
+    cache: a tela chama a pré-busca (`POST /reports/{code}/fights/{id}/prefetch`) assim que o
+    jogador fica definido. Se ela estiver baixando, o motor espera essa mesma busca terminar;
+    se ainda estiver na fila (atrás de outras), o motor busca ele mesmo, sem esperar a fila.
     """
 
     def analyze(
@@ -281,12 +284,6 @@ def supported_encounters() -> dict[int, dict[str, Any]]:
     return encounters
 
 
-@lru_cache
-def npc_names_pt() -> dict[int, str]:
-    data = yaml.safe_load(PT_BR_FILE.read_text(encoding="utf-8"))
-    return {int(k): v for k, v in (data.get("npcs") or {}).items()}
-
-
 def _encounter_reason(fight: dict[str, Any], encounter: dict | None) -> FightReasonCode | None:
     if encounter is None:
         return "unsupported_boss"
@@ -323,7 +320,7 @@ def build_report(
     que parou de receber dados fica pausada (`upload_paused`), e não "subindo" para sempre.
     """
     encounters = supported_encounters() if encounters is None else encounters
-    npc_names = npc_names_pt() if npc_names is None else npc_names
+    npc_names = pt_br_npc_names() if npc_names is None else npc_names
     now_ms = time.time() * 1000 if now_ms is None else now_ms
     end_time = raw.get("end_time")
     live = end_time is not None and now_ms - end_time <= LIVE_WINDOW_S * 1000
@@ -342,6 +339,8 @@ def build_report(
                 "id": fight["id"],
                 "boss": npc_names.get((encounter or {}).get("boss_npc_id"), fight["name"]),
                 "difficulty": DIFFICULTIES.get(difficulty, f"Dificuldade {difficulty}"),
+                "encounter_id": fight["encounterID"],
+                "difficulty_id": difficulty,
                 "kill": bool(fight.get("kill")),
                 "duration_s": duration_s,
                 "supported": code is None,
@@ -401,21 +400,25 @@ REFRESH_MIN_INTERVAL_S = 8
 # versão alfa sem pesar no servidor. Validade igual à da lista: luta que subiu não muda.
 FIGHT_DATA_CACHE_MAX = 8
 # Quem pede uma luta que já está baixando espera ela terminar até esse limite. A luta
-# completa são várias páginas de eventos (~12 pontos); cada pedido já tem o próprio timeout.
+# completa são várias páginas de eventos (~19 pontos); cada pedido já tem o próprio timeout.
 FIGHT_DATA_WAIT_S = 180
 # Pré-buscas ao mesmo tempo (threads do processo). Duas bastam para a versão alfa e seguram
 # o gasto de pontos e de memória se muitos escolherem luta juntos; o resto espera na fila.
 PREFETCH_WORKERS = 2
-# Pré-buscas novas por cliente (usuário logado ou IP) na janela: ~12 pontos cada, então 10
-# em 10 min são ~120 pontos, um oitavo dos 1000/h do LogCoach inteiro. Quem troca de jogador
-# ou de luta algumas vezes não chega perto; quem clica em tudo não esgota os pontos de todos.
+# Pré-buscas novas por cliente (usuário logado ou IP) na janela: ~19 pontos cada, então 10
+# em 10 min são ~190 pontos, menos de um quinto dos 1000/h do LogCoach inteiro. Quem troca
+# de jogador ou de luta algumas vezes não chega perto; quem clica em tudo não esgota os
+# pontos de todos.
 PREFETCH_LIMIT = 10
 PREFETCH_WINDOW_S = 10 * 60
 # Teto do processo inteiro, somando todos os clientes: o limite por cliente não segura quem
-# troca de IP (com IPv6 é fácil). 40 por hora × ~12 pontos são ~480 pontos, metade dos 1000/h
-# do Warcraft Logs; a outra metade fica para colar links, Magos de cada luta e as análises
-# (que buscam a luta sozinhas quando a pré-busca não veio).
-PREFETCH_GLOBAL_LIMIT = 40
+# troca de IP (com IPv6 é fácil). 30 por hora × ~19 pontos são ~570 pontos, pouco mais da
+# metade dos 1000/h do Warcraft Logs (era 40 com ~12 pontos; a luta ficou mais cara em 03/11
+# com o tempo ativo, o CombatantInfo, a vida e a cura recebida). O resto fica para colar
+# links, Magos de cada luta, a busca dos tops e as análises (que buscam a luta sozinhas quando
+# a pré-busca não veio). A rever quando a busca dos tops entrar (passo 4.2: ~210 pontos por
+# bracket novo).
+PREFETCH_GLOBAL_LIMIT = 30
 PREFETCH_GLOBAL_WINDOW_S = 60 * 60
 # Consultas por cliente que vão mesmo ao Warcraft Logs (lista de lutas e Magos de uma luta;
 # cache não conta): uma noite de raide ao vivo usa ~colar + 8 automáticas + ~10 lutas em
@@ -986,7 +989,7 @@ class WclReportSource:
         return players
 
     def get_fight_data(self, code: str, fight_id: int, actor_id: int) -> dict[str, Any]:
-        """Luta completa do jogador (`wcl.fetch.fetch_fight`, ~12 pontos), uma vez por
+        """Luta completa do jogador (`wcl.fetch.fetch_fight`, ~19 pontos), uma vez por
         (código, luta, jogador). Se a pré-busca dela está baixando, espera essa busca; se
         ainda está na fila, busca aqui."""
         return self._fight_data.get(
@@ -1085,24 +1088,6 @@ def _heavy_fetch_pauses(exc: BaseException) -> bool:
 # --- Análise ------------------------------------------------------------------
 
 
-class SampleAnalyzer:
-    """Devolve o resultado de exemplo da luta de referência, só para o jogador do exemplo."""
-
-    def analyze(
-        self, report: ReportResolved, fight: FightOption, player: PlayerOption
-    ) -> AnalysisResult:
-        path = SAMPLES_DIR / f"analysis_{report.code}_{fight.id}.json"
-        if not path.exists():
-            raise AnalysisNotAvailableError(f"{report.code}/{fight.id}")
-        result = AnalysisResult.model_validate(_load(path.name))
-        # Outro Arcano da mesma luta (até um homônimo de outro reino) não pode receber a
-        # análise do Harmonist: o jogador foi escolhido pelo actor_id na rota.
-        if player.actor_id != SAMPLE_ACTOR_ID:
-            raise AnalysisNotAvailableError(f"{report.code}/{fight.id}/{player.name}")
-        fill_real_names(result, get_settings().names_file)
-        return result
-
-
 def fill_real_names(result: AnalysisResult, names_file: Path) -> None:
     """Põe o nome real dos tops a partir do names.local.json, se ele existir na máquina (RF25).
 
@@ -1125,7 +1110,3 @@ def get_report_source() -> ReportSource:
     if get_settings().data_source == "wcl":
         return WclReportSource()
     return SampleReportSource()
-
-
-def get_analyzer() -> Analyzer:
-    return SampleAnalyzer()

@@ -29,8 +29,8 @@ from app.wcl.fetch import (  # noqa: E402
     bracket_range,
     fetch_brackets,
     fetch_fight,
-    fetch_rankings,
 )
+from app.wcl.tops import fetch_tops  # noqa: E402
 
 # Kill de referência (ver CLAUDE.md). Buscado pelo id do ator, como o motor faz.
 REFERENCE = {"report": "XhrmBaYkGCAQjH2D", "fight": 34, "player": "Harmonist", "actor_id": 455}
@@ -46,6 +46,9 @@ SAMPLE_FIGHT = (
     / "samples"
     / f"fight_{REFERENCE['report']}_{REFERENCE['fight']}_{REFERENCE['actor_id']}.json.gz"
 )
+# Cópia dos tops do bracket do kill de referência para o modo exemplo (`SampleTopsSource`):
+# mesmos bytes das fixtures, para o plano B comparar com os mesmos tops dos testes.
+SAMPLE_TOPS = BACKEND / "app" / "samples" / "tops"
 NAMES_FILE = FIXTURES / "names.local.json"
 RULES_FILE = BACKEND / "app" / "rules" / "arcane_mage.yaml"
 
@@ -75,6 +78,22 @@ def summarize(label: str, fight: dict[str, Any], expected_ids: dict[str, int]) -
         f"ilvl={details.get('maxItemLevel')}"
     )
     print(f"    eventos: {counts}")
+    stats = (fight["player"].get("combatant") or {}).get("stats") or {}
+    active = fight["player"].get("active_time_ms")
+    print(
+        f"    intelecto={stats.get('intellect')}, "
+        f"tempo ativo WCL={100 * active / fight['meta']['duration_ms']:.1f}%"
+        if active
+        else f"    intelecto={stats.get('intellect')}, tempo ativo WCL=—"
+    )
+    official = fight["player"].get("damage")
+    if official:
+        print(
+            f"    DPS do WCL={official['dps']:,.0f}, creditado a quem apoiou="
+            f"{100 * official['rdps_taken'] / official['total']:.1f}%"
+        )
+    else:
+        print("    ATENÇÃO: sem o dano oficial do WCL (tabela DamageDone)")
     if missing:
         print(f"    ATENÇÃO: não apareceram no log: {', '.join(missing)}")
 
@@ -125,34 +144,39 @@ def main() -> None:
 
         if not args.only_reference:
             print(f"Buscando top {TOP_N} do bracket {low}–{high} (índice {index})…")
-            rankings = fetch_rankings(
-                client, ENCOUNTER_ID, CLASS_NAME, SPEC_NAME, bracket=index, n=TOP_N
+            found = fetch_tops(
+                client, ENCOUNTER_ID, CLASS_NAME, SPEC_NAME, 5, bracket=index, n=TOP_N
             )
-            ref_key = (REFERENCE["report"], REFERENCE["fight"])
-            if any((r["report"]["code"], r["report"]["fightID"]) == ref_key for r in rankings):
-                # RF21: quem já está no top 10 do bracket é comparado com o 1º geral.
-                print("  O jogador de referência já está no top 10 do bracket (RF21).")
+            ref_key = (REFERENCE["report"], REFERENCE["fight"], REFERENCE["player"])
+            if any(
+                (r["report"], r["fight_id"], r["name"]) == ref_key and r["rank"] <= TOP_N
+                for r in found["rankings"]
+            ):
+                # RF21: o log de referência no top 10 sai da comparação e entra o 11º.
+                print("  O log de referência está no top 10 do bracket (RF21).")
                 index_data["reference_in_top"] = True
+            for skipped in found["skipped"]:
+                print(f"  Pulado (luta não abriu): {skipped['reason']}")
 
-            for rank, ranking in enumerate(rankings, start=1):
+            sample_dir = SAMPLE_TOPS / out_dir.name
+            for old in sample_dir.glob("top*.json.gz"):
+                old.unlink()  # uma rodada com menos tops não deixa o top10 antigo para trás
+            for top in found["tops"]:
+                rank = top["rank"]
                 label = f"top{rank:02d}"
-                server = (ranking.get("server") or {}).get("name")
-                fight = fetch_fight(
-                    client,
-                    ranking["report"]["code"],
-                    ranking["report"]["fightID"],
-                    name=ranking["name"],
-                    server=server,
-                )
+                fight, ranking = top["fight"], top["ranking"]
                 fight_anon, fight_names = anonymize_fight(fight, label)
                 public, real = anonymize_ranking(ranking, label)
                 fight_anon["ranking"] = {"rank": rank, **public}
                 names[f"{label}.json.gz"] = {**fight_names, "ranking": real}
                 write_json(out_dir / f"{label}.json.gz", fight_anon, args.force)
+                write_json(sample_dir / f"{label}.json.gz", fight_anon, True)
                 index_data["top"].append({"file": f"{label}.json.gz", "rank": rank, **public})
                 summarize(label, fight, expected_ids)
 
         write_json(out_dir / "index.json", index_data, force=True)
+        if not args.only_reference:
+            write_json(SAMPLE_TOPS / out_dir.name / "index.json", index_data, force=True)
         names_all = (
             json.loads(NAMES_FILE.read_text(encoding="utf-8")) if NAMES_FILE.exists() else {}
         )

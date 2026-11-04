@@ -6,7 +6,7 @@ import { formatNumber } from "../lib/format.js";
 export default function MistakeCard({ mistake, rank }) {
   const impact =
     mistake.impact_pct === null
-      ? "Risco de morte, sem perda direta de dano"
+      ? "Sem custo em dano calculado (risco de morte ou efeito indireto)"
       : mistake.kind === "hipotese"
         ? `As regras não explicam cerca de ${formatNumber(mistake.impact_pct)} pontos da diferença`
         : `Custou cerca de ${formatNumber(mistake.impact_pct)}% do seu dano`;
@@ -26,8 +26,11 @@ export default function MistakeCard({ mistake, rank }) {
               {mistake.severity === "erro" ? "✕ Erro" : "! Atenção"}
             </span>
             {mistake.kind === "hipotese" && (
-              <span className="badge badge-hipotese" title="Apontado pelo coach, sem regra fixa">
-                Hipótese do coach
+              <span
+                className="badge badge-hipotese"
+                title="Diferença que nenhuma regra mede: pistas, não fatos"
+              >
+                Hipótese
               </span>
             )}
             {mistake.phase && <span className="muted">{mistake.phase}</span>}

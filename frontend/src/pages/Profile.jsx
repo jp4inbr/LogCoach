@@ -116,7 +116,7 @@ export default function Profile() {
                   <span className="history-numbers">
                     <strong>{formatDps(item.dps)}</strong>
                     <span className={item.dps_gap_pct < 0 ? "text-down" : "text-up"}>
-                      {formatSignedPct(item.dps_gap_pct)} vs. tops
+                      {formatSignedPct(item.dps_gap_pct)} no DPS vs. média dos tops
                     </span>
                   </span>
                 </a>

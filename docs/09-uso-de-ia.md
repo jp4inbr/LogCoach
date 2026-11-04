@@ -41,7 +41,9 @@ Você recebe três coisas (nunca o log bruto):
    e do encontro, com a comparação por fase com os 10 melhores do mesmo item level.
 2. O guia da luta e da especialização: como o chefe funciona, como o Mago
    Arcano deve jogar e o que NÃO é erro (ex.: segurar o Surge até 15 s para
-   casar com a poção; defensivo só é esperado em overlap de mecânicas).
+   casar com a poção; defensivo só é cobrado em pico de dano em que a vida caiu de verdade
+   e havia um disponível; dano de mecânica evitável é erro de posicionamento; vida baixa
+   com pouca cura é problema da cura, não do Mago).
 3. Uma tabela por fase com casts por minuto e % do dano de cada habilidade,
    do jogador e da média dos 10 melhores.
 Explique, em português do Brasil, os erros de maior impacto, do mais grave

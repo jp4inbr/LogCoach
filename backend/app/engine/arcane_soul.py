@@ -1,9 +1,11 @@
 """Arcane Soul e janela do Arcane Surge (regras do Arthur, Sunfury).
 
-- Entrada no Arcane Soul: entrar com 20 de Salvo no mínimo. A causa típica de entrar baixo é
-  Barrage nos 2 últimos GCDs antes do Soul; Overpowered Missiles sobe o Salvo para 25 na hora.
-- Janela do Surge: não entrar de mão vazia (Salvo baixo e no máximo 1 Clearcasting), senão
-  o burst enche de Arcane Blast. Nos melhores logs, Blast no Surge é raro fora o de abertura.
+- Entrada no Arcane Soul: cada entrada com menos de 12 de Salvo é erro; o ideal é 20 ou mais
+  (só informação). A causa típica de entrar baixo é Barrage nos 2 últimos GCDs antes do Soul;
+  Overpowered Missiles sobe o Salvo para 25 na hora.
+- Janela do Surge: não entrar de mão vazia (menos de 12 de Salvo e nenhuma Clearcasting),
+  senão o burst enche de Arcane Blast. Nos melhores logs, Blast no Surge é raro fora o de
+  abertura.
 Lê uma luta no formato de `wcl.fetch.fetch_fight` (tempos em ms do report).
 """
 
@@ -26,8 +28,13 @@ class SoulEntry:
 
     @property
     def mistake(self) -> bool:
-        """Entrou com menos Salvo que o mínimo do YAML (20)."""
+        """Entrou com menos Salvo que o mínimo do YAML (12): erro."""
         return self.salvo < load_spec_rules()["arcane_soul"]["min_salvo"]
+
+    @property
+    def below_ideal(self) -> bool:
+        """Entrou com menos que o ideal (20): só informação."""
+        return self.salvo < load_spec_rules()["arcane_soul"]["ideal_salvo"]
 
 
 @dataclass(frozen=True)
@@ -40,7 +47,7 @@ class SurgeWindow:
 
     @property
     def empty_handed(self) -> bool:
-        """Entrou de mão vazia: Salvo baixo e no máximo 1 Clearcasting (fora a abertura)."""
+        """Entrou de mão vazia: menos de 12 de Salvo e nenhuma Clearcasting (fora a abertura)."""
         limits = load_spec_rules()["surge_window"]["empty_handed"]
         return (
             not self.opener

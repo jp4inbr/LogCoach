@@ -40,6 +40,19 @@ abilities:
   shimmer: 212653
   time_warp: 80353
 
+# Tabela por habilidade (RF22): o cast e o dano de uma habilidade podem ter IDs diferentes
+# (conferido nas 11 fixtures em 03/11). Cada grupo vira uma linha, com o nome do ID do cast
+# (ou do 1º de dano, se não há cast). O que não estiver aqui vira linha pelo próprio ID.
+ability_groups:
+  arcane_missiles:   { cast: 5143,    damage: [7268] }
+  arcane_barrage:    { cast: 44425,   damage: [44425, 450499] }
+  prismatic_bolt:    { cast: 1295924, damage: [1295924, 1295939] }
+  meteorite:         { damage: [449569, 456139] }   # sai do Barrage, sem cast próprio
+  touch_of_the_magi: { cast: 321507,  damage: [210833] }
+  arcane_blast:      { cast: 30451,   damage: [30451] }
+  arcane_orb:        { cast: 153626,  damage: [153640] }
+  arcane_surge:      { cast: 365350,  damage: [365350, 453326] }
+
 # Buffs lidos do log (stacks vêm nos eventos applybuffstack/removebuffstack).
 buffs:
   arcane_salvo: 1242974       # stacks gastos pelo Arcane Barrage (cap 25 no Sunfury)
@@ -54,8 +67,10 @@ external_buffs:
 
 # Barrage e Salvo (regra do Arthur, medida no top 10 do bracket 326–328).
 barrage:
-  min_salvo: 12               # Barrage abaixo disso é erro quando vira hábito
-  pct_below_min: { warn: 8, error: 12 }   # tops: 4–11% (mediana ~6%); Arthur no kill: 15%
+  min_salvo: 12               # Barrage abaixo disso é erro quando vira hábito; o ideal é nunca
+  # O % aceitável sai dos tops (decisão de 03/11). Reserva para quando faltarem tops (Arthur:
+  # atenção acima de 5%). Nas fixtures: tops de 1 a 29% (mediana ~6%); Harmonist 15%.
+  pct_below_min_reserve: { warn: 5, error: 12 }
   # Tops soltam ~65% dos Barrages com Salvo no cap (25). Chegar no cap não é erro.
   # 1 Missiles + Prismatic Bolt antes do Barrage é o padrão sugerido pelo Arthur;
   # nos tops os dois padrões (1 ou 2 Missiles + Bolt) aparecem, então fica para a IA julgar.
@@ -69,12 +84,14 @@ barrage:
 
 # Arcane Soul (Sunfury): começa quando o Arcane Surge acaba (~17,4 s). Dentro dele o Barrage
 # não gasta Salvo (medido: 20 dos 21 Barrages sem consumo do Harmonist caíram no Soul), então
-# cada Barrage rola Prismatic Bolt e Meteorite de graça. Regra do Arthur: entrar com 20 de
-# Salvo no mínimo. 25 é o máximo, mas de 20 para 25 o ganho é baixo (~0,3%), e às vezes vale
+# cada Barrage rola Prismatic Bolt e Meteorite de graça. Regra do Arthur (03/11): entrar com
+# menos de 12 de Salvo é erro em cada entrada (o snowball se perde). O ideal é 20 ou mais, só
+# como informação: 25 é o máximo, mas de 20 para 25 o ganho é baixo (~0,3%), e às vezes vale
 # soltar um Barrage para não estourar o Salvo.
 arcane_soul:
   buff_id: 451038
-  min_salvo: 20
+  min_salvo: 12
+  ideal_salvo: 20
   # Os 2 últimos GCDs antes do Soul (~2,5 s) não podem ser Barrage. Exceção: Overpowered Missiles
   # sobe o Salvo para 25 na hora. Kill de referência: entradas com 0, 20, 1, 18 e 22 de Salvo
   # (2 de 5 com 20+); nos 10 tops, 23 de 43 com 20+ e Barrage nos 2 últimos GCDs em 6 de 43.
@@ -87,12 +104,15 @@ arcane_soul:
 # está em como ela é gasta e reposta dentro do burst.
 surge_window:
   buff_id: 365362             # buff do Arcane Surge (o cast é 365350)
-  max_arcane_blast: 0         # fora o Surge de abertura
   ignore_opener: true
-  # "Mão vazia": entrar no Surge com Salvo baixo e no máximo 1 Clearcasting obriga a encher a
-  # janela de Blast. Nos tops, as 5 entradas assim deram 3 Blasts por janela. Entrar com uma
-  # Clearcasting guardada e Salvo razoável está ok.
-  empty_handed: { max_salvo: 11, max_clearcasting: 1 }
+  # Blast no Surge não precisa ser zero: sem proc de Clearcasting às vezes não tem jeito. O
+  # limite de Blasts por janela sai dos tops; reserva do Arthur: mais de 3 como padrão é
+  # atenção, 6 ou mais é erro. Com pouca Clearcasting recebida (ganhos por minuto abaixo de 3
+  # de cada 4 tops) não passa de atenção: pode ter sido azar.
+  blasts_reserve: { warn: 3, error: 5 }   # limites exclusivos: acima de 5 = 6 ou mais
+  # "Mão vazia" (03/11): menos de 12 de Salvo e nenhuma Clearcasting. Com 1 Clearcasting e
+  # 11 de Salvo o fluxo já anda (Surge dá Clearcasting → Missiles → Touch).
+  empty_handed: { max_salvo: 11, max_clearcasting: 0 }
 
 # Prismatic Bolt: decisão × sorte (regra do Arthur). Cada Salvo no Barrage dá 2% de chance
 # de proc (25 → 50%, 11 → 22%). A decisão que mais pesa é o Salvo dentro do Arcane Soul, onde
@@ -108,36 +128,76 @@ prismatic_bolt_rng:
   proc_per_salvo: 0.02
   proc_window_s: 0.5          # proc conta para o Barrage se aparecer até 0,5 s depois
   luck_z: { unlucky: -2, lucky: 2 }   # fora disso, a diferença de procs não é só sorte
+  # Munch: Barrage com proc de Bolt ativo que gera proc novo (refreshbuff do 1295942) perde o
+  # anterior. Comparado com a mediana dos tops, que também fazem (Harmonist 11% dos procs;
+  # tops de 9 a 22%). Reserva: atenção acima de 20%, erro acima de 30%.
+  munch_reserve: { warn: 20, error: 30 }
 
+# Clearcasting não tem chance fixa por hit: a maior parte vem do Barrage e do Missiles, que
+# dependem da rotação. Levantamento de 03/11 nas 11 fixtures: 14,8 a 17,4 ganhos por minuto
+# (Harmonist 15,3). A "sorte de Clearcasting" usa a régua dos tops sobre os ganhos por minuto.
+clearcasting:
+  buff_id: 263725
+
+# Defensivos do Mago: buff que conta como "defensivo ativo" num pico de dano. Quando cobrar é
+# do encontro (`defensive_policy` no YAML do chefe).
+# Recarga em segundos, para saber se havia um defensivo pronto num pico de dano. "baseline":
+# todo Arcano tem; os outros só contam como disponíveis se o jogador os usou na luta (talento).
 defensives:
-  - { name: Prismatic Barrier, ability_id: 235450 }   # tops do bracket: de 0 a 6 usos por kill
-  - { name: Ice Cold, ability_id: 414658 }
+  - { name: Prismatic Barrier, ability_id: 235450, buff_id: 235450, cooldown_s: 25, baseline: true }  # tops: de 0 a 11 por kill
+  - { name: Ice Cold, ability_id: 414658, buff_id: 414658, cooldown_s: 240 }
+  - { name: Ice Block, ability_id: 45438, buff_id: 45438, cooldown_s: 240 }
+  - { name: Alter Time, ability_id: 342245, buff_id: 342246, cooldown_s: 50 }
+  - { name: Mirror Image, ability_id: 55342, buff_id: 55342, cooldown_s: 120 }
+
+# Dano que aparece nos eventos do Mago, mas que o Warcraft Logs credita a quem o apoiou
+# (Evocador Aumentação): Fate Mirror, Breath of Eons e Bombardments. Fica fora do total e das
+# tabelas; o ranking também não conta (revisão de 04/11: top03, top04, top07 e top09).
+damage_credited_to_others: [404908, 409632, 434481]
+# Buffs do Augmentation no jogador (Ebon Might, Prescience, Shifting Sands): o ganho de dano
+# deles nas magias do Mago também é creditado ao Evocador. O motor desconta esse crédito dos
+# golpes dados com cada um deles ativo, pela taxa do buff (engine/support.py, decisão de 04/11).
+support_buffs: [395152, 410089, 413984]
+# O crédito do Touch vem do dano que o alimentou, não do buff na hora da explosão: sai de
+# todos os Touches por igual (id do dano do Touch of the Magi).
+support_uniform_abilities: [210833]
+
+# Lust da raide (o buff no jogador). A 1ª poção vai junto do primeiro lust da luta (03/11):
+# nos tops, quem teve lust tarde não tomou poção no pull e tomou junto do lust.
+lust_buffs: [2825, 32182, 80353, 264667, 390386]
 
 consumables:
   - name: Light's Potential (poção)
     ability_id: 1236616
     cooldown_s: 300
+    duration_s: 30
+    intellect: 695            # intelecto a mais enquanto dura
+    # Bônus de dano = intellect ÷ intelecto do jogador no pull (CombatantInfo). Reserva para
+    # quando faltar o atributo: +695 ÷ 3.575 do Harmonist (medido em 28/10, conferido em 03/11).
+    damage_bonus: 0.19
+    aligned_within_s: 5       # poção a até 5 s de um Surge (ou do lust) conta como junto
     # Tops usam a 2ª poção por volta de 5:00 porque o 4º Surge deles cai ali. Segurar a
     # 2ª poção para casar com um Surge é o recomendado (poção + Surge rende mais que a
     # poção no CD), se a luta durar o bastante para esse Surge. Não é erro; o erro é
     # atrasar o Surge e dessincronizar o Touch. Medido: +695 de intelecto (~+19% de dano no
     # Harmonist) e DPS 37% maior nos 30 s pós-Surge → alinhar rende ~0,5% do dano da luta.
 
-# Referência de casts por minuto e % do dano (Archon, top 10 geral do Nek'zali
-# Mítico, 25/10/2026, talentos de herói Sunfury). Usada na tabela do RF22 até o
-# motor calcular a do bracket. Não é limite fixo: serve para apontar o que destoa.
-reference_throughput:
-  source: archon.gg (top 10 Nek'zali Mítico, 25/10/2026)
-  hero_tree: Sunfury
-  abilities:
-    arcane_missiles: { cpm: 16.6, dmg_pct: 35.7 }
-    prismatic_bolt:  { cpm: 6.0,  dmg_pct: 23.8 }
-    arcane_barrage:  { cpm: 14.6, dmg_pct: 20.8 }
-    arcane_blast:    { cpm: 3.2,  dmg_pct: 2.2 }
-    arcane_orb:      { cpm: 0.5,  dmg_pct: 3.8 }
-    touch_of_the_magi: { dmg_pct: 5.4 }
+# Segurar o Surge (03/11): mais de 10 s depois de pronto é atenção; mais de 15 s sem nada que
+# case (poção, lust, Power Infusion, fase do allowed_holds do encontro) é erro. A IA julga se a
+# espera valeu a pena. "Casar" = começar até `coincide_s` antes ou depois do Surge.
+surge_hold: { warn_s: 10, error_s: 15, coincide_s: 5 }
 
-thresholds:
-  downtime_pct: { warn: 2, error: 4 }   # tops e Arthur: ~99% de tempo ativo
-  touch_drift_s: { warn: 3, error: 6 }  # atraso médio do Touch em relação ao CD
-  surge_drift_s: { warn: 5, error: 10 } # atraso do Surge em relação ao CD
+# Tempo ativo: com tops, erro só a partir destes pontos abaixo do pior deles (03/11, Arthur).
+# Os tops ficam a 0,6 ponto um do outro, e quem se afasta para fazer mecânica perde tempo ativo
+# ajudando a raide. Atenção continua sendo pior que o quartil de baixo dos tops.
+active_time_error_margin_pts: 2
+
+# Valores reserva das métricas comparadas com os tops, usados com menos de 5 tops.
+reserve:
+  touch_drift_s: { warn: 3, error: 6 }   # atraso médio do Touch em relação ao CD
+  # Tempo ativo na régua do WCL (03/11: tops de 99,2% a 99,8%, mediana 99,6%) e na conta
+  # própria, usada quando alguma luta não tem o número do WCL (tops de 96,6% a 98,5%). O erro
+  # fica 2 pontos abaixo do pior top, como com tops (active_time_error_margin_pts).
+  active_time_pct: { warn: 99.3, error: 97.2 }
+  active_time_pct_own: { warn: 98, error: 96 }
+  bolt_expected_per_min: { warn: 4.5, error: 3.5 }

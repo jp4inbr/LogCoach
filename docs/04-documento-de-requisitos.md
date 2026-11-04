@@ -250,7 +250,7 @@ A comparação com os melhores logs deve ser feita por fase (tempo relativo ao i
 
 <summary><strong>RF21. Comparação para jogadores Top 10</strong></summary>
 
-Se o jogador já estiver entre os 10 melhores da sua faixa de item level, o sistema deve reconhecer isso no relatório e comparar com o 1º colocado geral do chefe.
+Se o jogador já estiver entre os 10 melhores da sua faixa de item level, o sistema deve reconhecer isso no relatório e manter a comparação com o top 10 do bracket, sem esse log: entra o 11º colocado. Outro log do mesmo personagem no top 10 entra na comparação como qualquer outro.
 
 {% hint style="info" %}
 **Prioridade:** **Média**

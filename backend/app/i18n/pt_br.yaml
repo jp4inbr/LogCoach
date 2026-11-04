@@ -17,6 +17,7 @@ spells:
   414658: Frio Enregelante        # Ice Cold
   45438: Bloco de Gelo            # Ice Block
   342245: Alterar Tempo           # Alter Time
+  55342: Imagem Espelhada         # Mirror Image (conferir no Wowhead)
   1236616: Potencial da Luz       # Light's Potential (poção)
   263725: Abstração               # Clearcasting (nome do Warcraft Logs em pt-BR; conferir no Wowhead)
   10060: Infusão de Poder         # Power Infusion, buff de Priest (conferir no Wowhead)
@@ -33,6 +34,9 @@ spells:
   1288772: Rito dos Enrosca-almas      # Soulcoil Rite
   1287533: Avanço Rumo ao Túmulo       # Gravebound Advance (escudo dos Amani)
   1307939: Praga dos Corpos            # Corpse Blight
+  1294729: Praga dos Corpos            # Corpse Blight (2º efeito; conferir no Wowhead)
+  1297630: Receptáculo do Despertar    # Vessel of Awakening (conferir no Wowhead)
+  1: Corpo a corpo                     # Melee
   1294846: Ecos Angustiados            # Anguished Echoes
   1295124: Ritual de Despertar         # Ritual of Awakening
   1293211: Transferência de Alma       # Soul Transfer

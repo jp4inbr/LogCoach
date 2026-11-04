@@ -42,14 +42,15 @@ EVENTS_QUERY = """
 query Events(
   $code: String!, $fightID: Int!, $startTime: Float!, $endTime: Float!,
   $dataType: EventDataType!, $hostilityType: HostilityType!,
-  $sourceID: Int, $targetID: Int, $abilityID: Float, $limit: Int!
+  $sourceID: Int, $targetID: Int, $abilityID: Float, $limit: Int!, $includeResources: Boolean
 ) {
   reportData {
     report(code: $code) {
       events(
         fightIDs: [$fightID], startTime: $startTime, endTime: $endTime,
         dataType: $dataType, hostilityType: $hostilityType,
-        sourceID: $sourceID, targetID: $targetID, abilityID: $abilityID, limit: $limit
+        sourceID: $sourceID, targetID: $targetID, abilityID: $abilityID, limit: $limit,
+        includeResources: $includeResources
       ) { data nextPageTimestamp }
     }
   }
@@ -455,8 +456,12 @@ class WclClient:
         source_id: int | None = None,
         target_id: int | None = None,
         ability_id: int | None = None,
+        include_resources: bool = False,
     ) -> list[dict[str, Any]]:
-        """Busca todos os eventos da janela, seguindo a paginação (nextPageTimestamp)."""
+        """Busca todos os eventos da janela, seguindo a paginação (nextPageTimestamp).
+
+        `include_resources` põe nos eventos a vida e os recursos do ator (`hitPoints`,
+        `maxHitPoints`...): mais pontos por página."""
         events: list[dict[str, Any]] = []
         cursor = start_time
         while cursor is not None:
@@ -475,6 +480,7 @@ class WclClient:
                     "targetID": target_id,
                     "abilityID": ability_id,
                     "limit": EVENTS_PAGE_LIMIT,
+                    "includeResources": include_resources,
                 },
                 timeout=self._events_timeout,
             )

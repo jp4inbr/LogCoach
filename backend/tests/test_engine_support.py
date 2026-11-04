@@ -1,0 +1,282 @@
+"""Desconto do crédito ao Evocador Aumentação (`engine/support.py`, decisão de 04/11): por
+buff. Em cada habilidade, o crédito de cada buff sai dos golpes dados com ele ativo (taxa =
+crédito ÷ dano sob o buff); o Touch e o crédito sem buff identificado saem por igual."""
+
+import gzip
+import json
+from functools import lru_cache
+from pathlib import Path
+
+import pytest
+
+from app.engine.fight import amount, damage_done, total_damage
+from app.engine.support import support_windows
+
+FIXTURES = Path(__file__).parent / "fixtures" / "nekzali_mythic_326_328"
+EBON, PRESCIENCE, SANDS = 395152, 410089, 413984
+MISSILES, TOUCH, BARRAGE = 7268, 210833, 44425
+BUFFS = frozenset({EBON, PRESCIENCE, SANDS})
+
+
+@lru_cache
+def load(name: str) -> dict:
+    return json.loads(gzip.decompress((FIXTURES / name).read_bytes()))
+
+
+def fight(buffs=(), damage=(), credited=None, end=100_000) -> dict:
+    """Luta mínima: buffs (id, tipo, ms, fonte) e dano (id, ms, valor)."""
+    return {
+        "meta": {"fight": {"startTime": 0, "endTime": end}},
+        "player": {"damage": None if credited is None else {"credited": credited}},
+        "events": {
+            "buffs": [
+                {"abilityGameID": a, "type": k, "timestamp": t, "sourceID": s}
+                for a, k, t, s in buffs
+            ],
+            "damage_done": [
+                {"abilityGameID": a, "timestamp": t, "amount": v} for a, t, v in damage
+            ],
+        },
+    }
+
+
+@pytest.mark.parametrize(
+    "name", ["reference_harmonist.json.gz"] + [f"top{i:02d}.json.gz" for i in range(1, 11)]
+)
+def test_damage_after_the_discount_is_the_official_total(name):
+    """Nas 11 fixtures (top03 e top09 com Evocador), o dano do motor = total oficial do WCL."""
+    data = load(name)
+    assert total_damage(data) == pytest.approx(data["player"]["damage"]["total"], abs=1)
+
+
+def test_supported_touch_matches_the_warcraft_logs():
+    """O Touch do top03 vinha +46% pelos eventos; agora bate com o da tabela do WCL."""
+    top03 = load("top03.json.gz")
+    touch = sum(amount(e) for e in damage_done(top03) if e["abilityGameID"] == TOUCH)
+    assert touch == pytest.approx(4_162_938, abs=1)
+
+
+def test_only_supported_hits_lose_damage():
+    data = fight(
+        buffs=[(EBON, "applybuff", 10_000, 7), (EBON, "removebuff", 20_000, 7)],
+        damage=[(MISSILES, 5_000, 100), (MISSILES, 15_000, 100), (MISSILES, 25_000, 100)],
+        credited={str(MISSILES): {str(EBON): 30}},
+    )
+    assert [e["amount"] for e in damage_done(data)] == [100, 70, 100]
+
+
+def test_each_buff_discounts_only_the_hits_under_it():
+    """Sands (taxa alta) só nos golpes sob ele; Ebon Might em todos sob o Ebon Might."""
+    data = fight(
+        buffs=[
+            (EBON, "applybuff", 0, 7),
+            (SANDS, "applybuff", 10_000, 7),
+            (SANDS, "removebuff", 20_000, 7),
+        ],
+        damage=[(MISSILES, 5_000, 100), (MISSILES, 15_000, 100), (MISSILES, 25_000, 100)],
+        credited={str(MISSILES): {str(EBON): 6, str(SANDS): 10}},
+    )
+    # Ebon Might: 6 sobre 300 = 2% de cada golpe; Sands: 10 sobre 100 = 10% do golpe sob ele.
+    assert [e["amount"] for e in damage_done(data)] == pytest.approx([98, 88, 98])
+    assert total_damage(data) == pytest.approx(300 - 16)
+
+
+def test_touch_credit_comes_out_of_every_touch_evenly():
+    """O crédito do Touch vem do dano que o alimentou, não do buff na explosão."""
+    data = fight(
+        buffs=[(SANDS, "applybuff", 10_000, 7), (SANDS, "removebuff", 20_000, 7)],
+        damage=[(TOUCH, 5_000, 100), (TOUCH, 15_000, 100)],
+        credited={str(TOUCH): {str(SANDS): 50}},
+    )
+    assert [e["amount"] for e in damage_done(data)] == [75, 75]
+
+
+def test_credit_without_a_known_buff_comes_out_of_every_hit():
+    data = fight(
+        buffs=[(EBON, "applybuff", 10_000, 7), (EBON, "removebuff", 20_000, 7)],
+        damage=[(MISSILES, 5_000, 100), (MISSILES, 15_000, 100)],
+        credited={str(MISSILES): {"0": 50}},  # crédito sem buff identificado
+    )
+    assert [e["amount"] for e in damage_done(data)] == [75, 75]
+
+
+def test_credit_of_a_buff_with_no_hit_under_it_comes_out_of_every_hit():
+    data = fight(
+        damage=[(MISSILES, 5_000, 100), (MISSILES, 15_000, 300)],
+        credited={str(MISSILES): {str(EBON): 40}},
+    )
+    assert [e["amount"] for e in damage_done(data)] == [90, 270]
+
+
+def test_without_warcraft_logs_numbers_nothing_changes():
+    data = fight(buffs=[(EBON, "applybuff", 0, 7)], damage=[(MISSILES, 5_000, 100)], credited=None)
+    assert [e["amount"] for e in damage_done(data)] == [100]
+
+
+def test_two_evokers_windows_do_not_cut_each_other():
+    """Com dois Evocadores, o fim do Ebon Might de um não fecha a janela do outro."""
+    data = fight(
+        buffs=[
+            (EBON, "applybuff", 10_000, 1),
+            (EBON, "applybuff", 12_000, 2),
+            (EBON, "removebuff", 15_000, 1),
+            (EBON, "removebuff", 30_000, 2),
+            (PRESCIENCE, "applybuff", 29_000, 1),
+            (PRESCIENCE, "removebuff", 40_000, 1),
+        ]
+    )
+    assert support_windows(data, BUFFS) == [(10_000, 40_000)]
+
+
+def test_buff_active_on_pull_and_until_the_end():
+    data = fight(
+        buffs=[(EBON, "removebuff", 5_000, 1), (EBON, "applybuff", 90_000, 1)], end=100_000
+    )
+    assert support_windows(data, BUFFS) == [(0, 5_000), (90_000, 100_000)]
+
+
+def test_refresh_as_first_event_means_active_on_pull_and_does_not_close_a_window():
+    data = fight(
+        buffs=[
+            (EBON, "refreshbuff", 3_000, 1),
+            (EBON, "removebuff", 5_000, 1),
+            (EBON, "applybuff", 10_000, 1),
+            (EBON, "refreshbuff", 12_000, 1),
+            (EBON, "removebuff", 20_000, 1),
+        ]
+    )
+    assert support_windows(data, BUFFS) == [(0, 5_000), (10_000, 20_000)]
+
+
+def test_remove_and_apply_in_the_same_ms_keep_the_window_open():
+    data = fight(
+        buffs=[
+            (EBON, "applybuff", 10_000, 1),
+            (EBON, "applybuff", 20_000, 1),  # mesmo ms da saída, mas chega antes na lista
+            (EBON, "removebuff", 20_000, 1),
+            (EBON, "removebuff", 30_000, 1),
+        ]
+    )
+    assert support_windows(data, BUFFS) == [(10_000, 30_000)]
+
+
+def test_absorbed_is_scaled_with_the_amount():
+    data = fight(
+        buffs=[(EBON, "applybuff", 0, 7)],
+        damage=[(MISSILES, 5_000, 0)],
+        credited={str(MISSILES): {str(EBON): 25}},
+    )
+    data["events"]["damage_done"][0]["absorbed"] = 100
+    event = damage_done(data)[0]
+    assert (event["amount"], event["absorbed"]) == (0, 75)
+
+
+def test_real_hit_outside_the_support_windows_keeps_its_raw_value():
+    top03 = load("top03.json.gz")
+    windows = support_windows(top03, BUFFS)
+    raw = [e for e in top03["events"]["damage_done"] if e["abilityGameID"] == MISSILES]
+    outside = [
+        i for i, e in enumerate(raw) if not any(a <= e["timestamp"] <= b for a, b in windows)
+    ]
+    assert outside
+    kept = [e for e in damage_done(top03) if e["abilityGameID"] == MISSILES]
+    for i in outside:
+        assert kept[i]["amount"] == raw[i]["amount"]
+    assert any(kept[i]["amount"] < raw[i]["amount"] for i in range(len(raw)) if i not in outside)
+
+
+def test_credited_by_ability_reads_grouped_lines_and_sums_repeated_ids():
+    from app.wcl.fetch import _credited_by_ability
+
+    report = {
+        "own": {
+            "data": {
+                "entries": [
+                    {
+                        "guid": 7268,
+                        "totalRDPSTaken": 10,
+                        "taken": [
+                            {"guid": SANDS, "total": 7},
+                            {"guid": EBON, "total": 3},
+                        ],
+                    },
+                    {
+                        "guid": 448659,  # Arcane Phoenix (pet): os ids dos eventos nas subentradas
+                        "composite": True,
+                        "totalRDPSTaken": 7,
+                        "subentries": [
+                            {"guid": 456139, "totalRDPSTaken": 5},
+                            {"guid": 450499, "totalRDPSTaken": 2},
+                        ],
+                    },
+                    {"guid": 450499, "totalRDPSTaken": 1},
+                    {"guid": 30451, "totalRDPSTaken": 0},
+                ]
+            }
+        }
+    }
+    assert _credited_by_ability(report) == {
+        "7268": {str(SANDS): 7, str(EBON): 3},
+        "456139": {"0": 5},  # sem `taken`: buff não identificado
+        "450499": {"0": 3},
+    }
+    assert _credited_by_ability({"own": None}) == {}
+    assert _credited_by_ability(None) == {}
+
+
+def test_buff_rate_above_the_cap_spreads_the_excess_evenly():
+    """Sands credita 50, mas só um golpe de 10 caiu na janela: taxa limitada a 50% e o resto
+    sai de todos os golpes por igual; nada se perde."""
+    data = fight(
+        buffs=[(SANDS, "applybuff", 10_000, 7), (SANDS, "removebuff", 11_000, 7)],
+        damage=[(MISSILES, 5_000, 100), (MISSILES, 10_500, 10)],
+        credited={str(MISSILES): {str(SANDS): 50}},
+    )
+    assert total_damage(data) == pytest.approx(110 - 50)
+    assert all(e["amount"] >= 0 for e in damage_done(data))
+
+
+def test_old_format_and_unknown_buffs_come_out_evenly():
+    data = fight(
+        buffs=[(EBON, "applybuff", 0, 7), (999, "applybuff", 0, 7)],
+        damage=[(MISSILES, 5_000, 100), (BARRAGE, 6_000, 100)],
+        credited={str(MISSILES): 15, str(BARRAGE): {"999": 10, "0": 10, str(EBON): 20}},
+    )
+    assert [e["amount"] for e in damage_done(data)] == pytest.approx([85, 60])
+
+
+def test_credit_of_an_ability_without_events_is_logged(caplog):
+    data = fight(damage=[(MISSILES, 5_000, 100)], credited={str(BARRAGE): {str(EBON): 50}})
+    assert [e["amount"] for e in damage_done(data)] == [100]
+    assert "sem eventos" in caplog.text
+
+
+@pytest.mark.parametrize("name", ["top03.json.gz", "top09.json.gz"])
+def test_each_ability_matches_its_official_total(name):
+    """Por habilidade: eventos − crédito = o que sai do motor (fixtures com Evocador)."""
+    data = load(name)
+    credited = data["player"]["damage"]["credited"]
+    raw, after = {}, {}
+    for e in data["events"]["damage_done"]:
+        raw[e["abilityGameID"]] = raw.get(e["abilityGameID"], 0) + amount(e)
+    for e in damage_done(data):
+        after[e["abilityGameID"]] = after.get(e["abilityGameID"], 0) + amount(e)
+    for ability, by_buff in credited.items():
+        assert after[int(ability)] == pytest.approx(
+            raw[int(ability)] - sum(by_buff.values()), abs=1
+        ), ability
+
+
+def test_taken_that_does_not_cover_the_credit_puts_the_rest_in_buff_0():
+    from app.wcl.fetch import _credited_by_ability
+
+    report = {
+        "own": {
+            "data": {
+                "entries": [
+                    {"guid": 7268, "totalRDPSTaken": 10, "taken": [{"guid": SANDS, "total": 6}]}
+                ]
+            }
+        }
+    }
+    assert _credited_by_ability(report) == {"7268": {str(SANDS): 6, "0": 4}}

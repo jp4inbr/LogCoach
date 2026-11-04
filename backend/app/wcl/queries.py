@@ -96,3 +96,21 @@ query FightPlayerDetails($code: String!, $fightID: Int!) {
   }
 }
 """
+
+# Tabelas da luta num pedido só (~2 pontos, medido em 04/11): `activeTime` da tabela de casts
+# (o "Active Time" da página da luta) e o dano de cada jogador na tabela DamageDone, o mesmo
+# número do ranking (`total` ÷ `totalTime`). A tabela de dano já desconta o que o WCL credita
+# a quem apoiou o jogador (Evocador Aumentação: `totalRDPSTaken`); os eventos não descontam.
+# A mesma tabela filtrada pelo jogador (`own`) traz o crédito por habilidade, que o motor
+# desconta dos golpes com apoio (engine/support.py).
+FIGHT_TABLES = """
+query FightTables($code: String!, $fightID: Int!, $actorID: Int!) {
+  reportData {
+    report(code: $code) {
+      casts: table(fightIDs: [$fightID], dataType: Casts)
+      damage: table(fightIDs: [$fightID], dataType: DamageDone)
+      own: table(fightIDs: [$fightID], dataType: DamageDone, sourceID: $actorID)
+    }
+  }
+}
+"""

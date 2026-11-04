@@ -4,11 +4,14 @@ Os tempos ficam em ms do report, como vêm da API. Quem converte para
 "segundos desde o início da fase" é o motor.
 """
 
+import logging
 from typing import Any
 
 from app.wcl import queries
 from app.wcl.client import EVENTS_TIMEOUT, WclClient, WclError
 from app.wcl.players import find_player
+
+logger = logging.getLogger(__name__)
 
 MYTHIC = 5
 
@@ -39,6 +42,123 @@ def _details_by_id(details: dict[str, Any] | None) -> dict[int, dict[str, Any]]:
 
 def _player_details(details: dict[str, Any], actor_id: int) -> dict[str, Any] | None:
     return _details_by_id(details).get(actor_id)
+
+
+# Campos do dano recebido e da cura que o motor usa. Com includeResources o WCL manda também
+# posição, armadura, poder de ataque etc. de cada golpe; fora daqui, só pesariam nas fixtures.
+TAKEN_FIELDS = (
+    "timestamp", "type", "sourceID", "targetID", "abilityGameID", "amount", "absorbed",
+    "mitigated", "unmitigatedAmount", "overkill", "hitType", "tick", "isAoE", "buffs",
+    "hitPoints", "maxHitPoints",
+)  # fmt: skip
+HEAL_FIELDS = (
+    "timestamp", "type", "sourceID", "targetID", "abilityGameID", "amount", "overheal",
+    "absorbed", "tick",
+)  # fmt: skip
+
+
+def _slim_taken(event: dict[str, Any]) -> dict[str, Any]:
+    return {k: event[k] for k in TAKEN_FIELDS if k in event}
+
+
+def _slim_heal(event: dict[str, Any]) -> dict[str, Any]:
+    return {k: event[k] for k in HEAL_FIELDS if k in event}
+
+
+# Atributos do CombatantInfo que o motor pode usar; gear e talentos ficam de fora do arquivo.
+COMBATANT_STATS = ("intellect", "critSpell", "hasteSpell", "mastery", "versatilityDamageDone")
+
+
+def _combatant(event: dict[str, Any] | None) -> dict[str, Any] | None:
+    """Atributos e auras do jogador no pull (evento CombatantInfo).
+
+    As auras ajudam a saber o que já estava ativo quando a luta começou, mas vêm incompletas
+    (03/11: sem Prismatic Barrier, Mirror Image nem a poção tomada antes do pull); o motor
+    completa pelo primeiro evento de cada buff (`engine/timeline.initial_stacks`).
+    """
+    if not event:
+        return None
+    return {
+        "stats": {k: event[k] for k in COMBATANT_STATS if k in event},
+        "auras": [
+            {"ability": a["ability"], "stacks": a.get("stacks", 1), "source": a.get("source")}
+            for a in event.get("auras") or []
+            if "ability" in a
+        ],
+    }
+
+
+def _table_entry(report: dict[str, Any] | None, alias: str, actor_id: int) -> tuple[dict, dict]:
+    """(dados da tabela, linha do jogador) de uma tabela do report."""
+    table = (((report or {}).get(alias) or {}).get("data")) or {}
+    entry = next((e for e in table.get("entries") or [] if e.get("id") == actor_id), None)
+    return table, entry or {}
+
+
+def fetch_fight_tables(
+    client: WclClient, code: str, fight_id: int, actor_id: int
+) -> dict[str, Any]:
+    """Números do jogador como o Warcraft Logs mostra, num pedido só (`FIGHT_TABLES`).
+
+    - `active_time_ms`: tempo ativo da tabela de casts. A conta própria (`engine/uptime.py`)
+      dava 93,8% no Harmonist contra 98,6% do WCL (03/11); ela fica de reserva.
+    - `damage`: dano oficial (`total`, `total_time_ms`, `dps` e `rdps_taken`, o dano que o WCL
+      credita a quem apoiou o jogador, como o Evocador Aumentação). É o DPS do ranking: a
+      soma dos eventos inclui esse dano (top03 das fixtures: +11%, revisão de 04/11).
+    - `damage.credited`: crédito a quem apoiou, por id de habilidade (como nos eventos) e por
+      buff ({habilidade: {buff: crédito}}), da tabela filtrada pelo jogador; só as que têm
+      crédito.
+    Sem a linha do jogador numa tabela, o campo vem nulo.
+    """
+    data = client.query(
+        queries.FIGHT_TABLES,
+        {"code": code, "fightID": fight_id, "actorID": actor_id},
+        timeout=EVENTS_TIMEOUT,
+    )
+    report = data["reportData"]["report"]
+    _, casts = _table_entry(report, "casts", actor_id)
+    table, damage = _table_entry(report, "damage", actor_id)
+    total_time = table.get("totalTime")
+    official = None
+    if damage.get("total") and total_time:
+        official = {
+            "total": damage["total"],
+            "total_time_ms": total_time,
+            "dps": damage["total"] / total_time * 1000,
+            "rdps_taken": damage.get("totalRDPSTaken") or 0,
+            "credited": _credited_by_ability(report),
+        }
+        if official["rdps_taken"] and not official["credited"]:
+            # Sem o crédito por habilidade, o motor não desconta o apoio nas magias do jogador
+            # e as proporções dele vêm infladas (o DPS oficial continua certo).
+            logger.warning(
+                "Luta %s/%s, ator %s: crédito ao Evocador sem a tabela por habilidade",
+                code, fight_id, actor_id,
+            )  # fmt: skip
+    return {"active_time_ms": casts.get("activeTime"), "damage": official}
+
+
+def _credited_by_ability(report: dict[str, Any] | None) -> dict[str, dict[str, float]]:
+    """Crédito ao Evocador por id de habilidade e por buff (`taken`: Ebon Might, Prescience,
+    Shifting Sands). Linhas agrupadas (`composite`, ex.: Touch, Prismatic Bolt) trazem os ids
+    dos eventos nas `subentries`. Crédito sem `taken` vai no buff "0". Chaves em texto (JSON)."""
+    entries = ((((report or {}).get("own") or {}).get("data")) or {}).get("entries") or []
+    credited: dict[str, dict[str, float]] = {}
+    for entry in entries:
+        for leaf in entry.get("subentries") or [entry]:
+            total = leaf.get("totalRDPSTaken") or 0
+            if not total:
+                continue
+            by_buff = credited.setdefault(str(leaf["guid"]), {})
+            taken = [t for t in leaf.get("taken") or [] if t.get("total")]
+            # O que o `taken` não explica (buff não listado) vai no buff "0", por igual.
+            rest = total - sum(t["total"] for t in taken)
+            if rest > 1e-6:
+                taken.append({"guid": 0, "total": rest})
+            for t in taken:
+                key = str(t["guid"])
+                by_buff[key] = by_buff.get(key, 0) + t["total"]
+    return credited
 
 
 def fetch_report(client: WclClient, code: str) -> dict[str, Any]:
@@ -130,6 +250,9 @@ def fetch_fight(
         )
 
     pid = player["id"]
+    # Antes dos eventos: se esta consulta pequena falhar, não se perdem os ~12 pontos deles.
+    tables = fetch_fight_tables(client, code, fight_id, pid)
+    combatant = events("CombatantInfo", source_id=pid)
     fight_events = {
         "casts": events("Casts", source_id=pid),
         # Em buffs, o WCL trata o dono da aura como "source": com targetID só viriam os buffs
@@ -137,8 +260,23 @@ def fetch_fight(
         # Bloodlust...); o filtro garante que são buffs no jogador.
         "buffs": [e for e in events("Buffs", source_id=pid) if e.get("targetID") == pid],
         "damage_done": events("DamageDone", source_id=pid),
-        "damage_taken": events("DamageTaken", target_id=pid),
-        "deaths": events("Deaths", target_id=pid),
+        # Em DamageTaken vale a mesma convenção: o "source" do filtro é quem recebe o dano.
+        # Com targetID vinha só o dano que o próprio jogador causou nele mesmo (Refraction),
+        # sem nenhum golpe do chefe (corrigido em 03/11). Os eventos continuam com o
+        # atacante em sourceID e o jogador em targetID.
+        # Com a vida do jogador depois de cada golpe (`hitPoints`/`maxHitPoints`), para os picos
+        # de dano; dos recursos ficam só esses dois (ver `_slim_taken`).
+        "damage_taken": [
+            _slim_taken(e)
+            for e in events("DamageTaken", source_id=pid, include_resources=True)
+            if e.get("targetID") == pid
+        ],
+        # Cura recebida: aqui o filtro funciona do jeito comum, por targetID (conferido em
+        # 03/11; com sourceID viria só a cura do próprio jogador nele mesmo).
+        "healing_taken": [_slim_heal(e) for e in events("Healing", target_id=pid)],
+        # Em Deaths o WCL ignora os filtros (com targetID vinham as mortes da raide inteira e
+        # com sourceID nada, conferido em 03/11): vêm todas e o motor separa as do jogador.
+        "deaths": events("Deaths"),
         "boss_casts": events("Casts", hostility_type="Enemies"),
     }
     for kind, kind_events in fight_events.items():
@@ -170,6 +308,9 @@ def fetch_fight(
         "player": {
             "actor": player,
             "details": _player_details(report["playerDetails"], pid),
+            "combatant": _combatant(combatant[0] if combatant else None),
+            "active_time_ms": tables["active_time_ms"],
+            "damage": tables["damage"],
         },
         "events": fight_events,
     }

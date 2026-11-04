@@ -11,6 +11,7 @@ from app.config import get_settings
 from app.db import create_tables
 from app.errors import UNEXPECTED_ERROR_CODE, UNEXPECTED_ERROR_MESSAGE, error_response
 from app.services.sources import shutdown_prefetch
+from app.services.tops import shutdown_tops
 from app.wcl.client import close_shared_client, stop_shared_client
 
 logger = logging.getLogger(__name__)
@@ -25,6 +26,7 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     # então o cliente do WCL fecha.
     stop_shared_client()
     shutdown_prefetch()
+    shutdown_tops()
     close_shared_client()
 
 
