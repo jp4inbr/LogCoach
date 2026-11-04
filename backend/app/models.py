@@ -48,15 +48,16 @@ class Analysis(SQLModel, table=True):
 
 
 class TopsSnapshot(SQLModel, table=True):
-    """Top 10 de um ranking (encontro, dificuldade, bracket ou geral) guardado por 24 h (RNF03).
+    """Tops de um bracket (encontro, dificuldade, bracket) guardados por 24 h (RNF03).
 
-    Fica no banco para um reinício do processo não gastar de novo os ~180 pontos do Warcraft
-    Logs (item 12.13). As lutas ficam em `TopsLog`, uma linha por top.
+    Fica no banco para um reinício do processo não gastar de novo os ~135 pontos do Warcraft
+    Logs (item 12.13). As lutas ficam em `TopsLog`, uma linha por top. A mesma tabela guarda
+    os brackets de cada encontro (chave "brackets:<encontro>", sem tops).
     """
 
-    key: str = Field(primary_key=True)  # "3470:5:19" ou "3470:5:geral"
+    key: str = Field(primary_key=True)  # "3470:5:19" ou "brackets:3470"
     fetched_at: float  # segundos desde 1970 (time.time()), sem fuso para o SQLite estragar
-    # Faixa do bracket, rótulo e `ranking_logs` (as lutas dos 10 primeiros do ranking).
+    # Tops: `rankings` (rank, report, luta, nome de cada posição lida). Brackets: `brackets`.
     info: dict = Field(sa_column=Column(JSON, nullable=False))
 
 

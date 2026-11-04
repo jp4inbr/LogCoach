@@ -120,7 +120,7 @@ _Não joga World of Warcraft?_ Os termos do jogo e do LogCoach usados nesta docu
 
 <summary><strong>Termos do LogCoach</strong></summary>
 
-* _Top 10 geral:_ os 10 melhores logs do chefe naquela dificuldade, sem filtro de item level. São usados como comparação quando o jogador já está no Top 10 do seu bracket.
+* _Jogador no Top 10:_ quando o log analisado já está no Top 10 do bracket, ele sai da comparação e entra o 11º colocado; o relatório reconhece a posição.
 * _Bracket:_ faixa de item level usada pelo Warcraft Logs, de 3 em 3 níveis (por exemplo, 326–328). O LogCoach compara o jogador só com quem está no mesmo bracket, para que a diferença mostrada seja de execução, e não de equipamento.
 * _Coach:_ a parte do LogCoach que, com IA, explica os erros em português e diz o que corrigir primeiro.
 * _Diferença não explicada:_ parte da diferença de dano de uma fase que nenhuma regra explica. Serve de sinal para a IA investigar a tabela de habilidades daquela fase.

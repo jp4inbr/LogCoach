@@ -385,7 +385,7 @@ def test_prefetch_also_asks_for_the_bracket_tops(client):
     response = prefetch(client, 34, 455, "XhrmBaYkGCAQjH2D")
 
     assert response.status_code == 202
-    assert tops.calls == [(3470, 5, 327, ("XhrmBaYkGCAQjH2D", 34))]
+    assert tops.calls == [(3470, 5, 327, ("XhrmBaYkGCAQjH2D", 34, "Harmonist"))]
 
 
 def test_prefetch_tops_failure_does_not_change_the_answer(client):

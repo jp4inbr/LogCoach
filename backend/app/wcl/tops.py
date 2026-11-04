@@ -21,30 +21,44 @@ def ranking_log(ranking: dict[str, Any]) -> tuple[str, int]:
     return ranking["report"]["code"], ranking["report"]["fightID"]
 
 
+def ranking_id(rank: int, ranking: dict[str, Any]) -> dict[str, Any]:
+    """Quem é cada posição do ranking: o log exato (report, luta) e o personagem. Dois Magos
+    da mesma raide têm o mesmo report e a mesma luta; o nome separa os dois."""
+    code, fight_id = ranking_log(ranking)
+    return {
+        "rank": rank,
+        "report": code,
+        "fight_id": fight_id,
+        "name": ranking["name"],
+        "server": (ranking.get("server") or {}).get("name"),
+    }
+
+
 def fetch_tops(
     client: WclClient,
     encounter_id: int,
     class_name: str,
     spec_name: str,
     difficulty: int,
-    bracket: int | None,
+    bracket: int,
     n: int = 10,
     spare: int = SPARE,
 ) -> dict[str, Any]:
-    """Os n primeiros do ranking (bracket `None` = ranking geral, RF21) com a luta de cada um.
+    """Os n primeiros do ranking do bracket com a luta de cada um.
 
-    Devolve `ranking_logs` (as lutas dos n primeiros do ranking, mesmo as que não abriram:
-    é por elas que se sabe se o jogador está no top 10) e `tops`, em ordem, cada um com a
-    entrada do ranking (`ranking`) e a luta no formato de `fetch_fight` (`fight`). Luta que
-    não abre (jogador não achado, luta ou report indisponível) é pulada e o próximo do
-    ranking entra; o WCL fora do ar (`WclUnavailableError`, erro de rede) interrompe tudo.
+    Devolve `rankings` (quem é cada posição, de todas as entradas lidas, mesmo as que não
+    abriram: é por elas que se sabe se o log analisado está no top 10, RF21) e `tops`, em
+    ordem, cada um com a posição real no ranking (`rank`), a entrada do ranking (`ranking`)
+    e a luta no formato de `fetch_fight` (`fight`). Luta que não abre (jogador não achado,
+    luta ou report indisponível) é pulada e o próximo do ranking entra; o WCL fora do ar
+    (`WclUnavailableError`, erro de rede) interrompe tudo.
     """
     rankings = fetch_rankings(
         client, encounter_id, class_name, spec_name, difficulty, bracket=bracket, n=n + spare
     )
     tops: list[dict[str, Any]] = []
     skipped: list[dict[str, Any]] = []
-    for ranking in rankings:
+    for rank, ranking in enumerate(rankings, start=1):
         if len(tops) == n:
             break
         code, fight_id = ranking_log(ranking)
@@ -60,11 +74,11 @@ def fetch_tops(
             raise
         except WclError as exc:
             # Inclui PlayerNotFoundError e FightNotFoundError (são WclError).
-            skipped.append({"report": code, "fight_id": fight_id, "reason": str(exc)})
+            skipped.append({"rank": rank, "report": code, "fight_id": fight_id, "reason": str(exc)})
             continue
-        tops.append({"ranking": ranking, "fight": fight})
+        tops.append({"rank": rank, "ranking": ranking, "fight": fight})
     return {
-        "ranking_logs": [ranking_log(r) for r in rankings[:n]],
+        "rankings": [ranking_id(rank, r) for rank, r in enumerate(rankings, start=1)],
         "tops": tops,
         "skipped": skipped,
     }

@@ -35,7 +35,7 @@ from app.services.sources import (
     SourceUnavailableError,
     get_report_source,
 )
-from app.services.tops import TopsSource, get_tops_source
+from app.services.tops import OwnLog, TopsSource, get_tops_source
 from app.wcl.client import UNAVAILABLE_MESSAGE, WCL_UNAVAILABLE_CODE
 
 logger = logging.getLogger(__name__)
@@ -247,7 +247,7 @@ def prefetch_fight(
     """Põe na fila os eventos da luta do jogador (~18 pontos) assim que ele fica definido na
     tela, para a análise não esperar por eles. Responde na hora, sem esperar a busca.
 
-    Pede também, numa fila própria, os top 10 do bracket do jogador (item 12.13: ~190 pontos
+    Pede também, numa fila própria, os tops do bracket do jogador (item 12.13: ~135 pontos
     quando o bracket não está no cache, com teto por hora no processo). Falha dessa parte
     só vai para o log: a análise busca os tops sozinha.
 
@@ -280,7 +280,10 @@ def prefetch_tops(
         return
     try:
         tops.prefetch_tops(
-            fight.encounter_id, fight.difficulty_id, player.item_level, (report.code, fight.id)
+            fight.encounter_id,
+            fight.difficulty_id,
+            player.item_level,
+            OwnLog(report.code, fight.id, player.name),
         )
     except Exception:
         logger.exception("Pré-busca dos tops de %s/%s não entrou na fila", report.code, fight.id)

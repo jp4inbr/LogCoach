@@ -139,15 +139,22 @@ def main() -> None:
             found = fetch_tops(
                 client, ENCOUNTER_ID, CLASS_NAME, SPEC_NAME, 5, bracket=index, n=TOP_N
             )
-            ref_key = (REFERENCE["report"], REFERENCE["fight"])
-            if ref_key in found["ranking_logs"]:
-                # RF21: quem já está no top 10 do bracket é comparado com o top 10 geral.
-                print("  O jogador de referência já está no top 10 do bracket (RF21).")
+            ref_key = (REFERENCE["report"], REFERENCE["fight"], REFERENCE["player"])
+            if any(
+                (r["report"], r["fight_id"], r["name"]) == ref_key and r["rank"] <= TOP_N
+                for r in found["rankings"]
+            ):
+                # RF21: o log de referência no top 10 sai da comparação e entra o 11º.
+                print("  O log de referência está no top 10 do bracket (RF21).")
                 index_data["reference_in_top"] = True
             for skipped in found["skipped"]:
                 print(f"  Pulado (luta não abriu): {skipped['reason']}")
 
-            for rank, top in enumerate(found["tops"], start=1):
+            sample_dir = SAMPLE_TOPS / out_dir.name
+            for old in sample_dir.glob("top*.json.gz"):
+                old.unlink()  # uma rodada com menos tops não deixa o top10 antigo para trás
+            for top in found["tops"]:
+                rank = top["rank"]
                 label = f"top{rank:02d}"
                 fight, ranking = top["fight"], top["ranking"]
                 fight_anon, fight_names = anonymize_fight(fight, label)
@@ -155,7 +162,7 @@ def main() -> None:
                 fight_anon["ranking"] = {"rank": rank, **public}
                 names[f"{label}.json.gz"] = {**fight_names, "ranking": real}
                 write_json(out_dir / f"{label}.json.gz", fight_anon, args.force)
-                write_json(SAMPLE_TOPS / out_dir.name / f"{label}.json.gz", fight_anon, True)
+                write_json(sample_dir / f"{label}.json.gz", fight_anon, True)
                 index_data["top"].append({"file": f"{label}.json.gz", "rank": rank, **public})
                 summarize(label, fight, expected_ids)
 

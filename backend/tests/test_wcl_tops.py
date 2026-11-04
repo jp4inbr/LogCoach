@@ -64,8 +64,14 @@ def test_skips_fights_that_do_not_open_and_fills_with_spares(fake_wcl):
     assert len(names) == 10
     assert "Mago2" not in names and names[-1] == "Mago13"
     assert [s["report"] for s in result["skipped"]] == ["R2", "R5", "R7"]
-    # As lutas do top 10 do ranking continuam listadas, mesmo as que não abriram (RF21).
-    assert result["ranking_logs"] == [(f"R{i}", i) for i in range(1, 11)]
+    # Cada top leva a posição real no ranking, não a ordem das lutas que abriram.
+    assert [t["rank"] for t in result["tops"]][:3] == [1, 3, 4]
+    # Todas as posições lidas continuam listadas, mesmo as que não abriram (RF21).
+    assert [(r["rank"], r["report"], r["name"]) for r in result["rankings"][:2]] == [
+        (1, "R1", "Mago1"),
+        (2, "R2", "Mago2"),
+    ]
+    assert len(result["rankings"]) == 13 and result["rankings"][0]["server"] == "Area 52"
 
 
 def test_wcl_down_stops_everything(fake_wcl):
@@ -80,4 +86,4 @@ def test_wcl_down_stops_everything(fake_wcl):
 def test_short_ranking_returns_what_there_is(fake_wcl):
     result = run(n=3, spare=0)
     assert len(result["tops"]) == 3
-    assert result["ranking_logs"] == [("R1", 1), ("R2", 2), ("R3", 3)]
+    assert [r["rank"] for r in result["rankings"]] == [1, 2, 3]

@@ -27,6 +27,7 @@ from app.services.sources import (  # noqa: E402
 from app.services.tops import (  # noqa: E402
     brackets_cache,
     shutdown_tops,
+    tops_failures,
     tops_fill_limiter,
     tops_store,
 )
@@ -46,6 +47,7 @@ def _clear_wcl_state() -> None:
     wcl_cooldown.clear()
     tops_store.clear()
     brackets_cache.clear()
+    tops_failures.clear()
     tops_fill_limiter.clear()
     close_shared_client()
 
