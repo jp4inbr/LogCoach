@@ -168,6 +168,78 @@ def test_low_hp_alone_is_a_peak():
     assert peak.min_hp_pct == pytest.approx(30)
 
 
+def test_drop_after_a_healed_hit_is_not_hidden():
+    """Golpe de 65% curado (vida a 60%) e, 6 s depois, queda a 30%: o pico mostra a queda."""
+    data = fight(
+        hits=[(POSSESSION, 30, 650, 350), (RITE, 36, 300, 300)],
+        heals=[(31, 250)],
+    )
+    [peak] = damage_peaks(data, RULES, NEKZALI)
+    assert peak.min_hp_pct == pytest.approx(30)
+    assert peak.verdict == "defensivo"
+
+
+def test_long_chain_of_damage_becomes_several_peaks():
+    """Dano contínuo por um minuto não vira um pico só (o grupo fecha pelo primeiro candidato)."""
+    hits = [(RITE, t, 650, 600) for t in range(0, 60, 5)]
+    assert len(damage_peaks(fight(hits=hits, heals=[]), RULES, NEKZALI)) >= 5
+
+
+def test_barrier_after_the_drop_does_not_cover_it():
+    """Barreira posta só depois da vida mínima: não conta como coberto; aparece como tardia."""
+    data = fight(
+        hits=[(POSSESSION, 30, 400, 600), (DEPTHS, 32, 300, 300)],
+        casts=[(BARRIER, 33)],
+        buffs=[(BARRIER, "applybuff", 33), (BARRIER, "removebuff", 40)],
+    )
+    [peak] = damage_peaks(data, RULES, NEKZALI)
+    assert peak.defensive_active is None
+    assert peak.defensive_late is not None
+
+
+def test_absorbed_shields_are_not_healing():
+    """Escudo absorvido já sai do dano recebido: não pode subir a vida de novo."""
+    data = fight(hits=[(POSSESSION, 30, 400, 600), (DEPTHS, 31, 400, 200)])
+    data["events"]["healing_taken"] = [
+        {"type": "absorbed", "abilityGameID": 17, "timestamp": 31000, "amount": 500}
+    ]
+    [peak] = damage_peaks(data, RULES, NEKZALI)
+    assert peak.min_hp_pct == pytest.approx(20)
+    assert peak.heal_pct_hp == 0
+
+
+def test_heal_is_capped_by_the_max_hp_of_the_moment():
+    """Vida máxima maior por um buff (1200): a cura não derruba a vida para a mediana (1000)."""
+    data = fight(hits=[(RITE, t, 0, 1000) for t in range(0, 50, 5)] + [(RITE, 51, 300, 900)])
+    for event in data["events"]["damage_taken"][-1:]:
+        event["maxHitPoints"] = 1200
+    data["events"]["healing_taken"] = [
+        {"type": "heal", "abilityGameID": 1, "timestamp": 52000, "amount": 250}
+    ]
+    from app.engine.defensives import _hp_series
+
+    assert _hp_series(data, 1000)[-1][1:] == (1150, 1200)
+
+
+def test_avoidable_damage_has_a_floor_when_tops_take_none():
+    """Tops com 0 de dano evitável: um pouco (0,5% da vida por minuto) não vira erro."""
+    data = fight(hits=[(CULTIST, 30, 5, 995)])
+    player = measure(data, RULES, NEKZALI)
+    tops = [measure(fight(), RULES, NEKZALI) for _ in range(5)]
+    check = next(c for c in run_checks(player, tops, RULES, NEKZALI) if c.id == "avoidable_damage")
+    assert check.status == "ok"
+
+
+def test_peak_text_in_portuguese():
+    data = fight(hits=[(POSSESSION, 30, 400, 600), (DEPTHS, 32, 300, 300)], casts=[(ICE_BLOCK, 5)])
+    data["events"]["casts"][0]["timestamp"] = -300_000  # Ice Block usado há muito: disponível
+    checks = run_checks(measure(data, RULES, NEKZALI), [], RULES, NEKZALI)
+    check = next(c for c in checks if c.id == "damage_peaks")
+    assert check.player_value.startswith("1 pico:")
+    assert "disponíveis)" in check.details[0]
+    assert "vida caiu a 30%" in check.details[0]
+
+
 def test_fight_without_hit_points_has_no_peaks():
     data = fight(hits=[(POSSESSION, 30, 700, 300)])
     for event in data["events"]["damage_taken"]:
@@ -184,17 +256,19 @@ def load(name: str) -> dict:
 
 
 def test_reference_kill_peaks():
-    """Fixtures de 03/11: 7 picos no Harmonist; o das 5:07 é a poça (Latent Cultist), o das
-    6:39 (vida a 44%, Barreira pronta) é o único em que o defensivo cabia e nos outros 5 a cura
-    segurou (vida mínima de 54% a 84%)."""
+    """Fixtures de 03/11: 8 picos no Harmonist; o das 5:06 é a poça (Latent Cultist, Barreira só
+    depois da queda), o das 6:39 (vida a 44%, Barreira disponível) é o único em que o defensivo
+    cabia e nos outros 6 a cura segurou (vida mínima de 54% a 76%)."""
     data = load("reference_harmonist.json.gz")
     peaks = damage_peaks(data, RULES, NEKZALI)
-    assert len(peaks) == 7
+    assert len(peaks) == 8
     by_verdict = {p.verdict for p in peaks if p.verdict != "ok"}
     assert by_verdict == {"evitavel", "defensivo"}
     cultist = next(p for p in peaks if p.verdict == "evitavel")
-    assert round(cultist.time_s) == 307
+    assert round(cultist.time_s) == 306
     assert cultist.mechanics[0].ability_id == CULTIST
+    assert cultist.defensive_active is None  # a Barreira veio depois da queda
+    assert cultist.defensive_late is not None
     defensive = next(p for p in peaks if p.verdict == "defensivo")
     assert round(defensive.time_s) == 399
     assert defensive.min_hp_pct < 50

@@ -23,7 +23,7 @@ Trabalho A3 de Usabilidade de Software (Engenharia de Software, UNA). Web app qu
 | `docs/04-documento-de-requisitos.md` | RF01–RF25 e RNFs |
 | `docs/12-documentacao-tecnica.md` | Como rodar, endpoints e erros (12.3), motor, o que a IA recebe, cliente do WCL (12.8) e contrato do resultado (12.9) |
 | `backend/app/rules/arcane_mage.yaml` | Regras do Arcano (Surge/Touch, Salvo no Barrage, poção, limites, IDs de magias e buffs) |
-| `backend/app/encounters/nekzali.yaml` | Regras do chefe (fases, intermissão, overlaps de dano, esperas aceitas) |
+| `backend/app/encounters/nekzali.yaml` | Regras do chefe (fases, intermissão, classe de cada mecânica e limites dos picos de dano, esperas aceitas) |
 | `backend/app/guides/*.md` | Guias em português que vão para a IA como contexto |
 | `backend/app/i18n/pt_br.yaml` | Nome em português de cada magia/NPC por ID |
 | `backend/app/wcl/` | Cliente da API do Warcraft Logs (um por processo, `shared_client`), busca de luta/rankings, jogador por id ou nome + reino (`players.py`) e anonimização (item 12.8) |
