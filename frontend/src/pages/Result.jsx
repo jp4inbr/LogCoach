@@ -1,8 +1,10 @@
 import { useState } from "react";
 import ComparedPlayers from "../components/ComparedPlayers.jsx";
+import GapBreakdown from "../components/GapBreakdown.jsx";
 import MistakeCard from "../components/MistakeCard.jsx";
 import Notice from "../components/Notice.jsx";
 import StatusBadge from "../components/StatusBadge.jsx";
+import TargetsTable from "../components/TargetsTable.jsx";
 import Term from "../components/Term.jsx";
 import Timeline from "../components/Timeline.jsx";
 import { useAuth } from "../lib/auth-context.js";
@@ -94,10 +96,20 @@ export default function Result({ id }) {
           </span>
           <strong>{formatDps(summary.top_avg_dps)}</strong>
         </div>
-        <div className={`stat ${summary.dps_gap_pct < 0 ? "stat-down" : "stat-up"}`}>
-          <span className="stat-label">Diferença</span>
-          <strong>{formatSignedPct(summary.dps_gap_pct)}</strong>
-        </div>
+        {result.gap ? (
+          // Diferença em % do dano do próprio jogador (decisão de 03/11), detalhada no resumo.
+          <div className={`stat ${result.gap.total_pct > 0 ? "stat-down" : "stat-up"}`}>
+            <span className="stat-label">Os tops fizeram</span>
+            <strong>
+              {formatSignedPct(result.gap.total_pct)} <small className="muted">de dano</small>
+            </strong>
+          </div>
+        ) : (
+          <div className={`stat ${summary.dps_gap_pct < 0 ? "stat-down" : "stat-up"}`}>
+            <span className="stat-label">Diferença</span>
+            <strong>{formatSignedPct(summary.dps_gap_pct)}</strong>
+          </div>
+        )}
         <div className="stat">
           <span className="stat-label">
             <Term tip="Parte da luta em que você estava conjurando algo. A intermissão não conta como tempo parado.">
@@ -113,7 +125,21 @@ export default function Result({ id }) {
 
       {comparison.player_in_top && (
         <Notice title="Você está entre os 10 melhores do seu bracket">
-          Este log está no ranking: ele saiu da comparação e entrou o 11º colocado, para você não ser comparado com você mesmo.
+          Este log está no ranking: ele saiu da comparação e entrou o 11º colocado, para você não
+          ser comparado com você mesmo.
+        </Notice>
+      )}
+
+      {comparison.stale && (
+        <Notice title="Comparação com tops guardados">
+          O Warcraft Logs estava fora do ar, então usamos os melhores do bracket guardados há mais
+          de 24 horas. O ranking de hoje pode estar um pouco diferente.
+        </Notice>
+      )}
+      {comparison.sample && (
+        <Notice title="Comparação com tops de exemplo">
+          Não deu para buscar os melhores do seu bracket agora: a comparação usa a cópia de exemplo
+          do LogCoach.
         </Notice>
       )}
 
@@ -178,15 +204,24 @@ function Summary({ result }) {
             <p>{coach.headline}</p>
           </div>
         </div>
+      ) : result.source === "motor" ? (
+        <Notice title="Explicação do coach em breve">
+          Por enquanto o relatório sai só das regras, calculadas direto do seu log. O coach vai
+          explicar e ordenar os erros na próxima versão.
+        </Notice>
       ) : (
         <Notice tone="atencao" title="Explicação do coach indisponível agora">
           Os erros abaixo vêm só das regras, que são calculadas direto do log e continuam valendo.
         </Notice>
       )}
 
+      <GapBreakdown gap={result.gap} />
+
       <h2>Erros do maior para o menor impacto</h2>
       {mistakes.length === 0 ? (
-        <Notice title="Nenhum erro encontrado">Sua luta bateu com os melhores em todas as regras.</Notice>
+        <Notice title="Nenhum erro encontrado">
+          Sua luta bateu com os melhores em todas as regras.
+        </Notice>
       ) : (
         mistakes.map((mistake, index) => (
           <MistakeCard key={mistake.id} mistake={mistake} rank={index + 1} />
@@ -197,8 +232,8 @@ function Summary({ result }) {
         <>
           <h2>O que as regras não explicam</h2>
           <p className="muted">
-            Diferença que nenhuma regra mede. O coach aponta onde olhar, mas são pistas, não erros
-            confirmados.
+            Diferença que nenhuma regra mede. As tabelas apontam onde olhar, mas são pistas, não
+            erros confirmados.
           </p>
           {hypotheses.map((mistake) => (
             <MistakeCard key={mistake.id} mistake={mistake} rank={null} />
@@ -221,6 +256,8 @@ function Summary({ result }) {
 }
 
 function Rules({ result }) {
+  // Coluna "Referência" só quando o motor manda a régua (análises antigas não têm).
+  const hasReference = result.rules.some((rule) => rule.reference);
   return (
     <div className="stack">
       <div className="table-wrap">
@@ -230,6 +267,7 @@ function Rules({ result }) {
               <th scope="col">Regra</th>
               <th scope="col">Você</th>
               <th scope="col">Melhores</th>
+              {hasReference && <th scope="col">Referência</th>}
               <th scope="col">Situação</th>
             </tr>
           </thead>
@@ -239,11 +277,31 @@ function Rules({ result }) {
                 <th scope="row">
                   {rule.name}
                   {rule.note && <span className="rule-note">{rule.note}</span>}
+                  {rule.details?.length > 0 && (
+                    <details className="rule-details">
+                      <summary>
+                        {rule.details.length === 1
+                          ? "1 detalhe"
+                          : `${rule.details.length} detalhes`}
+                      </summary>
+                      <ul>
+                        {rule.details.map((detail, index) => (
+                          <li key={index}>{detail}</li>
+                        ))}
+                      </ul>
+                    </details>
+                  )}
                 </th>
                 <td>{rule.player_value}</td>
                 <td>{rule.top_value}</td>
+                {hasReference && <td className="rule-reference">{rule.reference ?? "—"}</td>}
                 <td>
                   <StatusBadge status={rule.status} />
+                  {rule.impact_pct != null && rule.impact_pct > 0 && (
+                    <span className="rule-note">
+                      custou ~{formatNumber(rule.impact_pct)}% do dano
+                    </span>
+                  )}
                 </td>
               </tr>
             ))}
@@ -284,6 +342,8 @@ function Rules({ result }) {
           </table>
         </div>
       ))}
+
+      <TargetsTable targets={result.targets} />
     </div>
   );
 }

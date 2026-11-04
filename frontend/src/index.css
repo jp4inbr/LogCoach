@@ -1509,3 +1509,110 @@ caption {
     transition: none;
   }
 }
+
+/* Diferença para os tops: erros + sorte + não explicado (decisão de 03/11) */
+
+.gap {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border-radius: var(--radius);
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.gap-headline {
+  color: var(--text);
+}
+
+.gap-headline.text-down strong {
+  color: var(--error);
+}
+
+.gap-headline.text-up strong {
+  color: var(--ok);
+}
+
+.gap-bar {
+  display: flex;
+  height: 12px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--surface-2);
+}
+
+.gap-list {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.gap-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.gap-list strong {
+  margin-left: auto;
+}
+
+.gap-dot {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--ok);
+}
+
+.gap-mistakes {
+  background: var(--error);
+}
+
+.gap-luck {
+  background: var(--warn);
+}
+
+.gap-unexplained {
+  background: var(--muted);
+}
+
+/* Régua e fatos de cada regra */
+
+.rule-reference {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.rule-details {
+  margin-top: 4px;
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: var(--muted);
+}
+
+.rule-details summary {
+  cursor: pointer;
+  color: var(--accent);
+}
+
+.rule-details ul {
+  margin: 4px 0 0;
+  padding-left: 18px;
+}
+
+/* Dano por alvo: o chefe em destaque */
+
+.target-boss th,
+.target-boss td {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.badge-boss {
+  margin-left: 8px;
+  color: var(--accent);
+  background: var(--info-bg);
+}
