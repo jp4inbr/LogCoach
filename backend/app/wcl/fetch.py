@@ -48,8 +48,9 @@ COMBATANT_STATS = ("intellect", "critSpell", "hasteSpell", "mastery", "versatili
 def _combatant(event: dict[str, Any] | None) -> dict[str, Any] | None:
     """Atributos e auras do jogador no pull (evento CombatantInfo).
 
-    As auras são o que já estava ativo quando a luta começou (poção tomada antes do pull,
-    defensivo, Salvo montado...): a linha do tempo de buffs só vê o que muda depois do pull.
+    As auras ajudam a saber o que já estava ativo quando a luta começou, mas vêm incompletas
+    (03/11: sem Prismatic Barrier, Mirror Image nem a poção tomada antes do pull); o motor
+    completa pelo primeiro evento de cada buff (`engine/timeline.initial_stacks`).
     """
     if not event:
         return None
@@ -165,6 +166,8 @@ def fetch_fight(
         )
 
     pid = player["id"]
+    # Antes dos eventos: se esta consulta pequena falhar, não se perdem os ~12 pontos deles.
+    active_time_ms = fetch_active_time_ms(client, code, fight_id, pid)
     combatant = events("CombatantInfo", source_id=pid)
     fight_events = {
         "casts": events("Casts", source_id=pid),
@@ -215,7 +218,7 @@ def fetch_fight(
             "actor": player,
             "details": _player_details(report["playerDetails"], pid),
             "combatant": _combatant(combatant[0] if combatant else None),
-            "active_time_ms": fetch_active_time_ms(client, code, fight_id, pid),
+            "active_time_ms": active_time_ms,
         },
         "events": fight_events,
     }

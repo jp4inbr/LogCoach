@@ -176,5 +176,8 @@ surge_hold: { warn_s: 10, error_s: 15, coincide_s: 5 }
 # Valores reserva das métricas comparadas com os tops, usados com menos de 5 tops.
 reserve:
   touch_drift_s: { warn: 3, error: 6 }   # atraso médio do Touch em relação ao CD
-  active_time_pct: { warn: 98, error: 96 }
+  # Tempo ativo na régua do WCL (03/11: tops de 99,2% a 99,8%, mediana 99,6%) e na conta
+  # própria, usada quando alguma luta não tem o número do WCL (tops de 96,6% a 98,5%).
+  active_time_pct: { warn: 99.3, error: 98.8 }
+  active_time_pct_own: { warn: 98, error: 96 }
   bolt_expected_per_min: { warn: 4.5, error: 3.5 }

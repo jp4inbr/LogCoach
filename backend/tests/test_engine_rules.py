@@ -2,6 +2,7 @@
 
 import gzip
 import json
+from dataclasses import replace
 from functools import lru_cache
 from pathlib import Path
 
@@ -15,7 +16,7 @@ from app.engine.measures import measure
 from app.engine.potion import potion_stats
 from app.engine.prismatic_bolt import bolt_munch
 from app.engine.rules import load_encounter_rules, load_spec_rules
-from app.engine.uptime import active_time_pct
+from app.engine.uptime import active_time_pct, wcl_active_pct
 
 FIXTURES = Path(__file__).parent / "fixtures" / "nekzali_mythic_326_328"
 RULES = load_spec_rules()
@@ -97,6 +98,29 @@ def test_active_time_comes_from_the_warcraft_logs_when_present():
     data = fight(casts=[(BARRAGE, t) for t in range(30)])
     data["player"]["active_time_ms"] = 57_000
     assert active_time_pct(data, RULES) == pytest.approx(95)
+
+
+def test_wcl_active_time_leaves_dead_time_out():
+    """Morto de 30 a 40 s numa luta de 60 s: o WCL não conta esse tempo como ativo."""
+    data = fight(casts=[(BARRAGE, t) for t in range(30)] + [(BARRAGE, 41)], death_s=[30])
+    data["player"]["active_time_ms"] = 45_000
+    assert active_time_pct(data, RULES) == pytest.approx(100 * 45 / 49, abs=0.5)
+
+
+def test_wcl_active_time_is_refused_with_a_phase_without_targets():
+    data = fight(casts=[(BARRAGE, t) for t in range(60)], transitions=[(1, 0), (2, 20), (3, 40)])
+    data["player"]["active_time_ms"] = 60_000
+    assert wcl_active_pct(data, {"downtime_excluded_phases": [2]}) is None
+    assert wcl_active_pct(data, {"downtime_excluded_phases": []}) == pytest.approx(100)
+
+
+def test_active_time_uses_one_scale_for_everyone():
+    """Se um top não tem o número do WCL, todos usam a conta própria (3 a 5 pontos menor)."""
+    player, tops, _ = reference_checks()
+    mixed = [replace(tops[0], active_wcl_pct=None), *tops[1:]]
+    active = check(run_checks(player, mixed, RULES, NEKZALI), "active_time")
+    assert active.player_value == "93,8%"  # conta própria do Harmonist (o WCL dá 98,6%)
+    assert check(run_checks(player, tops, RULES, NEKZALI), "active_time").player_value == "98,6%"
 
 
 def test_t03_idle_time_is_measured():
@@ -338,6 +362,27 @@ def test_reference_kill_impacts_and_gap():
     assert parts.total_pct == pytest.approx(
         parts.mistakes_pct + parts.luck_pct + parts.unexplained_pct
     )
+    assert parts.mistakes_pct == pytest.approx(6.6, abs=0.3)
+    assert parts.unexplained_pct == pytest.approx(3.9, abs=0.5)
+
+
+def test_reference_kill_wcl_data_since_the_fixtures_of_0311():
+    """Dados da validação com o WCL (03/11): tempo ativo do WCL, poção antes do pull,
+    intelecto de cada um e overlaps por fase."""
+    player, tops, checks = reference_checks()
+    assert player.active_wcl_pct == pytest.approx(98.6, abs=0.1)
+    assert [round(t.active_wcl_pct, 1) for t in tops] == [
+        99.6, 99.8, 99.7, 99.7, 99.8, 99.2, 99.6, 99.5, 99.8, 99.6,
+    ]  # fmt: skip
+    assert check(checks, "active_time").impact_pct == pytest.approx(1.0, abs=0.1)
+    top09 = tops[8]
+    assert [(round(u.time_s, 1), u.with_) for u in top09.potions.uses][0] == (-2.1, "Surto Arcano")
+    assert (top09.potions.expected, top09.potions.missing) == (2, 0)
+    assert player.potions.damage_bonus == pytest.approx(695 / 3575)
+    assert top09.potions.damage_bonus == pytest.approx(695 / (4107 - 695))
+    assert (sum(h.defended for h in player.overlaps), len(player.overlaps)) == (1, 6)
+    assert sum(h.defended for t in tops for h in t.overlaps) == 7
+    assert sum(len(t.overlaps) for t in tops) == 52
 
 
 def test_tops_are_never_errors_against_a_reference_that_includes_them():

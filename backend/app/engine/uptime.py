@@ -1,24 +1,18 @@
 """Tempo ativo: quanto da luta o jogador passou conjurando alguma coisa.
 
-A régua é o "Active Time" do Warcraft Logs (`player.active_time_ms`, tabela de casts), desde
-03/11: a conta própria abaixo dava 93,8% no Harmonist contra 98,6% do WCL e 96,6–98,5% nos
-tops contra 99,2–99,8%, quase triplicando a diferença dele. Do número do WCL saem o tempo
-morto e as fases sem alvo (o WCL não conta como ativo o tempo morto, então ficar morto não
-pesa duas vezes: a morte já tem regra própria).
-
-A conta própria fica de reserva para lutas sem o número do WCL (fixtures antigas). O limite
-não é fixo (03/11): o tempo ativo é comparado com a mediana dos tops. Por isso a
-conta só precisa ser a mesma para todos, não idêntica à do Warcraft Logs:
-- cast com tempo de conjuração: ocupado do `begincast` ao `cast` (no mínimo um GCD);
-- instantâneo: ocupado por um GCD;
-- canal (Arcane Missiles): ocupado até o último tick antes do cast seguinte.
-O GCD é estimado no próprio jogador (haste muda de um para outro), e buracos de até
-`LATENCY_S` entre um cast e outro contam como ativos (latência e fila de comando, não tempo
-parado). Medido em 03/11 nas fixtures: tops de 96,6% a 98,5%, perto do que o Warcraft Logs
-mostra; sem a tolerância, metade do "tempo parado" eram buracos de 0,1 a 0,3 s. Tempo morto e
-fases sem
-nada para bater (`downtime_excluded_phases` do encontro) saem da conta. Intermissão com alvo
-(como a do Nek'zali, com o Echo of Jawae) conta: é troca de alvo, não tempo parado.
+Duas réguas, e a comparação usa uma só para todos (`checks._active`):
+- **Warcraft Logs** (`player.active_time_ms`, tabela de casts), a principal desde 03/11. A
+  conta própria dava 93,8% no Harmonist contra 98,6% do WCL e 96,6–98,5% nos tops contra
+  99,2–99,8%, quase triplicando a diferença dele. O tempo morto sai do denominador (o WCL não
+  conta como ativo o tempo morto; a morte já tem regra própria). Com fase sem alvo
+  (`downtime_excluded_phases`) na luta, o número do WCL é recusado: ele conta o que foi
+  conjurado nela e não dá para separar.
+- **Conta própria**, reserva quando falta o número do WCL em alguma luta da comparação:
+  cast com tempo de conjuração ocupa do `begincast` ao `cast` (no mínimo um GCD), instantâneo
+  ocupa um GCD, o Arcane Missiles ocupa até o último tick antes do cast seguinte. O GCD é
+  estimado no próprio jogador e buracos de até `LATENCY_S` contam como ativos (latência).
+  Tempo morto e fases sem alvo saem da conta.
+Intermissão com alvo (como a do Nek'zali, com o Echo of Jawae) conta: é troca de alvo.
 """
 
 import statistics
@@ -78,39 +72,60 @@ def _busy_intervals(fight: dict[str, Any], rules: dict[str, Any], gcd_ms: float)
     return intervals
 
 
-def active_time_pct(
+def _excluded(fight: dict[str, Any], encounter: dict[str, Any] | None) -> tuple[list, list]:
+    """(tempo morto, fases sem alvo), em ms do report."""
+    start = start_ms(fight)
+    dead = [[start + d.time_s * 1000, start + (d.time_s + d.dead_s) * 1000] for d in deaths(fight)]
+    skip = set((encounter or {}).get("downtime_excluded_phases") or [])
+    phases = [[s.start_ms, s.end_ms] for s in phase_spans(fight) if s.id in skip]
+    return dead, phases
+
+
+def _clip(fight: dict[str, Any], intervals: list[list], tolerance_ms: float = 0.0) -> list[list]:
+    """Intervalos cortados à luta e unidos (com folga de `tolerance_ms`)."""
+    start, end = start_ms(fight), end_ms(fight)
+    merged: list[list] = []
+    for a, b in sorted([max(a, start), min(b, end)] for a, b in intervals):
+        if b <= a:
+            continue
+        if merged and a <= merged[-1][1] + tolerance_ms:
+            merged[-1][1] = max(merged[-1][1], b)
+        else:
+            merged.append([a, b])
+    return merged
+
+
+def wcl_active_pct(fight: dict[str, Any], encounter: dict[str, Any] | None = None) -> float | None:
+    """Tempo ativo do Warcraft Logs sobre o tempo vivo; None sem o número ou com fase sem alvo."""
+    active = (fight.get("player") or {}).get("active_time_ms")
+    dead, phases = _excluded(fight, encounter)
+    if active is None or _clip(fight, phases):
+        return None
+    counted = (end_ms(fight) - start_ms(fight)) - sum(b - a for a, b in _clip(fight, dead))
+    return 100.0 if counted <= 0 else 100 * min(1.0, active / counted)
+
+
+def own_active_pct(
     fight: dict[str, Any], rules: dict[str, Any], encounter: dict[str, Any] | None = None
 ) -> float:
-    start, end = start_ms(fight), end_ms(fight)
-
-    excluded = [
-        [start + d.time_s * 1000, start + (d.time_s + d.dead_s) * 1000] for d in deaths(fight)
-    ]
-    skip = set((encounter or {}).get("downtime_excluded_phases") or [])
-    excluded += [[s.start_ms, s.end_ms] for s in phase_spans(fight) if s.id in skip]
-
-    def clip(intervals: list[list], tolerance_ms: float = 0.0) -> list[list]:
-        merged: list[list] = []
-        for a, b in sorted([max(a, start), min(b, end)] for a, b in intervals):
-            if b <= a:
-                continue
-            if merged and a <= merged[-1][1] + tolerance_ms:
-                merged[-1][1] = max(merged[-1][1], b)
-            else:
-                merged.append([a, b])
-        return merged
-
-    out = clip(excluded)
-    counted = (end - start) - sum(b - a for a, b in out)
+    """Conta própria (reserva)."""
+    dead, phases = _excluded(fight, encounter)
+    out = _clip(fight, dead + phases)
+    counted = (end_ms(fight) - start_ms(fight)) - sum(b - a for a, b in out)
     if counted <= 0:
         return 100.0
-    wcl_active = (fight.get("player") or {}).get("active_time_ms")
-    if wcl_active is not None:
-        return 100 * min(1.0, wcl_active / counted)
-
     gcd_ms = estimate_gcd_s(fight, rules) * 1000
-    busy = clip(_busy_intervals(fight, rules, gcd_ms), LATENCY_S * 1000)
+    busy = _clip(fight, _busy_intervals(fight, rules, gcd_ms), LATENCY_S * 1000)
     # Ocupado dentro de trecho excluído não conta (nem para mais, nem para menos).
     busy_in_out = sum(max(0.0, min(b, d) - max(a, c)) for a, b in busy for c, d in out)
     active = sum(b - a for a, b in busy) - busy_in_out
     return 100 * min(1.0, active / counted)
+
+
+def active_time_pct(
+    fight: dict[str, Any], rules: dict[str, Any], encounter: dict[str, Any] | None = None
+) -> float:
+    """O número do WCL quando existe; senão, a conta própria. Para comparar lutas, use as duas
+    réguas separadas (`checks._active`)."""
+    wcl = wcl_active_pct(fight, encounter)
+    return wcl if wcl is not None else own_active_pct(fight, rules, encounter)

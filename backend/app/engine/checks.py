@@ -346,13 +346,19 @@ def _potion(p: FightMeasures, tops: list[FightMeasures], rules: dict[str, Any]) 
 
 
 def _active(p: FightMeasures, tops: list[FightMeasures], rules: dict[str, Any]) -> Check:
-    ref = reference([t.active_pct for t in tops], "higher", rules["reserve"]["active_time_pct"])
+    # Uma régua só para todos: a do WCL se o jogador e todos os tops a têm; senão a própria,
+    # que dá 3 a 5 pontos a menos e não pode ser comparada com a do WCL.
+    wcl = all(m.active_wcl_pct is not None for m in [p, *tops])
+    value = p.active_wcl_pct if wcl else p.active_own_pct
+    values = [t.active_wcl_pct if wcl else t.active_own_pct for t in tops]
+    reserve = rules["reserve"]["active_time_pct" if wcl else "active_time_pct_own"]
+    ref = reference(values, "higher", reserve)
     usual = ref.median if ref.from_tops else ref.warn
-    impact = 100 * (usual / p.active_pct - 1) if p.active_pct and usual > p.active_pct else None
+    impact = 100 * (usual / value - 1) if value and usual > value else None
     return _ref_check(
         "active_time",
         "Tempo ativo",
-        p.active_pct,
+        value,
         ref,
         pct,
         impact_pct=impact,

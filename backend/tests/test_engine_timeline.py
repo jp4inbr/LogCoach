@@ -1,8 +1,8 @@
-"""Buffs ativos no pull (poção, defensivo, Salvo montado): a luta só mostra a saída deles."""
+"""Buffs ativos no pull (poção, defensivo, Mirror Image): a luta só mostra a saída deles."""
 
 from app.engine.timeline import buff_windows, initial_stacks, stack_gains, stacks_before
 
-SALVO, POTION = 1242974, 1236616
+SALVO, POTION, CLEARCASTING = 1242974, 1236616, 263725
 
 
 def fight(buffs: list[tuple[int, str, float, int | None]], auras: list[dict] | None = None) -> dict:
@@ -37,20 +37,38 @@ def test_buff_applied_in_the_fight_starts_inactive():
     assert buff_windows(data, POTION) == [(5000, 35000)]
 
 
-def test_salvo_built_before_the_pull_keeps_its_stacks():
-    """O primeiro removebuffstack para 7 diz que havia 8 no pull; ganho do pull não conta."""
+def test_first_stack_drop_gives_the_exact_stacks():
+    """Clearcasting cai de uma em uma: o primeiro removebuffstack para 1 diz que havia 2."""
     data = fight(
         [
-            (SALVO, "removebuffstack", 3000, 7),
-            (SALVO, "applybuffstack", 4000, 8),
-            (SALVO, "removebuff", 5000, None),
+            (CLEARCASTING, "removebuffstack", 3000, 1),
+            (CLEARCASTING, "applybuffstack", 4000, 2),
+            (CLEARCASTING, "removebuff", 5000, None),
         ]
     )
-    assert initial_stacks(data, SALVO) == 8
-    assert stacks_before(data, SALVO, [2000, 3500, 4500, 6000]) == [8, 7, 8, 0]
-    assert stack_gains(data, SALVO) == 1
+    assert initial_stacks(data, CLEARCASTING) == 2
+    assert stacks_before(data, CLEARCASTING, [2000, 3500, 4500, 6000]) == [2, 1, 2, 0]
+    assert stack_gains(data, CLEARCASTING) == 1  # a carga do pull não conta
 
 
-def test_pull_auras_give_the_stacks_when_the_first_event_is_the_exit():
-    data = fight([(SALVO, "removebuff", 3000, None)], auras=[{"ability": SALVO, "stacks": 12}])
-    assert stacks_before(data, SALVO, [2000]) == [12]
+def test_pull_aura_beats_a_first_stack_gain():
+    """O Salvo sobe até 9 de uma vez: com a aura do pull (10), um applybuffstack para 13 não
+    quer dizer que havia 12."""
+    data = fight([(SALVO, "applybuffstack", 3000, 13)], auras=[{"ability": SALVO, "stacks": 10}])
+    assert initial_stacks(data, SALVO) == 10
+    assert initial_stacks(fight([(SALVO, "applybuffstack", 3000, 13)]), SALVO) == 12
+
+
+def test_first_applybuff_means_inactive_even_with_a_pull_aura():
+    """Poção clicada no ms do pull e listada nas auras: o applybuff diz que ela entrou ali."""
+    data = fight(
+        [(POTION, "applybuff", 1000, None), (POTION, "removebuff", 31000, None)],
+        auras=[{"ability": POTION, "stacks": 1}],
+    )
+    assert initial_stacks(data, POTION) == 0
+    assert buff_windows(data, POTION) == [(1000, 31000)]
+
+
+def test_refresh_without_entry_was_active_since_the_pull():
+    data = fight([(POTION, "refreshbuff", 9000, None), (POTION, "removebuff", 20000, None)])
+    assert buff_windows(data, POTION) == [(1000, 20000)]

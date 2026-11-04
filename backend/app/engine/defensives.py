@@ -5,9 +5,9 @@ Padrão geral (03/11): overlaps de mecânicas e mecânicas que miram o jogador. 
 overlap conta como coberto se algum defensivo do Mago (buffs em `defensives` do YAML da spec)
 estava ativo ou entrou na janela. É risco, não perda de dano: não tem `impact_pct`.
 
-Cada overlap vale só na fase dele (`phase` do YAML, id do Warcraft Logs). Overlaps diferentes
-que caem no mesmo pico (as duas listas têm o Possession Barrage) contam uma vez só, com o
-nome do primeiro: sem isso o Harmonist tinha 12 picos (03/11).
+Cada overlap vale só na fase dele (`phase` do YAML, id do Warcraft Logs): sem isso o
+Harmonist tinha 12 picos, com ele 6 (03/11). Overlaps diferentes que caem no mesmo pico contam
+uma vez só, com o nome do primeiro (no Nek'zali hoje eles estão em fases diferentes).
 """
 
 from dataclasses import dataclass

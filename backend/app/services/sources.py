@@ -190,7 +190,7 @@ class Analyzer(Protocol):
 
     O motor vai ler os eventos com `source.get_fight_data(report.code, fight.id,
     player.actor_id)` (a fonte entra pelo construtor, em `get_analyzer`). A luta completa
-    custa ~12 pontos do Warcraft Logs (item 12.8), mas em geral já estará no cache: a tela
+    custa ~14 pontos do Warcraft Logs (item 12.8), mas em geral já estará no cache: a tela
     chama a pré-busca (`POST /reports/{code}/fights/{id}/prefetch`) assim que o jogador fica
     definido. Se ela estiver baixando, o motor espera essa mesma busca terminar; se ainda
     estiver na fila (atrás de outras), o motor busca ele mesmo, sem esperar a fila.
@@ -395,20 +395,21 @@ REFRESH_MIN_INTERVAL_S = 8
 # versão alfa sem pesar no servidor. Validade igual à da lista: luta que subiu não muda.
 FIGHT_DATA_CACHE_MAX = 8
 # Quem pede uma luta que já está baixando espera ela terminar até esse limite. A luta
-# completa são várias páginas de eventos (~12 pontos); cada pedido já tem o próprio timeout.
+# completa são várias páginas de eventos (~14 pontos); cada pedido já tem o próprio timeout.
 FIGHT_DATA_WAIT_S = 180
 # Pré-buscas ao mesmo tempo (threads do processo). Duas bastam para a versão alfa e seguram
 # o gasto de pontos e de memória se muitos escolherem luta juntos; o resto espera na fila.
 PREFETCH_WORKERS = 2
-# Pré-buscas novas por cliente (usuário logado ou IP) na janela: ~12 pontos cada, então 10
-# em 10 min são ~120 pontos, um oitavo dos 1000/h do LogCoach inteiro. Quem troca de jogador
+# Pré-buscas novas por cliente (usuário logado ou IP) na janela: ~14 pontos cada, então 10
+# em 10 min são ~140 pontos, um sétimo dos 1000/h do LogCoach inteiro. Quem troca de jogador
 # ou de luta algumas vezes não chega perto; quem clica em tudo não esgota os pontos de todos.
 PREFETCH_LIMIT = 10
 PREFETCH_WINDOW_S = 10 * 60
 # Teto do processo inteiro, somando todos os clientes: o limite por cliente não segura quem
-# troca de IP (com IPv6 é fácil). 40 por hora × ~12 pontos são ~480 pontos, metade dos 1000/h
-# do Warcraft Logs; a outra metade fica para colar links, Magos de cada luta e as análises
-# (que buscam a luta sozinhas quando a pré-busca não veio).
+# troca de IP (com IPv6 é fácil). 40 por hora × ~14 pontos são ~560 pontos, pouco mais da metade
+# dos 1000/h do Warcraft Logs; o resto fica para colar links, Magos de cada luta, a busca dos
+# tops e as análises (que buscam a luta sozinhas quando a pré-busca não veio). A rever quando
+# a busca dos tops entrar (passo 4.2: ~150 pontos por bracket novo).
 PREFETCH_GLOBAL_LIMIT = 40
 PREFETCH_GLOBAL_WINDOW_S = 60 * 60
 # Consultas por cliente que vão mesmo ao Warcraft Logs (lista de lutas e Magos de uma luta;
@@ -980,7 +981,7 @@ class WclReportSource:
         return players
 
     def get_fight_data(self, code: str, fight_id: int, actor_id: int) -> dict[str, Any]:
-        """Luta completa do jogador (`wcl.fetch.fetch_fight`, ~12 pontos), uma vez por
+        """Luta completa do jogador (`wcl.fetch.fetch_fight`, ~14 pontos), uma vez por
         (código, luta, jogador). Se a pré-busca dela está baixando, espera essa busca; se
         ainda está na fila, busca aqui."""
         return self._fight_data.get(

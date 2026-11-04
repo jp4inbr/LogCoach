@@ -1,9 +1,11 @@
 """Leitura de buffs na linha do tempo de uma luta (formato de `wcl.fetch.fetch_fight`).
 
-Buff ativo no pull (poção tomada antes, defensivo, Salvo montado) não tem `applybuff` na
-luta: o primeiro evento dele já é a saída. O estado do pull (`initial_stacks`) vem do
-primeiro evento de acúmulo, das auras do CombatantInfo (`player.combatant.auras`) ou, sem
-elas (fixtures antigas), de o primeiro evento ser a saída do buff.
+Buff ativo no pull (poção tomada antes, Prismatic Barrier, Mirror Image) não tem `applybuff`
+na luta: o primeiro evento dele já é a saída. O estado do pull sai de `initial_stacks`. As
+auras do CombatantInfo (`player.combatant.auras`) ajudam, mas vêm incompletas: nas fixtures de
+03/11 não listam Barrier, Mirror Image nem a poção do top09, que saem da inferência pelo
+primeiro evento. Aura ausente não quer dizer buff inativo. (O Salvo listado nas auras zera no
+início do encontro: os logs mostram o `removebuff` dele a 0,03 s, sem Barrage.)
 """
 
 from typing import Any
@@ -25,19 +27,25 @@ def _buff_events(fight: dict[str, Any], buff_id: int) -> list[dict[str, Any]]:
 def initial_stacks(fight: dict[str, Any], buff_id: int, events: list[dict] | None = None) -> int:
     """Acúmulos do buff no pull (0 = inativo).
 
-    Um primeiro evento de acúmulo diz o número exato (removebuffstack para 7 = havia 8); fora
-    isso vale a aura do pull e, sem ela, se o primeiro evento é a saída do buff."""
+    - primeiro evento `applybuff`: estava inativo (o jogo só aplica o que não está ativo);
+    - primeiro `removebuffstack` para N: havia N + 1 (as cargas caem de uma em uma);
+    - senão, a aura do pull, quando o CombatantInfo a lista;
+    - sem ela: primeiro `applybuffstack` para N dá ao menos N − 1 (o Salvo sobe até 9 de
+      uma vez, então é estimativa), e `removebuff` ou `refreshbuff` sem entrada = ativo.
+    """
     events = _buff_events(fight, buff_id) if events is None else events
     first = events[0] if events else None
+    if first is not None and first["type"] == "applybuff":
+        return 0
     if first is not None and first["type"] == "removebuffstack":
         return first.get("stack", 0) + 1
-    if first is not None and first["type"] == "applybuffstack":
-        return max(1, first.get("stack", 1) - 1)
     auras = pull_auras(fight)
     if buff_id in auras:
         return auras[buff_id]
-    if first is None or first["type"] == "applybuff":
+    if first is None:
         return 0
+    if first["type"] == "applybuffstack":
+        return max(1, first.get("stack", 1) - 1)
     return 1  # removebuff ou refreshbuff sem entrada: estava ativo no pull
 
 

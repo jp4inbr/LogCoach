@@ -35,7 +35,7 @@ from app.engine.prismatic_bolt import (
 from app.engine.rules import load_spec_rules
 from app.engine.targets import TargetProfile, target_profile
 from app.engine.timeline import buff_windows, stack_gains
-from app.engine.uptime import active_time_pct
+from app.engine.uptime import own_active_pct, wcl_active_pct
 
 # O dano do Touch explode até ~12 s depois do cast; 15 s de folga.
 TOUCH_DAMAGE_WINDOW_MS = 15_000
@@ -60,7 +60,8 @@ class FightMeasures:
     munch: BoltMunch
     potions: PotionStats
     surge_followup: tuple[float, float]  # DPS nos 30 s depois do Surge × no resto
-    active_pct: float
+    active_wcl_pct: float | None  # régua do Warcraft Logs (None sem o número)
+    active_own_pct: float  # conta própria, usada quando alguma luta não tem o do WCL
     deaths: list[Death]
     overlaps: list[OverlapHit]
     externals: list[ExternalBuff]
@@ -156,7 +157,8 @@ def measure(
         surge_followup=surge_followup_rates(
             fight, [u.time_s for u in surge.uses], potion["duration_s"]
         ),
-        active_pct=active_time_pct(fight, rules, encounter),
+        active_wcl_pct=wcl_active_pct(fight, encounter),
+        active_own_pct=own_active_pct(fight, rules, encounter),
         deaths=deaths(fight),
         overlaps=overlap_hits(fight, rules, encounter),
         externals=external_buffs(fight, rules),

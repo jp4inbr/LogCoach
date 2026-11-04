@@ -160,3 +160,38 @@ def test_fight_brings_pull_stats_and_auras_and_every_death():
         "auras": [{"ability": 1236616, "stacks": 1, "source": 10}],
     }
     assert ("Deaths", {}) in client.calls
+
+
+@pytest.mark.parametrize(
+    ("report", "expected"),
+    [
+        (None, None),
+        ({"table": None}, None),
+        ({"table": {"data": {"entries": []}}}, None),
+        ({"table": {"data": {"entries": [{"id": 11, "activeTime": 5}]}}}, None),
+        ({"table": {"data": {"entries": [{"id": 10, "activeTime": 409950}]}}}, 409950),
+    ],
+)
+def test_active_time_is_none_when_the_table_has_no_player(report, expected):
+    """Sem o número do WCL o motor cai na conta própria (para todos, ver checks._active)."""
+    from app.wcl.fetch import fetch_active_time_ms
+
+    class Client:
+        def query(self, query, variables, timeout=None):
+            return {"reportData": {"report": report}}
+
+    assert fetch_active_time_ms(Client(), "CODE", 1, 10) == expected
+
+
+def test_fight_without_combatant_info_has_no_combatant():
+    from app.wcl.fetch import fetch_fight
+
+    class NoCombatant(_FakeFightClient):
+        def events(self, code, fight_id, start, end, data_type, **filters):
+            return (
+                []
+                if data_type == "CombatantInfo"
+                else super().events(code, fight_id, start, end, data_type, **filters)
+            )
+
+    assert fetch_fight(NoCombatant(), "CODE", 1, actor_id=10)["player"]["combatant"] is None
