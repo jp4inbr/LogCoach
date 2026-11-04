@@ -29,8 +29,8 @@ from app.wcl.fetch import (  # noqa: E402
     bracket_range,
     fetch_brackets,
     fetch_fight,
-    fetch_rankings,
 )
+from app.wcl.tops import fetch_tops  # noqa: E402
 
 # Kill de referência (ver CLAUDE.md). Buscado pelo id do ator, como o motor faz.
 REFERENCE = {"report": "XhrmBaYkGCAQjH2D", "fight": 34, "player": "Harmonist", "actor_id": 455}
@@ -46,6 +46,9 @@ SAMPLE_FIGHT = (
     / "samples"
     / f"fight_{REFERENCE['report']}_{REFERENCE['fight']}_{REFERENCE['actor_id']}.json.gz"
 )
+# Cópia dos tops do bracket do kill de referência para o modo exemplo (`SampleTopsSource`):
+# mesmos bytes das fixtures, para o plano B comparar com os mesmos tops dos testes.
+SAMPLE_TOPS = BACKEND / "app" / "samples" / "tops"
 NAMES_FILE = FIXTURES / "names.local.json"
 RULES_FILE = BACKEND / "app" / "rules" / "arcane_mage.yaml"
 
@@ -133,34 +136,32 @@ def main() -> None:
 
         if not args.only_reference:
             print(f"Buscando top {TOP_N} do bracket {low}–{high} (índice {index})…")
-            rankings = fetch_rankings(
-                client, ENCOUNTER_ID, CLASS_NAME, SPEC_NAME, bracket=index, n=TOP_N
+            found = fetch_tops(
+                client, ENCOUNTER_ID, CLASS_NAME, SPEC_NAME, 5, bracket=index, n=TOP_N
             )
             ref_key = (REFERENCE["report"], REFERENCE["fight"])
-            if any((r["report"]["code"], r["report"]["fightID"]) == ref_key for r in rankings):
-                # RF21: quem já está no top 10 do bracket é comparado com o 1º geral.
+            if ref_key in found["ranking_logs"]:
+                # RF21: quem já está no top 10 do bracket é comparado com o top 10 geral.
                 print("  O jogador de referência já está no top 10 do bracket (RF21).")
                 index_data["reference_in_top"] = True
+            for skipped in found["skipped"]:
+                print(f"  Pulado (luta não abriu): {skipped['reason']}")
 
-            for rank, ranking in enumerate(rankings, start=1):
+            for rank, top in enumerate(found["tops"], start=1):
                 label = f"top{rank:02d}"
-                server = (ranking.get("server") or {}).get("name")
-                fight = fetch_fight(
-                    client,
-                    ranking["report"]["code"],
-                    ranking["report"]["fightID"],
-                    name=ranking["name"],
-                    server=server,
-                )
+                fight, ranking = top["fight"], top["ranking"]
                 fight_anon, fight_names = anonymize_fight(fight, label)
                 public, real = anonymize_ranking(ranking, label)
                 fight_anon["ranking"] = {"rank": rank, **public}
                 names[f"{label}.json.gz"] = {**fight_names, "ranking": real}
                 write_json(out_dir / f"{label}.json.gz", fight_anon, args.force)
+                write_json(SAMPLE_TOPS / out_dir.name / f"{label}.json.gz", fight_anon, True)
                 index_data["top"].append({"file": f"{label}.json.gz", "rank": rank, **public})
                 summarize(label, fight, expected_ids)
 
         write_json(out_dir / "index.json", index_data, force=True)
+        if not args.only_reference:
+            write_json(SAMPLE_TOPS / out_dir.name / "index.json", index_data, force=True)
         names_all = (
             json.loads(NAMES_FILE.read_text(encoding="utf-8")) if NAMES_FILE.exists() else {}
         )
