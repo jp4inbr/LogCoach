@@ -8,7 +8,7 @@ description: Heurísticas de Nielsen aplicadas, validação de entradas e teste 
 
 ## 8.1 Heurísticas de Nielsen aplicadas
 
-As evidências são prints da alfa rodando (versão de 27/10/2026, relatório de exemplo do Nek'zali Mítico). As três heurísticas marcadas com "após o motor" aparecem na tela de resultado, cujos números mudam quando o motor de análise entrar; os prints delas serão tirados nessa versão.
+As evidências são prints da alfa rodando (versão de 27/10/2026, relatório de exemplo do Nek'zali Mítico). As três heurísticas marcadas com "após o motor" aparecem na tela de resultado. O motor de análise entrou em 04/11/2026 (PR #27) e a tela passou a mostrar os números calculados a partir do log; os prints delas serão tirados nessa versão. O resumo do coach (IA) ainda não está ligado: por enquanto o resultado sai só com as regras (RF17).
 
 | Heurística | Onde aparece no LogCoach | Evidência (print) | Tela no protótipo (item 3) |
 |---|---|---|---|

@@ -1,6 +1,6 @@
 # LogCoach - Coach de Desempenho para World of Warcraft
 
-> **Status do Projeto:** Versão Alfa (Entrega RT03 - Consolidação, Usabilidade, IA e Testes)
+> **Status do Projeto:** Versão Alfa (Entrega RT03 - Consolidação, Usabilidade, IA e Testes). O motor de análise já roda com dados reais do Warcraft Logs e compara com os top 10 do bracket; a explicação pela IA (Gemini) é a próxima etapa, e por enquanto o relatório sai só com as regras.
 
 ## 1. Sobre o Projeto (Escopo RT01)
 
@@ -18,9 +18,9 @@ A partir do link público de um relatório do Warcraft Logs, o sistema compara a
 | :--- | :--- | :--- |
 | **Frontend** | React 19 + Vite | Interface responsiva (360px a desktop), validação de entrada e visualização do relatório |
 | **Backend** | Python 3.12 + FastAPI | API REST, autenticação JWT + Argon2, controle de limite do plano e orquestração |
-| **Motor de Análise** | Python (`app/engine/`) | Leitura de regras YAML (`arcane_mage.yaml` e `nekzali.yaml`), linha do tempo e comparação por fase |
+| **Motor de Análise** | Python (`app/engine/`) | Regras YAML (`arcane_mage.yaml` e `nekzali.yaml`) com limites tirados dos top 10, diferença para os tops (erros + sorte + não explicado) e tabelas por habilidade e por alvo, por fase |
 | **Banco de Dados** | SQLModel (SQLite / PostgreSQL) | Persistência de usuários, histórico de análises e evolução por chefe, com atenção à conformidade com a LGPD |
-| **Inteligência Artificial** | Gemini via Vertex AI (GCP) | Explicação e priorização dos erros em português a partir dos fatos estruturados |
+| **Inteligência Artificial** | Gemini via Vertex AI (GCP) | Explicação e priorização dos erros em português a partir dos fatos estruturados (próxima etapa, ainda não ligada) |
 | **Fonte de Dados** | Warcraft Logs API v2 (GraphQL) | Coleta de eventos de combate, fases e rankings por bracket de item level (OAuth2) |
 
 ## 3. Estrutura do Repositório
@@ -30,15 +30,16 @@ LogCoach/
 ├── .github/workflows/ci.yml   # Pipeline CI: Ruff (lint/format), Pytest, ESLint e Vite Build
 ├── backend/                   # API FastAPI e Motor de Análise
 │   ├── app/
-│   │   ├── api/               # Rotas REST (/auth, /me, /reports/resolve, /analyses)
-│   │   ├── engine/            # Motor determinístico (rules, timeline, prismatic_bolt, arcane_soul)
+│   │   ├── ai/                # Integração com a IA (ainda vazio: próxima etapa)
+│   │   ├── api/               # Rotas REST (/auth, /me, /reports/resolve, players, prefetch, /analyses)
+│   │   ├── engine/            # Motor determinístico (measures, checks, baseline, abilities, targets, report...)
 │   │   ├── rules/             # Regras da especialização (arcane_mage.yaml)
 │   │   ├── encounters/        # Regras e mecânicas do chefe (nekzali.yaml)
 │   │   ├── guides/            # Guias em português enviados como contexto para a IA
 │   │   ├── i18n/              # Tradução de magias e NPCs por ID (pt_br.yaml)
-│   │   ├── samples/           # Dados do kill de referência para modo offline/demo
-│   │   ├── services/          # Interfaces ReportSource e Analyzer, planos e validação
-│   │   └── wcl/               # Cliente GraphQL Warcraft Logs e anonimização (RF25)
+│   │   ├── samples/           # Kill de referência e top 10 do bracket para o modo exemplo (offline/demo)
+│   │   ├── services/          # ReportSource, TopsSource, EngineAnalyzer, planos e validação
+│   │   └── wcl/               # Cliente GraphQL Warcraft Logs, busca dos tops e anonimização (RF25)
 │   ├── scripts/               # Script de coleta e anonimização de fixtures
 │   └── tests/                 # Suíte de testes automatizados (Pytest + fixtures reais)
 ├── frontend/                  # SPA React + Vite
@@ -55,11 +56,11 @@ LogCoach/
 
 O projeto adota princípios de Clean Code e SOLID para garantir a manutenibilidade, a extensibilidade e a qualidade do código.
 
-- **Single Responsibility (S):** Cada módulo do motor (`prismatic_bolt.py`, `arcane_soul.py` e `timeline.py`) e cada serviço possui uma responsabilidade única e isolada.
+- **Single Responsibility (S):** Cada módulo do motor (por exemplo `cooldowns.py`, `potion.py`, `defensives.py`, `prismatic_bolt.py` e `report.py`) e cada serviço possui uma responsabilidade única e isolada.
 
 - **Open/Closed (O):** As regras da especialização e dos encontros são declaradas em arquivos YAML (`app/rules/` e `app/encounters/`), permitindo adicionar novos chefes ou ajustar parâmetros a cada patch sem alterar o código do motor (RNF12).
 
-- **Dependency Inversion (D):** As rotas dependem das abstrações `ReportSource` e `Analyzer`, definidas em `app/services/sources.py`. Isso permite alternar entre a API real do Warcraft Logs (`DATA_SOURCE=wcl`) e os dados locais de demonstração (`DATA_SOURCE=exemplo`).
+- **Dependency Inversion (D):** As rotas dependem das abstrações `ReportSource` e `Analyzer` (`app/services/sources.py`) e `TopsSource` (`app/services/tops.py`); o analisador é o `EngineAnalyzer` (`app/services/analyzer.py`). Isso permite alternar entre a API real do Warcraft Logs (`DATA_SOURCE=wcl`) e os dados locais de demonstração (`DATA_SOURCE=exemplo`).
 
 - **Análise Estática e Formatação:** O backend utiliza Ruff (`pyproject.toml`), enquanto o frontend utiliza ESLint 9 e Prettier (`eslint.config.js` e `.prettierrc`). As verificações são executadas automaticamente a cada Push ou Pull Request por meio do GitHub Actions.
 
@@ -89,7 +90,7 @@ O projeto implementa e demonstra as **10 heurísticas de usabilidade de Jakob Ni
 
 8. **Design estético e minimalista:** Exibição priorizada dos erros de maior impacto no resumo, com informações complementares organizadas em abas.
 
-9. **Reconhecimento e recuperação de erros:** Mensagens claras associadas a códigos de erro, como `invalid_link`, `fight_too_short` e `plan_limit`, além de mecanismo alternativo de resposta quando a IA não está disponível (RF17).
+9. **Reconhecimento e recuperação de erros:** Mensagens claras associadas a códigos de erro, como `invalid_link`, `fight_too_short` e `plan_limit`, além de relatório só com as regras quando a IA não está disponível (RF17; hoje o relatório já sai assim, até a IA ser ligada).
 
 10. **Ajuda e documentação:** Glossário interativo implementado em `Term.jsx`, explicando conceitos como *bracket* de item level e tempo ativo.
 
@@ -134,7 +135,7 @@ A API estará disponível em:
 - **API REST:** http://localhost:8000
 - **Documentação interativa (Swagger):** http://localhost:8000/docs
 
-> **Modo de demonstração:** Sem as credenciais do Warcraft Logs configuradas, a aplicação utiliza automaticamente o modo de exemplo, conforme a configuração do projeto.
+> **Modo de demonstração:** A variável `DATA_SOURCE` no `.env` escolhe a fonte: `wcl` (API real) ou `exemplo` (arquivos de `app/samples/`, sem internet). Vazia, vale `wcl` se as credenciais do Warcraft Logs estiverem configuradas e `exemplo` se não estiverem. Detalhes no item 12 da documentação.
 
 ### 6.3. Frontend (React + Vite)
 
