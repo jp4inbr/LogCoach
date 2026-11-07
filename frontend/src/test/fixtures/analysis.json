@@ -278,9 +278,7 @@
         "note": null,
         "reference": null,
         "impact_pct": 0.3,
-        "details": [
-          "Surto aos 4:49: Toque 4,5 s antes (aos 4:44), fora dos 3,5 s depois do Surto"
-        ]
+        "details": ["Surto aos 4:49: Toque 4,5 s antes (aos 4:44), fora dos 3,5 s depois do Surto"]
       },
       {
         "id": "touch_uses",
@@ -501,80 +499,31 @@
       {
         "ability_id": 365350,
         "name": "Surto Arcano",
-        "player_s": [
-          2.9,
-          99.2,
-          191.1,
-          289.1,
-          383.8
-        ],
-        "top_s": [
-          3.1,
-          95.1,
-          188.3,
-          281.1
-        ]
+        "player_s": [2.9, 99.2, 191.1, 289.1, 383.8],
+        "top_s": [3.1, 95.1, 188.3, 281.1]
       },
       {
         "ability_id": 321507,
         "name": "Toque dos Magos",
-        "player_s": [
-          5.3,
-          52.2,
-          99.6,
-          145.4,
-          191.2,
-          238.6,
-          284.6,
-          332.0,
-          385.8
-        ],
-        "top_s": [
-          4.5,
-          49.7,
-          98.4,
-          145.0,
-          190.3,
-          235.4,
-          282.9
-        ]
+        "player_s": [5.3, 52.2, 99.6, 145.4, 191.2, 238.6, 284.6, 332.0, 385.8],
+        "top_s": [4.5, 49.7, 98.4, 145.0, 190.3, 235.4, 282.9]
       },
       {
         "ability_id": 451038,
         "name": "Alma Arcana",
-        "player_s": [
-          20.3,
-          116.6,
-          208.5,
-          306.5,
-          401.2
-        ],
-        "top_s": [
-          20.5,
-          112.5,
-          205.3,
-          298.5
-        ]
+        "player_s": [20.3, 116.6, 208.5, 306.5, 401.2],
+        "top_s": [20.5, 112.5, 205.3, 298.5]
       },
       {
         "ability_id": 1236616,
         "name": "Potencial da Luz (poção)",
-        "player_s": [
-          3.6,
-          385.5
-        ],
-        "top_s": [
-          3.1,
-          304.4
-        ]
+        "player_s": [3.6, 385.5],
+        "top_s": [3.1, 304.4]
       },
       {
         "ability_id": 10060,
         "name": "Infusão de Poder (de outro jogador)",
-        "player_s": [
-          131.9,
-          382.2
-        ],
+        "player_s": [131.9, 382.2],
         "top_s": []
       }
     ],

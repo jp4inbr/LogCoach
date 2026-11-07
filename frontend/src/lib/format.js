@@ -28,7 +28,11 @@ export function formatSignedPct(value) {
 }
 
 export function formatDate(iso) {
-  return new Date(iso).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" });
+  return new Date(iso).toLocaleDateString("pt-BR", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
 }
 
 export function formatDateTime(iso) {
