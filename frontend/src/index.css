@@ -2,7 +2,8 @@
    Cores de situação (ok / atenção / erro) iguais em todas as telas (heurística "consistência"). */
 
 /* Cores: duas paletas do Happy Hues (docs/15-padrao-de-cores.md).
-   Escuro (padrão, também sem JS) = paleta 13; claro = paleta 14.
+   Escuro = paleta 13 (padrão sem escolha nem preferência do sistema); claro = paleta 14.
+   Sem JS, a media query ainda segue o sistema.
    O bloco claro aparece duas vezes (media query e data-theme): o teste
    src/theme-contrast.test.js confere que os dois são idênticos. Nunca usar cor fixa fora daqui. */
 :root {
@@ -425,7 +426,7 @@ a {
   background: none;
   border: 0;
   padding: 0;
-  color: var(--accent-fg);
+  color: var(--link);
   font: inherit;
   cursor: pointer;
   text-decoration: underline;

@@ -19,7 +19,7 @@ cd frontend
 npm install
 npm run dev   # http://localhost:5173 (precisa do backend rodando)
 
-# Testes do frontend (Node.js 22.12 ou superior)
+# Testes do frontend (Node.js 22.13 ou superior)
 npm test                          # Vitest: unidade, componentes e telas (jsdom)
 npx playwright install chromium   # só na primeira vez
 npm run test:e2e                  # Playwright: ponta a ponta no Chromium, API simulada

@@ -7,7 +7,7 @@
 // localStorage pode não existir ou falhar (janela anônima, bloqueio do navegador): tudo aqui
 // vai em try/catch e o site funciona igual, só sem lembrar a escolha. Guardamos o texto
 // puro ("light" ou "dark"), sem JSON, para o script inline ler sem depender de nada.
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export const THEME_KEY = "logcoach.theme";
 export const THEMES = ["light", "dark"];
@@ -71,6 +71,8 @@ export function saveTheme(theme) {
 /** { theme, toggle }. Sem escolha salva, acompanha o sistema enquanto a página está aberta. */
 export function useTheme() {
   const [theme, setTheme] = useState(resolveTheme);
+  // Escolha feita nesta visita: vale mesmo quando o storage não guardou (bloqueado).
+  const chosen = useRef(false);
 
   useEffect(() => {
     applyTheme(theme);
@@ -85,8 +87,8 @@ export function useTheme() {
     }
     if (!media || typeof media.addEventListener !== "function") return undefined;
     const onChange = () => {
-      // Com escolha salva, o sistema não manda mais.
-      if (getStoredTheme() === null) setTheme(getSystemTheme());
+      // Com escolha salva (ou feita nesta visita), o sistema não manda mais.
+      if (!chosen.current && getStoredTheme() === null) setTheme(getSystemTheme());
     };
     media.addEventListener("change", onChange);
     return () => media.removeEventListener("change", onChange);
@@ -94,6 +96,7 @@ export function useTheme() {
 
   const toggle = useCallback(() => {
     const next = theme === "dark" ? "light" : "dark";
+    chosen.current = true;
     saveTheme(next);
     setTheme(next);
   }, [theme]);

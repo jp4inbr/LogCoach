@@ -95,6 +95,13 @@ test.describe("botão de alternar", () => {
   });
 });
 
+// Pronto para medir antes do React: data-theme posto, <body> e #root no DOM e a folha de
+// estilo carregada (sem ela, a cor computada ainda seria a padrão do navegador).
+const themeAndCssReady = () =>
+  document.documentElement.dataset.theme !== undefined &&
+  document.getElementById("root") !== null &&
+  [...document.querySelectorAll('link[rel="stylesheet"]')].every((link) => link.sheet);
+
 test.describe("sem flash", () => {
   test.use({ colorScheme: "dark" });
 
@@ -116,7 +123,7 @@ test.describe("sem flash", () => {
     });
 
     const navigation = page.goto("/", { waitUntil: "commit" });
-    await page.waitForFunction(() => document.documentElement.dataset.theme !== undefined);
+    await page.waitForFunction(themeAndCssReady);
     const before = await page.evaluate(() => ({
       theme: document.documentElement.dataset.theme,
       colorScheme: document.documentElement.style.colorScheme,
@@ -144,8 +151,10 @@ test.describe("sem flash", () => {
       await route.continue();
     });
     const navigation = page.goto("/", { waitUntil: "commit" });
-    await page.waitForFunction(() => document.documentElement.dataset.theme !== undefined);
+    await page.waitForFunction(themeAndCssReady);
+    expect(await page.evaluate(() => document.getElementById("root").childElementCount)).toBe(0);
     expect(await dataTheme(page)).toBe("dark");
+    expect(await backgroundOf(page, "body")).toBe(rgb(BG.dark));
     release();
     await navigation;
   });

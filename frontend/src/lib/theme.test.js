@@ -138,12 +138,16 @@ describe("useTheme", () => {
   });
 
   it("alterna mesmo com o storage quebrado (vale só nesta visita)", () => {
-    stubSystemTheme("dark");
+    const system = stubSystemTheme("dark");
     breakStorage();
     const { result } = renderHook(() => useTheme());
     act(() => result.current.toggle());
     expect(result.current.theme).toBe("light");
     expect(document.documentElement).toHaveAttribute("data-theme", "light");
+
+    // Escolha feita à mão vale na visita, mesmo sem ter sido salva: o sistema não a desfaz.
+    act(() => system.set("dark"));
+    expect(result.current.theme).toBe("light");
   });
 });
 

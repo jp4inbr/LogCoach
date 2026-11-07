@@ -14,5 +14,8 @@ export default defineConfig({
     restoreMocks: true,
     unstubGlobals: true,
     unstubEnvs: true,
+    // Fuso fixo (o do público do LogCoach): datas e horas formatadas saem iguais em qualquer
+    // máquina e no CI (Ubuntu e Windows rodam em UTC), mesmo nos fusos extremos.
+    env: { TZ: "America/Sao_Paulo" },
   },
 });

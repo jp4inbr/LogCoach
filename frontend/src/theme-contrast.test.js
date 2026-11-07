@@ -82,6 +82,8 @@ const pairs = [
     ["--muted", bg, TEXT],
     ["--link", bg, TEXT],
   ]),
+  // Destaque como texto em realces: aba ativa, botão de olho ligado, luta selecionada.
+  ["--accent-fg", "--surface-2", TEXT],
   ...["--bg", "--surface"].flatMap((bg) => [
     ["--accent-fg", bg, TEXT],
     ["--ok", bg, TEXT],
@@ -102,6 +104,11 @@ const pairs = [
     ["--error", "--error-bg", TEXT, base],
     ["--text", "--info-bg", TEXT, base],
     ["--text", "--warn-bg", TEXT, base],
+    // Selos e pílulas de destaque (hipótese, enviando) e texto de apoio dentro dos avisos.
+    ["--accent-fg", "--info-bg", TEXT, base],
+    ["--muted", "--info-bg", TEXT, base],
+    ["--muted", "--warn-bg", TEXT, base],
+    ["--muted", "--error-bg", TEXT, base],
   ]),
 ];
 
@@ -115,6 +122,28 @@ describe("tokens dos temas", () => {
   it("os mesmos tokens de cor existem nos dois temas", () => {
     const colorNames = (t) => Object.keys(t).filter((n) => /^--(?!radius|gap|max)/.test(n));
     expect(colorNames(light).sort()).toEqual(colorNames(dark).sort());
+  });
+
+  it.each([
+    ["escuro", dark],
+    ["claro (media query)", lightMedia],
+    ["claro (data-theme)", lightAttr],
+  ])(
+    "todo token de cor do tema %s é uma cor literal (sem var(), que pode apontar para si)",
+    (_n, t) => {
+      // Um token que referencia a si mesmo (ex.: --error-border: var(--error-border)) vira
+      // valor inválido no navegador sem nenhum aviso; aqui ele não passa no parseColor.
+      for (const [name, value] of Object.entries(t)) {
+        if (/^--(radius|gap|max)/.test(name)) continue;
+        expect(() => parseColor(value), `${name}: ${value}`).not.toThrow();
+      }
+    },
+  );
+
+  it("todo var(--x) usado no CSS está definido nos tokens", () => {
+    const used = new Set([...css.matchAll(/var\((--[\w-]+)/g)].map((m) => m[1]));
+    const missing = [...used].filter((name) => !(name in dark));
+    expect(missing).toEqual([]);
   });
 
   it("não há cor fixa no CSS fora dos blocos de tokens", () => {

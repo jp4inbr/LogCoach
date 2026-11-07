@@ -101,7 +101,7 @@ O projeto implementa e demonstra as **10 heurísticas de usabilidade de Jakob Ni
 Antes de iniciar, certifique-se de ter instalado:
 
 - Python 3.12 ou superior, compatível com o ambiente do projeto.
-- Node.js 22.12 ou superior (o Vitest 5 exige) e npm.
+- Node.js 22.13 ou superior (o Vitest 5 e o jsdom exigem) e npm.
 - Git.
 
 ### 6.2. Backend (FastAPI)

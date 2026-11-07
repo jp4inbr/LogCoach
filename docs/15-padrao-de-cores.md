@@ -19,7 +19,7 @@ Onde a paleta funciona em contraste, o hex é exatamente o dela. Onde não funci
 
 1. **Primeira visita:** segue o sistema (`prefers-color-scheme`). Sem preferência ou sem suporte, vale o escuro.
 2. **Botão ☀/☾ no cabeçalho:** alterna e salva a escolha no `localStorage`, chave `logcoach.theme`, valor `light` ou `dark`.
-3. **Escolha salva:** vale mais que o sistema. Sem escolha salva, se o sistema mudar com a página aberta, o site acompanha. Com escolha salva, não.
+3. **Escolha salva:** vale mais que o sistema. Sem escolha salva, se o sistema mudar com a página aberta, o site acompanha. Com escolha salva (ou feita nesta visita, mesmo com o `localStorage` bloqueado), não.
 4. **Sem flash:** um script pequeno no `<head>` do `index.html` põe `data-theme` no `<html>` antes da primeira pintura. A mesma lógica está em `src/lib/theme.js`; os dois precisam ficar iguais e o teste confere.
 5. **Sem JavaScript:** o CSS funciona sozinho (`:root` é o escuro; `@media (prefers-color-scheme: light)` troca para o claro).
 6. **localStorage quebrado** (janela anônima, bloqueio): tudo em `try/catch`; o site funciona igual, só não lembra a escolha.
@@ -39,7 +39,7 @@ O bloco claro aparece duas vezes no CSS (na media query e em `[data-theme="light
 | `--border-control` | `#7f8199` | `#5e7385` | Borda dos campos de texto |
 | `--text` | `#fffffe` | `#272343` | Texto principal e títulos |
 | `--muted` | `#a7a9be` | `#4b5169` | Texto de apoio |
-| `--link` | `#ff5c8f` | `#272343` | Links no texto (no claro, sempre sublinhados) |
+| `--link` | `#ff5c8f` | `#272343` | Links no texto e botões com cara de link, como "Usar o log de exemplo" (no claro, sempre sublinhados) |
 | `--accent` | `#ff8906` | `#ffd803` | Preenchimento do botão principal e do avatar do coach |
 | `--accent-strong` | `#ff9f33` | `#f5c800` | Botão principal ao passar o mouse |
 | `--accent-ink` | `#0f0e17` | `#272343` | Texto sobre `--accent` |
@@ -101,6 +101,7 @@ Razões calculadas pelo teste `src/theme-contrast.test.js` com a fórmula de lum
 | `--text` | `--surface-2` | 4.5 | 13.18 | 11.22 |
 | `--muted` | `--surface-2` | 4.5 | 5.69 | 5.89 |
 | `--link` | `--surface-2` | 4.5 | 4.51 | 11.22 |
+| `--accent-fg` | `--surface-2` | 4.5 | 5.55 | 11.22 |
 | `--accent-fg` | `--bg` | 4.5 | 8.06 | 14.91 |
 | `--ok` | `--bg` | 4.5 | 11.00 | 7.13 |
 | `--warn` | `--bg` | 4.5 | 14.54 | 7.09 |
@@ -125,18 +126,26 @@ Razões calculadas pelo teste `src/theme-contrast.test.js` com a fórmula de lum
 | `--error` | `--error-bg/--bg` | 4.5 | 5.97 | 5.56 |
 | `--text` | `--info-bg/--bg` | 4.5 | 16.82 | 13.14 |
 | `--text` | `--warn-bg/--bg` | 4.5 | 14.83 | 12.65 |
+| `--accent-fg` | `--info-bg/--bg` | 4.5 | 7.08 | 13.14 |
+| `--muted` | `--info-bg/--bg` | 4.5 | 7.26 | 6.90 |
+| `--muted` | `--warn-bg/--bg` | 4.5 | 6.40 | 6.65 |
+| `--muted` | `--error-bg/--bg` | 4.5 | 7.12 | 6.73 |
 | `--ok` | `--ok-bg/--surface` | 4.5 | 8.04 | 5.51 |
 | `--warn` | `--warn-bg/--surface` | 4.5 | 10.08 | 5.41 |
 | `--error` | `--error-bg/--surface` | 4.5 | 5.41 | 4.98 |
 | `--text` | `--info-bg/--surface` | 4.5 | 15.27 | 12.34 |
 | `--text` | `--warn-bg/--surface` | 4.5 | 13.28 | 11.37 |
+| `--accent-fg` | `--info-bg/--surface` | 4.5 | 6.43 | 12.34 |
+| `--muted` | `--info-bg/--surface` | 4.5 | 6.59 | 6.48 |
+| `--muted` | `--warn-bg/--surface` | 4.5 | 5.73 | 5.97 |
+| `--muted` | `--error-bg/--surface` | 4.5 | 6.46 | 6.03 |
 
 ## 15.7 Regras para quem for mexer
 
 * **Nunca cor fixa** (hex, `rgb()`) no CSS ou no JSX fora dos blocos de tokens. Sempre `var(--token)`. O teste falha se achar uma.
 * **Token novo** entra nos **dois** temas (e nos dois blocos do claro) e, se for texto ou gráfico, entra na lista de pares do teste de contraste.
 * Para destaque como texto, borda ou traço, use `--accent-fg`, nunca `--accent`.
-* Depois de mexer: `cd frontend && npm test` (o `theme-contrast.test.js` pega contraste, blocos diferentes e cor fixa).
+* Depois de mexer: `cd frontend && npm test` (o `theme-contrast.test.js` pega contraste, blocos diferentes, cor fixa, token que não é cor literal, como um `var()` apontando para si mesmo, e `var(--x)` sem token definido).
 * Se mexer na lógica de escolha do tema, mude `src/lib/theme.js` e o script do `index.html` juntos.
 * Confira os dois temas no navegador, inclusive a 360 px de largura.
 

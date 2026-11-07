@@ -95,9 +95,9 @@ npm run lint
 
 | Suíte | Arquivos | Testes | Passaram | Falharam | Duração |
 | --- | --- | --- | --- | --- | --- |
-| Vitest (`npm test`) | 30 | 498 | 498 | 0 | ~13 s |
+| Vitest (`npm test`) | 30 | 520 | 520 | 0 | ~10 s |
 | Playwright (`npm run test:e2e`) | 2 | 43 | 43 | 0 | ~15 s |
 
-Vitest por pasta: `src/lib` (9 arquivos), `src/components` (13), `src/pages` (6) e `src/` (2: `App.test.jsx`, `theme-contrast.test.js`). O Playwright rodou verde e estável em 3 rodadas seguidas.
+Vitest por pasta: `src/lib` (9 arquivos), `src/components` (13), `src/pages` (6) e `src/` (2: `App.test.jsx`, `theme-contrast.test.js`). O Playwright rodou verde e estável em 3 rodadas seguidas. O Vitest roda com fuso fixo (`TZ=America/Sao_Paulo`, em `vite.config.js`), para datas e horas saírem iguais em qualquer máquina e no CI.
 
 **CI** (`.github/workflows/ci.yml`, Node 22): o job do frontend roda lint, Vitest e build em Ubuntu e Windows; o job `frontend-e2e` roda o Playwright só no Ubuntu (o navegador é o mesmo nos dois sistemas e o download pesa), com `retries: 1` e os rastros de falha anexados como artefato.
