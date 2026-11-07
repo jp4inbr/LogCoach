@@ -408,6 +408,9 @@ a {
 
 .button.block {
   width: 100%;
+  /* Botão de largura cheia quebra linha no celular em vez de vazar da tela. */
+  white-space: normal;
+  text-align: center;
 }
 
 .button.danger {
@@ -495,7 +498,7 @@ label {
 }
 
 .form-inline {
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
   align-items: end;
 }
 
@@ -710,7 +713,7 @@ label {
   list-style: none;
   counter-reset: how;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
   gap: 12px;
   padding: 0;
   margin: 12px 0 0;
@@ -1094,7 +1097,7 @@ label {
 
 .stats {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(150px, 100%), 1fr));
   gap: 12px;
 }
 
@@ -1578,7 +1581,7 @@ caption {
 
 .plans {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr));
   gap: var(--gap);
 }
 
