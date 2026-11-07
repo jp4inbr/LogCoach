@@ -64,3 +64,40 @@ Testes do motor de análise (126 no total), por arquivo em `backend/tests/`:
 Além deles, `test_analyzer.py` (11) testa o `EngineAnalyzer`; os outros arquivos cobrem contas, rotas, fontes de dados, cliente do Warcraft Logs e busca dos tops.
 
 _Inserir print da saída do `pytest -v`._
+
+## 10.4 Testes do frontend
+
+O frontend (React + Vite) tem três camadas de teste automatizado, todas com dados reais da API salvos em arquivo (`frontend/src/test/fixtures/`, só pseudônimos) e sem depender do backend, do Warcraft Logs ou da internet.
+
+| Tipo | Ferramenta | Onde | O que cobre |
+| --- | --- | --- | --- |
+| Unidade | Vitest | `src/lib/*.test.js` | Funções puras e módulos de apoio: cliente da API e erros, validador de link (T01, T02), formatação, roteador por hash, tema, armazenamento com falha |
+| Componente | Vitest + Testing Library | `src/components/*.test.jsx` | Cada componente isolado: estados, textos em português, teclado e atributos ARIA |
+| Integração das telas | Vitest + Testing Library, com a API simulada (`src/test/mockApi.js`) | `src/pages/*.test.jsx`, `src/App.test.jsx` | Cada tela conversando com a API: caminhos, corpos, cabeçalho `Authorization`, erros por `code` (item 12.3), limite do plano, RF25 |
+| Acessibilidade | axe-core | dentro dos testes acima e em `e2e/theme.spec.js` | No jsdom, regras do axe (sem contraste, que o jsdom não calcula); no navegador, o axe completo, com contraste |
+| Tema e paletas | Vitest e Playwright | `src/theme-contrast.test.js`, `src/lib/theme.test.js`, `e2e/theme.spec.js` | Contraste WCAG AA dos tokens das duas paletas (`docs/15`), script do `index.html` igual ao `theme.js`, tema no navegador |
+| Ponta a ponta | Playwright (Chromium) | `frontend/e2e/` | O site construído (`npm run build` + `preview`) num navegador de verdade, com a API simulada por `page.route` |
+
+**Testes ponta a ponta (Playwright).** `e2e/flows.spec.js` percorre os fluxos principais: colar o link do kill de referência, lista de lutas (indisponíveis em cinza, com o motivo), escolher a luta e o Mago, pré-busca, análise com o corpo certo e resultado com a diferença para os tops, nomes ocultos (RF25) e aviso de exemplo; link inválido, Warcraft Logs fora do ar (`wcl_unavailable`), relatório privado, falha ao buscar os Magos, login, cadastro, sessão vencida e limite do plano (`plan_limit`, T08). `e2e/theme.spec.js` cobre o que o jsdom não consegue: primeira visita seguindo o sistema (claro e escuro) com a cor de fundo computada igual ao token, botão de alternar, escolha salva no reload e acima do sistema, ausência de flash (o `data-theme` já está certo antes de o React rodar, com o bundle segurado), `localStorage` bloqueado, celular 360×740 sem rolagem horizontal, e o axe-core com a regra de contraste ligada nas duas paletas em sete telas (início, login, cadastro, planos, escolher luta, resultado, resultado com nomes à mostra), exigindo zero violações sérias ou críticas.
+
+Como rodar:
+
+```bash
+cd frontend
+npm install
+npm test                          # Vitest (unidade, componente, telas)
+npx playwright install chromium   # só na primeira vez (baixa o navegador)
+npm run test:e2e                  # Playwright; sobe o build sozinho na porta 4173
+npm run lint
+```
+
+### Resultado (07/11/2026, branch `feat/tema-claro-escuro`)
+
+| Suíte | Arquivos | Testes | Passaram | Falharam | Duração |
+| --- | --- | --- | --- | --- | --- |
+| Vitest (`npm test`) | 30 | 498 | 498 | 0 | ~13 s |
+| Playwright (`npm run test:e2e`) | 2 | 43 | 43 | 0 | ~15 s |
+
+Vitest por pasta: `src/lib` (9 arquivos), `src/components` (13), `src/pages` (6) e `src/` (2: `App.test.jsx`, `theme-contrast.test.js`). O Playwright rodou verde e estável em 3 rodadas seguidas.
+
+**CI** (`.github/workflows/ci.yml`, Node 22): o job do frontend roda lint, Vitest e build em Ubuntu e Windows; o job `frontend-e2e` roda o Playwright só no Ubuntu (o navegador é o mesmo nos dois sistemas e o download pesa), com `retries: 1` e os rastros de falha anexados como artefato.

@@ -101,7 +101,7 @@ O projeto implementa e demonstra as **10 heurísticas de usabilidade de Jakob Ni
 Antes de iniciar, certifique-se de ter instalado:
 
 - Python 3.12 ou superior, compatível com o ambiente do projeto.
-- Node.js e npm.
+- Node.js 22.12 ou superior (o Vitest 5 exige) e npm.
 - Git.
 
 ### 6.2. Backend (FastAPI)
@@ -182,6 +182,12 @@ npm run lint
 
 # Validar a compilação de produção
 npm run build
+
+# Testes de unidade, componentes e telas (Vitest)
+npm test
+
+# Testes ponta a ponta no Chromium (Playwright); na primeira vez: npx playwright install chromium
+npm run test:e2e
 ```
 
 ## 7. Documentação Completa (GitBook)
