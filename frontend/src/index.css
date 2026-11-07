@@ -34,7 +34,7 @@
   --warn-border: rgb(253 224 71 / 40%);
   --error: #f87171;
   --error-bg: rgb(248 113 113 / 12%);
-  --error-border: var(--error-border);
+  --error-border: rgb(248 113 113 / 35%);
   --error-ink: #0f0e17;
   --info-bg: rgb(255 137 6 / 10%);
 
