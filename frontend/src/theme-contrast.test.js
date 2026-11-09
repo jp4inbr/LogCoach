@@ -94,6 +94,8 @@ const pairs = [
     ["--border-control", bg, GRAPHIC],
     ["--top", bg, GRAPHIC],
   ]),
+  // Série de azar da barra "De onde vem essa diferença", sobre o fundo da barra e dos pontos.
+  ...["--surface-2", "--surface"].map((bg) => ["--luck", bg, GRAPHIC]),
   ["--accent-ink", "--accent", TEXT],
   ["--accent-ink", "--accent-strong", TEXT],
   ["--error-ink", "--error", TEXT],
@@ -169,6 +171,58 @@ describe.each(Object.entries(themes))("contraste WCAG AA, tema %s", (_name, them
       expect(value, `${fg} sobre ${bg}: ${value.toFixed(2)}`).toBeGreaterThanOrEqual(min);
     },
   );
+});
+
+// Séries vizinhas da barra da diferença (erros, azar, não explicado): cada uma passar contra o
+// fundo não basta, elas precisam se distinguir entre si. Distância em OKLab (perceptual):
+// 0,12 normal e 0,10 simulando protanopia e deuteranopia. Os valores antigos do claro
+// (--error × --warn: 0,089 normal e 0,024 em protanopia) reprovam; o escuro mede 0,11 ou mais.
+const CVD = {
+  protanopia: [
+    [0.152286, 1.052583, -0.204868],
+    [0.114503, 0.786281, 0.099216],
+    [-0.003882, -0.048116, 1.051998],
+  ],
+  deuteranopia: [
+    [0.367322, 0.860646, -0.227968],
+    [0.280085, 0.672501, 0.047413],
+    [-0.01182, 0.04294, 0.968881],
+  ],
+};
+
+function oklab(value, matrix) {
+  const { r, g, b } = parseColor(value);
+  let lin = [r, g, b].map((v) => {
+    const c = v / 255;
+    return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  });
+  if (matrix) lin = matrix.map((row) => row[0] * lin[0] + row[1] * lin[1] + row[2] * lin[2]);
+  const [l, m, s] = [
+    0.4122214708 * lin[0] + 0.5363325363 * lin[1] + 0.0514459929 * lin[2],
+    0.2119034982 * lin[0] + 0.6806995451 * lin[1] + 0.1073969566 * lin[2],
+    0.0883024619 * lin[0] + 0.2817188376 * lin[1] + 0.6299787005 * lin[2],
+  ].map(Math.cbrt);
+  return [
+    0.2104542553 * l + 0.793617785 * m - 0.0040720468 * s,
+    1.9779984951 * l - 2.428592205 * m + 0.4505937099 * s,
+    0.0259040371 * l + 0.7827717662 * m - 0.808675766 * s,
+  ];
+}
+
+function distance(a, b, matrix) {
+  const [x, y] = [oklab(a, matrix), oklab(b, matrix)];
+  return Math.hypot(...x.map((v, i) => v - y[i]));
+}
+
+describe.each(Object.entries(themes))("séries da barra da diferença, tema %s", (_n, theme) => {
+  const series = ["--error", "--luck", "--muted"];
+  const combos = series.flatMap((a, i) => series.slice(i + 1).map((b) => [a, b]));
+  it.each(combos)("%s e %s se distinguem", (a, b) => {
+    expect(distance(theme[a], theme[b])).toBeGreaterThanOrEqual(0.12);
+    for (const matrix of Object.values(CVD)) {
+      expect(distance(theme[a], theme[b], matrix)).toBeGreaterThanOrEqual(0.1);
+    }
+  });
 });
 
 describe("cores-base das paletas do Happy Hues", () => {

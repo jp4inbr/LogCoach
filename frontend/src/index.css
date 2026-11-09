@@ -27,6 +27,7 @@
   --focus: #ff8906;
   --brand-2: #e53170;
   --top: #5eead4;
+  --luck: #3b82f6;
 
   --ok: #4ade80;
   --ok-bg: rgb(74 222 128 / 12%);
@@ -88,6 +89,7 @@
     --focus: #272343;
     --brand-2: #bae8e8;
     --top: #0f766e;
+    --luck: #2563eb;
 
     --ok: #166534;
     --ok-bg: rgb(22 101 52 / 10%);
@@ -130,6 +132,7 @@
   --focus: #272343;
   --brand-2: #bae8e8;
   --top: #0f766e;
+  --luck: #2563eb;
 
   --ok: #166534;
   --ok-bg: rgb(22 101 52 / 10%);
@@ -1685,6 +1688,7 @@ caption {
   display: flex;
   height: 12px;
   border-radius: 999px;
+  gap: 2px;
   overflow: hidden;
   background: var(--surface-2);
 }
@@ -1720,7 +1724,7 @@ caption {
 }
 
 .gap-luck {
-  background: var(--warn);
+  background: var(--luck);
 }
 
 .gap-unexplained {

@@ -1,0 +1,923 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-09T23:33:19+00:00",
+  "title": "Design System: LogCoach",
+  "extensions": {
+    "colorMeta": {
+      "dark-accent": {
+        "role": "primary",
+        "displayName": "Destaque de ação (escuro)",
+        "canonical": "#ff8906",
+        "tonalRamp": [
+          "#230000",
+          "#560000",
+          "#810900",
+          "#a83800",
+          "#cf5d00",
+          "#f1851d",
+          "#fbb989",
+          "#ffeadc"
+        ]
+      },
+      "dark-accent-strong": {
+        "role": "primary",
+        "displayName": "Destaque ao passar o mouse (escuro)",
+        "canonical": "#ff9f33",
+        "tonalRamp": [
+          "#200000",
+          "#4f0000",
+          "#782000",
+          "#9d4400",
+          "#c36700",
+          "#e58e2a",
+          "#f2bd8d",
+          "#fcebdc"
+        ]
+      },
+      "dark-accent-ink": {
+        "role": "primary",
+        "displayName": "Texto sobre o destaque (escuro)",
+        "canonical": "#0f0e17",
+        "tonalRamp": [
+          "#0b0b0f",
+          "#25242d",
+          "#41414c",
+          "#61606b",
+          "#82818d",
+          "#a4a3b0",
+          "#c9c8d0",
+          "#eeeef0"
+        ]
+      },
+      "dark-accent-fg": {
+        "role": "primary",
+        "displayName": "Destaque como traço (escuro)",
+        "canonical": "#ff8906",
+        "tonalRamp": [
+          "#230000",
+          "#560000",
+          "#810900",
+          "#a83800",
+          "#cf5d00",
+          "#f1851d",
+          "#fbb989",
+          "#ffeadc"
+        ]
+      },
+      "dark-link": {
+        "role": "tertiary",
+        "displayName": "Link (escuro)",
+        "canonical": "#ff5c8f",
+        "tonalRamp": [
+          "#270006",
+          "#5e001a",
+          "#8b0034",
+          "#b40053",
+          "#dd3a73",
+          "#ff6a96",
+          "#ffabc0",
+          "#ffe6eb"
+        ]
+      },
+      "dark-brand-2": {
+        "role": "tertiary",
+        "displayName": "Segunda cor da marca (escuro)",
+        "canonical": "#e53170",
+        "tonalRamp": [
+          "#290005",
+          "#610016",
+          "#900030",
+          "#b9004e",
+          "#e32e6e",
+          "#ff6392",
+          "#ffa8bd",
+          "#ffe5eb"
+        ]
+      },
+      "dark-top": {
+        "role": "secondary",
+        "displayName": "Teal dos Tops (escuro)",
+        "canonical": "#5eead4",
+        "tonalRamp": [
+          "#00120d",
+          "#003428",
+          "#005546",
+          "#007765",
+          "#009a87",
+          "#37bda9",
+          "#97d8cc",
+          "#e0f3ef"
+        ]
+      },
+      "dark-bg": {
+        "role": "neutral",
+        "displayName": "Fundo (escuro)",
+        "canonical": "#0f0e17",
+        "tonalRamp": [
+          "#0b0b0f",
+          "#25242d",
+          "#41414c",
+          "#61606b",
+          "#82818d",
+          "#a4a3b0",
+          "#c9c8d0",
+          "#eeeef0"
+        ]
+      },
+      "dark-surface": {
+        "role": "neutral",
+        "displayName": "Superfície de cartão (escuro)",
+        "canonical": "#181722",
+        "tonalRamp": [
+          "#0b0a10",
+          "#24242e",
+          "#41404d",
+          "#605f6d",
+          "#81818f",
+          "#a4a3b1",
+          "#c8c8d1",
+          "#eeeef1"
+        ]
+      },
+      "dark-surface-2": {
+        "role": "neutral",
+        "displayName": "Superfície elevada (escuro)",
+        "canonical": "#2e2f3e",
+        "tonalRamp": [
+          "#0a0b11",
+          "#232430",
+          "#3f4050",
+          "#5e6071",
+          "#7f8193",
+          "#a2a4b5",
+          "#c7c8d3",
+          "#eeeef1"
+        ]
+      },
+      "dark-border": {
+        "role": "neutral",
+        "displayName": "Borda (escuro)",
+        "canonical": "#3b3c4f",
+        "tonalRamp": [
+          "#0a0a12",
+          "#232333",
+          "#3f4053",
+          "#5e5f74",
+          "#7f8096",
+          "#a2a3b8",
+          "#c7c8d5",
+          "#eeeef2"
+        ]
+      },
+      "dark-border-control": {
+        "role": "neutral",
+        "displayName": "Borda de controle (escuro)",
+        "canonical": "#7f8199",
+        "tonalRamp": [
+          "#0a0a13",
+          "#222334",
+          "#3e4055",
+          "#5d5f76",
+          "#7e8098",
+          "#a1a3ba",
+          "#c7c8d6",
+          "#eeeef2"
+        ]
+      },
+      "dark-text": {
+        "role": "neutral",
+        "displayName": "Texto (escuro)",
+        "canonical": "#fffffe",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#252524",
+          "#424241",
+          "#616160",
+          "#828281",
+          "#a5a5a4",
+          "#c9c9c8",
+          "#eeeeee"
+        ]
+      },
+      "dark-muted": {
+        "role": "neutral",
+        "displayName": "Texto de apoio (escuro)",
+        "canonical": "#a7a9be",
+        "tonalRamp": [
+          "#0a0a11",
+          "#232432",
+          "#3f4052",
+          "#5e6072",
+          "#7f8195",
+          "#a2a3b7",
+          "#c7c8d4",
+          "#eeeef2"
+        ]
+      },
+      "dark-ok": {
+        "role": "status",
+        "displayName": "Ok (escuro)",
+        "canonical": "#4ade80",
+        "tonalRamp": [
+          "#001400",
+          "#003600",
+          "#005900",
+          "#007b21",
+          "#009f45",
+          "#39c26d",
+          "#98dca9",
+          "#e0f5e5"
+        ]
+      },
+      "dark-ok-bg": {
+        "role": "status",
+        "displayName": "Fundo de ok (escuro)",
+        "canonical": "rgb(74 222 128 / 12%)",
+        "tonalRamp": [
+          "#001400",
+          "#003600",
+          "#005900",
+          "#007b21",
+          "#009f45",
+          "#39c26d",
+          "#98dca9",
+          "#e0f5e5"
+        ]
+      },
+      "dark-luck": {
+        "role": "series",
+        "displayName": "Azar (RNG) (escuro)",
+        "canonical": "#3b82f6",
+        "tonalRamp": [
+          "#000331",
+          "#001173",
+          "#0034a3",
+          "#0e59c9",
+          "#367df0",
+          "#60a3ff",
+          "#a2cbff",
+          "#e2efff"
+        ]
+      },
+      "dark-warn": {
+        "role": "status",
+        "displayName": "Atenção (escuro)",
+        "canonical": "#fde047",
+        "tonalRamp": [
+          "#150900",
+          "#392000",
+          "#5a3d00",
+          "#7b5e00",
+          "#9d8100",
+          "#bfa500",
+          "#d8ca85",
+          "#f3efda"
+        ]
+      },
+      "dark-warn-bg": {
+        "role": "status",
+        "displayName": "Fundo de atenção (escuro)",
+        "canonical": "rgb(253 224 71 / 12%)",
+        "tonalRamp": [
+          "#150900",
+          "#392000",
+          "#5a3d00",
+          "#7b5e00",
+          "#9d8100",
+          "#bfa500",
+          "#d8ca85",
+          "#f3efda"
+        ]
+      },
+      "dark-error": {
+        "role": "status",
+        "displayName": "Erro (escuro)",
+        "canonical": "#f87171",
+        "tonalRamp": [
+          "#240000",
+          "#580000",
+          "#840012",
+          "#ac2933",
+          "#d35053",
+          "#f77978",
+          "#ffb2ae",
+          "#ffe8e6"
+        ]
+      },
+      "dark-error-bg": {
+        "role": "status",
+        "displayName": "Fundo de erro (escuro)",
+        "canonical": "rgb(248 113 113 / 12%)",
+        "tonalRamp": [
+          "#240000",
+          "#580000",
+          "#840012",
+          "#ac2933",
+          "#d35053",
+          "#f77978",
+          "#ffb2ae",
+          "#ffe8e6"
+        ]
+      },
+      "dark-error-ink": {
+        "role": "status",
+        "displayName": "Texto sobre erro (escuro)",
+        "canonical": "#0f0e17",
+        "tonalRamp": [
+          "#0b0b0f",
+          "#25242d",
+          "#41414c",
+          "#61606b",
+          "#82818d",
+          "#a4a3b0",
+          "#c9c8d0",
+          "#eeeef0"
+        ]
+      },
+      "dark-info-bg": {
+        "role": "status",
+        "displayName": "Fundo informativo (escuro)",
+        "canonical": "rgb(255 137 6 / 10%)",
+        "tonalRamp": [
+          "#230000",
+          "#560000",
+          "#810900",
+          "#a83800",
+          "#cf5d00",
+          "#f1851d",
+          "#fbb989",
+          "#ffeadc"
+        ]
+      },
+      "light-accent": {
+        "role": "primary",
+        "displayName": "Destaque de ação (claro)",
+        "canonical": "#ffd803",
+        "tonalRamp": [
+          "#170700",
+          "#3d1c00",
+          "#603a00",
+          "#815b00",
+          "#a47e00",
+          "#c5a200",
+          "#ddc97c",
+          "#f4efd8"
+        ]
+      },
+      "light-accent-strong": {
+        "role": "primary",
+        "displayName": "Destaque ao passar o mouse (claro)",
+        "canonical": "#f5c800",
+        "tonalRamp": [
+          "#180600",
+          "#3f1b00",
+          "#623800",
+          "#845900",
+          "#a77c00",
+          "#c9a000",
+          "#dfc880",
+          "#f5eed9"
+        ]
+      },
+      "light-accent-ink": {
+        "role": "primary",
+        "displayName": "Texto sobre o destaque (claro)",
+        "canonical": "#272343",
+        "tonalRamp": [
+          "#0b0917",
+          "#24213c",
+          "#403d5f",
+          "#5f5c81",
+          "#807da4",
+          "#a3a0c6",
+          "#c7c6dd",
+          "#eeeef5"
+        ]
+      },
+      "light-accent-fg": {
+        "role": "primary",
+        "displayName": "Destaque como traço (claro)",
+        "canonical": "#272343",
+        "tonalRamp": [
+          "#0b0917",
+          "#24213c",
+          "#403d5f",
+          "#5f5c81",
+          "#807da4",
+          "#a3a0c6",
+          "#c7c6dd",
+          "#eeeef5"
+        ]
+      },
+      "light-link": {
+        "role": "tertiary",
+        "displayName": "Link (claro)",
+        "canonical": "#272343",
+        "tonalRamp": [
+          "#0b0917",
+          "#24213c",
+          "#403d5f",
+          "#5f5c81",
+          "#807da4",
+          "#a3a0c6",
+          "#c7c6dd",
+          "#eeeef5"
+        ]
+      },
+      "light-brand-2": {
+        "role": "tertiary",
+        "displayName": "Segunda cor da marca (claro)",
+        "canonical": "#bae8e8",
+        "tonalRamp": [
+          "#010e0e",
+          "#042b2c",
+          "#1f4a4a",
+          "#3f6a6a",
+          "#608c8c",
+          "#85aeae",
+          "#b7cfcf",
+          "#e9f0f0"
+        ]
+      },
+      "light-top": {
+        "role": "secondary",
+        "displayName": "Teal dos Tops (claro)",
+        "canonical": "#0f766e",
+        "tonalRamp": [
+          "#00100e",
+          "#00302b",
+          "#005049",
+          "#017169",
+          "#39938a",
+          "#66b6ad",
+          "#a7d4ce",
+          "#e4f2f0"
+        ]
+      },
+      "light-bg": {
+        "role": "neutral",
+        "displayName": "Fundo (claro)",
+        "canonical": "#fffffe",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#252524",
+          "#424241",
+          "#616160",
+          "#828281",
+          "#a5a5a4",
+          "#c9c9c8",
+          "#eeeeee"
+        ]
+      },
+      "light-surface": {
+        "role": "neutral",
+        "displayName": "Superfície de cartão (claro)",
+        "canonical": "#e3f6f5",
+        "tonalRamp": [
+          "#070d0c",
+          "#1b2827",
+          "#364645",
+          "#556564",
+          "#758685",
+          "#98a9a8",
+          "#c1cbcb",
+          "#ecefef"
+        ]
+      },
+      "light-surface-2": {
+        "role": "neutral",
+        "displayName": "Superfície elevada (claro)",
+        "canonical": "#bae8e8",
+        "tonalRamp": [
+          "#010e0e",
+          "#042b2c",
+          "#1f4a4a",
+          "#3f6a6a",
+          "#608c8c",
+          "#85aeae",
+          "#b7cfcf",
+          "#e9f0f0"
+        ]
+      },
+      "light-border": {
+        "role": "neutral",
+        "displayName": "Borda (claro)",
+        "canonical": "#a6dcdc",
+        "tonalRamp": [
+          "#000f0f",
+          "#002c2d",
+          "#144b4c",
+          "#386b6c",
+          "#598d8d",
+          "#7fb0b0",
+          "#b3d0d0",
+          "#e8f0f0"
+        ]
+      },
+      "light-border-control": {
+        "role": "neutral",
+        "displayName": "Borda de controle (claro)",
+        "canonical": "#5e7385",
+        "tonalRamp": [
+          "#050c13",
+          "#172734",
+          "#314455",
+          "#4f6475",
+          "#708598",
+          "#93a8ba",
+          "#becbd6",
+          "#ebeff2"
+        ]
+      },
+      "light-text": {
+        "role": "neutral",
+        "displayName": "Texto (claro)",
+        "canonical": "#272343",
+        "tonalRamp": [
+          "#0b0917",
+          "#24213c",
+          "#403d5f",
+          "#5f5c81",
+          "#807da4",
+          "#a3a0c6",
+          "#c7c6dd",
+          "#eeeef5"
+        ]
+      },
+      "light-muted": {
+        "role": "neutral",
+        "displayName": "Texto de apoio (claro)",
+        "canonical": "#4b5169",
+        "tonalRamp": [
+          "#080b14",
+          "#1f2436",
+          "#3b4158",
+          "#5a6079",
+          "#7a819b",
+          "#9da4bd",
+          "#c4c8d8",
+          "#edeef3"
+        ]
+      },
+      "light-ok": {
+        "role": "status",
+        "displayName": "Ok (claro)",
+        "canonical": "#166534",
+        "tonalRamp": [
+          "#001101",
+          "#003108",
+          "#005121",
+          "#277240",
+          "#4b9561",
+          "#74b785",
+          "#aed5b6",
+          "#e6f2e8"
+        ]
+      },
+      "light-ok-bg": {
+        "role": "status",
+        "displayName": "Fundo de ok (claro)",
+        "canonical": "rgb(22 101 52 / 10%)",
+        "tonalRamp": [
+          "#001101",
+          "#003108",
+          "#005121",
+          "#277240",
+          "#4b9561",
+          "#74b785",
+          "#aed5b6",
+          "#e6f2e8"
+        ]
+      },
+      "light-luck": {
+        "role": "series",
+        "displayName": "Azar (RNG) (claro)",
+        "canonical": "#2563eb",
+        "tonalRamp": [
+          "#000037",
+          "#00007e",
+          "#0029b1",
+          "#1451d8",
+          "#3777ff",
+          "#5f9eff",
+          "#a0c9ff",
+          "#e2efff"
+        ]
+      },
+      "light-warn": {
+        "role": "status",
+        "displayName": "Atenção (claro)",
+        "canonical": "#92400e",
+        "tonalRamp": [
+          "#1e0100",
+          "#4c0600",
+          "#742400",
+          "#984616",
+          "#be683c",
+          "#e18d65",
+          "#f0bca4",
+          "#fbebe3"
+        ]
+      },
+      "light-warn-bg": {
+        "role": "status",
+        "displayName": "Fundo de atenção (claro)",
+        "canonical": "rgb(180 83 9 / 12%)",
+        "tonalRamp": [
+          "#200000",
+          "#500000",
+          "#7a1b00",
+          "#9f4000",
+          "#c56323",
+          "#e88953",
+          "#f5ba9c",
+          "#fdeae1"
+        ]
+      },
+      "light-error": {
+        "role": "status",
+        "displayName": "Erro (claro)",
+        "canonical": "#b91c1c",
+        "tonalRamp": [
+          "#270000",
+          "#5f0000",
+          "#8c0000",
+          "#b51517",
+          "#dd453c",
+          "#ff7265",
+          "#ffafa4",
+          "#ffe7e3"
+        ]
+      },
+      "light-error-bg": {
+        "role": "status",
+        "displayName": "Fundo de erro (claro)",
+        "canonical": "rgb(185 28 28 / 9%)",
+        "tonalRamp": [
+          "#270000",
+          "#5f0000",
+          "#8c0000",
+          "#b51517",
+          "#dd453c",
+          "#ff7265",
+          "#ffafa4",
+          "#ffe7e3"
+        ]
+      },
+      "light-error-ink": {
+        "role": "status",
+        "displayName": "Texto sobre erro (claro)",
+        "canonical": "#fffffe",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#252524",
+          "#424241",
+          "#616160",
+          "#828281",
+          "#a5a5a4",
+          "#c9c9c8",
+          "#eeeeee"
+        ]
+      },
+      "light-info-bg": {
+        "role": "status",
+        "displayName": "Fundo informativo (claro)",
+        "canonical": "rgb(186 232 232 / 45%)",
+        "tonalRamp": [
+          "#010e0e",
+          "#042b2c",
+          "#1f4a4a",
+          "#3f6a6a",
+          "#608c8c",
+          "#85aeae",
+          "#b7cfcf",
+          "#e9f0f0"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Só o título da tela inicial."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Título principal de cada tela."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Títulos de seção."
+      },
+      "subtitle": {
+        "displayName": "Subtitle",
+        "purpose": "Título de cada erro e de blocos internos."
+      },
+      "lead": {
+        "displayName": "Lead",
+        "purpose": "Frase de abertura em texto de apoio."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Explicações e texto corrido."
+      },
+      "small": {
+        "displayName": "Small",
+        "purpose": "Metadados, motivos, dicas e referência das regras."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Cabeçalho de tabela, sobretítulo e selos."
+      }
+    },
+    "shadows": [
+      {
+        "name": "dica-flutuante",
+        "value": "0 8px 24px var(--shadow)",
+        "purpose": "A única sombra real: explicação de termos."
+      },
+      {
+        "name": "anel-de-selecao",
+        "value": "inset 0 0 0 1px var(--accent-fg)",
+        "purpose": "Reforça a borda da luta escolhida."
+      }
+    ],
+    "motion": [
+      {
+        "name": "troca-de-tema",
+        "value": "0.2s ease",
+        "purpose": "Fundo, cor e borda ao trocar de tema."
+      },
+      {
+        "name": "seta-de-expansao",
+        "value": "0.15s",
+        "purpose": "Rotação da seta de 'Com quem você foi comparado'."
+      },
+      {
+        "name": "pulso-de-etapa",
+        "value": "1.2s ease-in-out infinite",
+        "purpose": "Etapa em andamento na análise."
+      },
+      {
+        "name": "pulso-de-upload",
+        "value": "1.4s ease-in-out infinite",
+        "purpose": "Luta subindo e atualização automática."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "celular",
+        "value": "560px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Botão principal",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "A ação principal de cada tela.",
+      "html": "<button class=\"ds-btn-primary\">Analisar</button>",
+      "css": ".ds-btn-primary{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 18px;border-radius:var(--radius-sm,8px);font:inherit;font-weight:600;cursor:pointer;transition:background-color .2s ease,border-color .2s ease;background:var(--accent);border:1px solid var(--accent);color:var(--accent-ink);}.ds-btn-primary:hover{background:var(--accent-strong);border-color:var(--accent-strong);}.ds-btn-primary:focus-visible{outline:2px solid var(--focus);outline-offset:2px;}"
+    },
+    {
+      "name": "Botão padrão",
+      "kind": "button",
+      "refersTo": "button-default",
+      "description": "Ações comuns; a borda assume o destaque ao passar o mouse.",
+      "html": "<button class=\"ds-btn\">Escolher outra luta</button>",
+      "css": ".ds-btn{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 18px;border-radius:var(--radius-sm,8px);font:inherit;font-weight:600;cursor:pointer;transition:background-color .2s ease,border-color .2s ease;background:var(--surface-2);border:1px solid var(--border);color:var(--text);}.ds-btn:hover{border-color:var(--accent-fg);}.ds-btn:focus-visible{outline:2px solid var(--focus);outline-offset:2px;}"
+    },
+    {
+      "name": "Botão vazado",
+      "kind": "button",
+      "refersTo": "button-default",
+      "description": "Ações secundárias sobre o fundo.",
+      "html": "<button class=\"ds-btn-ghost\">Criar conta grátis</button>",
+      "css": ".ds-btn-ghost{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 18px;border-radius:var(--radius-sm,8px);font:inherit;font-weight:600;cursor:pointer;transition:background-color .2s ease,border-color .2s ease;background:transparent;border:1px solid var(--border);color:var(--text);}.ds-btn-ghost:hover{border-color:var(--accent-fg);}.ds-btn-ghost:focus-visible{outline:2px solid var(--focus);outline-offset:2px;}"
+    },
+    {
+      "name": "Campo de texto",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Campo com rótulo acima e erro abaixo.",
+      "html": "<input class=\"ds-input\" type=\"url\" placeholder=\"https://www.warcraftlogs.com/reports/...\" />",
+      "css": ".ds-input{width:100%;min-height:44px;padding:0 14px;border-radius:8px;border:1px solid var(--border-control);background:var(--bg);color:var(--text);font:inherit;}.ds-input:focus-visible{outline:2px solid var(--focus);outline-offset:2px;}"
+    },
+    {
+      "name": "Navegação",
+      "kind": "nav",
+      "refersTo": "",
+      "description": "Links do cabeçalho com item ativo em superfície elevada.",
+      "html": "<nav class=\"ds-nav\"><a class=\"ds-nav-on\" href=\"#\">Analisar</a><a href=\"#\">Planos</a></nav>",
+      "css": ".ds-nav{display:flex;gap:4px;}.ds-nav a{color:var(--muted);text-decoration:none;padding:6px 10px;border-radius:8px;}.ds-nav a:hover,.ds-nav .ds-nav-on{color:var(--text);background:var(--surface-2);}.ds-nav a:focus-visible{outline:2px solid var(--focus);outline-offset:2px;}"
+    },
+    {
+      "name": "Selos de situação",
+      "kind": "chip",
+      "refersTo": "badge-error",
+      "description": "Situação sempre com símbolo e palavra.",
+      "html": "<span class=\"ds-badge ds-erro\">✕ Erro</span> <span class=\"ds-badge ds-atencao\">! Atenção</span> <span class=\"ds-badge ds-ok\">Kill</span>",
+      "css": ".ds-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 10px;border-radius:999px;font-size:.8rem;font-weight:600;white-space:nowrap;}.ds-erro{background:var(--error-bg);color:var(--error);}.ds-atencao{background:var(--warn-bg);color:var(--warn);}.ds-ok{background:var(--ok-bg);color:var(--ok);}"
+    },
+    {
+      "name": "Cartão",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Contêiner plano em superfície tonal.",
+      "html": "<section class=\"ds-card\"><h3>Grátis</h3><p>5 análises por mês</p></section>",
+      "css": ".ds-card{display:grid;gap:12px;padding:20px;border-radius:12px;background:var(--surface);border:1px solid var(--border);color:var(--text);}.ds-card h3,.ds-card p{margin:0;}"
+    },
+    {
+      "name": "Cartão de erro",
+      "kind": "custom",
+      "refersTo": "mistake-card",
+      "description": "A entrada do boletim: severidade, custo, motivo e o que fazer.",
+      "html": "<article class=\"ds-mistake\"><h3>Entrada na Alma Arcana com pouco Salvo</h3><p class=\"ds-impact\">Custou cerca de 2,7% do seu dano</p><div class=\"ds-todo\"><strong>O que fazer</strong><p>Chegue na Alma Arcana com 20 de Salvo ou mais.</p></div></article>",
+      "css": ".ds-mistake{display:grid;gap:10px;padding:18px;border-radius:12px;background:var(--surface);border:1px solid var(--border);border-left:4px solid var(--error);color:var(--text);}.ds-mistake h3,.ds-mistake p{margin:0;}.ds-impact{font-weight:600;}.ds-todo{padding:12px 14px;border-radius:8px;background:var(--surface-2);}"
+    },
+    {
+      "name": "Decomposição da diferença",
+      "kind": "custom",
+      "refersTo": "",
+      "description": "Barra de erros, sorte e não explicado.",
+      "html": "<div class=\"ds-gapbar\"><span style=\"width:36%;background:var(--error)\"></span><span style=\"width:53%;background:var(--warn)\"></span><span style=\"width:11%;background:var(--muted)\"></span></div>",
+      "css": ".ds-gapbar{display:flex;height:12px;border-radius:999px;overflow:hidden;background:var(--surface-2);}"
+    },
+    {
+      "name": "Trilha da linha do tempo",
+      "kind": "custom",
+      "refersTo": "",
+      "description": "Jogador acima e tops abaixo, no mesmo eixo.",
+      "html": "<div class=\"ds-track\"><i class=\"ds-me\" style=\"left:20%\"></i><i class=\"ds-me\" style=\"left:62%\"></i><i class=\"ds-top\" style=\"left:18%\"></i><i class=\"ds-top\" style=\"left:58%\"></i></div>",
+      "css": ".ds-track{position:relative;height:44px;border-radius:6px;background:linear-gradient(var(--border),var(--border)) 0 50%/100% 1px no-repeat,var(--bg);}.ds-track i{position:absolute;width:6px;height:14px;border-radius:2px;transform:translateX(-50%);}.ds-me{top:5px;background:var(--accent-fg);}.ds-top{bottom:5px;background:var(--top);}"
+    }
+  ],
+  "narrative": {
+    "northStar": "O Boletim do Coach",
+    "overview": "O LogCoach se lê de cima para baixo, como um boletim comentado. Primeiro vem o tamanho da diferença para os melhores, depois cada erro em ordem de custo, com o motivo e o que fazer. Os dados completos ficam um passo abaixo, para quem quiser aprofundar.\n\nO tom é direto e sóbrio. A tela mostra o número e a correção, sem ilustração nem efeito, e a cor só aparece em ação ou em diagnóstico. A confiança vem de deixar claro o que é erro, o que é sorte e o que é hipótese.\n\nA linha do tempo mostra quando cada coisa aconteceu, com o jogador e os tops no mesmo eixo. Ela fica em uma aba própria do resultado, a um clique do Resumo, para que os erros priorizados continuem em primeiro lugar.\n\nReferências rejeitadas: a planilha crua de log, o painel de IA genérico, o visual gamer agressivo e, do imaginário de fantasia, as fontes medievais e o pergaminho.",
+    "keyCharacteristics": [
+      "Uma coluna de leitura, com largura máxima de 960 px.",
+      "Dois temas, escuro e claro, com os mesmos papéis de cor.",
+      "Superfícies planas em camadas tonais, separadas por borda fina.",
+      "Um único destaque de ação por tema.",
+      "Verde, âmbar e vermelho reservados para situação."
+    ],
+    "rules": [
+      {
+        "name": "Regra da Situação Fixa",
+        "body": "Verde é ok, âmbar é atenção e vermelho é erro, em qualquer tema e em qualquer tela. Essas cores não servem de decoração.",
+        "section": "colors"
+      },
+      {
+        "name": "Regra do Destaque que Preenche",
+        "body": "`--accent` só preenche. Quando o destaque vira texto, borda ou traço, usa-se `--accent-fg`.",
+        "section": "colors"
+      },
+      {
+        "name": "Regra do Você e dos Tops",
+        "body": "O jogador é sempre o destaque e os melhores são sempre o teal, para que a comparação se leia sem legenda depois da primeira vez.",
+        "section": "colors"
+      },
+      {
+        "name": "Regra do Número em Negrito",
+        "body": "O custo e a diferença aparecem em peso forte, dentro de uma frase em português. O número nunca fica solto sem dizer o que significa.",
+        "section": "typography"
+      },
+      {
+        "name": "Regra do Boletim",
+        "body": "Diagnóstico primeiro, erros por custo depois, dados completos por último. Nenhuma informação nova entra acima da decomposição da diferença sem mudar o que a pessoa precisa corrigir.",
+        "section": "layout"
+      },
+      {
+        "name": "Regra do Plano por Padrão",
+        "body": "Cartões não ganham sombra. Só o que flutua sobre o conteúdo projeta sombra.",
+        "section": "elevation"
+      },
+      {
+        "name": "Regra das Duas Curvas",
+        "body": "12 px para o que contém e 8 px para o que se aciona. Valores novos precisam de motivo.",
+        "section": "shapes"
+      }
+    ],
+    "dos": [
+      "Do usar sempre `var(--token)` para cor; o teste `src/theme-contrast.test.js` falha com cor fixa.",
+      "Do criar todo token novo nos dois temas e nos dois blocos do tema claro.",
+      "Do usar `--accent-fg` quando o destaque virar texto, borda ou traço.",
+      "Do manter contraste WCAG AA: 4,5:1 para texto e 3:1 para elementos gráficos.",
+      "Do acompanhar toda cor de situação com texto, ícone ou selo.",
+      "Do manter alvos de toque de pelo menos 44 px em ações principais.",
+      "Do escrever o número dentro de uma frase em português que diga o que ele significa.",
+      "Do conferir os dois temas e a largura de 360 px depois de qualquer mudança visual."
+    ],
+    "donts": [
+      "Don't usar fontes medievais ou textura de pergaminho.",
+      "Don't montar tela como planilha crua de log, com tabelas e gráficos sem hierarquia ou sem dizer o que corrigir.",
+      "Don't usar a estética de painel de IA genérico: brilhos, degradês roxos, ícones de faísca por toda parte e tom de mágica.",
+      "Don't usar o visual gamer agressivo: neon, ângulos cortados, fontes de esport e RGB.",
+      "Don't usar verde, âmbar ou vermelho como decoração.",
+      "Don't usar `--accent` como cor de texto ou de borda.",
+      "Don't colocar sombra em cartões.",
+      "Don't apresentar azar como erro nem hipótese como fato; cada um tem seu selo e seu lugar."
+    ]
+  }
+}

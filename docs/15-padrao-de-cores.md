@@ -47,6 +47,7 @@ O bloco claro aparece duas vezes no CSS (na media query e em `[data-theme="light
 | `--focus` | `#ff8906` | `#272343` | Anel de foco do teclado |
 | `--brand-2` | `#e53170` | `#bae8e8` | Segunda cor do degradê da marca |
 | `--top` | `#5eead4` | `#0f766e` | Cor dos tops na comparação |
+| `--luck` | `#3b82f6` | `#2563eb` | Série do azar (RNG) na barra "De onde vem essa diferença" e no ponto da lista. Não é situação |
 | `--ok` | `#4ade80` | `#166534` | Situação: ok |
 | `--warn` | `#fde047` | `#92400e` | Situação: atenção |
 | `--error` | `#f87171` | `#b91c1c` | Situação: erro |
@@ -67,6 +68,8 @@ Ok, atenção e erro continuam **verde, âmbar e vermelho** nos dois temas, com 
 * A paleta tem o laranja como destaque e o amarelo como botão. Usar essas cores para "atenção" confundiria destaque com aviso.
 
 Só o tom muda para passar no contraste de cada fundo. No escuro, o âmbar foi deslocado para amarelo (`#fde047`, antes `#fbbf24`) para não ficar parecido com o laranja do botão (`#ff8906`). No claro, o âmbar é um marrom escuro (`#92400e`), bem diferente do botão amarelo.
+
+**Azar (RNG) não é situação.** O azar da Seta Prismática nunca é cobrado como erro nem como atenção, então não usa `--warn` nem `--error`. Tem token próprio, `--luck`, **azul nos dois temas** (decisão do Arthur: a mesma série não troca de cor quando o tema muda). Só o tom muda: `#2563eb` no escuro reprova no contraste (2,55:1 contra `--surface-2`), por isso o escuro usa `#3b82f6`. Antes, no claro, o âmbar (`#92400e`) e o vermelho (`#b91c1c`) são dois tons escuros vizinhos e a barra parecia de uma cor só (distância OKLab 0,089; 0,024 para quem tem protanopia). O azul também fica longe do cinza-ardósia do "não explicado" (`--muted`).
 
 Cor nunca é a única pista: erros e avisos sempre têm texto, ícone ou selo.
 
@@ -118,6 +121,8 @@ Razões calculadas pelo teste `src/theme-contrast.test.js` com a fórmula de lum
 | `--accent-fg` | `--surface` | 3 | 7.46 | 13.33 |
 | `--border-control` | `--surface` | 3 | 4.65 | 4.40 |
 | `--top` | `--surface` | 3 | 11.98 | 4.89 |
+| `--luck` | `--surface-2` | 3 | 3.59 | 3.89 |
+| `--luck` | `--surface` | 3 | 4.82 | 4.62 |
 | `--accent-ink` | `--accent` | 4.5 | 8.06 | 10.71 |
 | `--accent-ink` | `--accent-strong` | 4.5 | 9.36 | 9.34 |
 | `--error-ink` | `--error` | 4.5 | 6.93 | 6.47 |
@@ -140,10 +145,21 @@ Razões calculadas pelo teste `src/theme-contrast.test.js` com a fórmula de lum
 | `--muted` | `--warn-bg/--surface` | 4.5 | 5.73 | 5.97 |
 | `--muted` | `--error-bg/--surface` | 4.5 | 6.46 | 6.03 |
 
+Séries vizinhas da barra da diferença (distância em OKLab; o teste exige 0,12 e, simulando protanopia e deuteranopia, 0,10):
+
+| Par | Escuro | Claro |
+|---|---|---|
+| `--error` × `--luck` | 0,32 | 0,362 |
+| `--luck` × `--muted` | 0,20 | 0,206 |
+| `--error` × `--muted` | 0,177 | 0,220 |
+
 ## 15.7 Regras para quem for mexer
 
 * **Nunca cor fixa** (hex, `rgb()`) no CSS ou no JSX fora dos blocos de tokens. Sempre `var(--token)`. O teste falha se achar uma.
 * **Token novo** entra nos **dois** temas (e nos dois blocos do claro) e, se for texto ou gráfico, entra na lista de pares do teste de contraste.
+* **Séries vizinhas de um gráfico** (barra empilhada, linhas, pontos de legenda) precisam ser distintas **entre si** em cada tema, não basta cada uma passar contra o fundo. O teste mede a distância em OKLab, inclusive com daltonismo, para `--error`, `--luck` e `--muted`; série nova entra nessa lista. Segmentos colados ganham respiro de 2 px.
+* Azar, sorte e outros dados que não são situação não usam `--ok`, `--warn` nem `--error`.
+* **A mesma série mantém o matiz nos dois temas** (azar é azul em ambos); só o tom muda para passar no contraste.
 * Para destaque como texto, borda ou traço, use `--accent-fg`, nunca `--accent`.
 * Depois de mexer: `cd frontend && npm test` (o `theme-contrast.test.js` pega contraste, blocos diferentes, cor fixa, token que não é cor literal, como um `var()` apontando para si mesmo, e `var(--x)` sem token definido).
 * Se mexer na lógica de escolha do tema, mude `src/lib/theme.js` e o script do `index.html` juntos.
