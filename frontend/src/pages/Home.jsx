@@ -105,8 +105,8 @@ export default function Home() {
       </section>
 
       <Notice title="O que já é suportado">
-        Mago Arcano · Nek&apos;zali, a Enrosca-almas (The Venomous Abyss) · Heroico e Mítico. Outros
-        chefes aparecem na lista, mas ainda não podem ser analisados.
+        Mago Arcano · Nek&apos;zali, a Enrosca-almas (The Venomous Abyss) · Mítico. Outros chefes
+        aparecem na lista, mas ainda não podem ser analisados.
       </Notice>
     </div>
   );
