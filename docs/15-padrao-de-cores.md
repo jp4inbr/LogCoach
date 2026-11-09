@@ -43,13 +43,15 @@ O bloco claro aparece duas vezes no CSS (na media query e em `[data-theme="light
 | `--accent` | `#ff8906` | `#ffd803` | Preenchimento do botão principal e do avatar do coach |
 | `--accent-strong` | `#ff9f33` | `#f5c800` | Botão principal ao passar o mouse |
 | `--accent-ink` | `#0f0e17` | `#272343` | Texto sobre `--accent` |
-| `--accent-fg` | `#ff8906` | `#272343` | Destaque como texto, borda, traço de gráfico e marcas |
+| `--accent-fg` | `#ff8906` | `#272343` | Destaque como texto, borda e traço de gráfico |
 | `--focus` | `#ff8906` | `#272343` | Anel de foco do teclado |
 | `--brand-2` | `#e53170` | `#bae8e8` | Segunda cor do degradê da marca |
-| `--top` | `#5eead4` | `#0f766e` | Cor dos tops na comparação |
+| `--top` | `#22d3ee` | `#0c7c9c` | Cor dos tops na comparação |
+| `--player` | `#ff8906` | `#dd6b00` | Marca do jogador na linha do tempo: laranja nos dois temas, contra o ciano dos tops |
 | `--luck` | `#3b82f6` | `#2563eb` | Série do azar (RNG) na barra "De onde vem essa diferença" e no ponto da lista. Não é situação |
 | `--ok` | `#4ade80` | `#166534` | Situação: ok |
-| `--warn` | `#fde047` | `#92400e` | Situação: atenção |
+| `--warn` | `#fde047` | `#dfa800` | Situação: atenção, como preenchimento (barra do cartão de erro) |
+| `--warn-badge-bg`, `--warn-badge-fg` | `#fde047` a 12%, `#fde047` | `#ffefa8`, `#9a5b00` | Fundo e texto do selo de atenção |
 | `--error` | `#f87171` | `#b91c1c` | Situação: erro |
 | `--error-ink` | `#0f0e17` | `#fffffe` | Texto sobre `--error` (botão de perigo) |
 | `--ok-bg`, `--warn-bg`, `--error-bg` | situação a 12% | situação a 9–12% | Fundo dos avisos e selos |
@@ -67,7 +69,9 @@ Ok, atenção e erro continuam **verde, âmbar e vermelho** nos dois temas, com 
 * **Consistência** (heurística de Nielsen, item 8.1): a pessoa aprende uma vez que verde é ok e vermelho é erro, e isso vale em qualquer tema.
 * A paleta tem o laranja como destaque e o amarelo como botão. Usar essas cores para "atenção" confundiria destaque com aviso.
 
-Só o tom muda para passar no contraste de cada fundo. No escuro, o âmbar foi deslocado para amarelo (`#fde047`, antes `#fbbf24`) para não ficar parecido com o laranja do botão (`#ff8906`). No claro, o âmbar é um marrom escuro (`#92400e`), bem diferente do botão amarelo.
+Só o tom muda para passar no contraste de cada fundo. No escuro, o âmbar foi deslocado para amarelo (`#fde047`, antes `#fbbf24`) para não ficar parecido com o laranja do botão (`#ff8906`). No claro, a atenção é um amarelo dourado (`#dfa800`), mais escuro que o botão amarelo. O amarelo não tem contraste como texto sobre fundo claro, então o selo de atenção segue o formato do selo de erro: fundo amarelo clarinho (`#ffefa8`) e texto laranja (`#9a5b00`). A barra lateral do cartão fica em 1,93:1 contra o cartão menta, abaixo de 3:1; é aceito porque a severidade sempre vem escrita no selo.
+
+**Situação não se confunde.** Ok, atenção e erro precisam se distinguir entre si e das outras cores do sistema (destaque, link, tops, azar e texto de apoio), em cada tema, não só passar no contraste contra o fundo. O teste mede isso na visão normal. Com daltonismo, verde, âmbar e vermelho se aproximam em qualquer tom que passe no contraste, então quem garante a leitura é o símbolo e a palavra do selo. Exceções aceitas, só no escuro: erro × link (decisão do Arthur: o link é sublinhado) e erro × laranja de destaque (0,109; o laranja é a cor exata da paleta).
 
 **Azar (RNG) não é situação.** O azar da Seta Prismática nunca é cobrado como erro nem como atenção, então não usa `--warn` nem `--error`. Tem token próprio, `--luck`, **azul nos dois temas** (decisão do Arthur: a mesma série não troca de cor quando o tema muda). Só o tom muda: `#2563eb` no escuro reprova no contraste (2,55:1 contra `--surface-2`), por isso o escuro usa `#3b82f6`. Antes, no claro, o âmbar (`#92400e`) e o vermelho (`#b91c1c`) são dois tons escuros vizinhos e a barra parecia de uma cor só (distância OKLab 0,089; 0,024 para quem tem protanopia). O azul também fica longe do cinza-ardósia do "não explicado" (`--muted`).
 
@@ -87,7 +91,7 @@ Meta: WCAG 2.x AA (4,5:1 para texto, 3:1 para elementos gráficos).
 | Secundária clara `#e3f6f5` e terciária `#bae8e8` | Servem de fundo, não de texto | Viram `--surface` e `--surface-2` |
 | Cartões e bordas | A paleta não define | `--surface` escuro `#181722` (entre o fundo e `#2e2f3e`); bordas derivadas |
 | Verde, âmbar e vermelho | Fora da paleta (decisão do Arthur, seção 15.4) | Tons ajustados por fundo |
-| `--top` (teal) | Fora da paleta; precisa diferir do destaque | `#5eead4` no escuro, `#0f766e` no claro |
+| `--top` (ciano) | Fora da paleta; precisa diferir do destaque e do verde de ok | `#22d3ee` no escuro, `#0c7c9c` no claro |
 
 ## 15.6 Contraste medido
 
@@ -107,27 +111,27 @@ Razões calculadas pelo teste `src/theme-contrast.test.js` com a fórmula de lum
 | `--accent-fg` | `--surface-2` | 4.5 | 5.55 | 11.22 |
 | `--accent-fg` | `--bg` | 4.5 | 8.06 | 14.91 |
 | `--ok` | `--bg` | 4.5 | 11.00 | 7.13 |
-| `--warn` | `--bg` | 4.5 | 14.54 | 7.09 |
 | `--error` | `--bg` | 4.5 | 6.93 | 6.47 |
 | `--focus` | `--bg` | 3 | 8.06 | 14.91 |
 | `--accent-fg` | `--bg` | 3 | 8.06 | 14.91 |
 | `--border-control` | `--bg` | 3 | 5.02 | 4.92 |
-| `--top` | `--bg` | 3 | 12.96 | 5.47 |
+| `--top` | `--bg` | 3 | 10.61 | 4.79 |
+| `--player` | `--bg` | 3 | 8.06 | 3.40 |
 | `--accent-fg` | `--surface` | 4.5 | 7.46 | 13.33 |
 | `--ok` | `--surface` | 4.5 | 10.17 | 6.37 |
-| `--warn` | `--surface` | 4.5 | 13.45 | 6.34 |
 | `--error` | `--surface` | 4.5 | 6.41 | 5.78 |
 | `--focus` | `--surface` | 3 | 7.46 | 13.33 |
 | `--accent-fg` | `--surface` | 3 | 7.46 | 13.33 |
 | `--border-control` | `--surface` | 3 | 4.65 | 4.40 |
-| `--top` | `--surface` | 3 | 11.98 | 4.89 |
+| `--top` | `--surface` | 3 | 9.81 | 4.29 |
+| `--player` | `--surface` | 3 | 7.46 | 3.04 |
 | `--luck` | `--surface-2` | 3 | 3.59 | 3.89 |
 | `--luck` | `--surface` | 3 | 4.82 | 4.62 |
 | `--accent-ink` | `--accent` | 4.5 | 8.06 | 10.71 |
 | `--accent-ink` | `--accent-strong` | 4.5 | 9.36 | 9.34 |
 | `--error-ink` | `--error` | 4.5 | 6.93 | 6.47 |
 | `--ok` | `--ok-bg/--bg` | 4.5 | 8.93 | 6.12 |
-| `--warn` | `--warn-bg/--bg` | 4.5 | 11.25 | 6.01 |
+| `--warn-badge-fg` | `--warn-badge-bg/--bg` | 4.5 | 11.25 | 4.69 |
 | `--error` | `--error-bg/--bg` | 4.5 | 5.97 | 5.56 |
 | `--text` | `--info-bg/--bg` | 4.5 | 16.82 | 13.14 |
 | `--text` | `--warn-bg/--bg` | 4.5 | 14.83 | 12.65 |
@@ -136,7 +140,7 @@ Razões calculadas pelo teste `src/theme-contrast.test.js` com a fórmula de lum
 | `--muted` | `--warn-bg/--bg` | 4.5 | 6.40 | 6.65 |
 | `--muted` | `--error-bg/--bg` | 4.5 | 7.12 | 6.73 |
 | `--ok` | `--ok-bg/--surface` | 4.5 | 8.04 | 5.51 |
-| `--warn` | `--warn-bg/--surface` | 4.5 | 10.08 | 5.41 |
+| `--warn-badge-fg` | `--warn-badge-bg/--surface` | 4.5 | 10.08 | 4.69 |
 | `--error` | `--error-bg/--surface` | 4.5 | 5.41 | 4.98 |
 | `--text` | `--info-bg/--surface` | 4.5 | 15.27 | 12.34 |
 | `--text` | `--warn-bg/--surface` | 4.5 | 13.28 | 11.37 |
@@ -153,11 +157,23 @@ Séries vizinhas da barra da diferença (distância em OKLab; o teste exige 0,12
 | `--luck` × `--muted` | 0,20 | 0,206 |
 | `--error` × `--muted` | 0,177 | 0,220 |
 
+Cores de situação (distância em OKLab na visão normal; o teste exige 0,12):
+
+| Par | Escuro | Claro |
+|---|---|---|
+| `--warn` × `--error` | 0,282 | 0,307 |
+| `--warn-badge-fg` × `--error` | 0,282 | 0,123 |
+| `--player` × `--top` | 0,311 | 0,289 |
+| `--ok` × `--warn` | 0,189 | 0,348 |
+| `--ok` × `--error` | 0,328 | 0,273 |
+| `--ok` × `--top` | 0,163 | 0,159 |
+
 ## 15.7 Regras para quem for mexer
 
 * **Nunca cor fixa** (hex, `rgb()`) no CSS ou no JSX fora dos blocos de tokens. Sempre `var(--token)`. O teste falha se achar uma.
 * **Token novo** entra nos **dois** temas (e nos dois blocos do claro) e, se for texto ou gráfico, entra na lista de pares do teste de contraste.
 * **Séries vizinhas de um gráfico** (barra empilhada, linhas, pontos de legenda) precisam ser distintas **entre si** em cada tema, não basta cada uma passar contra o fundo. O teste mede a distância em OKLab, inclusive com daltonismo, para `--error`, `--luck` e `--muted`; série nova entra nessa lista. Segmentos colados ganham respiro de 2 px.
+* **Cor nova ou tom novo** não pode se confundir com ok, atenção ou erro: o teste "cores de situação" mede a distância contra as outras cores do sistema, e token novo que apareça perto dessas situações entra nessa lista.
 * Azar, sorte e outros dados que não são situação não usam `--ok`, `--warn` nem `--error`.
 * **A mesma série mantém o matiz nos dois temas** (azar é azul em ambos); só o tom muda para passar no contraste.
 * Para destaque como texto, borda ou traço, use `--accent-fg`, nunca `--accent`.

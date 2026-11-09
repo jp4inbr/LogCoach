@@ -87,12 +87,12 @@ const pairs = [
   ...["--bg", "--surface"].flatMap((bg) => [
     ["--accent-fg", bg, TEXT],
     ["--ok", bg, TEXT],
-    ["--warn", bg, TEXT],
     ["--error", bg, TEXT],
     ["--focus", bg, GRAPHIC],
     ["--accent-fg", bg, GRAPHIC],
     ["--border-control", bg, GRAPHIC],
     ["--top", bg, GRAPHIC],
+    ["--player", bg, GRAPHIC],
   ]),
   // Série de azar da barra "De onde vem essa diferença", sobre o fundo da barra e dos pontos.
   ...["--surface-2", "--surface"].map((bg) => ["--luck", bg, GRAPHIC]),
@@ -102,7 +102,7 @@ const pairs = [
   // Situação sobre o próprio fundo de realce (translúcido, composto sobre bg e surface).
   ...["--bg", "--surface"].flatMap((base) => [
     ["--ok", "--ok-bg", TEXT, base],
-    ["--warn", "--warn-bg", TEXT, base],
+    ["--warn-badge-fg", "--warn-badge-bg", TEXT, base],
     ["--error", "--error-bg", TEXT, base],
     ["--text", "--info-bg", TEXT, base],
     ["--text", "--warn-bg", TEXT, base],
@@ -222,6 +222,42 @@ describe.each(Object.entries(themes))("séries da barra da diferença, tema %s",
     for (const matrix of Object.values(CVD)) {
       expect(distance(theme[a], theme[b], matrix)).toBeGreaterThanOrEqual(0.1);
     }
+  });
+});
+
+// Ok, atenção e erro não se confundem entre si nem com as outras cores do sistema. Só na visão
+// normal: com daltonismo, verde, âmbar e vermelho se aproximam em qualquer tom que passe no
+// contraste, e quem garante a leitura é o símbolo e a palavra do selo (item 15.4).
+const STATUS = ["--ok", "--warn", "--error"];
+const STATUS_OTHERS = [
+  "--accent",
+  "--accent-fg",
+  "--link",
+  "--top",
+  "--player",
+  "--luck",
+  "--muted",
+];
+// Só no escuro: o link é sublinhado (decisão do Arthur) e o laranja é a cor exata da paleta.
+const STATUS_EXCEPTIONS_DARK = [
+  "--error|--link",
+  "--error|--accent",
+  "--error|--accent-fg",
+  "--error|--player",
+];
+
+describe.each(Object.entries(themes))("cores de situação, tema %s", (name, theme) => {
+  const pairs = [
+    ...STATUS.flatMap((a, i) => STATUS.slice(i + 1).map((b) => [a, b])),
+    ...STATUS.flatMap((a) => STATUS_OTHERS.map((b) => [a, b])),
+  ].filter(([a, b]) => name !== "escuro" || !STATUS_EXCEPTIONS_DARK.includes(`${a}|${b}`));
+
+  it.each(pairs)("%s e %s se distinguem", (a, b) => {
+    expect(distance(theme[a], theme[b])).toBeGreaterThanOrEqual(0.12);
+  });
+
+  it("o texto do selo de atenção não se confunde com o erro", () => {
+    expect(distance(theme["--warn-badge-fg"], theme["--error"])).toBeGreaterThanOrEqual(0.12);
   });
 });
 

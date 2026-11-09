@@ -8,7 +8,7 @@ colors:
   dark-accent-fg: "#ff8906"
   dark-link: "#ff5c8f"
   dark-brand-2: "#e53170"
-  dark-top: "#5eead4"
+  dark-top: "#22d3ee"
   dark-bg: "#0f0e17"
   dark-surface: "#181722"
   dark-surface-2: "#2e2f3e"
@@ -31,7 +31,7 @@ colors:
   light-accent-fg: "#272343"
   light-link: "#272343"
   light-brand-2: "#bae8e8"
-  light-top: "#0f766e"
+  light-top: "#0c7c9c"
   light-bg: "#fffffe"
   light-surface: "#e3f6f5"
   light-surface-2: "#bae8e8"
@@ -42,7 +42,13 @@ colors:
   light-ok: "#166534"
   light-ok-bg: "rgb(22 101 52 / 10%)"
   light-luck: "#2563eb"
-  light-warn: "#92400e"
+  light-warn: "#dfa800"
+  light-warn-badge-bg: "#ffefa8"
+  light-warn-badge-fg: "#9a5b00"
+  light-player: "#dd6b00"
+  dark-warn-badge-bg: "rgb(253 224 71 / 12%)"
+  dark-warn-badge-fg: "#fde047"
+  dark-player: "#ff8906"
   light-warn-bg: "rgb(180 83 9 / 12%)"
   light-error: "#b91c1c"
   light-error-bg: "rgb(185 28 28 / 9%)"
@@ -199,11 +205,12 @@ Fundo neutro e silencioso, um destaque de ação e três cores de situação que
 ### Primary
 
 - **Laranja Âmbar, no escuro, e Amarelo Sinal, no claro** (`--accent`): preenchimento do botão principal e do avatar do coach.
-- **Destaque como traço** (`--accent-fg`): texto de destaque, borda de seleção, marca do jogador na linha do tempo e linha do gráfico. No escuro repete o Laranja Âmbar; no claro vira a Tinta Índigo, porque o amarelo não tem contraste sobre fundo claro.
+- **Destaque como traço** (`--accent-fg`): texto de destaque, borda de seleção e linha do gráfico. No escuro repete o Laranja Âmbar; no claro vira a Tinta Índigo, porque o amarelo não tem contraste sobre fundo claro.
 
 ### Secondary
 
-- **Teal dos Tops** (`--top`): tudo o que representa os melhores na comparação.
+- **Ciano dos Tops** (`--top`): tudo o que representa os melhores na comparação.
+- **Laranja do Jogador** (`--player`): a marca do jogador na linha do tempo, laranja nos dois temas para contrastar com o ciano dos tops.
 
 ### Tertiary
 
@@ -225,9 +232,11 @@ Fundo neutro e silencioso, um destaque de ação e três cores de situação que
 
 **Regra da Situação Fixa.** Verde é ok, âmbar é atenção e vermelho é erro, em qualquer tema e em qualquer tela. Essas cores não servem de decoração.
 
+**Regra da Situação Inconfundível.** Ok, atenção e erro precisam se distinguir entre si e das outras cores do sistema, em cada tema, com distância medida pelo teste de cores. Com daltonismo, quem garante a leitura é o símbolo e a palavra do selo. As exceções aceitas estão no item 15.4 de `docs/15-padrao-de-cores.md`.
+
 **Regra do Destaque que Preenche.** `--accent` só preenche. Quando o destaque vira texto, borda ou traço, usa-se `--accent-fg`.
 
-**Regra do Você e dos Tops.** O jogador é sempre o destaque e os melhores são sempre o teal, para que a comparação se leia sem legenda depois da primeira vez.
+**Regra do Você e dos Tops.** O jogador é sempre laranja e os melhores são sempre ciano, para que a comparação se leia sem legenda depois da primeira vez.
 
 ## Typography
 
@@ -295,7 +304,7 @@ Sólidos e sem efeito, com alvo de toque confortável.
 
 ### Chips
 
-- **Style:** selos totalmente arredondados, 0,8rem e peso 600, com fundo translúcido e texto na cor da situação.
+- **Style:** selos totalmente arredondados, 0,8rem e peso 600, com fundo claro e texto na cor da situação. O selo de Atenção usa tokens próprios (`--warn-badge-bg` e `--warn-badge-fg`): no tema claro, fundo amarelo clarinho e texto laranja, porque o amarelo da barra não tem contraste como texto.
 - **State:** erro e atenção sempre trazem símbolo e palavra ("✕ Erro", "! Atenção"). "Hipótese" usa o tom de destaque. Kill é verde e wipe é neutro. "Subindo" tem um ponto pulsante, e "Pausado" tem duas barras estáticas.
 
 ### Cards / Containers
@@ -330,7 +339,7 @@ Frase com a diferença total, barra de 12 px totalmente arredondada, dividida em
 
 ### Timeline
 
-Uma faixa de 44 px por trilha sobre `--bg`, com uma linha central. As marcas do jogador ficam acima da linha, em `--accent-fg`, e as dos tops abaixo, em `--top`. A intermissão aparece hachurada, e as fases, por divisórias finas. Abaixo de 560 px, os rótulos passam para cima da trilha.
+Uma faixa de 44 px por trilha sobre `--bg`, com uma linha central. As marcas do jogador ficam acima da linha, em `--player`, e as dos tops abaixo, em `--top`. A intermissão aparece hachurada, e as fases, por divisórias finas. Abaixo de 560 px, os rótulos passam para cima da trilha.
 ### Fight List Item
 
 Linha inteira clicável, com o nome da luta à esquerda e o selo à direita. Selecionada, ganha borda e anel de destaque sobre `--surface-2`. Indisponível, fica em cinza, com opacidade reduzida e o motivo escrito. Subindo ou pausada, usa borda tracejada.

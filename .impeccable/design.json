@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-09T23:33:19+00:00",
+  "generatedAt": "2026-11-09T23:51:23+00:00",
   "title": "Design System: LogCoach",
   "extensions": {
     "colorMeta": {
@@ -96,17 +96,17 @@
       },
       "dark-top": {
         "role": "secondary",
-        "displayName": "Teal dos Tops (escuro)",
-        "canonical": "#5eead4",
+        "displayName": "Ciano dos Tops (escuro)",
+        "canonical": "#22d3ee",
         "tonalRamp": [
-          "#00120d",
-          "#003428",
-          "#005546",
-          "#007765",
-          "#009a87",
-          "#37bda9",
-          "#97d8cc",
-          "#e0f3ef"
+          "#00111b",
+          "#003045",
+          "#00516a",
+          "#00738c",
+          "#0096b0",
+          "#0ab9d2",
+          "#90d7e5",
+          "#def3f7"
         ]
       },
       "dark-bg": {
@@ -441,17 +441,17 @@
       },
       "light-top": {
         "role": "secondary",
-        "displayName": "Teal dos Tops (claro)",
-        "canonical": "#0f766e",
+        "displayName": "Ciano dos Tops (claro)",
+        "canonical": "#0c7c9c",
         "tonalRamp": [
-          "#00100e",
-          "#00302b",
-          "#005049",
-          "#017169",
-          "#39938a",
-          "#66b6ad",
-          "#a7d4ce",
-          "#e4f2f0"
+          "#000e1b",
+          "#002c45",
+          "#004b69",
+          "#006c8c",
+          "#2c8faf",
+          "#5db2d1",
+          "#a3d1e4",
+          "#e3f1f7"
         ]
       },
       "light-bg": {
@@ -607,16 +607,106 @@
       "light-warn": {
         "role": "status",
         "displayName": "Atenção (claro)",
-        "canonical": "#92400e",
+        "canonical": "#dfa800",
         "tonalRamp": [
-          "#1e0100",
-          "#4c0600",
-          "#742400",
-          "#984616",
-          "#be683c",
-          "#e18d65",
-          "#f0bca4",
-          "#fbebe3"
+          "#190500",
+          "#421700",
+          "#673400",
+          "#895500",
+          "#ad7800",
+          "#cf9c10",
+          "#e3c588",
+          "#f7eedb"
+        ]
+      },
+      "light-warn-badge-bg": {
+        "role": "status",
+        "displayName": "Fundo do selo de atenção (claro)",
+        "canonical": "#ffefa8",
+        "tonalRamp": [
+          "#110a00",
+          "#302400",
+          "#504100",
+          "#706118",
+          "#92823e",
+          "#b4a667",
+          "#d2caa5",
+          "#f1efe3"
+        ]
+      },
+      "light-warn-badge-fg": {
+        "role": "status",
+        "displayName": "Texto do selo de atenção (claro)",
+        "canonical": "#9a5b00",
+        "tonalRamp": [
+          "#1b0400",
+          "#451300",
+          "#6b2f00",
+          "#8e5000",
+          "#b27227",
+          "#d59656",
+          "#e7c19d",
+          "#f8ece1"
+        ]
+      },
+      "light-player": {
+        "role": "secondary",
+        "displayName": "Laranja do Jogador (claro)",
+        "canonical": "#dd6b00",
+        "tonalRamp": [
+          "#230000",
+          "#550000",
+          "#800c00",
+          "#a63800",
+          "#cd5d00",
+          "#f0843b",
+          "#fab892",
+          "#ffeade"
+        ]
+      },
+      "dark-warn-badge-bg": {
+        "role": "status",
+        "displayName": "Fundo do selo de atenção (escuro)",
+        "canonical": "rgb(253 224 71 / 12%)",
+        "tonalRamp": [
+          "#150900",
+          "#392000",
+          "#5a3d00",
+          "#7b5e00",
+          "#9d8100",
+          "#bfa500",
+          "#d8ca85",
+          "#f3efda"
+        ]
+      },
+      "dark-warn-badge-fg": {
+        "role": "status",
+        "displayName": "Texto do selo de atenção (escuro)",
+        "canonical": "#fde047",
+        "tonalRamp": [
+          "#150900",
+          "#392000",
+          "#5a3d00",
+          "#7b5e00",
+          "#9d8100",
+          "#bfa500",
+          "#d8ca85",
+          "#f3efda"
+        ]
+      },
+      "dark-player": {
+        "role": "secondary",
+        "displayName": "Laranja do Jogador (escuro)",
+        "canonical": "#ff8906",
+        "tonalRamp": [
+          "#230000",
+          "#560000",
+          "#810900",
+          "#a83800",
+          "#cf5d00",
+          "#f1851d",
+          "#fbb989",
+          "#ffeadc"
         ]
       },
       "light-warn-bg": {
@@ -817,7 +907,7 @@
       "refersTo": "badge-error",
       "description": "Situação sempre com símbolo e palavra.",
       "html": "<span class=\"ds-badge ds-erro\">✕ Erro</span> <span class=\"ds-badge ds-atencao\">! Atenção</span> <span class=\"ds-badge ds-ok\">Kill</span>",
-      "css": ".ds-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 10px;border-radius:999px;font-size:.8rem;font-weight:600;white-space:nowrap;}.ds-erro{background:var(--error-bg);color:var(--error);}.ds-atencao{background:var(--warn-bg);color:var(--warn);}.ds-ok{background:var(--ok-bg);color:var(--ok);}"
+      "css": ".ds-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 10px;border-radius:999px;font-size:.8rem;font-weight:600;white-space:nowrap;}.ds-erro{background:var(--error-bg);color:var(--error);}.ds-atencao{background:var(--warn-badge-bg);color:var(--warn-badge-fg);}.ds-ok{background:var(--ok-bg);color:var(--ok);}"
     },
     {
       "name": "Cartão",
@@ -849,7 +939,7 @@
       "refersTo": "",
       "description": "Jogador acima e tops abaixo, no mesmo eixo.",
       "html": "<div class=\"ds-track\"><i class=\"ds-me\" style=\"left:20%\"></i><i class=\"ds-me\" style=\"left:62%\"></i><i class=\"ds-top\" style=\"left:18%\"></i><i class=\"ds-top\" style=\"left:58%\"></i></div>",
-      "css": ".ds-track{position:relative;height:44px;border-radius:6px;background:linear-gradient(var(--border),var(--border)) 0 50%/100% 1px no-repeat,var(--bg);}.ds-track i{position:absolute;width:6px;height:14px;border-radius:2px;transform:translateX(-50%);}.ds-me{top:5px;background:var(--accent-fg);}.ds-top{bottom:5px;background:var(--top);}"
+      "css": ".ds-track{position:relative;height:44px;border-radius:6px;background:linear-gradient(var(--border),var(--border)) 0 50%/100% 1px no-repeat,var(--bg);}.ds-track i{position:absolute;width:6px;height:14px;border-radius:2px;transform:translateX(-50%);}.ds-me{top:5px;background:var(--player);}.ds-top{bottom:5px;background:var(--top);}"
     }
   ],
   "narrative": {
@@ -869,13 +959,18 @@
         "section": "colors"
       },
       {
+        "name": "Regra da Situação Inconfundível",
+        "body": "Ok, atenção e erro precisam se distinguir entre si e das outras cores do sistema, em cada tema, com distância medida pelo teste de cores. Com daltonismo, quem garante a leitura é o símbolo e a palavra do selo. As exceções aceitas estão no item 15.4 de `docs/15-padrao-de-cores.md`.",
+        "section": "colors"
+      },
+      {
         "name": "Regra do Destaque que Preenche",
         "body": "`--accent` só preenche. Quando o destaque vira texto, borda ou traço, usa-se `--accent-fg`.",
         "section": "colors"
       },
       {
         "name": "Regra do Você e dos Tops",
-        "body": "O jogador é sempre o destaque e os melhores são sempre o teal, para que a comparação se leia sem legenda depois da primeira vez.",
+        "body": "O jogador é sempre laranja e os melhores são sempre ciano, para que a comparação se leia sem legenda depois da primeira vez.",
         "section": "colors"
       },
       {
