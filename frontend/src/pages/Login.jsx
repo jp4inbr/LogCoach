@@ -15,7 +15,9 @@ export default function Login({ mode, next }) {
   const [serverError, setServerError] = useState(null);
   const [sending, setSending] = useState(false);
 
-  const emailError = !EMAIL.test(email.trim()) ? "Digite um e-mail válido, como voce@exemplo.com." : null;
+  const emailError = !EMAIL.test(email.trim())
+    ? "Digite um e-mail válido, como voce@exemplo.com."
+    : null;
   const passwordError = isRegister
     ? password.length < 8
       ? "A senha precisa ter pelo menos 8 caracteres."
@@ -72,7 +74,8 @@ export default function Login({ mode, next }) {
         <h1>{isRegister ? "Crie sua conta grátis" : "Entre na sua conta"}</h1>
         {isRegister && (
           <p className="muted">
-            Com conta você guarda o histórico e faz até 5 análises por mês. Só pedimos e-mail e senha.
+            Com conta você guarda o histórico e faz até 5 análises por mês. Só pedimos e-mail e
+            senha.
           </p>
         )}
 

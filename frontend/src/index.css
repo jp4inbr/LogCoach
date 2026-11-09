@@ -1,28 +1,50 @@
 /* LogCoach — estilos globais.
    Cores de situação (ok / atenção / erro) iguais em todas as telas (heurística "consistência"). */
 
+/* Cores: duas paletas do Happy Hues (docs/15-padrao-de-cores.md).
+   Escuro = paleta 13 (padrão sem escolha nem preferência do sistema); claro = paleta 14.
+   Sem JS, a media query ainda segue o sistema.
+   O bloco claro aparece duas vezes (media query e data-theme): o teste
+   src/theme-contrast.test.js confere que os dois são idênticos. Nunca usar cor fixa fora daqui. */
 :root {
   color-scheme: dark;
 
-  --bg: #0f0d17;
-  --surface: #181524;
-  --surface-2: #211d31;
-  --border: #2f2945;
-  --text: #ece9f5;
-  --muted: #a39cb8;
+  --bg: #0f0e17;
+  --surface: #181722;
+  --surface-2: #2e2f3e;
+  --border: #3b3c4f;
+  --border-control: #7f8199;
+  --text: #fffffe;
+  --muted: #a7a9be;
+  --link: #ff5c8f;
 
-  --accent: #a78bfa;
-  --accent-strong: #8b5cf6;
-  --accent-ink: #120d22;
+  --accent: #ff8906;
+  --accent-strong: #ff9f33;
+  --accent-ink: #0f0e17;
+  --accent-fg: #ff8906;
+  --accent-border: rgb(255 137 6 / 40%);
+  --accent-glow: rgb(255 137 6 / 25%);
+  --focus: #ff8906;
+  --brand-2: #e53170;
   --top: #5eead4;
 
   --ok: #4ade80;
   --ok-bg: rgb(74 222 128 / 12%);
-  --warn: #fbbf24;
-  --warn-bg: rgb(251 191 36 / 12%);
+  --warn: #fde047;
+  --warn-bg: rgb(253 224 71 / 12%);
+  --warn-border: rgb(253 224 71 / 40%);
   --error: #f87171;
   --error-bg: rgb(248 113 113 / 12%);
-  --info-bg: rgb(167 139 250 / 10%);
+  --error-border: rgb(248 113 113 / 35%);
+  --error-ink: #0f0e17;
+  --info-bg: rgb(255 137 6 / 10%);
+
+  --glow: rgb(255 137 6 / 12%);
+  --coach-bg-1: rgb(255 137 6 / 16%);
+  --coach-bg-2: rgb(255 137 6 / 5%);
+  --hatch: rgb(255 137 6 / 14%);
+  --hatch-strong: rgb(255 137 6 / 40%);
+  --shadow: rgb(0 0 0 / 45%);
 
   --radius: 12px;
   --radius-sm: 8px;
@@ -30,11 +52,106 @@
   --max: 960px;
 
   font-family:
-    Inter, "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+    Inter,
+    "Segoe UI",
+    system-ui,
+    -apple-system,
+    Roboto,
+    "Helvetica Neue",
+    Arial,
+    sans-serif;
   font-size: 16px;
   line-height: 1.5;
   color: var(--text);
   background: var(--bg);
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    color-scheme: light;
+
+    --bg: #fffffe;
+    --surface: #e3f6f5;
+    --surface-2: #bae8e8;
+    --border: #a6dcdc;
+    --border-control: #5e7385;
+    --text: #272343;
+    --muted: #4b5169;
+    --link: #272343;
+
+    --accent: #ffd803;
+    --accent-strong: #f5c800;
+    --accent-ink: #272343;
+    --accent-fg: #272343;
+    --accent-border: rgb(39 35 67 / 40%);
+    --accent-glow: rgb(39 35 67 / 20%);
+    --focus: #272343;
+    --brand-2: #bae8e8;
+    --top: #0f766e;
+
+    --ok: #166534;
+    --ok-bg: rgb(22 101 52 / 10%);
+    --warn: #92400e;
+    --warn-bg: rgb(180 83 9 / 12%);
+    --warn-border: rgb(146 64 14 / 45%);
+    --error: #b91c1c;
+    --error-bg: rgb(185 28 28 / 9%);
+    --error-border: rgb(185 28 28 / 40%);
+    --error-ink: #fffffe;
+    --info-bg: rgb(186 232 232 / 45%);
+
+    --glow: rgb(255 216 3 / 22%);
+    --coach-bg-1: rgb(255 216 3 / 28%);
+    --coach-bg-2: rgb(186 232 232 / 40%);
+    --hatch: rgb(39 35 67 / 12%);
+    --hatch-strong: rgb(39 35 67 / 40%);
+    --shadow: rgb(39 35 67 / 25%);
+  }
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+
+  --bg: #fffffe;
+  --surface: #e3f6f5;
+  --surface-2: #bae8e8;
+  --border: #a6dcdc;
+  --border-control: #5e7385;
+  --text: #272343;
+  --muted: #4b5169;
+  --link: #272343;
+
+  --accent: #ffd803;
+  --accent-strong: #f5c800;
+  --accent-ink: #272343;
+  --accent-fg: #272343;
+  --accent-border: rgb(39 35 67 / 40%);
+  --accent-glow: rgb(39 35 67 / 20%);
+  --focus: #272343;
+  --brand-2: #bae8e8;
+  --top: #0f766e;
+
+  --ok: #166534;
+  --ok-bg: rgb(22 101 52 / 10%);
+  --warn: #92400e;
+  --warn-bg: rgb(180 83 9 / 12%);
+  --warn-border: rgb(146 64 14 / 45%);
+  --error: #b91c1c;
+  --error-bg: rgb(185 28 28 / 9%);
+  --error-border: rgb(185 28 28 / 40%);
+  --error-ink: #fffffe;
+  --info-bg: rgb(186 232 232 / 45%);
+
+  --glow: rgb(255 216 3 / 22%);
+  --coach-bg-1: rgb(255 216 3 / 28%);
+  --coach-bg-2: rgb(186 232 232 / 40%);
+  --hatch: rgb(39 35 67 / 12%);
+  --hatch-strong: rgb(39 35 67 / 40%);
+  --shadow: rgb(39 35 67 / 25%);
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
 }
 
 * {
@@ -43,8 +160,7 @@
 
 body {
   margin: 0;
-  background:
-    radial-gradient(1200px 500px at 80% -10%, rgb(139 92 246 / 16%), transparent 60%), var(--bg);
+  background: radial-gradient(1200px 500px at 80% -10%, var(--glow), transparent 60%), var(--bg);
   min-height: 100vh;
 }
 
@@ -73,11 +189,11 @@ p {
 }
 
 a {
-  color: var(--accent);
+  color: var(--link);
 }
 
 :focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--focus);
   outline-offset: 2px;
 }
 
@@ -152,7 +268,7 @@ a {
   width: 30px;
   height: 30px;
   border-radius: 8px;
-  background: linear-gradient(135deg, var(--accent), #6d28d9);
+  background: linear-gradient(135deg, var(--accent), var(--brand-2));
   color: var(--accent-ink);
   font-size: 0.95rem;
 }
@@ -164,7 +280,8 @@ a {
 }
 
 .topbar nav a:not(.button),
-.topbar nav .link-button {
+.topbar nav .link-button,
+.topbar nav .theme-toggle {
   color: var(--muted);
   text-decoration: none;
   padding: 6px 10px;
@@ -173,6 +290,7 @@ a {
 
 .topbar nav a:not(.button):hover,
 .topbar nav .link-button:hover,
+.topbar nav .theme-toggle:hover,
 .topbar nav a[aria-current="page"] {
   color: var(--text);
   background: var(--surface-2);
@@ -211,7 +329,7 @@ a {
 }
 
 .eyebrow {
-  color: var(--accent);
+  color: var(--accent-fg);
   font-size: 0.8rem;
   font-weight: 600;
   letter-spacing: 0.06em;
@@ -254,7 +372,7 @@ a {
 }
 
 .button:hover:not(:disabled, [aria-disabled="true"]) {
-  border-color: var(--accent);
+  border-color: var(--accent-fg);
 }
 
 .button:disabled {
@@ -290,12 +408,15 @@ a {
 
 .button.block {
   width: 100%;
+  /* Botão de largura cheia quebra linha no celular em vez de vazar da tela. */
+  white-space: normal;
+  text-align: center;
 }
 
 .button.danger {
   background: var(--error);
   border-color: var(--error);
-  color: #1f0a0a;
+  color: var(--error-ink);
 }
 
 .button.danger-ghost {
@@ -308,10 +429,41 @@ a {
   background: none;
   border: 0;
   padding: 0;
-  color: var(--accent);
+  color: var(--link);
   font: inherit;
   cursor: pointer;
   text-decoration: underline;
+}
+
+/* Botão de tema (☀/☾) no cabeçalho: ícone sozinho, alvo de toque de 40 px. */
+.theme-toggle {
+  display: inline-grid;
+  place-items: center;
+  min-width: 40px;
+  min-height: 40px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-size: 1.15rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+/* Troca de tema suave; sem animação para quem pede menos movimento. */
+@media (prefers-reduced-motion: no-preference) {
+  body,
+  .card,
+  .button,
+  .topbar nav a,
+  .theme-toggle,
+  input {
+    transition:
+      background-color 0.2s ease,
+      color 0.2s ease,
+      border-color 0.2s ease;
+  }
 }
 
 input[type="text"],
@@ -322,7 +474,7 @@ input[type="password"] {
   min-height: 44px;
   padding: 0 14px;
   border-radius: var(--radius-sm);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-control);
   background: var(--bg);
   color: var(--text);
   font: inherit;
@@ -346,7 +498,7 @@ label {
 }
 
 .form-inline {
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
   align-items: end;
 }
 
@@ -398,12 +550,12 @@ label {
 
 .notice-atencao {
   background: var(--warn-bg);
-  border-color: rgb(251 191 36 / 35%);
+  border-color: var(--warn-border);
 }
 
 .notice-erro {
   background: var(--error-bg);
-  border-color: rgb(248 113 113 / 35%);
+  border-color: var(--error-border);
 }
 
 .badge,
@@ -437,7 +589,7 @@ label {
 
 .badge-hipotese {
   background: var(--info-bg);
-  color: var(--accent);
+  color: var(--accent-fg);
 }
 
 .pill-kill {
@@ -475,7 +627,7 @@ label {
   line-height: 1.4;
   text-transform: none;
   letter-spacing: 0;
-  box-shadow: 0 8px 24px rgb(0 0 0 / 40%);
+  box-shadow: 0 8px 24px var(--shadow);
 }
 
 /* ---------- Abas ---------- */
@@ -506,7 +658,7 @@ label {
 
 .tab-active {
   color: var(--text);
-  border-bottom-color: var(--accent);
+  border-bottom-color: var(--accent-fg);
 }
 
 /* ---------- Tela 1: início ---------- */
@@ -561,7 +713,7 @@ label {
   list-style: none;
   counter-reset: how;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
   gap: 12px;
   padding: 0;
   margin: 12px 0 0;
@@ -585,7 +737,7 @@ label {
   height: 28px;
   border-radius: 50%;
   background: var(--info-bg);
-  color: var(--accent);
+  color: var(--accent-fg);
   font-weight: 700;
 }
 
@@ -659,12 +811,12 @@ label {
 }
 
 .fight:hover:not(:disabled, [aria-disabled="true"]) {
-  border-color: var(--accent);
+  border-color: var(--accent-fg);
 }
 
 .fight-selected {
-  border-color: var(--accent);
-  box-shadow: inset 0 0 0 1px var(--accent);
+  border-color: var(--accent-fg);
+  box-shadow: inset 0 0 0 1px var(--accent-fg);
   background: var(--surface-2);
 }
 
@@ -683,7 +835,7 @@ label {
 .fight-uploading {
   cursor: progress;
   border-style: dashed;
-  border-color: rgb(167 139 250 / 45%);
+  border-color: var(--accent-border);
   background: var(--info-bg);
 }
 
@@ -694,8 +846,8 @@ label {
 .pill-uploading {
   gap: 6px;
   background: var(--info-bg);
-  color: var(--accent);
-  box-shadow: inset 0 0 0 1px rgb(167 139 250 / 35%);
+  color: var(--accent-fg);
+  box-shadow: inset 0 0 0 1px var(--accent-border);
 }
 
 .pill-uploading::before {
@@ -703,7 +855,7 @@ label {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: var(--accent);
+  background: var(--accent-fg);
   animation: uploading 1.4s ease-in-out infinite;
 }
 
@@ -744,7 +896,7 @@ label {
 .fight-paused {
   cursor: not-allowed;
   border-style: dashed;
-  border-color: rgb(251 191 36 / 40%);
+  border-color: var(--warn-border);
   background: var(--warn-bg);
 }
 
@@ -756,7 +908,7 @@ label {
   gap: 6px;
   background: var(--warn-bg);
   color: var(--warn);
-  box-shadow: inset 0 0 0 1px rgb(251 191 36 / 35%);
+  box-shadow: inset 0 0 0 1px var(--warn-border);
 }
 
 /* Sinal de pausa (duas barras), estático. */
@@ -776,7 +928,7 @@ label {
   gap: 4px;
   padding: 12px 16px;
   border-radius: var(--radius);
-  border: 1px solid rgb(167 139 250 / 35%);
+  border: 1px solid var(--accent-border);
   background: var(--info-bg);
 }
 
@@ -786,7 +938,7 @@ label {
 
 .auto-refresh-stopped {
   border-style: dashed;
-  border-color: rgb(251 191 36 / 35%);
+  border-color: var(--warn-border);
   background: var(--warn-bg);
 }
 
@@ -803,7 +955,7 @@ label {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: var(--accent);
+  background: var(--accent-fg);
   animation: uploading 1.4s ease-in-out infinite;
 }
 
@@ -842,7 +994,7 @@ label {
 }
 
 .player:has(input:checked) {
-  border-color: var(--accent);
+  border-color: var(--accent-fg);
   background: var(--surface-2);
 }
 
@@ -864,7 +1016,7 @@ label {
 }
 
 .player input {
-  accent-color: var(--accent);
+  accent-color: var(--accent-fg);
   width: 18px;
   height: 18px;
 }
@@ -909,8 +1061,8 @@ label {
 }
 
 .step-active .step-dot {
-  border-color: var(--accent);
-  color: var(--accent);
+  border-color: var(--accent-fg);
+  color: var(--accent-fg);
   animation: pulse 1.2s ease-in-out infinite;
 }
 
@@ -926,7 +1078,7 @@ label {
 
 @keyframes pulse {
   50% {
-    box-shadow: 0 0 0 6px rgb(167 139 250 / 20%);
+    box-shadow: 0 0 0 6px var(--accent-glow);
   }
 }
 
@@ -945,7 +1097,7 @@ label {
 
 .stats {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(150px, 100%), 1fr));
   gap: 12px;
 }
 
@@ -988,8 +1140,8 @@ label {
   align-items: flex-start;
   padding: 16px;
   border-radius: var(--radius);
-  background: linear-gradient(135deg, rgb(139 92 246 / 18%), rgb(139 92 246 / 6%));
-  border: 1px solid rgb(167 139 250 / 35%);
+  background: linear-gradient(135deg, var(--coach-bg-1), var(--coach-bg-2));
+  border: 1px solid var(--accent-border);
 }
 
 .coach p {
@@ -1140,7 +1292,7 @@ caption {
   content: "▸";
   /* Texto alternativo vazio: a seta é decorativa e não deve ser lida pelo leitor de tela. */
   content: "▸" / "";
-  color: var(--accent);
+  color: var(--accent-fg);
   transition: transform 0.15s;
 }
 
@@ -1185,9 +1337,9 @@ caption {
 
 /* Ligado: mesmo destaque de seleção usado nas lutas (heurística "consistência"). */
 .eye-toggle[aria-pressed="true"] {
-  border-color: var(--accent);
+  border-color: var(--accent-fg);
   background: var(--surface-2);
-  color: var(--accent);
+  color: var(--accent-fg);
 }
 
 .compared .table-wrap {
@@ -1288,11 +1440,7 @@ caption {
   position: absolute;
   top: 0;
   bottom: 0;
-  background: repeating-linear-gradient(
-    45deg,
-    rgb(167 139 250 / 10%) 0 6px,
-    transparent 6px 12px
-  );
+  background: repeating-linear-gradient(45deg, var(--hatch) 0 6px, transparent 6px 12px);
 }
 
 .timeline-divider {
@@ -1317,7 +1465,7 @@ caption {
 }
 
 .mark-player {
-  background: var(--accent);
+  background: var(--accent-fg);
 }
 
 .timeline-track .mark-player {
@@ -1340,7 +1488,7 @@ caption {
 }
 
 .swatch-intermission {
-  background: repeating-linear-gradient(45deg, rgb(167 139 250 / 35%) 0 3px, transparent 3px 6px);
+  background: repeating-linear-gradient(45deg, var(--hatch-strong) 0 3px, transparent 3px 6px);
   border: 1px solid var(--border);
 }
 
@@ -1356,7 +1504,7 @@ caption {
 .meter span {
   display: block;
   height: 100%;
-  background: var(--accent);
+  background: var(--accent-fg);
 }
 
 .history {
@@ -1415,25 +1563,25 @@ caption {
 
 .chart-line {
   fill: none;
-  stroke: var(--accent);
+  stroke: var(--accent-fg);
   stroke-width: 3;
 }
 
 .chart-dot {
   fill: var(--surface);
-  stroke: var(--accent);
+  stroke: var(--accent-fg);
   stroke-width: 3;
 }
 
 .danger-zone {
-  border-color: rgb(248 113 113 / 35%);
+  border-color: var(--error-border);
 }
 
 /* ---------- Planos ---------- */
 
 .plans {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr));
   gap: var(--gap);
 }
 
@@ -1451,7 +1599,7 @@ caption {
 }
 
 .plan-pro {
-  border-color: rgb(167 139 250 / 45%);
+  border-color: var(--accent-border);
 }
 
 /* ---------- Celular (RNF08: a partir de 360 px) ---------- */
@@ -1595,7 +1743,7 @@ caption {
 
 .rule-details summary {
   cursor: pointer;
-  color: var(--accent);
+  color: var(--accent-fg);
 }
 
 .rule-details ul {
@@ -1613,6 +1761,6 @@ caption {
 
 .badge-boss {
   margin-left: 8px;
-  color: var(--accent);
+  color: var(--accent-fg);
   background: var(--info-bg);
 }

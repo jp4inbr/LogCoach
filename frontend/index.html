@@ -4,7 +4,31 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0f0e17" />
     <title>LogCoach</title>
+    <!-- Tema antes da primeira pintura (sem flash). Mesma lógica de src/lib/theme.js: se mudar
+         um, mude o outro (o teste src/lib/theme.test.js confere os dois). -->
+    <script>
+      (function () {
+        var theme = null;
+        try {
+          var saved = window.localStorage.getItem("logcoach.theme");
+          if (saved === "light" || saved === "dark") theme = saved;
+        } catch (e) {}
+        if (!theme) {
+          try {
+            theme = window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+          } catch (e) {
+            theme = "dark";
+          }
+        }
+        var root = document.documentElement;
+        root.setAttribute("data-theme", theme);
+        root.style.colorScheme = theme;
+        var meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.setAttribute("content", theme === "light" ? "#fffffe" : "#0f0e17");
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

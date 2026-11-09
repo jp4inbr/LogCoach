@@ -1,4 +1,5 @@
 import AuthProvider from "./components/AuthProvider.jsx";
+import ThemeToggle from "./components/ThemeToggle.jsx";
 import { useAuth } from "./lib/auth-context.js";
 import { href, navigate, useRoute } from "./lib/router.js";
 import ChooseFight from "./pages/ChooseFight.jsx";
@@ -40,6 +41,7 @@ function Layout() {
           <a href={href("/planos")} aria-current={section === "planos" ? "page" : undefined}>
             Planos
           </a>
+          <ThemeToggle />
           {token ? (
             <>
               <a

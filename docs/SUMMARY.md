@@ -16,3 +16,4 @@
 * [12. Documentação de Desenvolvimento (Técnica)](12-documentacao-tecnica.md)
 * [13. Publicação do Software](13-publicacao-do-software.md)
 * [14. Apresentação Final (Banca/Demo)](14-apresentacao-final.md)
+* [15. Padrão de Cores (Tema Claro e Escuro)](15-padrao-de-cores.md)

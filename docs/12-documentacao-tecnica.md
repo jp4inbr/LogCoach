@@ -18,6 +18,12 @@ uvicorn app.main:app --reload   # http://localhost:8000/health e /docs
 cd frontend
 npm install
 npm run dev   # http://localhost:5173 (precisa do backend rodando)
+
+# Testes do frontend (Node.js 22.13 ou superior)
+npm test                          # Vitest: unidade, componentes e telas (jsdom)
+npx playwright install chromium   # só na primeira vez
+npm run test:e2e                  # Playwright: ponta a ponta no Chromium, API simulada
+npm run lint
 ```
 
 ## 12.2 Variáveis de ambiente
@@ -360,3 +366,7 @@ Código em `backend/app/services/tops.py` (passo 4.2). Entrega ao motor (`Engine
 **`FightOption`** ganhou `encounter_id` e `difficulty_id` (ids do WCL), que a pré-busca usa para achar o ranking; numa lista guardada antes deles, vêm nulos e a pré-busca dos tops não roda (a análise busca depois).
 
 **DPS dos tops × do motor (revisão de 04/11).** O DPS do ranking bate com a soma dos eventos em 7 dos 10 tops e no Harmonist, mas o top03 (+11,2%) e o top09 (+5,0%) somam dano que o WCL credita ao Evocador Aumentação que os apoiou (Ebon Might, Prescience, Shifting Sands, Fate Mirror, Breath of Eons: `totalRDPSTaken` da tabela `DamageDone`), e o top04 e o top07 (+0,2%) o dano de Bombardments. Pelo ranking, a diferença do Harmonist para os tops é 18,0%; pelos eventos, 19,95%. Desde 04/11 o DPS vem do WCL (item 12.12, "Diferença para os tops").
+
+## 12.14 Tema claro e escuro (frontend)
+
+As cores do frontend são tokens CSS em `frontend/src/index.css` (escuro = paleta 13 e claro = paleta 14 do Happy Hues). O tema vem do sistema até a pessoa clicar no botão do cabeçalho; a escolha fica em `localStorage` (`logcoach.theme`) e um script inline no `index.html` aplica o `data-theme` antes da primeira pintura. Lógica em `src/lib/theme.js` e `src/components/ThemeToggle.jsx`; testes em `theme.test.js`, `ThemeToggle.test.jsx`, `App.test.jsx` e `theme-contrast.test.js` (contraste WCAG AA dos tokens, blocos do claro iguais, sem cor fixa). Tokens, desvios da paleta e regras para mexer: [item 15](15-padrao-de-cores.md).

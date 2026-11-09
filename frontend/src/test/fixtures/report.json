@@ -1,0 +1,68 @@
+{
+  "code": "XhrmBaYkGCAQjH2D",
+  "title": "The Venomous Abyss — Mítico",
+  "sample": true,
+  "fetched_at": "2026-11-07T22:31:27.076152Z",
+  "fights": [
+    {
+      "id": 33,
+      "boss": "Nek'zali, a Enrosca-almas",
+      "difficulty": "Mítico",
+      "encounter_id": null,
+      "difficulty_id": null,
+      "kill": false,
+      "duration_s": 41.0,
+      "supported": false,
+      "unsupported_code": "short",
+      "in_progress": false,
+      "upload_paused": false,
+      "unsupported_reason": "A luta tem menos de 60 s. Escolha uma tentativa mais longa"
+    },
+    {
+      "id": 34,
+      "boss": "Nek'zali, a Enrosca-almas",
+      "difficulty": "Mítico",
+      "encounter_id": 3470,
+      "difficulty_id": 5,
+      "kill": true,
+      "duration_s": 415.6,
+      "supported": true,
+      "unsupported_code": null,
+      "in_progress": false,
+      "upload_paused": false,
+      "unsupported_reason": null
+    },
+    {
+      "id": 41,
+      "boss": "Entombed Sentinels",
+      "difficulty": "Mítico",
+      "encounter_id": null,
+      "difficulty_id": null,
+      "kill": false,
+      "duration_s": 238.0,
+      "supported": false,
+      "unsupported_code": "unsupported_boss",
+      "in_progress": false,
+      "upload_paused": false,
+      "unsupported_reason": "Chefe ainda não suportado"
+    },
+    {
+      "id": 47,
+      "boss": "The Lost Explorers",
+      "difficulty": "Mítico",
+      "encounter_id": null,
+      "difficulty_id": null,
+      "kill": true,
+      "duration_s": 312.0,
+      "supported": false,
+      "unsupported_code": "unsupported_boss",
+      "in_progress": false,
+      "upload_paused": false,
+      "unsupported_reason": "Chefe ainda não suportado"
+    }
+  ],
+  "live": false,
+  "stale": false,
+  "stale_message": null,
+  "stale_code": null
+}
