@@ -63,8 +63,8 @@ TEXTS: dict[str, tuple[str, str, str]] = {
     ),
     "touch_uses": (
         "Toques dos Magos a menos",
-        "Cada Toque dos Magos que deixa de sair é dano que não volta. Possível = usar na recarga "
-        "desde o pull até o fim da luta.",
+        "Cada Toque dos Magos que deixa de sair é dano que não volta. Possível: quantos "
+        "usos caberiam se fosse usado na recarga, do pull ao fim da luta.",
         "Use o Toque na recarga, sempre casado com o Surto quando ele estiver pronto.",
     ),
     "touch_drift": (
@@ -76,8 +76,8 @@ TEXTS: dict[str, tuple[str, str, str]] = {
     ),
     "surge_uses": (
         "Surtos Arcanos a menos",
-        "Cada janela de Surto Arcano é o maior pico de dano do Arcano. Possível = usar na "
-        "recarga desde o pull até o fim da luta.",
+        "Cada janela de Surto Arcano é o maior pico de dano do Arcano. Possível: quantos "
+        "usos caberiam se fosse usado na recarga, do pull ao fim da luta.",
         "Use o Surto na recarga. Segurar só vale para casar com poção, lust ou fase do chefe.",
     ),
     "surge_hold": (
@@ -88,41 +88,41 @@ TEXTS: dict[str, tuple[str, str, str]] = {
         "o lust ou uma fase do chefe.",
     ),
     "barrage_low_salvo": (
-        "Salva Arcana com poucos acúmulos de Salvo",
-        "Todo acerto de magia arcana pode dar Abstração, e a Salva com mais Salvo derruba mais "
-        "meteoros (1 a cada 5 acúmulos): mais acertos, mais Abstração, mais Mísseis, mais "
-        "Salvo. Soltar a Salva com menos de 12 quebra esse ciclo (efeito bola de neve).",
-        "Segure a Salva até ter pelo menos 12 acúmulos. Antes de soltar, gaste 1 Mísseis "
-        "Arcanos e a Seta Prismática. Chegar no máximo (25) não é erro.",
+        "Salva Arcana com poucos acúmulos de Saraivada",
+        "Todo acerto de magia arcana pode dar Abstração, e a Salva com mais Saraivada derruba mais "
+        "meteoritos (1 a cada 5 acúmulos): mais acertos, mais Abstração, mais Mísseis, mais "
+        "Saraivada. Soltar a Salva com menos de 12 quebra esse ciclo (efeito bola de neve).",
+        "Segure a Salva até ter pelo menos 12 acúmulos. Antes de soltar, lance os Mísseis "
+        "Arcanos e a Seta Prismática que estiverem prontos. Chegar no máximo (25) não é erro.",
     ),
     "soul_entry": (
-        "Entrada na Alma Arcana com pouco Salvo",
-        "Depois do Surto vem a Alma Arcana: ali a Salva não gasta o Salvo, então cada Salva "
-        "rola Seta Prismática e meteoros de graça. Entrar com menos de 12 acúmulos perde esse "
+        "Entrada na Alma Arcana com pouca Saraivada",
+        "Depois do Surto vem a Alma Arcana: ali a Salva não gasta a Saraivada, então cada Salva "
+        "rola Seta Prismática e meteoritos de graça. Entrar com menos de 12 acúmulos perde esse "
         "ganho; o ideal é 20 ou mais.",
-        "Chegue na Alma Arcana com 20 de Salvo ou mais. Nos dois últimos GCDs antes dela (uns "
-        "2,5 s), não lance Salva; se vier Mísseis Sobrecarregados, o Salvo sobe para 25 na hora.",
+        "Chegue à Alma Arcana com 20 de Saraivada ou mais. Nos dois últimos GCDs antes dela (uns "
+        "2,5 s), não lance Salva; se vierem Projéteis Potencializados, a Saraivada sobe para 25 na hora.",
     ),
     "surge_empty_handed": (
         "Surto Arcano começado de mão vazia",
-        "Começar o Surto com menos de 12 de Salvo e nenhuma Abstração enche a janela de "
+        "Começar o Surto com menos de 12 de Saraivada e nenhuma Abstração enche a janela de "
         "Impacto Arcano, a magia mais fraca do burst. O custo já aparece nos Impactos dentro "
         "do Surto.",
-        "Entre no Surto com uma Abstração guardada ou com Salvo razoável. Com 1 Abstração e 11 "
-        "de Salvo o fluxo já anda: não precisa segurar o Surto à toa.",
+        "Entre no Surto com uma Abstração guardada ou com Saraivada razoável. Com 1 Abstração e 11 "
+        "de Saraivada o fluxo já anda: não precisa segurar o Surto à toa.",
     ),
     "surge_blasts": (
         "Impactos Arcanos demais dentro do Surto",
         "Dentro do Surto, cada Impacto Arcano no lugar de Mísseis Arcanos é dano a menos. Sem "
         "Abstração às vezes não tem jeito, por isso a referência são os tops.",
-        "Entre no Surto com uma Abstração guardada e Salvo razoável, e dentro dele mantenha o "
-        "ciclo de Mísseis e Salvas cheias. O Impacto fica para completar o Salvo fora do burst.",
+        "Entre no Surto com uma Abstração guardada e Saraivada razoável, e dentro dele mantenha o "
+        "ciclo de Mísseis e Salvas cheias. O Impacto fica para completar a Saraivada fora do burst.",
     ),
     "prismatic_bolt": (
         "Poucos procs esperados de Seta Prismática",
-        "A chance de Seta Prismática cresce com o Salvo de cada Salva (2% por acúmulo). Aqui "
+        "A chance de Seta Prismática cresce com a Saraivada de cada Salva (2% por acúmulo). Aqui "
         "conta só a decisão (procs esperados pelos acúmulos); o azar não é cobrado.",
-        "Solte as Salvas com 12 acúmulos ou mais e entre na Alma Arcana com Salvo alto.",
+        "Solte as Salvas com 12 acúmulos ou mais e entre na Alma Arcana com Saraivada alta.",
     ),
     "bolt_munch": (
         "Seta Prismática perdida por Salva com proc ativo",
@@ -158,7 +158,7 @@ TEXTS: dict[str, tuple[str, str, str]] = {
     "power_infusion": (
         "Infusão de Poder recebida",
         "Buff de outro jogador: contexto, não erro.",
-        "Combine com o Sacerdote para receber a Infusão junto do Surto.",
+        "Combine com quem joga de Sacerdote para receber a Infusão junto do Surto.",
     ),
     "deaths": (
         "Morte na luta",
@@ -273,8 +273,8 @@ def _hypothesis(
         text += " Maiores diferenças na tabela por habilidade: " + "; ".join(clues) + "."
     if padding:
         text += (
-            " Você deu menos dano no chefe que os tops em "
-            + ", ".join(phase for phase, _ in padding)
+            " Você deu menos dano no chefe que os tops "
+            + " e ".join(f"na {phase}" for phase in dict.fromkeys(ph for ph, _ in padding))
             + ": pode ter largado o chefe por adds."
         )
     return Mistake(

@@ -62,6 +62,10 @@ def clock(seconds: float) -> str:
     return f"{int(seconds // 60)}:{int(seconds % 60):02d}"
 
 
+def plural(n: int, singular: str, plural_: str) -> str:
+    return f"{n} {singular if n == 1 else plural_}"
+
+
 def _share(part: float, damage: float) -> float:
     return 100 * part / damage if damage else 0.0
 
@@ -133,9 +137,13 @@ def _uses(
         name=f"Usos de {spell_name(ability_id)}",
         status=status,
         player_value=f"{player} de {possible} possíveis",
-        top_value=f"mediana dos tops: deixam de usar {num(usual, 1)}" if top_missed else "—",
+        top_value=(
+            f"mediana dos tops: deixam de usar {num(usual, 0 if float(usual).is_integer() else 1)}"
+            if top_missed
+            else "—"
+        ),
         impact_pct=_share((missed - usual) * cost_each, damage) if status != "ok" else None,
-        note="Possível = usar no CD desde o pull até o fim da luta.",
+        note="Possível: quantos usos caberiam se fosse usado na recarga, do pull ao fim da luta.",
     )
 
 
@@ -149,7 +157,7 @@ def _touch_drift(p: FightMeasures, tops: list[FightMeasures], rules: dict[str, A
         p.touch.mean_drift_s,
         ref,
         secs,
-        note="Atraso médio em relação ao CD. Atrasar o Toque dessincroniza o próximo Surto.",
+        note="Atraso médio em relação à recarga. Atrasar o Toque dessincroniza o próximo Surto.",
     )
 
 
@@ -210,8 +218,8 @@ def _barrage(p: FightMeasures, tops: list[FightMeasures], rules: dict[str, Any])
         p.barrage_low_pct,
         ref,
         pct,
-        note="O ideal é nunca. O custo é o efeito bola de neve (Abstração, Meteoritos), "
-        "que não dá para isolar em %.",
+        note="O ideal é nunca soltar com menos que isso. O custo é o efeito bola de neve "
+        "(Abstração, Meteoritos), que não dá para isolar em %.",
     )
 
 
@@ -225,13 +233,13 @@ def _soul(p: FightMeasures, tops: list[FightMeasures], rules: dict[str, Any]) ->
         p.cast.barrage_per_salvo + rules["prismatic_bolt_rng"]["proc_per_salvo"] * p.cast.bolt
     )
     details = [
-        f"Entrada aos {clock(e.start_s)} com {e.salvo} de Salvo"
+        f"Entrada aos {clock(e.start_s)} com {e.salvo} de Saraivada"
         + (" (Salva nos 2 últimos GCDs)" if e.barrage_in_last_gcds else "")
         for e in low
     ]
     return Check(
         id="soul_entry",
-        name=f"Entradas na {spell_name(451038)} com menos de {soul['min_salvo']} de Salvo",
+        name=f"Entradas na {spell_name(451038)} com menos de {soul['min_salvo']} de Saraivada",
         status="erro" if low else "ok",
         player_value=f"{len(low)} de {len(p.soul)} ({', '.join(str(e.salvo) for e in p.soul)})",
         top_value=f"{top_low} de {top_total}" if tops else "—",
@@ -248,7 +256,7 @@ def _empty_handed(p: FightMeasures, tops: list[FightMeasures]) -> Check:
     top_total = sum(len(t.later_windows) for t in tops)
     return Check(
         id="surge_empty_handed",
-        name=f"{spell_name(365350)} de mão vazia (menos de 12 de Salvo e sem Abstração)",
+        name=f"{spell_name(365350)} de mão vazia (menos de 12 de Saraivada e sem Abstração)",
         status="atencao" if empty else "ok",
         player_value=f"{len(empty)} de {len(p.later_windows)}",
         top_value=f"{top_empty} de {top_total}" if tops else "—",
@@ -272,7 +280,8 @@ def _blasts(p: FightMeasures, tops: list[FightMeasures], rules: dict[str, Any]) 
         lambda v: f"{num(v)} por janela",
         impact_pct=_share(loss, p.damage) if loss else None,
         details=tuple(
-            f"Surto aos {clock(w.start_s)}: {w.arcane_blasts} Impactos" for w in p.later_windows
+            f"Surto aos {clock(w.start_s)}: {plural(w.arcane_blasts, 'Impacto', 'Impactos')}"
+            for w in p.later_windows
         ),
     )
     # Pouca Abstração recebida (pior que 3 de cada 4 tops): pode ter sido azar, não passa
@@ -298,12 +307,12 @@ def _bolt(p: FightMeasures, tops: list[FightMeasures], rules: dict[str, Any]) ->
     luck = {"azar": "azar", "sorte": "sorte", "normal": "dentro do normal"}[p.bolt.luck]
     return _ref_check(
         "prismatic_bolt",
-        f"{spell_name(1295924)}: procs esperados pelo Salvo (decisão)",
+        f"{spell_name(1295924)}: procs esperados pela Saraivada (decisão)",
         p.bolt.expected_per_min,
         ref,
         lambda v: f"{num(v)} por minuto",
         note=(
-            f"Recebidos {p.bolt.received} de ~{num(p.bolt.expected, 0)} esperados em "
+            f"Recebeu {p.bolt.received} procs de ~{num(p.bolt.expected, 0)} esperados em "
             f"{num(minutes)} min ({luck}). A spec depende muito de sorte: azar não é erro."
         ),
     )
@@ -413,9 +422,9 @@ def _peak_line(peak) -> str:
     if peak.defensive_late and peak.verdict != "ok":
         outcome += f"; uso de {peak.defensive_late} só depois da queda"
     return (
-        f"{clock(peak.time_s)} ({peak.phase}): vida caiu a {pct(peak.min_hp_pct, 0)}, com dano"
-        f" de {pct(peak.damage_pct_hp, 0)} da vida em poucos segundos (contando escudos)."
-        f" Origem: {mechanics}. Resultado: {outcome}"
+        f"{clock(peak.time_s)} ({peak.phase}): a vida caiu para {pct(peak.min_hp_pct, 0)}, com"
+        f" perda de {pct(peak.damage_pct_hp, 0)} da vida em poucos segundos (contando escudos);"
+        f" origem: {mechanics}; resultado: {outcome}"
     )
 
 
@@ -489,7 +498,9 @@ def _deaths(p: FightMeasures) -> Check:
         player_value=str(len(p.deaths)),
         top_value="—",
         impact_pct=100 * dead / alive if p.deaths and alive > 0 else None,
-        details=tuple(f"Morte aos {clock(d.time_s)} ({secs(d.dead_s, 0)} morto)" for d in p.deaths),
+        details=tuple(
+            f"Morte aos {clock(d.time_s)} ({secs(d.dead_s, 0)} de tempo morto)" for d in p.deaths
+        ),
     )
 
 

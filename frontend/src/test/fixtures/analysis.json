@@ -123,16 +123,16 @@
     "mistakes": [
       {
         "id": "soul_entry",
-        "title": "Entrada na Alma Arcana com pouco Salvo",
+        "title": "Entrada na Alma Arcana com pouca Saraivada",
         "impact_pct": 2.7,
         "severity": "erro",
         "kind": "regra",
         "phase": null,
-        "explanation": "Depois do Surto vem a Alma Arcana: ali a Salva não gasta o Salvo, então cada Salva rola Seta Prismática e meteoros de graça. Entrar com menos de 12 acúmulos perde esse ganho; o ideal é 20 ou mais. Detalhes: Entrada aos 0:20 com 0 de Salvo (Salva nos 2 últimos GCDs); Entrada aos 3:28 com 1 de Salvo. Ideal: 20 ou mais (você: 2 de 5). Sem Salva nos 2 últimos GCDs antes da Alma.",
-        "what_to_do": "Chegue na Alma Arcana com 20 de Salvo ou mais. Nos dois últimos GCDs antes dela (uns 2,5 s), não lance Salva; se vier Mísseis Sobrecarregados, o Salvo sobe para 25 na hora.",
+        "explanation": "Depois do Surto vem a Alma Arcana: ali a Salva não gasta a Saraivada, então cada Salva rola Seta Prismática e meteoros de graça. Entrar com menos de 12 acúmulos perde esse ganho; o ideal é 20 ou mais. Detalhes: Entrada aos 0:20 com 0 de Saraivada (Salva nos 2 últimos GCDs); Entrada aos 3:28 com 1 de Saraivada. Ideal: 20 ou mais (você: 2 de 5). Sem Salva nos 2 últimos GCDs antes da Alma.",
+        "what_to_do": "Chegue à Alma Arcana com 20 de Saraivada ou mais. Nos dois últimos GCDs antes dela (uns 2,5 s), não lance Salva; se vier Projéteis Potencializados, a Saraivada sobe para 25 na hora.",
         "numbers": [
           {
-            "label": "Entradas na Alma Arcana com menos de 12 de Salvo",
+            "label": "Entradas na Alma Arcana com menos de 12 de Saraivada",
             "player": "2 de 5 (0, 20, 1, 18, 22)",
             "top": "9 de 43"
           }
@@ -146,7 +146,7 @@
         "kind": "regra",
         "phase": null,
         "explanation": "Dentro do Surto, cada Impacto Arcano no lugar de Mísseis Arcanos é dano a menos. Sem Abstração às vezes não tem jeito, por isso a referência são os tops. Detalhes: Surto aos 1:39: 4 Impactos; Surto aos 3:11: 0 Impactos; Surto aos 4:49: 4 Impactos; Surto aos 6:23: 3 Impactos. Pouca Abstração recebida (15,3 por minuto; mediana dos 10 tops: 16,6): pode ter sido azar.",
-        "what_to_do": "Entre no Surto com uma Abstração guardada e Salvo razoável, e dentro dele mantenha o ciclo de Mísseis e Salvas cheias. O Impacto fica para completar o Salvo fora do burst.",
+        "what_to_do": "Entre no Surto com uma Abstração guardada e Saraivada razoável, e dentro dele mantenha o ciclo de Mísseis e Salvas cheias. O Impacto fica para completar a Saraivada fora do burst.",
         "numbers": [
           {
             "label": "Impacto Arcano dentro do Surto Arcano (fora o de abertura)",
@@ -208,12 +208,12 @@
       },
       {
         "id": "barrage_low_salvo",
-        "title": "Salva Arcana com poucos acúmulos de Salvo",
+        "title": "Salva Arcana com poucos acúmulos de Saraivada",
         "impact_pct": null,
         "severity": "atencao",
         "kind": "regra",
         "phase": null,
-        "explanation": "Todo acerto de magia arcana pode dar Abstração, e a Salva com mais Salvo derruba mais meteoros (1 a cada 5 acúmulos): mais acertos, mais Abstração, mais Mísseis, mais Salvo. Soltar a Salva com menos de 12 quebra esse ciclo (efeito bola de neve). O ideal é nunca. O custo é o efeito bola de neve (Abstração, Meteoritos), que não dá para isolar em %.",
+        "explanation": "Todo acerto de magia arcana pode dar Abstração, e a Salva com mais Saraivada derruba mais meteoros (1 a cada 5 acúmulos): mais acertos, mais Abstração, mais Mísseis, mais Saraivada. Soltar a Salva com menos de 12 quebra esse ciclo (efeito bola de neve). O ideal é nunca. O custo é o efeito bola de neve (Abstração, Meteoritos), que não dá para isolar em %.",
         "what_to_do": "Segure a Salva até ter pelo menos 12 acúmulos. Antes de soltar, gaste 1 Mísseis Arcanos e a Seta Prismática. Chegar no máximo (25) não é erro.",
         "numbers": [
           {
@@ -286,7 +286,7 @@
         "player_value": "9 de 10 possíveis",
         "top_value": "mediana dos tops: deixam de usar 1,0",
         "status": "ok",
-        "note": "Possível = usar no CD desde o pull até o fim da luta.",
+        "note": "Possível: quantos usos caberiam se fosse usado na recarga, do pull ao fim da luta.",
         "reference": null,
         "impact_pct": null,
         "details": []
@@ -308,7 +308,7 @@
         "player_value": "5 de 5 possíveis",
         "top_value": "mediana dos tops: deixam de usar 0,0",
         "status": "ok",
-        "note": "Possível = usar no CD desde o pull até o fim da luta.",
+        "note": "Possível: quantos usos caberiam se fosse usado na recarga, do pull ao fim da luta.",
         "reference": null,
         "impact_pct": null,
         "details": []
@@ -337,7 +337,7 @@
       },
       {
         "id": "soul_entry",
-        "name": "Entradas na Alma Arcana com menos de 12 de Salvo",
+        "name": "Entradas na Alma Arcana com menos de 12 de Saraivada",
         "player_value": "2 de 5 (0, 20, 1, 18, 22)",
         "top_value": "9 de 43",
         "status": "erro",
@@ -345,13 +345,13 @@
         "reference": null,
         "impact_pct": 2.7,
         "details": [
-          "Entrada aos 0:20 com 0 de Salvo (Salva nos 2 últimos GCDs)",
-          "Entrada aos 3:28 com 1 de Salvo"
+          "Entrada aos 0:20 com 0 de Saraivada (Salva nos 2 últimos GCDs)",
+          "Entrada aos 3:28 com 1 de Saraivada"
         ]
       },
       {
         "id": "surge_empty_handed",
-        "name": "Surto Arcano de mão vazia (menos de 12 de Salvo e sem Abstração)",
+        "name": "Surto Arcano de mão vazia (menos de 12 de Saraivada e sem Abstração)",
         "player_value": "0 de 4",
         "top_value": "0 de 35",
         "status": "ok",
@@ -378,7 +378,7 @@
       },
       {
         "id": "prismatic_bolt",
-        "name": "Seta Prismática: procs esperados pelo Salvo (decisão)",
+        "name": "Seta Prismática: procs esperados pela Saraivada (decisão)",
         "player_value": "5,9 por minuto",
         "top_value": "6,2 por minuto",
         "status": "atencao",

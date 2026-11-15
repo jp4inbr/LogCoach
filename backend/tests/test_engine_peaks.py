@@ -237,7 +237,7 @@ def test_peak_text_in_portuguese():
     check = next(c for c in checks if c.id == "damage_peaks")
     assert check.player_value.startswith("1 pico:")
     assert "disponíveis)" in check.details[0]
-    assert "vida caiu a 30%" in check.details[0]
+    assert "a vida caiu para 30%" in check.details[0]
 
 
 def test_fight_without_hit_points_has_no_peaks():

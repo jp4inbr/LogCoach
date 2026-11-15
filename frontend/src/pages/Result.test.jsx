@@ -162,12 +162,12 @@ describe("Result", () => {
     it("com o coach disponível mostra o resumo dele", async () => {
       await aberta(
         variacao((a) => {
-          a.result.coach = { available: true, headline: "Priorize chegar na Alma com Salvo alto." };
+          a.result.coach = { available: true, headline: "Priorize chegar na Alma com Saraivada alta." };
         }),
       );
 
       expect(screen.getByText("Resumo do coach")).toBeInTheDocument();
-      expect(screen.getByText("Priorize chegar na Alma com Salvo alto.")).toBeInTheDocument();
+      expect(screen.getByText("Priorize chegar na Alma com Saraivada alta.")).toBeInTheDocument();
       expect(screen.queryByText("Explicação do coach em breve")).not.toBeInTheDocument();
     });
 
@@ -193,7 +193,7 @@ describe("Result", () => {
       );
       // Os 7 erros de regra na ordem que o motor mandou, e a hipótese separada, sem número.
       expect(titulos.slice(0, 3)).toEqual([
-        "Entrada na Alma Arcana com pouco Salvo",
+        "Entrada na Alma Arcana com pouca Saraivada",
         "Impactos Arcanos demais dentro do Surto",
         "Tempo ativo abaixo dos tops",
       ]);
@@ -209,7 +209,7 @@ describe("Result", () => {
       expect(primeiro).toHaveTextContent("✕ Erro");
       expect(primeiro).toHaveTextContent("Custou cerca de 2,7% do seu dano");
       expect(within(primeiro).getByText("O que fazer")).toBeInTheDocument();
-      expect(primeiro).toHaveTextContent("Chegue na Alma Arcana com 20 de Salvo ou mais.");
+      expect(primeiro).toHaveTextContent("Chegue à Alma Arcana com 20 de Saraivada ou mais.");
       const linha = within(primeiro).getByRole("row", { name: /Entradas na Alma Arcana/ });
       expect(linha).toHaveTextContent("2 de 5 (0, 20, 1, 18, 22)9 de 43");
     });
@@ -488,7 +488,7 @@ describe("Result", () => {
       expect(cabecalhos).toEqual(["Regra", "Você", "Melhores", "Referência", "Situação"]);
 
       const linha = screen
-        .getByRole("rowheader", { name: /Entradas na Alma Arcana com menos de 12 de Salvo/ })
+        .getByRole("rowheader", { name: /Entradas na Alma Arcana com menos de 12 de Saraivada/ })
         .closest("tr");
       expect(linha).toHaveTextContent("2 de 5 (0, 20, 1, 18, 22)");
       expect(linha).toHaveTextContent("9 de 43");
@@ -496,7 +496,7 @@ describe("Result", () => {
       expect(linha).toHaveTextContent("custou ~2,7% do dano");
       expect(linha).toHaveTextContent("Ideal: 20 ou mais (você: 2 de 5).");
       expect(within(linha).getByText("2 detalhes")).toBeInTheDocument();
-      expect(within(linha).getByText("Entrada aos 3:28 com 1 de Salvo")).toBeInTheDocument();
+      expect(within(linha).getByText("Entrada aos 3:28 com 1 de Saraivada")).toBeInTheDocument();
     });
 
     it("regra com um detalhe só usa o singular; regra ok não mostra custo", async () => {
@@ -511,7 +511,7 @@ describe("Result", () => {
       const usos = screen.getByRole("rowheader", { name: /Usos de Toque dos Magos/ }).closest("tr");
       expect(usos).toHaveTextContent("✓ OK");
       expect(usos).not.toHaveTextContent("custou");
-      expect(usos).toHaveTextContent("Possível = usar no CD desde o pull até o fim da luta.");
+      expect(usos).toHaveTextContent("Possível: quantos usos caberiam se fosse usado na recarga, do pull ao fim da luta.");
     });
 
     it("sem referência em nenhuma regra (análise antiga) a coluna some", async () => {

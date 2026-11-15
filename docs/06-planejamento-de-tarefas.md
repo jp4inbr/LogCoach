@@ -85,7 +85,7 @@ Levantadas no review técnico de 26–28/10. O detalhe (onde mexer e por quê) e
 | Código de erro próprio para "Warcraft Logs fora do ar" | Aparecia como "relatório privado" | **Feito** em 28/10: `wcl_unavailable` (503), com mensagem por causa (`4d1493c`, `4842aee`) | Arthur |
 | Testes T03–T05 e T11–T14 | Dependiam do motor | **Feito**: passam com o motor (`test_engine_base.py`, `test_engine_rules.py`) | Arthur |
 | Pacote da IA (Gemini) + resposta reserva | RF17, RF24 (passo 5 do `CLAUDE.md`); inclui o teste T07 (falha da IA) | Aberto. Hoje o relatório sai só com as regras (RF17) | |
-| Conferir no Wowhead todos os nomes em pt-BR (magias, buffs, talentos) | Há nomes divergentes entre guia, exemplo e cliente (ex.: Clearcasting = "Abstração" no Warcraft Logs em português) | Aberto | |
+| Conferir no Wowhead todos os nomes em pt-BR (magias, buffs, talentos) | Há nomes divergentes entre guia, exemplo e cliente (ex.: Clearcasting = "Abstração" no Warcraft Logs em português; já alinhado em todo o código e nos guias) | Em andamento | |
 | Deploy no Cloud Run | Publicação para a banca (item 13): CPU sempre alocada, uma instância na alfa, IP real atrás do proxy | Aberto (backlog) | |
 | Teste de usabilidade + SUS | Roteiro e questionário prontos (item 8.3); falta aplicar com 5 pessoas | Aberto | |
 

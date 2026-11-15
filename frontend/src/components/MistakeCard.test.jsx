@@ -12,7 +12,7 @@ describe("MistakeCard", () => {
   it("mostra um erro de regra com custo, explicação, o que fazer e a tabela de números", () => {
     render(<MistakeCard mistake={soulEntry} rank={1} />);
     expect(
-      screen.getByRole("heading", { level: 3, name: "Entrada na Alma Arcana com pouco Salvo" }),
+      screen.getByRole("heading", { level: 3, name: "Entrada na Alma Arcana com pouca Saraivada" }),
     ).toBeInTheDocument();
     expect(screen.getByText("Custou cerca de 2,7% do seu dano")).toBeInTheDocument();
     expect(screen.getByText("✕ Erro")).toHaveClass("badge-erro");
@@ -27,7 +27,7 @@ describe("MistakeCard", () => {
         .map((th) => th.textContent),
     ).toEqual(["Medida", "Você", "Melhores"]);
     const rowEl = within(table).getByRole("row", {
-      name: /Entradas na Alma Arcana com menos de 12 de Salvo/,
+      name: /Entradas na Alma Arcana com menos de 12 de Saraivada/,
     });
     expect(rowEl).toHaveTextContent("2 de 5 (0, 20, 1, 18, 22)");
     expect(rowEl).toHaveTextContent("9 de 43");

@@ -401,3 +401,11 @@ def test_tops_are_never_errors_against_a_reference_that_includes_them():
 def test_number_format_is_portuguese():
     assert num(1234.5) == "1.234,5"
     assert num(2.75, 2) == "2,75"
+
+
+def test_plural_dos_textos_montados():
+    from app.engine.checks import plural
+
+    assert plural(1, "Impacto", "Impactos") == "1 Impacto"
+    assert plural(0, "Impacto", "Impactos") == "0 Impactos"
+    assert plural(6, "Impacto", "Impactos") == "6 Impactos"
