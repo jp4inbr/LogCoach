@@ -1,12 +1,12 @@
 # 11. Métricas de Qualidade
 
-> Entrega da RT03 / banca. Lint, testes, carregamento, tempo de análise e responsividade já medidos (04/11, com o motor na `main`). A cobertura do motor ainda não foi medida (falta instalar o `pytest-cov`); tempo da 1ª análise, SUS e taxa de sucesso vêm do teste de usabilidade (item 8.3).
+> Entrega da RT03 / banca. Lint, testes, carregamento, tempo de análise e responsividade já medidos (04/11, com o motor na `main`). Testes e cobertura atualizados em 16/11 (CI do PR #31); tempo da 1ª análise, SUS e taxa de sucesso vêm do teste de usabilidade (item 8.3).
 
 | Métrica | Meta | Como medir | Resultado |
 |---|---|---|---|
-| Testes passando | 100% | `pytest` no CI | **100%** — 604 de 604 (04/11), 126 deles do motor (ver item 10.3) |
-| Cobertura de testes do motor de análise | ≥ 70% | `pytest --cov=app/engine` | Não medida: o `pytest-cov` ainda não está nas dependências |
-| Erros de lint | 0 | `ruff check` e `eslint` no CI | **0** — CI verde no backend e no frontend (commit `91531b0`, 27/10) |
+| Testes passando | 100% | `pytest` no CI | **100%** — 630 de 630 no backend, com 1 pulado de propósito (16/11), 127 deles do motor; 601 de 601 no Vitest e 47 de 47 no Playwright no frontend (16/11). Ver itens 10.3 e 10.4 |
+| Cobertura de testes do motor de análise | ≥ 70% | `pytest --cov=app/engine` | **99%** — 1.462 linhas em `app/engine/`, 11 sem teste; backend inteiro 98% (CI, 16/11; ver 10.3) |
+| Erros de lint | 0 | `ruff check` e `eslint` no CI | **0** — CI verde no backend e no frontend, Ubuntu e Windows (PR #31, 16/11) |
 | Tempo de carregamento das páginas | < 3 s (RNF01) | DevTools do navegador | **0,7 s em 4G e 1,8 s em 3G rápido** — tela inicial, build de produção (mediana de 5 medições, ver 11.1) |
 | Tempo de uma análise completa | < 2 min (RNF02) | Log do backend | **~1,1 s** pela rota no modo exemplo (kill de referência); no modo real, com os eventos já pré-buscados e o bracket no cache, a análise só roda o motor. A primeira busca dos tops de um bracket leva até ~2,5 min, mas é feita na pré-busca, em segundo plano (ver 11.3) |
 | Tempo da 1ª análise por usuário novo | ≤ 5 min (RNF09) | Teste de usabilidade | |

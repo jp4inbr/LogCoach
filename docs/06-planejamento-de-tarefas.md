@@ -8,7 +8,7 @@ description: Organização das tarefas e prazos do time.
 
 {% embed url="https://docs.google.com/spreadsheets/d/1usVGNxfKOdTOzPsQEzIczHR9qQlqXamn/edit?gid=2102548923#gid=2102548923" %}
 
-**Quadro oficial:** GitHub Projects do repositório (_link a adicionar_), com colunas *Backlog → A fazer → Fazendo → Revisão → Feito*.
+**Quadro oficial:** [LogCoach — A3 no GitHub Projects](https://github.com/users/pedroasnogueira/projects/2) (público), com colunas *A fazer → Fazendo → Revisão → Feito*. Cada cartão é uma issue de frente; *Revisão* é a frente pronta num PR esperando revisão ou merge, e o cartão vai sozinho para *Feito* quando a issue é fechada.
 
 **Tarefas:** cada frente de trabalho é uma issue no GitHub, de #3 a #17, com responsável, situação e dependências: [issues com o rótulo `frente`](https://github.com/jp4inbr/LogCoach/issues?q=label%3Afrente). As concluídas ficam fechadas. O rótulo `RT03` marca o que é da entrega de 28/10 e `banca`, o que fica para o fim de novembro.
 

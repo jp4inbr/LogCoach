@@ -4,7 +4,7 @@ description: Testes unitários, de integração e de usabilidade realizados.
 
 # 10. Relatório de Testes
 
-> Entrega da RT03. Resultados de 04/11/2026, com o motor de análise na `main` (PR #27). Falta só o T07, que depende da IA (passo 5).
+> Entrega da RT03. Resultados do backend de 16/11/2026 (CI do PR #31, com a `main` de 15/11 e o motor de análise); do frontend, de 07/11 (item 10.4). Falta só o T07, que depende da IA (passo 5).
 
 ## 10.1 Ferramenta
 
@@ -14,7 +14,8 @@ Como rodar:
 
 ```bash
 cd backend
-pytest -q   # ou pytest -v para ver cada teste
+pytest -q              # ou pytest -v para ver cada teste
+pytest --cov=app       # com a cobertura por arquivo (a mesma conta do CI)
 ```
 
 ## 10.2 Casos de teste
@@ -42,17 +43,21 @@ T03–T05 e T11–T14 passam com o motor de análise. O T13 mudou junto com a de
 
 ## 10.3 Resultado
 
-Rodado em 04/11/2026 na `main`, com `pytest -q` em `backend/` (cerca de 20 s, sem internet).
+Execução no CI do GitHub em 16/11/2026, com `pytest -v --cov=app` (PR #31, com a `main` de 15/11; Python 3.12, pytest 9.2; cerca de 50 s, sem internet). No Windows o resultado foi o mesmo.
 
-| Total | Passaram | Falharam | Cobertura |
-| ----- | -------- | -------- | --------- |
-| 604   | 604      | 0        | Não medida (`pytest-cov` não está instalado no ambiente) |
+| Total | Passaram | Pulados | Falharam | Cobertura |
+| ----- | -------- | ------- | -------- | --------- |
+| 631   | 630      | 1       | 0        | 98% do backend (3.513 linhas, 61 sem teste); 99% do motor (`app/engine/`: 1.462 linhas, 11 sem teste) |
 
-Testes do motor de análise (126 no total), por arquivo em `backend/tests/`:
+O teste pulado é de propósito: `test_sample_copies_have_no_real_names` confere as cópias de exemplo contra o arquivo de nomes reais (`names.local.json`), que só existe na máquina de quem baixou as fixtures e nunca vai para o repositório (RF25). O único aviso ("1 warning") vem de uma biblioteca de teste e não é falha.
+
+Os arquivos com menos cobertura são `app/wcl/fetch.py` (89%), que faz as chamadas reais ao Warcraft Logs e é testado com dados salvos em arquivo, `app/wcl/anonymize.py` (93%) e `app/services/tops.py` (95%).
+
+Testes do motor de análise (127 no total), por arquivo em `backend/tests/`:
 
 | Arquivo | Testes | O que cobre |
 | --- | --- | --- |
-| `test_engine_rules.py` | 39 | Regras do Mago Arcano (T03, T04, T11, T12) e o kill de referência |
+| `test_engine_rules.py` | 40 | Regras do Mago Arcano (T03, T04, T11, T12) e o kill de referência |
 | `test_engine_support.py` | 31 | Dano creditado ao Evocador Aumentação que apoiou o jogador |
 | `test_engine_peaks.py` | 19 | Picos de dano e defensivos (T13) |
 | `test_engine_base.py` | 17 | Fases, referência dos tops, tabelas por habilidade e por alvo (T05, T14) |
@@ -63,7 +68,17 @@ Testes do motor de análise (126 no total), por arquivo em `backend/tests/`:
 
 Além deles, `test_analyzer.py` (11) testa o `EngineAnalyzer`; os outros arquivos cobrem contas, rotas, fontes de dados, cliente do Warcraft Logs e busca dos tops.
 
-_Inserir print da saída do `pytest -v`._
+**Início da execução: 631 testes coletados**
+
+![Saída do pytest no CI: plataforma, plugin de cobertura e "collected 631 items", seguido dos primeiros testes com PASSED](.gitbook/assets/10-3-pytest-inicio.jpg)
+
+**Cobertura do motor de análise, por arquivo**
+
+![Tabela de cobertura do pytest-cov com os arquivos de app/engine, quase todos com 100%](.gitbook/assets/10-3-pytest-cobertura.jpg)
+
+**Resumo: 630 passaram, 1 pulado, cobertura total de 98%**
+
+![Final da tabela de cobertura com TOTAL 3513 linhas, 61 sem teste, 98%, e a linha "630 passed, 1 skipped, 1 warning in 50.53s"](.gitbook/assets/10-3-pytest-resumo.jpg)
 
 ## 10.4 Testes do frontend
 
@@ -97,6 +112,8 @@ npm run lint
 | --- | --- | --- | --- | --- | --- |
 | Vitest (`npm test`) | 30 | 520 | 520 | 0 | ~10 s |
 | Playwright (`npm run test:e2e`) | 2 | 43 | 43 | 0 | ~15 s |
+
+No CI de 16/11/2026 (PR #31, com a `main` de 15/11, já com os ícones das magias): Vitest com 32 arquivos e 601 testes, todos passando; Playwright com 47 testes, todos passando (~23 s).
 
 Vitest por pasta: `src/lib` (9 arquivos), `src/components` (13), `src/pages` (6) e `src/` (2: `App.test.jsx`, `theme-contrast.test.js`). O Playwright rodou verde e estável em 3 rodadas seguidas. O Vitest roda com fuso fixo (`TZ=America/Sao_Paulo`, em `vite.config.js`), para datas e horas saírem iguais em qualquer máquina e no CI.
 
