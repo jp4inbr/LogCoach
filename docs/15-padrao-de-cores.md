@@ -58,7 +58,12 @@ O bloco claro aparece duas vezes no CSS (na media query e em `[data-theme="light
 | `--warn-border`, `--error-border`, `--accent-border` | situação ou destaque a 35–45% | idem | Bordas de avisos e de lutas selecionadas |
 | `--info-bg` | `#ff8906` a 10% | `#bae8e8` a 45% | Fundo de avisos informativos |
 | `--glow`, `--coach-bg-1/2`, `--hatch`, `--hatch-strong`, `--accent-glow` | destaque translúcido | idem | Brilho do fundo, cartão do coach, faixa da intermissão, pulso |
-| `--shadow` | preto a 45% | `#272343` a 25% | Sombra da dica flutuante |
+| `--shadow` | preto a 45% | `#272343` a 25% | Sombra da dica flutuante e da barra do link na tela inicial |
+| `--hero-bg` | `#08070d` | `#e6f2f2` | Fundo do hero da tela inicial (diferente do `--bg`, para o hero se destacar) |
+| `--hero-slab-hi`, `--hero-slab-lo`, `--hero-slab-side` | `#3a3947`, `#15141d`, `#0f0e16` | `#fdfefe`, `#cde5e5`, `#b4d4d5` | Faces da placa com a marca gravada (luz, sombra e lateral). O texto pode cruzar a placa, então `--text` e `--muted` passam no contraste sobre as três |
+| `--hero-engrave-hi`, `--hero-engrave-lo` | branco a 18%, preto a 80% | branco a 95%, `#272343` a 30% | Luz e sombra da gravação das letras e dos rebites (decorativo) |
+| `--hero-chip-bg`, `--hero-chip-border` | `#1c1b26`, branco a 12% | `#fbfefe`, `#272343` a 18% | Chips do cabeçalho na tela inicial |
+| `--hero-dot` | `#ff8906` | `#dd6b00` | Ponto do "● Entrar" na tela inicial (laranja nos dois temas, como o `--player`) |
 
 `--accent` serve só de **preenchimento** (botão, avatar). Quando o destaque vira texto, borda ou traço de gráfico, usa `--accent-fg`, porque o amarelo `#ffd803` sobre fundo claro não tem contraste.
 

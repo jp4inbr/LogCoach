@@ -93,7 +93,7 @@ O frontend (React + Vite) tem três camadas de teste automatizado, todas com dad
 | Tema e paletas | Vitest e Playwright | `src/theme-contrast.test.js`, `src/lib/theme.test.js`, `e2e/theme.spec.js` | Contraste WCAG AA dos tokens das duas paletas (`docs/15`), script do `index.html` igual ao `theme.js`, tema no navegador |
 | Ponta a ponta | Playwright (Chromium) | `frontend/e2e/` | O site construído (`npm run build` + `preview`) num navegador de verdade, com a API simulada por `page.route` |
 
-**Testes ponta a ponta (Playwright).** `e2e/flows.spec.js` percorre os fluxos principais: colar o link do kill de referência, lista de lutas (indisponíveis em cinza, com o motivo), escolher a luta e o Mago, pré-busca, análise com o corpo certo e resultado com a diferença para os tops, nomes ocultos (RF25) e aviso de exemplo; link inválido, Warcraft Logs fora do ar (`wcl_unavailable`), relatório privado, falha ao buscar os Magos, login, cadastro, sessão vencida e limite do plano (`plan_limit`, T08). `e2e/theme.spec.js` cobre o que o jsdom não consegue: primeira visita seguindo o sistema (claro e escuro) com a cor de fundo computada igual ao token, botão de alternar, escolha salva no reload e acima do sistema, ausência de flash (o `data-theme` já está certo antes de o React rodar, com o bundle segurado), `localStorage` bloqueado, celular 360×740 sem rolagem horizontal, e o axe-core com a regra de contraste ligada nas duas paletas em sete telas (início, login, cadastro, planos, escolher luta, resultado, resultado com nomes à mostra), exigindo zero violações sérias ou críticas.
+**Testes ponta a ponta (Playwright).** `e2e/flows.spec.js` percorre os fluxos principais: colar o link do kill de referência, lista de lutas (indisponíveis em cinza, com o motivo), escolher a luta e o Mago, pré-busca, análise com o corpo certo e resultado com a diferença para os tops, nomes ocultos (RF25) e aviso de exemplo; link inválido, Warcraft Logs fora do ar (`wcl_unavailable`), relatório privado, falha ao buscar os Magos, login, cadastro, sessão vencida e limite do plano (`plan_limit`, T08). `e2e/theme.spec.js` cobre o que o jsdom não consegue: primeira visita seguindo o sistema (claro e escuro) com a cor de fundo computada igual ao token, botão de alternar, escolha salva no reload e acima do sistema, ausência de flash (o `data-theme` já está certo antes de o React rodar, com o bundle segurado), `localStorage` bloqueado, celular 360×740 sem rolagem horizontal, e o axe-core com a regra de contraste ligada nas duas paletas em sete telas (início, login, cadastro, planos, escolher luta, resultado, resultado com nomes à mostra), exigindo zero violações sérias ou críticas. `e2e/landing.spec.js` cobre a tela inicial repaginada: título, campo e "Analisar" na primeira dobra em 1440×800 com o fundo do hero vindo do token `--hero-bg`; sem rolagem horizontal em 375, 768 e 1440 px (campo com 280 px ou mais e o convite sem cobrir o campo); axe com contraste em 375 e 1440 px, nos dois temas, também com o erro do campo à mostra; ordem do Tab até o campo e o "Analisar", com foco visível; Enter envia; sem animação com movimento reduzido; nenhum pedido de rede fora de `localhost` e da API; e, em `/planos` e `/entrar`, o cabeçalho continua acima do conteúdo.
 
 Como rodar:
 
@@ -103,6 +103,7 @@ npm install
 npm test                          # Vitest (unidade, componente, telas)
 npx playwright install chromium   # só na primeira vez (baixa o navegador)
 npm run test:e2e                  # Playwright; sobe o build sozinho na porta 4173
+# Navegador já instalado em outro lugar (sem download): PW_CHROMIUM_PATH=/caminho/do/chrome npm run test:e2e
 npm run lint
 ```
 
@@ -114,6 +115,8 @@ npm run lint
 | Playwright (`npm run test:e2e`) | 2 | 43 | 43 | 0 | ~15 s |
 
 No CI de 16/11/2026 (PR #31, com a `main` de 15/11, já com os ícones das magias): Vitest com 32 arquivos e 601 testes, todos passando; Playwright com 47 testes, todos passando (~23 s).
+
+Na branch `feat/landing-repaginada` (16/11/2026, rodada local): Vitest com 32 arquivos e 639 testes, todos passando (+6 da tela inicial em `Home.test.jsx` e +32 pares de contraste dos tokens do hero); Playwright com 4 arquivos e 74 testes, todos passando (~29 s; +27 de `e2e/landing.spec.js`), estável em 3 rodadas seguidas da `landing.spec.js`.
 
 Vitest por pasta: `src/lib` (9 arquivos), `src/components` (13), `src/pages` (6) e `src/` (2: `App.test.jsx`, `theme-contrast.test.js`). O Playwright rodou verde e estável em 3 rodadas seguidas. O Vitest roda com fuso fixo (`TZ=America/Sao_Paulo`, em `vite.config.js`), para datas e horas saírem iguais em qualquer máquina e no CI.
 

@@ -47,12 +47,21 @@ flowchart LR
 * **Abaixo do campo:** instruções de como funciona o processo, contendo as abas "1 - Cole o link", "2 - Escolha a luta" e "3- Leia o coach".
 * **Rodapé:** chefes e especialização suportados, para o jogador saber, antes de colar o link, se o log dele pode ser analisado.
 
+**Repaginada (16/11, na aplicação):** a tela inicial virou um hero de tela cheia, no idioma visual de páginas de produto (referência: tequs.com), mantendo a paleta do projeto e os dois temas:
+
+* **Topo:** o mesmo cabeçalho, por cima do hero, com "Analisar" e "Planos" em chips no centro e, à direita, o botão de tema e "● Entrar". Nas outras telas o cabeçalho não muda.
+* **Fundo:** a marca LogCoach gravada numa placa em perspectiva, feita só com CSS e escondida do leitor de tela (enfeite).
+* **Centro-esquerda:** o título em duas linhas ("Descubra os erros que mais custam seu dano" e, atenuada, "Compare com os 10 melhores do seu item level."), um subtítulo curto e três selos com ícone (Top 10 do seu item level, Explicado em português, Dados do Warcraft Logs).
+* **Rodapé do hero:** à esquerda, "Criar conta grátis" com o aviso "Você pode fazer 1 análise sem conta." (some com login); no centro, o campo do link como uma barra de prompt: **+** carrega o log de exemplo, o campo e **↑** (Analisar). No celular, "Analisar" desce para uma linha própria, com texto.
+* **Abaixo da dobra:** "Como funciona" (os mesmos três passos) e "O que já é suportado", no mesmo estilo (cantos pouco arredondados, números 01–03).
+
 **Princípios de usabilidade aplicados**
 
 * **H2 · Correspondência com o mundo real:** a proposta é explicada em português, na linguagem do jogador.
 * **H5 · Prevenção de erros:** o formato do link aparece no campo, e o que é suportado aparece antes do envio.
 * **H7 · Flexibilidade e eficiência:** o log de exemplo permite experimentar sem ter um log em mãos.
 * **H10 · Ajuda e documentação:** o "Como funciona" resume o uso em três passos.
+* **H6 · Reconhecer em vez de lembrar:** a dica embaixo da barra explica o **+** ("Use o + para carregar o log de exemplo"), e os botões de ícone têm nome para o leitor de tela.
 {% endtab %}
 
 {% tab title="." icon="3" %}
