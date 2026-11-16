@@ -50,6 +50,16 @@
   --hatch-strong: rgb(255 137 6 / 40%);
   --shadow: rgb(0 0 0 / 45%);
 
+  --hero-bg: #08070d;
+  --hero-slab-hi: #3a3947;
+  --hero-slab-lo: #15141d;
+  --hero-slab-side: #0f0e16;
+  --hero-engrave-hi: rgb(255 255 254 / 18%);
+  --hero-engrave-lo: rgb(0 0 0 / 80%);
+  --hero-chip-bg: #1c1b26;
+  --hero-chip-border: rgb(255 255 254 / 12%);
+  --hero-dot: #ff8906;
+
   --radius: 12px;
   --radius-sm: 8px;
   --gap: 16px;
@@ -114,6 +124,16 @@
     --hatch: rgb(39 35 67 / 12%);
     --hatch-strong: rgb(39 35 67 / 40%);
     --shadow: rgb(39 35 67 / 25%);
+
+    --hero-bg: #e6f2f2;
+    --hero-slab-hi: #fdfefe;
+    --hero-slab-lo: #cde5e5;
+    --hero-slab-side: #b4d4d5;
+    --hero-engrave-hi: rgb(255 255 254 / 95%);
+    --hero-engrave-lo: rgb(39 35 67 / 30%);
+    --hero-chip-bg: #fbfefe;
+    --hero-chip-border: rgb(39 35 67 / 18%);
+    --hero-dot: #dd6b00;
   }
 }
 
@@ -160,6 +180,16 @@
   --hatch: rgb(39 35 67 / 12%);
   --hatch-strong: rgb(39 35 67 / 40%);
   --shadow: rgb(39 35 67 / 25%);
+
+  --hero-bg: #e6f2f2;
+  --hero-slab-hi: #fdfefe;
+  --hero-slab-lo: #cde5e5;
+  --hero-slab-side: #b4d4d5;
+  --hero-engrave-hi: rgb(255 255 254 / 95%);
+  --hero-engrave-lo: rgb(39 35 67 / 30%);
+  --hero-chip-bg: #fbfefe;
+  --hero-chip-border: rgb(39 35 67 / 18%);
+  --hero-dot: #dd6b00;
 }
 
 :root[data-theme="dark"] {
@@ -534,6 +564,17 @@ label {
   font-size: 0.9rem;
 }
 
+/* Campo com botão ao lado (ex.: "Pergunte ao coach" no resultado); empilha no celular. */
+.link-row {
+  display: flex;
+  gap: 8px;
+}
+
+.link-row input {
+  flex: 1;
+  min-width: 0;
+}
+
 .actions {
   display: flex;
   align-items: center;
@@ -675,50 +716,377 @@ label {
 
 /* ---------- Tela 1: início ---------- */
 
+/* Na tela inicial o cabeçalho fica por cima do hero, em chips discretos (App.jsx põe
+   .app-home só na rota "/"; nas outras telas o cabeçalho é o de sempre). */
+.app-home .topbar {
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: 3;
+  max-width: none;
+  padding: 20px 32px;
+}
+
+.app-home .topbar nav {
+  flex: 1;
+  gap: 6px;
+}
+
+.app-home .topbar nav > a:first-child {
+  margin-left: auto;
+}
+
+.app-home .topbar nav a:not(.button),
+.app-home .topbar nav .link-button,
+.app-home .topbar nav .theme-toggle {
+  min-height: 34px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 4px;
+  border: 1px solid var(--hero-chip-border);
+  background: var(--hero-chip-bg);
+  color: var(--text);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.app-home .topbar nav .theme-toggle {
+  justify-content: center;
+  min-width: 34px;
+  padding: 0;
+  margin-left: auto;
+  font-size: 1rem;
+}
+
+.app-home .topbar nav a:not(.button):hover,
+.app-home .topbar nav .link-button:hover,
+.app-home .topbar nav .theme-toggle:hover,
+.app-home .topbar nav a[aria-current="page"] {
+  border-color: var(--border-control);
+}
+
+/* "● Entrar": o ponto é enfeite (pseudo-elemento sem texto, fora do nome acessível). */
+.app-home .topbar .button.small {
+  min-height: 34px;
+  padding: 0 12px;
+  border-radius: 4px;
+  border-color: var(--hero-chip-border);
+  background: var(--hero-chip-bg);
+  color: var(--text);
+  font-size: 0.9rem;
+}
+
+.app-home .topbar .button.small::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--hero-dot);
+}
+
+.app-home .content {
+  max-width: none;
+  padding: 0;
+}
+
 .home {
   display: grid;
-  gap: 32px;
 }
 
 .hero {
-  display: grid;
-  gap: 16px;
-  padding: 32px 0 8px;
-}
-
-.hero h1 {
-  font-size: clamp(1.9rem, 6vw, 3rem);
-  max-width: 18ch;
-}
-
-.lead {
-  color: var(--muted);
-  font-size: 1.1rem;
-  max-width: 60ch;
-}
-
-.link-form {
-  display: grid;
-  gap: 8px;
-  margin-top: 8px;
-}
-
-.link-row {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   display: flex;
+  min-height: 100vh;
+  min-height: 100svh;
+  background-color: var(--hero-bg);
+}
+
+/* Fundo: a marca gravada numa placa em perspectiva (a "chapa de metal" da referência). */
+.hero-art {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  perspective: 1100px;
+  perspective-origin: 70% 0%;
+  pointer-events: none;
+  user-select: none;
+}
+
+.hero-slab {
+  position: absolute;
+  left: 14%;
+  top: -24%;
+  width: 118%;
+  height: 92%;
+  transform-style: preserve-3d;
+  transform: rotateX(56deg) rotateZ(-16deg);
+}
+
+.hero-slab-top {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: 6px;
+  background:
+    linear-gradient(115deg, var(--hero-engrave-hi), transparent 35%),
+    linear-gradient(170deg, var(--hero-slab-hi) 10%, var(--hero-slab-lo) 75%);
+  box-shadow: inset 0 2px 0 var(--hero-engrave-hi);
+}
+
+/* Letras rebaixadas na chapa: sombra escura em cima e luz embaixo dão a gravação. */
+.hero-word {
+  position: absolute;
+  left: 12%;
+  top: 16%;
+  font-size: clamp(6rem, 13vw, 14rem);
+  font-weight: 800;
+  letter-spacing: -0.06em;
+  line-height: 1;
+  white-space: nowrap;
+  color: var(--hero-slab-lo);
+  text-shadow:
+    0 -3px 2px var(--hero-engrave-lo),
+    0 3px 1px var(--hero-engrave-hi);
+}
+
+.hero-sheen {
+  position: absolute;
+  inset: -20% auto -20% 0;
+  width: 30%;
+  background: linear-gradient(100deg, transparent, var(--hero-engrave-hi), transparent);
+  opacity: 0.5;
+  transform: translateX(-120%);
+}
+
+/* Face da frente da chapa (a "lateral do equipamento"), com dois rebites. */
+.hero-slab-front {
+  position: absolute;
+  left: 0;
+  top: 100%;
+  width: 100%;
+  height: 30%;
+  transform-origin: top;
+  transform: rotateX(-90deg);
+  background: linear-gradient(180deg, var(--hero-slab-side), var(--hero-bg));
+  box-shadow: inset 0 1px 0 var(--hero-engrave-hi);
+}
+
+.hero-rivet {
+  position: absolute;
+  top: 30%;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, var(--hero-engrave-hi), var(--hero-slab-side) 60%);
+  box-shadow: 0 0 0 1px var(--hero-engrave-lo);
+}
+
+.hero-rivet:first-child {
+  left: 22%;
+}
+
+.hero-rivet:last-child {
+  left: 52%;
+}
+
+/* Véu do fundo do hero à esquerda e embaixo: o texto fica sempre sobre fundo calmo. */
+.hero-veil {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, var(--hero-bg) 0%, transparent 62%),
+    linear-gradient(0deg, var(--hero-bg) 0%, transparent 42%);
+}
+
+.hero-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+  width: 100%;
+  padding: 112px 32px 28px;
+}
+
+.hero-copy {
+  display: grid;
+  justify-items: start;
+  gap: 0;
+  margin-top: auto;
+}
+
+.hero-title {
+  margin-top: 14px;
+}
+
+.hero h1,
+.hero-title-muted {
+  font-size: clamp(2rem, 3.4vw, 3rem);
+  font-weight: 750;
+  letter-spacing: -0.025em;
+  line-height: 1.08;
+}
+
+.hero-title-muted {
+  color: var(--muted);
+}
+
+.hero-lead {
+  margin-top: 24px;
+  color: var(--muted);
+  font-size: 1.15rem;
+  font-weight: 500;
+  line-height: 1.45;
+}
+
+.hero-seals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 28px;
+  margin: 32px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.hero-seals li {
+  display: inline-flex;
+  align-items: center;
   gap: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
 }
 
-.link-row input {
-  flex: 1;
-  min-width: 0;
+.hero-foot {
+  display: grid;
+  grid-template-columns: 1fr minmax(0, 600px) 1fr;
+  align-items: end;
+  gap: 16px 24px;
+  margin-top: auto;
 }
 
-.hero-actions {
+.hero-cta {
+  grid-column: 1;
+  display: grid;
+  justify-items: start;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.hero-cta .button.small {
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+/* Barra do link no formato de prompt: "+" (log de exemplo), campo e "↑" (Analisar). */
+.prompt {
+  grid-column: 2;
+  display: grid;
+  gap: 6px;
+}
+
+.prompt-label {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.prompt-bar {
   display: flex;
   align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-  color: var(--muted);
+  gap: 6px;
+  padding: 5px;
+  border: 1px solid var(--border-control);
+  border-radius: 6px;
+  background: var(--surface);
+  box-shadow: 0 12px 32px var(--shadow);
+}
+
+.prompt-bar:has(input[aria-invalid="true"]) {
+  border-color: var(--error);
+}
+
+.prompt-bar input[type="url"] {
+  flex: 1;
+  min-width: 0;
+  min-height: 40px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  font-size: 0.95rem;
+}
+
+.prompt-bar input[type="url"]:focus-visible {
+  outline-offset: 0;
+}
+
+.prompt-icon,
+.prompt-send {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex: none;
+  min-width: 40px;
+  min-height: 40px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface-2);
+  color: var(--text);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.prompt-send {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+
+.prompt-icon:hover {
+  border-color: var(--accent-fg);
+}
+
+.prompt-send:hover {
+  background: var(--accent-strong);
+  border-color: var(--accent-strong);
+}
+
+/* No computador o "↑" é só ícone (o nome "Analisar" fica para o leitor de tela). */
+.prompt-send-text {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.prompt .field-hint,
+.prompt .field-error {
+  font-size: 0.85rem;
+}
+
+/* Abaixo da dobra: mesmo idioma visual (cantos retos, números em destaque, espaço). */
+.home-below {
+  display: grid;
+  gap: 32px;
+  width: 100%;
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: 72px 16px 48px;
+}
+
+.how h2 {
+  font-size: 1.6rem;
+  letter-spacing: -0.02em;
 }
 
 .how-list {
@@ -728,33 +1096,152 @@ label {
   grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
   gap: 12px;
   padding: 0;
-  margin: 12px 0 0;
+  margin: 20px 0 0;
 }
 
 .how-list li {
   counter-increment: how;
   display: grid;
-  gap: 4px;
-  padding: 16px;
-  border-radius: var(--radius);
+  align-content: start;
+  gap: 6px;
+  padding: 20px;
+  border-radius: 6px;
   background: var(--surface);
   border: 1px solid var(--border);
 }
 
 .how-list li::before {
-  content: counter(how);
-  display: grid;
-  place-items: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: var(--info-bg);
+  content: counter(how, decimal-leading-zero);
   color: var(--accent-fg);
+  font-size: 0.85rem;
   font-weight: 700;
+  letter-spacing: 0.08em;
+  margin-bottom: 6px;
+}
+
+.how-list strong {
+  font-size: 1.05rem;
 }
 
 .how-list span {
   color: var(--muted);
+}
+
+.home-below .notice {
+  border-radius: 6px;
+}
+
+/* Movimento só para quem não pediu menos: brilho lento na chapa e entrada suave do texto. */
+@media (prefers-reduced-motion: no-preference) {
+  .hero-sheen {
+    animation: hero-sheen 9s ease-in-out 1s infinite;
+  }
+
+  .hero-copy,
+  .hero-foot {
+    animation: hero-rise 0.6s ease-out both;
+  }
+
+  .hero-foot {
+    animation-delay: 0.12s;
+  }
+}
+
+@keyframes hero-sheen {
+  0%,
+  15% {
+    transform: translateX(-120%);
+  }
+
+  85%,
+  100% {
+    transform: translateX(420%);
+  }
+}
+
+@keyframes hero-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+@media (max-width: 720px) {
+  .hero-foot {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .hero-cta,
+  .prompt {
+    grid-column: 1;
+  }
+}
+
+@media (max-width: 560px) {
+  .app-home .topbar {
+    padding: 12px 16px;
+  }
+
+  .app-home .topbar nav > a:first-child {
+    margin-left: 0;
+  }
+
+  .hero-inner {
+    gap: 28px;
+    padding: 128px 16px 24px;
+  }
+
+  .hero-slab {
+    left: -10%;
+    top: -6%;
+    width: 170%;
+    height: 50%;
+  }
+
+  .hero-word {
+    font-size: 8.5rem;
+  }
+
+  .hero-slab-front {
+    display: none;
+  }
+
+  .hero h1,
+  .hero-title-muted {
+    font-size: 1.75rem;
+  }
+
+  .hero-lead {
+    margin-top: 16px;
+    font-size: 1.05rem;
+  }
+
+  .hero-seals {
+    margin-top: 20px;
+    gap: 8px;
+  }
+
+  .hero-lead br {
+    display: none;
+  }
+
+  /* Celular: "+" e campo na 1ª linha (campo com ≥ 280 px em 375), "Analisar" embaixo. */
+  .prompt-bar {
+    flex-wrap: wrap;
+  }
+
+  .prompt-send {
+    flex: 1 1 100%;
+  }
+
+  .prompt-send-text {
+    position: static;
+    width: auto;
+    height: auto;
+    margin: 0;
+    overflow: visible;
+    clip: auto;
+  }
 }
 
 /* ---------- Login ---------- */

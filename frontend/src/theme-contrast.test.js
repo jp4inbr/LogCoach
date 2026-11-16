@@ -94,6 +94,25 @@ const pairs = [
     ["--top", bg, GRAPHIC],
     ["--player", bg, GRAPHIC],
   ]),
+  // Hero da tela inicial: texto sobre o fundo do hero, sobre as faces da placa gravada (o
+  // texto pode cruzar a placa) e sobre os chips do topo; foco, borda da barra do link e o
+  // ponto do "Entrar" contra o fundo do hero e dos chips.
+  ...[
+    "--hero-bg",
+    "--hero-slab-hi",
+    "--hero-slab-lo",
+    "--hero-slab-side",
+    "--hero-chip-bg",
+  ].flatMap((bg) => [
+    ["--text", bg, TEXT],
+    ["--muted", bg, TEXT],
+  ]),
+  ["--focus", "--hero-bg", GRAPHIC],
+  ["--focus", "--hero-chip-bg", GRAPHIC],
+  ["--border-control", "--hero-bg", GRAPHIC],
+  ["--hero-dot", "--hero-chip-bg", GRAPHIC],
+  ["--accent-fg", "--hero-bg", TEXT],
+  ["--error", "--hero-bg", TEXT],
   // Série de azar da barra "De onde vem essa diferença", sobre o fundo da barra e dos pontos.
   ...["--surface-2", "--surface"].map((bg) => ["--luck", bg, GRAPHIC]),
   ["--accent-ink", "--accent", TEXT],

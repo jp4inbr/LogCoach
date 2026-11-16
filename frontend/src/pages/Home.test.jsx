@@ -85,7 +85,7 @@ describe("Home", () => {
       campo(),
       within(barra).getByRole("button", { name: "Analisar" }),
     ];
-    const todos = within(barra).getAllByRole(/button|textbox/);
+    const todos = [...barra.querySelectorAll("button, input, a, select, textarea")];
     expect(todos).toEqual(ordem);
     // Sem erro, o campo é descrito pela dica, que explica o "+".
     expect(campo()).toHaveAccessibleDescription(/\+.*log de exemplo/);

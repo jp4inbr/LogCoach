@@ -23,7 +23,8 @@ function Layout() {
   const [section] = route.parts;
 
   return (
-    <div className="app">
+    // Na tela inicial o cabeçalho fica por cima do hero (estilo de chips); nas outras, nada muda.
+    <div className={section ? "app" : "app app-home"}>
       <a className="skip" href="#conteudo">
         Pular para o conteúdo
       </a>
