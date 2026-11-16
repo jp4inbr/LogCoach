@@ -14,7 +14,8 @@ Como rodar:
 
 ```bash
 cd backend
-pytest -q   # ou pytest -v para ver cada teste
+pytest -q              # ou pytest -v para ver cada teste
+pytest --cov=app       # com a cobertura por arquivo (a mesma conta do CI)
 ```
 
 ## 10.2 Casos de teste
