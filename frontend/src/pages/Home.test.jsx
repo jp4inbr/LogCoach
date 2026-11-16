@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import AuthProvider from "../components/AuthProvider.jsx";
@@ -26,7 +26,10 @@ describe("Home", () => {
       screen.getByRole("heading", { level: 1, name: "Descubra os erros que mais custam seu dano" }),
     ).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Como funciona" })).toBeInTheDocument();
-    const passos = screen.getAllByRole("listitem").map((item) => item.textContent);
+    const como = screen.getByRole("region", { name: "Como funciona" });
+    const passos = within(como)
+      .getAllByRole("listitem")
+      .map((item) => item.textContent);
     expect(passos).toEqual([
       "Cole o linkDo relatório público no Warcraft Logs.",
       "Escolha a lutaE o seu Mago Arcano naquela tentativa.",
@@ -34,6 +37,93 @@ describe("Home", () => {
     ]);
     expect(screen.getByText("O que já é suportado")).toBeInTheDocument();
     expect(screen.getByText(/· Mítico\. Outros chefes aparecem na lista/)).toBeInTheDocument();
+  });
+
+  it("título em duas linhas: o h1 não muda e a segunda linha (atenuada) fica fora dele", () => {
+    mockApi();
+    renderHome();
+
+    const h1 = screen.getByRole("heading", { level: 1 });
+    expect(h1).toHaveAccessibleName("Descubra os erros que mais custam seu dano");
+    const segunda = screen.getByText("Compare com os 10 melhores do seu item level.");
+    expect(h1).not.toContainElement(segunda);
+    expect(segunda).toHaveClass("hero-title-muted");
+    // A segunda linha vem logo depois do h1, no mesmo bloco do título.
+    expect(h1.nextElementSibling).toBe(segunda);
+  });
+
+  it("mostra os três selos, cada um com ícone decorativo", () => {
+    mockApi();
+    renderHome();
+
+    const selos = within(screen.getByRole("list", { name: "Destaques" })).getAllByRole("listitem");
+    expect(selos.map((selo) => selo.textContent)).toEqual([
+      "Top 10 do seu item level",
+      "Explicado em português",
+      "Dados do Warcraft Logs",
+    ]);
+    for (const selo of selos) {
+      const icone = selo.querySelector("svg");
+      expect(icone).not.toBeNull();
+      expect(icone).toHaveAttribute("aria-hidden", "true");
+    }
+  });
+
+  it("barra estilo prompt: '+' (exemplo), campo rotulado e 'Analisar', nessa ordem", () => {
+    mockApi();
+    renderHome();
+
+    const barra = screen.getByRole("search", { name: "Analisar um log" });
+    expect(within(barra).getByRole("button", { name: "Usar o log de exemplo" })).toBeVisible();
+    expect(within(barra).getByLabelText("Link do relatório no Warcraft Logs")).toBe(campo());
+    expect(within(barra).getByRole("button", { name: "Analisar" })).toHaveAttribute(
+      "type",
+      "submit",
+    );
+    const ordem = [
+      within(barra).getByRole("button", { name: "Usar o log de exemplo" }),
+      campo(),
+      within(barra).getByRole("button", { name: "Analisar" }),
+    ];
+    const todos = within(barra).getAllByRole(/button|textbox/);
+    expect(todos).toEqual(ordem);
+    // Sem erro, o campo é descrito pela dica, que explica o "+".
+    expect(campo()).toHaveAccessibleDescription(/\+.*log de exemplo/);
+  });
+
+  it("o '+' preenche o link de exemplo e 'Analisar' abre o relatório de referência", async () => {
+    mockApi();
+    const user = userEvent.setup();
+    renderHome();
+
+    await user.click(screen.getByRole("button", { name: "Usar o log de exemplo" }));
+    expect(campo()).toHaveValue(SAMPLE_LINK);
+    expect(campo()).toHaveFocus();
+    await user.click(screen.getByRole("button", { name: "Analisar" }));
+    expect(window.location.hash).toBe("#/relatorio/XhrmBaYkGCAQjH2D");
+  });
+
+  it("o enfeite do fundo (a marca gravada) e os ícones ficam fora da leitura", () => {
+    mockApi();
+    const { container } = renderHome();
+
+    const arte = container.querySelector(".hero-art");
+    expect(arte).not.toBeNull();
+    expect(arte).toHaveAttribute("aria-hidden", "true");
+    expect(arte.textContent).toContain("LogCoach");
+    for (const svg of container.querySelectorAll("svg")) {
+      expect(svg.closest('[aria-hidden="true"]')).not.toBeNull();
+    }
+  });
+
+  it("sem login, o convite fica no rodapé do hero, junto da barra do link", () => {
+    mockApi();
+    renderHome();
+
+    const rodape = screen.getByRole("link", { name: "Criar conta grátis" }).closest(".hero-foot");
+    expect(rodape).not.toBeNull();
+    expect(within(rodape).getByText("Você pode fazer 1 análise sem conta.")).toBeInTheDocument();
+    expect(within(rodape).getByRole("search", { name: "Analisar um log" })).toBeInTheDocument();
   });
 
   it("sem login avisa da análise grátis e leva ao cadastro", () => {
