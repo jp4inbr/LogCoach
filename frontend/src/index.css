@@ -26,12 +26,16 @@
   --accent-glow: rgb(255 137 6 / 25%);
   --focus: #ff8906;
   --brand-2: #e53170;
-  --top: #5eead4;
+  --top: #22d3ee;
+  --player: #ff8906;
+  --luck: #3b82f6;
 
   --ok: #4ade80;
   --ok-bg: rgb(74 222 128 / 12%);
   --warn: #fde047;
   --warn-bg: rgb(253 224 71 / 12%);
+  --warn-badge-bg: rgb(253 224 71 / 12%);
+  --warn-badge-fg: #fde047;
   --warn-border: rgb(253 224 71 / 40%);
   --error: #f87171;
   --error-bg: rgb(248 113 113 / 12%);
@@ -87,13 +91,17 @@
     --accent-glow: rgb(39 35 67 / 20%);
     --focus: #272343;
     --brand-2: #bae8e8;
-    --top: #0f766e;
+    --top: #0c7c9c;
+    --player: #dd6b00;
+    --luck: #2563eb;
 
     --ok: #166534;
     --ok-bg: rgb(22 101 52 / 10%);
-    --warn: #92400e;
+    --warn: #dfa800;
     --warn-bg: rgb(180 83 9 / 12%);
-    --warn-border: rgb(146 64 14 / 45%);
+    --warn-badge-bg: #ffefa8;
+    --warn-badge-fg: #9a5b00;
+    --warn-border: rgb(128 86 0 / 45%);
     --error: #b91c1c;
     --error-bg: rgb(185 28 28 / 9%);
     --error-border: rgb(185 28 28 / 40%);
@@ -129,13 +137,17 @@
   --accent-glow: rgb(39 35 67 / 20%);
   --focus: #272343;
   --brand-2: #bae8e8;
-  --top: #0f766e;
+  --top: #0c7c9c;
+  --player: #dd6b00;
+  --luck: #2563eb;
 
   --ok: #166534;
   --ok-bg: rgb(22 101 52 / 10%);
-  --warn: #92400e;
+  --warn: #dfa800;
   --warn-bg: rgb(180 83 9 / 12%);
-  --warn-border: rgb(146 64 14 / 45%);
+  --warn-badge-bg: #ffefa8;
+  --warn-badge-fg: #9a5b00;
+  --warn-border: rgb(128 86 0 / 45%);
   --error: #b91c1c;
   --error-bg: rgb(185 28 28 / 9%);
   --error-border: rgb(185 28 28 / 40%);
@@ -578,8 +590,8 @@ label {
 }
 
 .badge-atencao {
-  background: var(--warn-bg);
-  color: var(--warn);
+  background: var(--warn-badge-bg);
+  color: var(--warn-badge-fg);
 }
 
 .badge-erro {
@@ -906,8 +918,8 @@ label {
 
 .pill-paused {
   gap: 6px;
-  background: var(--warn-bg);
-  color: var(--warn);
+  background: var(--warn-badge-bg);
+  color: var(--warn-badge-fg);
   box-shadow: inset 0 0 0 1px var(--warn-border);
 }
 
@@ -1465,7 +1477,7 @@ caption {
 }
 
 .mark-player {
-  background: var(--accent-fg);
+  background: var(--player);
 }
 
 .timeline-track .mark-player {
@@ -1685,6 +1697,7 @@ caption {
   display: flex;
   height: 12px;
   border-radius: 999px;
+  gap: 2px;
   overflow: hidden;
   background: var(--surface-2);
 }
@@ -1720,7 +1733,7 @@ caption {
 }
 
 .gap-luck {
-  background: var(--warn);
+  background: var(--luck);
 }
 
 .gap-unexplained {
@@ -1763,4 +1776,23 @@ caption {
   margin-left: 8px;
   color: var(--accent-fg);
   background: var(--info-bg);
+}
+
+/* Ícone do jogo à esquerda do nome da magia. O ícone e a primeira palavra nunca se separam na
+   quebra de linha; o resto do nome quebra normalmente. */
+.spell-lead {
+  white-space: nowrap;
+}
+
+.spell-icon {
+  display: inline-block;
+  width: 1.15em;
+  height: 1.15em;
+  /* Sobe o ícone para o centro da altura das letras sem aumentar a altura da linha. */
+  vertical-align: -0.2em;
+  margin: -0.1em 0.3em 0 0;
+  border-radius: 0.2em;
+  border: 1px solid var(--border-control);
+  background: var(--surface-2);
+  object-fit: cover;
 }

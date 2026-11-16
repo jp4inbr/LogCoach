@@ -295,7 +295,9 @@ class TimelineTrack(BaseModel):
 
 
 class AbilityRow(BaseModel):
-    name: str
+    name: str  # texto puro (sem marcação de magia)
+    # ID do cast (ou do 1º de dano) da linha, para o ícone; sempre preenchido pelo motor.
+    ability_id: int | None = None
     player_cpm: float | None
     top_cpm: float | None
     player_dmg_pct: float | None

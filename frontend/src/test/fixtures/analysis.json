@@ -123,16 +123,16 @@
     "mistakes": [
       {
         "id": "soul_entry",
-        "title": "Entrada na Alma Arcana com pouco Salvo",
+        "title": "Entrada na {{spell:451038|Alma Arcana}} com pouca {{spell:1242974|Saraivada}}",
         "impact_pct": 2.7,
         "severity": "erro",
         "kind": "regra",
         "phase": null,
-        "explanation": "Depois do Surto vem a Alma Arcana: ali a Salva não gasta o Salvo, então cada Salva rola Seta Prismática e meteoros de graça. Entrar com menos de 12 acúmulos perde esse ganho; o ideal é 20 ou mais. Detalhes: Entrada aos 0:20 com 0 de Salvo (Salva nos 2 últimos GCDs); Entrada aos 3:28 com 1 de Salvo. Ideal: 20 ou mais (você: 2 de 5). Sem Salva nos 2 últimos GCDs antes da Alma.",
-        "what_to_do": "Chegue na Alma Arcana com 20 de Salvo ou mais. Nos dois últimos GCDs antes dela (uns 2,5 s), não lance Salva; se vier Mísseis Sobrecarregados, o Salvo sobe para 25 na hora.",
+        "explanation": "Depois do {{spell:365350|Surto}} vem a {{spell:451038|Alma Arcana}}: ali a {{spell:44425|Salva}} não gasta a {{spell:1242974|Saraivada}}, então cada {{spell:44425|Salva}} rola {{spell:1295924|Seta Prismática}} e {{spell:449569|meteoritos}} de graça. Entrar com menos de 12 acúmulos perde esse ganho; o ideal é 20 ou mais. Detalhes: Entrada aos 0:20 com 0 de {{spell:1242974|Saraivada}} ({{spell:44425|Salva}} nos 2 últimos GCDs); Entrada aos 3:28 com 1 de {{spell:1242974|Saraivada}}. Ideal: 20 ou mais (você: 2 de 5). Sem {{spell:44425|Salva}} nos 2 últimos GCDs antes da {{spell:451038|Alma Arcana}}.",
+        "what_to_do": "Chegue à {{spell:451038|Alma Arcana}} com 20 de {{spell:1242974|Saraivada}} ou mais. Nos dois últimos GCDs antes dela (uns 2,5 s), não lance {{spell:44425|Salva}}; se vierem {{spell:1277009|Projéteis Potencializados}}, a {{spell:1242974|Saraivada}} sobe para 25 na hora.",
         "numbers": [
           {
-            "label": "Entradas na Alma Arcana com menos de 12 de Salvo",
+            "label": "Entradas na {{spell:451038|Alma Arcana}} com menos de 12 de {{spell:1242974|Saraivada}}",
             "player": "2 de 5 (0, 20, 1, 18, 22)",
             "top": "9 de 43"
           }
@@ -140,16 +140,16 @@
       },
       {
         "id": "surge_blasts",
-        "title": "Impactos Arcanos demais dentro do Surto",
+        "title": "{{spell:30451|Impactos Arcanos}} demais dentro do {{spell:365350|Surto}}",
         "impact_pct": 2.5,
         "severity": "atencao",
         "kind": "regra",
         "phase": null,
-        "explanation": "Dentro do Surto, cada Impacto Arcano no lugar de Mísseis Arcanos é dano a menos. Sem Abstração às vezes não tem jeito, por isso a referência são os tops. Detalhes: Surto aos 1:39: 4 Impactos; Surto aos 3:11: 0 Impactos; Surto aos 4:49: 4 Impactos; Surto aos 6:23: 3 Impactos. Pouca Abstração recebida (15,3 por minuto; mediana dos 10 tops: 16,6): pode ter sido azar.",
-        "what_to_do": "Entre no Surto com uma Abstração guardada e Salvo razoável, e dentro dele mantenha o ciclo de Mísseis e Salvas cheias. O Impacto fica para completar o Salvo fora do burst.",
+        "explanation": "Dentro do {{spell:365350|Surto}}, cada {{spell:30451|Impacto Arcano}} no lugar de {{spell:5143|Mísseis Arcanos}} é dano a menos. Sem {{spell:263725|Abstração}} às vezes não tem jeito, por isso a referência são os tops. Detalhes: {{spell:365350|Surto}} aos 1:39: 4 {{spell:30451|Impactos}}; {{spell:365350|Surto}} aos 3:11: 0 {{spell:30451|Impactos}}; {{spell:365350|Surto}} aos 4:49: 4 {{spell:30451|Impactos}}; {{spell:365350|Surto}} aos 6:23: 3 {{spell:30451|Impactos}}. Pouca {{spell:263725|Abstração}} recebida (15,3 por minuto; mediana dos 10 tops: 16,6): pode ter sido azar.",
+        "what_to_do": "Entre no {{spell:365350|Surto}} com uma {{spell:263725|Abstração}} guardada e {{spell:1242974|Saraivada}} razoável, e dentro dele mantenha o ciclo de {{spell:5143|Mísseis}} e {{spell:44425|Salvas}} cheias. O {{spell:30451|Impacto}} fica para completar a {{spell:1242974|Saraivada}} fora do burst.",
         "numbers": [
           {
-            "label": "Impacto Arcano dentro do Surto Arcano (fora o de abertura)",
+            "label": "{{spell:30451|Impacto Arcano}} dentro do {{spell:365350|Surto Arcano}} (fora o de abertura)",
             "player": "2,8 por janela",
             "top": "0,0 por janela"
           }
@@ -174,16 +174,16 @@
       },
       {
         "id": "surge_touch_combo",
-        "title": "Surto Arcano fora do Toque dos Magos",
+        "title": "{{spell:365350|Surto Arcano}} fora do {{spell:321507|Toque dos Magos}}",
         "impact_pct": 0.3,
         "severity": "atencao",
         "kind": "regra",
         "phase": "Fase 2",
-        "explanation": "O Toque dos Magos guarda parte do dano feito enquanto está no alvo e explode no fim: ele tem de sair logo depois do Surto Arcano (até 3,5 s) para pegar o burst inteiro. O Surto que ficou sem Toque logo depois não ganhou esse dano extra. Detalhes: Surto aos 4:49: Toque 4,5 s antes (aos 4:44), fora dos 3,5 s depois do Surto.",
-        "what_to_do": "Use o Surto assim que ele voltar e solte o Toque logo em seguida (dá para soltar antes uma Salva ou a Seta Prismática). Atrasar o Surto dessincroniza o Toque.",
+        "explanation": "O {{spell:321507|Toque dos Magos}} guarda parte do dano feito enquanto está no alvo e explode no fim: ele tem de sair logo depois do {{spell:365350|Surto Arcano}} (até 3,5 s) para pegar o burst inteiro. O {{spell:365350|Surto}} que ficou sem {{spell:321507|Toque}} logo depois não ganhou esse dano extra. Detalhes: {{spell:365350|Surto}} aos 4:49: {{spell:321507|Toque}} 4,5 s antes (aos 4:44), fora dos 3,5 s depois do {{spell:365350|Surto}}.",
+        "what_to_do": "Use o {{spell:365350|Surto}} assim que ele voltar e solte o {{spell:321507|Toque}} logo em seguida (dá para soltar antes uma {{spell:44425|Salva}} ou a {{spell:1295924|Seta Prismática}}). Atrasar o {{spell:365350|Surto}} dessincroniza o {{spell:321507|Toque}}.",
         "numbers": [
           {
-            "label": "Surto Arcano → Toque dos Magos em até 3,5 s",
+            "label": "{{spell:365350|Surto Arcano}} → {{spell:321507|Toque dos Magos}} em até 3,5 s",
             "player": "4 de 5",
             "top": "82%"
           }
@@ -208,16 +208,16 @@
       },
       {
         "id": "barrage_low_salvo",
-        "title": "Salva Arcana com poucos acúmulos de Salvo",
+        "title": "{{spell:44425|Salva Arcana}} com poucos acúmulos de {{spell:1242974|Saraivada}}",
         "impact_pct": null,
         "severity": "atencao",
         "kind": "regra",
         "phase": null,
-        "explanation": "Todo acerto de magia arcana pode dar Abstração, e a Salva com mais Salvo derruba mais meteoros (1 a cada 5 acúmulos): mais acertos, mais Abstração, mais Mísseis, mais Salvo. Soltar a Salva com menos de 12 quebra esse ciclo (efeito bola de neve). O ideal é nunca. O custo é o efeito bola de neve (Abstração, Meteoritos), que não dá para isolar em %.",
-        "what_to_do": "Segure a Salva até ter pelo menos 12 acúmulos. Antes de soltar, gaste 1 Mísseis Arcanos e a Seta Prismática. Chegar no máximo (25) não é erro.",
+        "explanation": "Todo acerto de magia arcana pode dar {{spell:263725|Abstração}}, e a {{spell:44425|Salva}} com mais {{spell:1242974|Saraivada}} derruba mais {{spell:449569|meteoritos}} (1 a cada 5 acúmulos): mais acertos, mais {{spell:263725|Abstração}}, mais {{spell:5143|Mísseis}}, mais {{spell:1242974|Saraivada}}. Soltar a {{spell:44425|Salva}} com menos de 12 quebra esse ciclo (efeito bola de neve). O ideal é nunca soltar com menos que isso. O custo é o efeito bola de neve ({{spell:263725|Abstração}}, {{spell:449569|Meteoritos}}), que não dá para isolar em %.",
+        "what_to_do": "Segure a {{spell:44425|Salva}} até ter pelo menos 12 acúmulos. Antes de soltar, lance os {{spell:5143|Mísseis Arcanos}} e a {{spell:1295924|Seta Prismática}} que estiverem prontos. Chegar no máximo (25) não é erro.",
         "numbers": [
           {
-            "label": "Salva Arcana com menos de 12 acúmulos",
+            "label": "{{spell:44425|Salva Arcana}} com menos de 12 acúmulos",
             "player": "14,9%",
             "top": "6,8%"
           }
@@ -230,8 +230,8 @@
         "severity": "atencao",
         "kind": "regra",
         "phase": null,
-        "explanation": "Nos picos de dano (muita vida perdida em poucos segundos), o motor separa o que veio de mecânica evitável, onde um defensivo cabia e onde faltou cura (aí não é erro do Mago). É risco, não perda de dano. Detalhes: 5:06 (Fase 2): vida caiu a 44%, com dano de 79% da vida em poucos segundos (contando escudos). Origem: Sectário Latente 75% (evitável), Profundezas Constritoras 13%. Resultado: evitável: a maior parte do dano veio de mecânica de posicionamento; uso de Barreira Prismática só depois da queda; 6:39 (Fase 2): vida caiu a 44%, com dano de 73% da vida em poucos segundos (contando escudos). Origem: Barragem de Possessão 51%, Profundezas Constritoras 27%, Rito dos Enrosca-almas 13%. Resultado: defensivo cabia (Barreira Prismática disponível).",
-        "what_to_do": "Deixe a Barreira Prismática (ou outro defensivo) pronta para os picos e saia das mecânicas de posicionamento.",
+        "explanation": "Nos picos de dano (muita vida perdida em poucos segundos), o motor separa o que veio de mecânica evitável, onde um defensivo cabia e onde faltou cura (aí não é erro do Mago). É risco, não perda de dano. Detalhes: 5:06 (Fase 2): a vida caiu para 44%, com perda de 79% da vida em poucos segundos (contando escudos); origem: Sectário Latente 75% (evitável), Profundezas Constritoras 13%; resultado: evitável: a maior parte do dano veio de mecânica de posicionamento; uso de {{spell:235450|Barreira Prismática}} só depois da queda; 6:39 (Fase 2): a vida caiu para 44%, com perda de 73% da vida em poucos segundos (contando escudos); origem: Barragem de Possessão 51%, Profundezas Constritoras 27%, Rito dos Enrosca-almas 13%; resultado: defensivo cabia ({{spell:235450|Barreira Prismática}} disponível).",
+        "what_to_do": "Deixe a {{spell:235450|Barreira Prismática}} (ou outro defensivo) pronta para os picos e saia das mecânicas de posicionamento.",
         "numbers": [
           {
             "label": "Picos de dano: defensivo e posicionamento",
@@ -247,21 +247,21 @@
         "severity": "atencao",
         "kind": "hipotese",
         "phase": null,
-        "explanation": "As regras não explicam 1,9% da diferença para os tops (já descontados os erros e a sorte da Seta Prismática). Nenhuma regra mede essa parte; é hipótese, não fato. Maiores diferenças na tabela por habilidade: Salva Arcana na Fase 2 (27,8% do seu dano; tops: 21,0%); Mísseis Arcanos na Fase 2 (30,9% do seu dano; tops: 35,5%); Impacto Arcano na Fase 2 (6,0% do seu dano; tops: 2,3%).",
+        "explanation": "As regras não explicam 1,9% da diferença para os tops (já descontados os erros e a sorte da {{spell:1295924|Seta Prismática}}). Nenhuma regra mede essa parte; é hipótese, não fato. Maiores diferenças na tabela por habilidade: {{spell:44425|Salva Arcana}} na Fase 2 (27,8% do seu dano; tops: 21,0%); {{spell:5143|Mísseis Arcanos}} na Fase 2 (30,9% do seu dano; tops: 35,5%); {{spell:30451|Impacto Arcano}} na Fase 2 (6,0% do seu dano; tops: 2,3%).",
         "what_to_do": "Compare a sua rotação com a dos tops nas habilidades acima. Na próxima versão, o coach (IA) vai investigar essas pistas.",
         "numbers": [
           {
-            "label": "Salva Arcana (Fase 2), % do dano",
+            "label": "{{spell:44425|Salva Arcana}} (Fase 2), % do dano",
             "player": "27,8%",
             "top": "21,0%"
           },
           {
-            "label": "Mísseis Arcanos (Fase 2), % do dano",
+            "label": "{{spell:5143|Mísseis Arcanos}} (Fase 2), % do dano",
             "player": "30,9%",
             "top": "35,5%"
           },
           {
-            "label": "Impacto Arcano (Fase 2), % do dano",
+            "label": "{{spell:30451|Impacto Arcano}} (Fase 2), % do dano",
             "player": "6,0%",
             "top": "2,3%"
           }
@@ -271,51 +271,53 @@
     "rules": [
       {
         "id": "surge_touch_combo",
-        "name": "Surto Arcano → Toque dos Magos em até 3,5 s",
+        "name": "{{spell:365350|Surto Arcano}} → {{spell:321507|Toque dos Magos}} em até 3,5 s",
         "player_value": "4 de 5",
         "top_value": "82%",
         "status": "atencao",
         "note": null,
         "reference": null,
         "impact_pct": 0.3,
-        "details": ["Surto aos 4:49: Toque 4,5 s antes (aos 4:44), fora dos 3,5 s depois do Surto"]
+        "details": [
+          "{{spell:365350|Surto}} aos 4:49: {{spell:321507|Toque}} 4,5 s antes (aos 4:44), fora dos 3,5 s depois do {{spell:365350|Surto}}"
+        ]
       },
       {
         "id": "touch_uses",
-        "name": "Usos de Toque dos Magos",
+        "name": "Usos de {{spell:321507|Toque dos Magos}}",
         "player_value": "9 de 10 possíveis",
-        "top_value": "mediana dos tops: deixam de usar 1,0",
+        "top_value": "mediana dos tops: deixam de usar 1",
         "status": "ok",
-        "note": "Possível = usar no CD desde o pull até o fim da luta.",
+        "note": "Possível: quantos usos caberiam se fosse usado na recarga, do pull ao fim da luta.",
         "reference": null,
         "impact_pct": null,
         "details": []
       },
       {
         "id": "touch_drift",
-        "name": "Atraso do Toque dos Magos",
+        "name": "Atraso do {{spell:321507|Toque dos Magos}}",
         "player_value": "2,6 s",
         "top_value": "3,1 s",
         "status": "ok",
-        "note": "Atraso médio em relação ao CD. Atrasar o Toque dessincroniza o próximo Surto.",
+        "note": "Atraso médio em relação à recarga. Atrasar o {{spell:321507|Toque}} dessincroniza o próximo {{spell:365350|Surto}}.",
         "reference": "mediana dos 10 tops: 3,1 s",
         "impact_pct": null,
         "details": []
       },
       {
         "id": "surge_uses",
-        "name": "Usos de Surto Arcano",
+        "name": "Usos de {{spell:365350|Surto Arcano}}",
         "player_value": "5 de 5 possíveis",
-        "top_value": "mediana dos tops: deixam de usar 0,0",
+        "top_value": "mediana dos tops: deixam de usar 0",
         "status": "ok",
-        "note": "Possível = usar no CD desde o pull até o fim da luta.",
+        "note": "Possível: quantos usos caberiam se fosse usado na recarga, do pull ao fim da luta.",
         "reference": null,
         "impact_pct": null,
         "details": []
       },
       {
         "id": "surge_hold",
-        "name": "Surto Arcano segurado mais de 10 s",
+        "name": "{{spell:365350|Surto Arcano}} segurado mais de 10 s",
         "player_value": "0 de 5",
         "top_value": "5 de 45",
         "status": "ok",
@@ -326,70 +328,70 @@
       },
       {
         "id": "barrage_low_salvo",
-        "name": "Salva Arcana com menos de 12 acúmulos",
+        "name": "{{spell:44425|Salva Arcana}} com menos de 12 acúmulos",
         "player_value": "14,9%",
         "top_value": "6,8%",
         "status": "atencao",
-        "note": "O ideal é nunca. O custo é o efeito bola de neve (Abstração, Meteoritos), que não dá para isolar em %.",
+        "note": "O ideal é nunca soltar com menos que isso. O custo é o efeito bola de neve ({{spell:263725|Abstração}}, {{spell:449569|Meteoritos}}), que não dá para isolar em %.",
         "reference": "mediana dos 10 tops: 6,8%",
         "impact_pct": null,
         "details": []
       },
       {
         "id": "soul_entry",
-        "name": "Entradas na Alma Arcana com menos de 12 de Salvo",
+        "name": "Entradas na {{spell:451038|Alma Arcana}} com menos de 12 de {{spell:1242974|Saraivada}}",
         "player_value": "2 de 5 (0, 20, 1, 18, 22)",
         "top_value": "9 de 43",
         "status": "erro",
-        "note": "Ideal: 20 ou mais (você: 2 de 5). Sem Salva nos 2 últimos GCDs antes da Alma.",
+        "note": "Ideal: 20 ou mais (você: 2 de 5). Sem {{spell:44425|Salva}} nos 2 últimos GCDs antes da {{spell:451038|Alma Arcana}}.",
         "reference": null,
         "impact_pct": 2.7,
         "details": [
-          "Entrada aos 0:20 com 0 de Salvo (Salva nos 2 últimos GCDs)",
-          "Entrada aos 3:28 com 1 de Salvo"
+          "Entrada aos 0:20 com 0 de {{spell:1242974|Saraivada}} ({{spell:44425|Salva}} nos 2 últimos GCDs)",
+          "Entrada aos 3:28 com 1 de {{spell:1242974|Saraivada}}"
         ]
       },
       {
         "id": "surge_empty_handed",
-        "name": "Surto Arcano de mão vazia (menos de 12 de Salvo e sem Abstração)",
+        "name": "{{spell:365350|Surto Arcano}} de mão vazia (menos de 12 de {{spell:1242974|Saraivada}} e sem {{spell:263725|Abstração}})",
         "player_value": "0 de 4",
         "top_value": "0 de 35",
         "status": "ok",
-        "note": "O custo já aparece nos Impactos Arcanos dentro do Surto.",
+        "note": "O custo já aparece nos {{spell:30451|Impactos Arcanos}} dentro do {{spell:365350|Surto}}.",
         "reference": null,
         "impact_pct": null,
         "details": []
       },
       {
         "id": "surge_blasts",
-        "name": "Impacto Arcano dentro do Surto Arcano (fora o de abertura)",
+        "name": "{{spell:30451|Impacto Arcano}} dentro do {{spell:365350|Surto Arcano}} (fora o de abertura)",
         "player_value": "2,8 por janela",
         "top_value": "0,0 por janela",
         "status": "atencao",
-        "note": "Pouca Abstração recebida (15,3 por minuto; mediana dos 10 tops: 16,6): pode ter sido azar.",
+        "note": "Pouca {{spell:263725|Abstração}} recebida (15,3 por minuto; mediana dos 10 tops: 16,6): pode ter sido azar.",
         "reference": "mediana dos 10 tops: 0,0 por janela",
         "impact_pct": 2.5,
         "details": [
-          "Surto aos 1:39: 4 Impactos",
-          "Surto aos 3:11: 0 Impactos",
-          "Surto aos 4:49: 4 Impactos",
-          "Surto aos 6:23: 3 Impactos"
+          "{{spell:365350|Surto}} aos 1:39: 4 {{spell:30451|Impactos}}",
+          "{{spell:365350|Surto}} aos 3:11: 0 {{spell:30451|Impactos}}",
+          "{{spell:365350|Surto}} aos 4:49: 4 {{spell:30451|Impactos}}",
+          "{{spell:365350|Surto}} aos 6:23: 3 {{spell:30451|Impactos}}"
         ]
       },
       {
         "id": "prismatic_bolt",
-        "name": "Seta Prismática: procs esperados pelo Salvo (decisão)",
+        "name": "{{spell:1295924|Seta Prismática}}: procs esperados pela {{spell:1242974|Saraivada}} (decisão)",
         "player_value": "5,9 por minuto",
         "top_value": "6,2 por minuto",
         "status": "atencao",
-        "note": "Recebidos 28 de ~41 esperados em 6,9 min (azar). A spec depende muito de sorte: azar não é erro.",
+        "note": "Recebeu 28 procs de ~41 esperados em 6,9 min (azar). A spec depende muito de sorte: azar não é erro.",
         "reference": "mediana dos 10 tops: 6,2 por minuto",
         "impact_pct": null,
         "details": []
       },
       {
         "id": "bolt_munch",
-        "name": "Seta Prismática perdida por Salva Arcana com proc ativo",
+        "name": "{{spell:1295924|Seta Prismática}} perdida por {{spell:44425|Salva Arcana}} com proc ativo",
         "player_value": "10,7%",
         "top_value": "13,3%",
         "status": "ok",
@@ -400,16 +402,16 @@
       },
       {
         "id": "potion",
-        "name": "Poções junto do lust e do Surto",
+        "name": "Poções junto do lust e do {{spell:365350|Surto}}",
         "player_value": "2 de 2",
         "top_value": "12 de 17",
         "status": "ok",
-        "note": "A 1ª vai junto do primeiro lust; segurar a 2ª para um Surto é o recomendado.",
+        "note": "A 1ª vai junto do primeiro lust; segurar a 2ª para um {{spell:365350|Surto}} é o recomendado.",
         "reference": null,
         "impact_pct": null,
         "details": [
           "Poção aos 0:03: junto do lust",
-          "Poção aos 6:25: junto do Surto Arcano",
+          "Poção aos 6:25: junto do {{spell:365350|Surto Arcano}}",
           "Primeiro lust aos 0:03"
         ]
       },
@@ -434,8 +436,8 @@
         "reference": null,
         "impact_pct": null,
         "details": [
-          "5:06 (Fase 2): vida caiu a 44%, com dano de 79% da vida em poucos segundos (contando escudos). Origem: Sectário Latente 75% (evitável), Profundezas Constritoras 13%. Resultado: evitável: a maior parte do dano veio de mecânica de posicionamento; uso de Barreira Prismática só depois da queda",
-          "6:39 (Fase 2): vida caiu a 44%, com dano de 73% da vida em poucos segundos (contando escudos). Origem: Barragem de Possessão 51%, Profundezas Constritoras 27%, Rito dos Enrosca-almas 13%. Resultado: defensivo cabia (Barreira Prismática disponível)"
+          "5:06 (Fase 2): a vida caiu para 44%, com perda de 79% da vida em poucos segundos (contando escudos); origem: Sectário Latente 75% (evitável), Profundezas Constritoras 13%; resultado: evitável: a maior parte do dano veio de mecânica de posicionamento; uso de {{spell:235450|Barreira Prismática}} só depois da queda",
+          "6:39 (Fase 2): a vida caiu para 44%, com perda de 73% da vida em poucos segundos (contando escudos); origem: Barragem de Possessão 51%, Profundezas Constritoras 27%, Rito dos Enrosca-almas 13%; resultado: defensivo cabia ({{spell:235450|Barreira Prismática}} disponível)"
         ]
       },
       {
@@ -533,6 +535,7 @@
         "rows": [
           {
             "name": "Mísseis Arcanos",
+            "ability_id": 5143,
             "player_cpm": 16.2,
             "top_cpm": 16.4,
             "player_dmg_pct": 35.1,
@@ -540,6 +543,7 @@
           },
           {
             "name": "Seta Prismática",
+            "ability_id": 1295924,
             "player_cpm": 4.3,
             "top_cpm": 5.9,
             "player_dmg_pct": 21.1,
@@ -547,6 +551,7 @@
           },
           {
             "name": "Salva Arcana",
+            "ability_id": 44425,
             "player_cpm": 15.8,
             "top_cpm": 15.1,
             "player_dmg_pct": 23.6,
@@ -554,6 +559,7 @@
           },
           {
             "name": "Meteorito",
+            "ability_id": 449569,
             "player_cpm": null,
             "top_cpm": null,
             "player_dmg_pct": 5.3,
@@ -561,6 +567,7 @@
           },
           {
             "name": "Toque dos Magos",
+            "ability_id": 321507,
             "player_cpm": 1.4,
             "top_cpm": 1.4,
             "player_dmg_pct": 5.7,
@@ -568,6 +575,7 @@
           },
           {
             "name": "Orbe Arcano",
+            "ability_id": 153626,
             "player_cpm": 0.7,
             "top_cpm": 0.7,
             "player_dmg_pct": 3.0,
@@ -575,6 +583,7 @@
           },
           {
             "name": "Impacto Arcano",
+            "ability_id": 30451,
             "player_cpm": 5.8,
             "top_cpm": 4.5,
             "player_dmg_pct": 4.3,
@@ -587,6 +596,7 @@
         "rows": [
           {
             "name": "Mísseis Arcanos",
+            "ability_id": 5143,
             "player_cpm": 15.5,
             "top_cpm": 16.0,
             "player_dmg_pct": 36.3,
@@ -594,6 +604,7 @@
           },
           {
             "name": "Seta Prismática",
+            "ability_id": 1295924,
             "player_cpm": 3.0,
             "top_cpm": 6.3,
             "player_dmg_pct": 15.1,
@@ -601,6 +612,7 @@
           },
           {
             "name": "Salva Arcana",
+            "ability_id": 44425,
             "player_cpm": 14.3,
             "top_cpm": 13.9,
             "player_dmg_pct": 23.9,
@@ -608,6 +620,7 @@
           },
           {
             "name": "Meteorito",
+            "ability_id": 449569,
             "player_cpm": null,
             "top_cpm": null,
             "player_dmg_pct": 6.9,
@@ -615,6 +628,7 @@
           },
           {
             "name": "Toque dos Magos",
+            "ability_id": 321507,
             "player_cpm": 1.2,
             "top_cpm": 1.1,
             "player_dmg_pct": 5.3,
@@ -622,6 +636,7 @@
           },
           {
             "name": "Orbe Arcano",
+            "ability_id": 153626,
             "player_cpm": 2.4,
             "top_cpm": 0.9,
             "player_dmg_pct": 5.9,
@@ -629,6 +644,7 @@
           },
           {
             "name": "Impacto Arcano",
+            "ability_id": 30451,
             "player_cpm": 6.0,
             "top_cpm": 2.4,
             "player_dmg_pct": 5.1,
@@ -641,6 +657,7 @@
         "rows": [
           {
             "name": "Mísseis Arcanos",
+            "ability_id": 5143,
             "player_cpm": 13.4,
             "top_cpm": 16.1,
             "player_dmg_pct": 30.9,
@@ -648,6 +665,7 @@
           },
           {
             "name": "Seta Prismática",
+            "ability_id": 1295924,
             "player_cpm": 2.8,
             "top_cpm": 5.9,
             "player_dmg_pct": 14.5,
@@ -655,6 +673,7 @@
           },
           {
             "name": "Salva Arcana",
+            "ability_id": 44425,
             "player_cpm": 13.4,
             "top_cpm": 14.4,
             "player_dmg_pct": 27.8,
@@ -662,6 +681,7 @@
           },
           {
             "name": "Meteorito",
+            "ability_id": 449569,
             "player_cpm": null,
             "top_cpm": null,
             "player_dmg_pct": 7.2,
@@ -669,6 +689,7 @@
           },
           {
             "name": "Toque dos Magos",
+            "ability_id": 321507,
             "player_cpm": 1.2,
             "top_cpm": 1.3,
             "player_dmg_pct": 5.3,
@@ -676,6 +697,7 @@
           },
           {
             "name": "Orbe Arcano",
+            "ability_id": 153626,
             "player_cpm": 1.2,
             "top_cpm": 0.9,
             "player_dmg_pct": 5.8,
@@ -683,6 +705,7 @@
           },
           {
             "name": "Impacto Arcano",
+            "ability_id": 30451,
             "player_cpm": 10.5,
             "top_cpm": 3.8,
             "player_dmg_pct": 6.0,
@@ -690,6 +713,7 @@
           },
           {
             "name": "Surto Arcano",
+            "ability_id": 365350,
             "player_cpm": 0.8,
             "top_cpm": 0.7,
             "player_dmg_pct": 1.3,

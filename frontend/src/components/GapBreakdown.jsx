@@ -1,4 +1,6 @@
 import { formatNumber } from "../lib/format.js";
+import { plainSpellText } from "../lib/spellText.js";
+import SpellText from "./SpellText.jsx";
 import Term from "./Term.jsx";
 
 // Diferença para os tops = erros + sorte + não explicado, em % do dano do próprio jogador
@@ -15,9 +17,9 @@ const PARTS = [
   {
     key: "luck_pct",
     className: "gap-luck",
-    label: "Azar com a Seta Prismática",
+    label: "Azar com a {{spell:1295924|Seta Prismática}}",
     tip: "A Seta Prismática (Prismatic Bolt) é sorte: compara quantas vieram com quantas eram esperadas pelos seus acúmulos. Azar não é erro seu.",
-    negative: "Sorte com a Seta Prismática (a seu favor)",
+    negative: "Sorte com a {{spell:1295924|Seta Prismática}} (a seu favor)",
   },
   {
     key: "unexplained_pct",
@@ -68,7 +70,9 @@ export default function GapBreakdown({ gap }) {
           return (
             <li key={part.key}>
               <span className={`gap-dot ${favor ? "" : part.className}`} aria-hidden="true" />
-              <Term tip={part.tip}>{favor ? part.negative : part.label}</Term>
+              <Term tip={part.tip} label={plainSpellText(favor ? part.negative : part.label)}>
+                <SpellText text={favor ? part.negative : part.label} />
+              </Term>
               <strong className={favor ? "text-up" : undefined}>
                 {favor ? "−" : ""}
                 {formatNumber(Math.abs(value))}%

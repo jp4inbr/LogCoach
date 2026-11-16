@@ -1,5 +1,5 @@
 # Nomes em português do Brasil, como aparecem no cliente do jogo.
-# Fonte: Wowhead (locale ptBR), conferido em 25/10/2026.
+# Fonte: Wowhead (locale ptBR), conferido em 15/11/2026 (todos os IDs abaixo).
 # O motor usa isto para escrever o relatório em português (RNF11).
 
 spells:
@@ -17,13 +17,49 @@ spells:
   414658: Frio Enregelante        # Ice Cold
   45438: Bloco de Gelo            # Ice Block
   342245: Alterar Tempo           # Alter Time
-  55342: Imagem Espelhada         # Mirror Image (conferir no Wowhead)
+  55342: Imagem Espelhada         # Mirror Image
   1236616: Potencial da Luz       # Light's Potential (poção)
-  263725: Abstração               # Clearcasting (nome do Warcraft Logs em pt-BR; conferir no Wowhead)
-  10060: Infusão de Poder         # Power Infusion, buff de Priest (conferir no Wowhead)
-  451038: Alma Arcana             # Arcane Soul (Sunfury; conferir no Wowhead)
-  1277009: Mísseis Sobrecarregados # Overpowered Missiles (conferir no Wowhead)
-  449569: Meteorito               # Meteorite (conferir no Wowhead)
+  263725: Abstração               # Clearcasting (conferido no Wowhead pt-BR, 15/11)
+  10060: Infusão de Poder         # Power Infusion, buff de Priest
+  451038: Alma Arcana             # Arcane Soul (Sunfury)
+  1277009: Projéteis Potencializados # Overpowered Missiles
+  449569: Meteorito               # Meteorite
+
+  # Mago Arcano: IDs secundários (dano, buffs e talentos que aparecem nos logs)
+  7268: Mísseis Arcanos           # Arcane Missiles (dano)
+  153640: Orbe Arcano             # Arcane Orb (dano)
+  450499: Salva Arcana            # Arcane Barrage (dano)
+  1295939: Seta Prismática        # Prismatic Bolt (dano)
+  1295942: Seta Prismática!       # Prismatic Bolt! (proc)
+  365362: Surto Arcano            # Arcane Surge (buff)
+  453326: Surto Arcano            # Arcane Surge (dano)
+  210833: Toque dos Magos         # Touch of the Magi (dano)
+  456139: Meteorito               # Meteorite (dano)
+  1242974: Saraivada Arcana       # Arcane Salvo (o "Salvo" do Arthur)
+  342246: Alterar Tempo           # Alter Time (buff)
+  342247: Alterar Tempo           # Alter Time (volta)
+  236645: Cintilação              # Shimmer (buff)
+  1459: Intelecto Arcano          # Arcane Intellect
+  1296930: Poder Cumulativo       # Cumulative Power
+  449322: Cascata de Mana         # Mana Cascade
+  461531: Tempestade Cerebral     # Brainstorm
+  394195: Energia Transbordante   # Overflowing Energy
+  1223797: Intuição               # Intuition
+  448604: Esfera de Fogo Místico  # Spellfire Sphere
+  1310414: Poder Devastador       # Devastating Power
+  1241761: Precisão do Falcodrago # Precision of the Dragonhawk
+
+  # Buffs de raide (lust e apoio do Evocador)
+  2825: Sede de Sangue            # Bloodlust
+  32182: Heroísmo                 # Heroism
+  264667: Raiva Primeva           # Primal Rage
+  390386: Fúria dos Aspectos      # Fury of the Aspects
+  395152: Poder de Ébano          # Ebon Might
+  410089: Presciência             # Prescience
+  413984: Areias Cambiantes       # Shifting Sands
+  404908: Espelho do Destino      # Fate Mirror
+  409632: Sopro Eônico            # Breath of Eons
+  434481: Bombardeios             # Bombardments
 
   # Nek'zali, a Enrosca-almas
   1293664: Ignição dos Enrosca-almas   # Soulcoil Ignition
@@ -34,8 +70,8 @@ spells:
   1288772: Rito dos Enrosca-almas      # Soulcoil Rite
   1287533: Avanço Rumo ao Túmulo       # Gravebound Advance (escudo dos Amani)
   1307939: Praga dos Corpos            # Corpse Blight
-  1294729: Praga dos Corpos            # Corpse Blight (2º efeito; conferir no Wowhead)
-  1297630: Receptáculo do Despertar    # Vessel of Awakening (conferir no Wowhead)
+  1294729: Praga dos Corpos            # Corpse Blight (2º efeito)
+  1297630: Receptáculo do Despertar    # Vessel of Awakening
   1: Corpo a corpo                     # Melee
   1294846: Ecos Angustiados            # Anguished Echoes
   1295124: Ritual de Despertar         # Ritual of Awakening
@@ -51,6 +87,16 @@ spells:
   1300239: Espírito Turbilhante        # Swirling Spirit
   1308227: Espiral Imortal             # Immortal Coil
   1284109: Golpes Exaurientes          # Hollowing Strikes (tank)
+
+# IDs de magias, buffs e talentos do Mago Arcano que ganham ícone na tela (marcação
+# `{{spell:ID|texto}}` e catálogo do frontend; item 12.9). Ficam de fora a poção, o lust, a
+# Infusão de Poder (de outro jogador), o Evocador e as mecânicas do chefe.
+mage_spells: [
+  365350, 321507, 5143, 44425, 30451, 153626, 1295924, 212653, 235450, 414658, 45438,
+  342245, 55342, 263725, 451038, 1277009, 449569,
+  7268, 153640, 450499, 1295939, 1295942, 365362, 453326, 210833, 456139, 1242974, 342246,
+  342247, 236645, 1459, 1296930, 449322, 461531, 394195, 1223797, 448604, 1310414, 1241761,
+]
 
 npcs:
   259927: Nek'zali, a Enrosca-almas

@@ -1,6 +1,7 @@
 import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { axeViolations } from "../test/axe.js";
+import { byMarkedText } from "../test/plainText.js";
 import { mistakes } from "../test/fixtures/components.js";
 import MistakeCard from "./MistakeCard.jsx";
 
@@ -12,13 +13,13 @@ describe("MistakeCard", () => {
   it("mostra um erro de regra com custo, explicação, o que fazer e a tabela de números", () => {
     render(<MistakeCard mistake={soulEntry} rank={1} />);
     expect(
-      screen.getByRole("heading", { level: 3, name: "Entrada na Alma Arcana com pouco Salvo" }),
+      screen.getByRole("heading", { level: 3, name: "Entrada na Alma Arcana com pouca Saraivada" }),
     ).toBeInTheDocument();
     expect(screen.getByText("Custou cerca de 2,7% do seu dano")).toBeInTheDocument();
     expect(screen.getByText("✕ Erro")).toHaveClass("badge-erro");
-    expect(screen.getByText(soulEntry.explanation)).toBeInTheDocument();
+    expect(screen.getByText(byMarkedText(soulEntry.explanation))).toBeInTheDocument();
     expect(screen.getByText("O que fazer")).toBeInTheDocument();
-    expect(screen.getByText(soulEntry.what_to_do)).toBeInTheDocument();
+    expect(screen.getByText(byMarkedText(soulEntry.what_to_do))).toBeInTheDocument();
 
     const table = screen.getByRole("table");
     expect(
@@ -27,7 +28,7 @@ describe("MistakeCard", () => {
         .map((th) => th.textContent),
     ).toEqual(["Medida", "Você", "Melhores"]);
     const rowEl = within(table).getByRole("row", {
-      name: /Entradas na Alma Arcana com menos de 12 de Salvo/,
+      name: /Entradas na Alma Arcana com menos de 12 de Saraivada/,
     });
     expect(rowEl).toHaveTextContent("2 de 5 (0, 20, 1, 18, 22)");
     expect(rowEl).toHaveTextContent("9 de 43");
@@ -101,4 +102,11 @@ describe("MistakeCard", () => {
       expect(await axeViolations(container)).toEqual([]);
     },
   );
+
+  it("mostra o ícone de cada magia citada e nenhuma marcação crua", () => {
+    const { container } = render(<MistakeCard mistake={soulEntry} rank={1} />);
+    expect(container.textContent).not.toMatch(/\{\{|spell:/);
+    expect(container.querySelectorAll("h3 .spell-ref img.spell-icon").length).toBeGreaterThan(0);
+    expect(container.querySelectorAll(".numbers .spell-ref").length).toBeGreaterThan(0);
+  });
 });

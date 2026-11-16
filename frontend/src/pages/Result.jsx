@@ -7,6 +7,7 @@ import StatusBadge from "../components/StatusBadge.jsx";
 import TargetsTable from "../components/TargetsTable.jsx";
 import Term from "../components/Term.jsx";
 import Timeline from "../components/Timeline.jsx";
+import SpellText, { SpellName } from "../components/SpellText.jsx";
 import { useAuth } from "../lib/auth-context.js";
 import { formatClock, formatDps, formatNumber, formatSignedPct } from "../lib/format.js";
 import { href } from "../lib/router.js";
@@ -201,7 +202,9 @@ function Summary({ result }) {
           </span>
           <div>
             <strong>Resumo do coach</strong>
-            <p>{coach.headline}</p>
+            <p>
+              <SpellText text={coach.headline} />
+            </p>
           </div>
         </div>
       ) : result.source === "motor" ? (
@@ -275,8 +278,12 @@ function Rules({ result }) {
             {result.rules.map((rule) => (
               <tr key={rule.id}>
                 <th scope="row">
-                  {rule.name}
-                  {rule.note && <span className="rule-note">{rule.note}</span>}
+                  <SpellText text={rule.name} />
+                  {rule.note && (
+                    <span className="rule-note">
+                      <SpellText text={rule.note} />
+                    </span>
+                  )}
                   {rule.details?.length > 0 && (
                     <details className="rule-details">
                       <summary>
@@ -286,7 +293,9 @@ function Rules({ result }) {
                       </summary>
                       <ul>
                         {rule.details.map((detail, index) => (
-                          <li key={index}>{detail}</li>
+                          <li key={index}>
+                            <SpellText text={detail} />
+                          </li>
                         ))}
                       </ul>
                     </details>
@@ -294,7 +303,11 @@ function Rules({ result }) {
                 </th>
                 <td>{rule.player_value}</td>
                 <td>{rule.top_value}</td>
-                {hasReference && <td className="rule-reference">{rule.reference ?? "—"}</td>}
+                {hasReference && (
+                  <td className="rule-reference">
+                    {rule.reference ? <SpellText text={rule.reference} /> : "—"}
+                  </td>
+                )}
                 <td>
                   <StatusBadge status={rule.status} />
                   {rule.impact_pct != null && rule.impact_pct > 0 && (
@@ -329,7 +342,9 @@ function Rules({ result }) {
             <tbody>
               {table.rows.map((row) => (
                 <tr key={row.name}>
-                  <th scope="row">{row.name}</th>
+                  <th scope="row">
+                    <SpellName id={row.ability_id}>{row.name}</SpellName>
+                  </th>
                   <td>
                     {formatNumber(row.player_cpm)} / {formatNumber(row.top_cpm)}
                   </td>

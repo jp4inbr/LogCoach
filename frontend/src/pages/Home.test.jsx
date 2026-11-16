@@ -33,9 +33,7 @@ describe("Home", () => {
       "Leia o coachOs erros do maior para o menor impacto, com o que fazer.",
     ]);
     expect(screen.getByText("O que já é suportado")).toBeInTheDocument();
-    expect(
-      screen.getByText(/Heroico e Mítico\. Outros chefes aparecem na lista/),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/· Mítico\. Outros chefes aparecem na lista/)).toBeInTheDocument();
   });
 
   it("sem login avisa da análise grátis e leva ao cadastro", () => {
