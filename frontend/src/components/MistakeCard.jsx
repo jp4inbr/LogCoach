@@ -1,4 +1,6 @@
 import { formatNumber } from "../lib/format.js";
+import { plainSpellText } from "../lib/spellText.js";
+import SpellText from "./SpellText.jsx";
 
 // Um erro do relatório: título, quanto custou, explicação, o que fazer e os números do código.
 // Na hipótese (RF23/RF24) não há custo confirmado: o número é a diferença que as regras não
@@ -20,7 +22,9 @@ export default function MistakeCard({ mistake, rank }) {
           </span>
         )}
         <div>
-          <h3>{mistake.title}</h3>
+          <h3>
+            <SpellText text={mistake.title} />
+          </h3>
           <p className="mistake-meta">
             <span className={`badge badge-${mistake.severity}`}>
               {mistake.severity === "erro" ? "✕ Erro" : "! Atenção"}
@@ -39,10 +43,14 @@ export default function MistakeCard({ mistake, rank }) {
       </header>
 
       <p className="mistake-impact">{impact}</p>
-      <p>{mistake.explanation}</p>
+      <p>
+        <SpellText text={mistake.explanation} />
+      </p>
       <div className="mistake-todo">
         <strong>O que fazer</strong>
-        <p>{mistake.what_to_do}</p>
+        <p>
+          <SpellText text={mistake.what_to_do} />
+        </p>
       </div>
 
       {mistake.numbers.length > 0 && (
@@ -56,8 +64,10 @@ export default function MistakeCard({ mistake, rank }) {
           </thead>
           <tbody>
             {mistake.numbers.map((row) => (
-              <tr key={row.label}>
-                <th scope="row">{row.label}</th>
+              <tr key={plainSpellText(row.label)}>
+                <th scope="row">
+                  <SpellText text={row.label} />
+                </th>
                 <td>{row.player}</td>
                 <td>{row.top}</td>
               </tr>

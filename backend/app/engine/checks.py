@@ -245,7 +245,7 @@ def _soul(p: FightMeasures, tops: list[FightMeasures], rules: dict[str, Any]) ->
         top_value=f"{top_low} de {top_total}" if tops else "—",
         impact_pct=_share(p.soul_missing_salvo * per_salvo, p.damage) if low else None,
         note=f"Ideal: {soul['ideal_salvo']} ou mais (você: {ideal} de {len(p.soul)}). "
-        "Sem Salva nos 2 últimos GCDs antes da Alma.",
+        "Sem Salva nos 2 últimos GCDs antes da Alma Arcana.",
         details=tuple(details),
     )
 

@@ -136,6 +136,8 @@ A IA não consulta o Warcraft Logs nem faz conta. O backend monta um pacote com 
 
 Com isso a IA ordena os erros, explica em português e aponta como **hipótese** o que destoar na tabela sem ter regra (RF24). A tabela usa casts **por minuto** porque a duração das fases muda entre kills.
 
+**Marcação de magias (ainda não feito, passo 5).** Os textos do motor levam `{{spell:<id>|texto}}` nas menções às magias do Mago (item 12.9). O pacote da IA mantém a marcação, e a IA **deve preservá-la** em tudo que escrever (`coach.headline` e qualquer texto novo): ao citar uma magia do Mago, usar a mesma forma `{{spell:<id>|texto}}`, com o ID principal. Validar a marcação da resposta (e cair no relatório só com as regras, RF17, se vier quebrada) fica para o passo 5.
+
 **Idioma.** Os nomes de habilidades, adds e fases chegam do Warcraft Logs em inglês. O motor troca pelo nome em português do cliente do jogo usando `backend/app/i18n/pt_br.yaml` (por ID), antes de montar o pacote. Assim a IA e o relatório falam a língua do jogador brasileiro.
 
 **Diferença não explicada (RF23).** Se o jogador fez, por exemplo, 25% menos dano que os tops no Stage Two e as regras só explicam parte disso, o motor marca a sobra. É um sinal para a IA olhar a tabela daquela fase com mais atenção.
@@ -255,6 +257,18 @@ O motor devolve um `AnalysisResult` (`backend/app/schemas.py`); o frontend só l
 | `targets` | Por fase: % do dano em cada alvo (`name`, `boss`), jogador × média dos tops (`top_pct`). Vazio nas análises antigas | RF22 |
 
 Os textos (`title`, `explanation`, `what_to_do`) saem em português, com os nomes de `pt_br.yaml`.
+
+### Marcação de magias do Mago (ícones)
+
+Toda menção a magia ou talento do **Mago Arcano** nos textos ao jogador sai marcada como `{{spell:<id>|<texto exibido>}}`, por exemplo `{{spell:365350|Surtos Arcanos}}`, `o {{spell:365350|Surto}}`, `12 de {{spell:1242974|Saraivada}}`. O `<id>` é o ID principal da magia (o mesmo para todas as formas escritas: Surto = 365350, Toque = 321507, Salva = 44425...); o texto exibido é exatamente o que a pessoa lê (plural, forma curta), sem artigos nem preposições e sem `|`, `{` ou `}`. O frontend troca a marcação por ícone + texto, com o ícone à esquerda. Poção, lust, Infusão de Poder, Evocador e mecânicas do chefe **não** são marcados.
+
+- **Com marcação:** `Mistake.title`, `Mistake.explanation`, `Mistake.what_to_do`, `Number.label` (de `Mistake.numbers`), `RuleCheck.name`, `RuleCheck.note`, `RuleCheck.reference` e `RuleCheck.details[]`. São os únicos campos de texto do resultado que citam magias do Mago; `Coach.headline` (o resumo do coach, `None` até a IA entrar) também leva a marcação e a tela já o lê com ela (ver a IA, abaixo).
+- **Sem marcação (texto puro):** `AbilityRow.name`, `TimelineTrack.name`, `TargetRow.name`, `Number.player`/`top`, nomes de jogadores e de fases. Para o ícone dessas linhas: `AbilityRow.ability_id` (ID do cast, ou do primeiro dano da linha) e `TimelineTrack.ability_id`; o frontend procura o ID no catálogo e, se não achar (item de equipamento, por exemplo), mostra só o texto.
+- **No código:** `engine/names.py` tem `spell_ref(id, texto=None)`, `strip_spell_refs(texto)` (o texto como a pessoa lê; só os testes usam) e `mark_spells(texto)`, que marca toda forma escrita das magias do Mago: os nomes de `mage_spells` no `pt_br.yaml` mais plurais e formas curtas (`EXTRA_SPELL_FORMS`). `engine/report.py` aplica `mark_spells` nos campos acima, depois de montar o texto; o resto do motor continua comparando por ID.
+- **Nomes de dados não podem ser marcados por engano.** `mark_spells` roda sobre texto já montado, que leva nomes vindos de dados (origem dos picos de dano, mecânicas do chefe, buffs). Por isso `tests/test_spell_refs.py` exige `mark_spells(nome) == nome` para todo nome do `pt_br.yaml` fora de `mage_spells`, todo `name` dos YAML de `app/encounters/` e todo nome de habilidade das fixtures que não seja do Mago. **Chefe novo (YAML novo, fixtures novas) tem de passar nesse teste**; se um nome colidir com uma forma do Mago, trocar a forma ou o nome.
+- **Na tela:** `SpellText` e `SpellName` só põem ícone se o ID está no catálogo; sem ícone, o nome sai como texto puro (sem span). Com ícone, só o ícone e a primeira palavra ficam sem quebra de linha; o resto do nome quebra (rótulos longos não invadem a trilha da linha do tempo).
+- **Ícones:** `backend/scripts/save_icons.py` lê a lista `mage_spells` do `pt_br.yaml`, acha o nome de cada ícone nas fixtures (`masterData.abilities[].icon`) ou, na falta, no Warcraft Logs (`gameData { ability(id) { icon } }`), baixa as imagens para `frontend/public/icons/` e escreve o catálogo `frontend/src/data/spell-icons.json` (`{"365350": "ability_mage_arcanesurge.jpg", ...}`; vários IDs secundários apontam para o mesmo arquivo). Rodar de novo quando entrar magia nova na lista. O script só aceita nome de arquivo simples `.jpg`/`.png` da API, confere os bytes da imagem antes de gravar e sai com código diferente de zero se algum ID ficar sem ícone ou sem arquivo. Os testes (`tests/test_spell_refs.py`) conferem que nenhum nome do Mago fica sem marcação, que todo ID marcado está no catálogo, que todo arquivo do catálogo existe e que o ícone de cada ID bate com o das fixtures. A Distorção Temporal (lust) não tem ícone.
+- **Créditos:** os ícones são arte da Blizzard Entertainment, usados só com fim acadêmico (trabalho A3 de Usabilidade de Software, UNA).
 
 ## 12.10 Motor: Salvo, Arcane Soul e Prismatic Bolt
 

@@ -1,6 +1,7 @@
 import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { axeViolations } from "../test/axe.js";
+import { byMarkedText } from "../test/plainText.js";
 import { mistakes } from "../test/fixtures/components.js";
 import MistakeCard from "./MistakeCard.jsx";
 
@@ -16,9 +17,9 @@ describe("MistakeCard", () => {
     ).toBeInTheDocument();
     expect(screen.getByText("Custou cerca de 2,7% do seu dano")).toBeInTheDocument();
     expect(screen.getByText("✕ Erro")).toHaveClass("badge-erro");
-    expect(screen.getByText(soulEntry.explanation)).toBeInTheDocument();
+    expect(screen.getByText(byMarkedText(soulEntry.explanation))).toBeInTheDocument();
     expect(screen.getByText("O que fazer")).toBeInTheDocument();
-    expect(screen.getByText(soulEntry.what_to_do)).toBeInTheDocument();
+    expect(screen.getByText(byMarkedText(soulEntry.what_to_do))).toBeInTheDocument();
 
     const table = screen.getByRole("table");
     expect(
@@ -101,4 +102,11 @@ describe("MistakeCard", () => {
       expect(await axeViolations(container)).toEqual([]);
     },
   );
+
+  it("mostra o ícone de cada magia citada e nenhuma marcação crua", () => {
+    const { container } = render(<MistakeCard mistake={soulEntry} rank={1} />);
+    expect(container.textContent).not.toMatch(/\{\{|spell:/);
+    expect(container.querySelectorAll("h3 .spell-ref img.spell-icon").length).toBeGreaterThan(0);
+    expect(container.querySelectorAll(".numbers .spell-ref").length).toBeGreaterThan(0);
+  });
 });

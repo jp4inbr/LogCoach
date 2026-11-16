@@ -17,7 +17,7 @@ from app.engine.abilities import ability_table
 from app.engine.checks import STATUS_ORDER, Check, gap, pct, run_checks
 from app.engine.fight import PhaseSpan, fight_s, phase_spans
 from app.engine.measures import FightMeasures, measure
-from app.engine.names import spell_name
+from app.engine.names import mark_spells, spell_name
 from app.engine.rules import load_spec_rules
 from app.engine.targets import target_table
 from app.schemas import (
@@ -40,6 +40,8 @@ from app.schemas import (
 )
 
 SURGE, TOUCH, SOUL, POTION, PI, BOLT = 365350, 321507, 451038, 1236616, 10060, 1295924
+# Seta Prismática: o cast, o dano e o proc (a linha da tabela pode vir por qualquer um).
+BOLT_IDS = frozenset({BOLT, 1295939, 1295942})
 
 # Diferença não explicada (RF23) acima disso vira hipótese para a IA investigar.
 UNEXPLAINED_MIN_PCT = 1.0
@@ -101,7 +103,8 @@ TEXTS: dict[str, tuple[str, str, str]] = {
         "rola Seta Prismática e meteoritos de graça. Entrar com menos de 12 acúmulos perde esse "
         "ganho; o ideal é 20 ou mais.",
         "Chegue à Alma Arcana com 20 de Saraivada ou mais. Nos dois últimos GCDs antes dela (uns "
-        "2,5 s), não lance Salva; se vierem Projéteis Potencializados, a Saraivada sobe para 25 na hora.",
+        "2,5 s), não lance Salva; se vierem Projéteis Potencializados, a Saraivada sobe para 25 na "
+        "hora.",
     ),
     "surge_empty_handed": (
         "Surto Arcano começado de mão vazia",
@@ -116,7 +119,8 @@ TEXTS: dict[str, tuple[str, str, str]] = {
         "Dentro do Surto, cada Impacto Arcano no lugar de Mísseis Arcanos é dano a menos. Sem "
         "Abstração às vezes não tem jeito, por isso a referência são os tops.",
         "Entre no Surto com uma Abstração guardada e Saraivada razoável, e dentro dele mantenha o "
-        "ciclo de Mísseis e Salvas cheias. O Impacto fica para completar a Saraivada fora do burst.",
+        "ciclo de Mísseis e Salvas cheias. O Impacto fica para completar a Saraivada fora do "
+        "burst.",
     ),
     "prismatic_bolt": (
         "Poucos procs esperados de Seta Prismática",
@@ -211,15 +215,17 @@ def _mistake(check: Check, phase: str | None) -> Mistake:
     title, base, what_to_do = TEXTS.get(check.id, (check.name, "", "Veja os detalhes da regra."))
     return Mistake(
         id=check.id,
-        title=title,
+        title=mark_spells(title),
         # Impacto que arredonda para zero não vira "custou 0%": fica sem custo calculado.
         impact_pct=_r(check.impact_pct) or None,
         severity=check.status,  # type: ignore[arg-type]  # só atencao/erro chegam aqui
         kind="regra",
         phase=phase,
-        explanation=_explanation(check, base),
-        what_to_do=what_to_do,
-        numbers=[Number(label=check.name, player=check.player_value, top=check.top_value)],
+        explanation=mark_spells(_explanation(check, base)),
+        what_to_do=mark_spells(what_to_do),
+        numbers=[
+            Number(label=mark_spells(check.name), player=check.player_value, top=check.top_value)
+        ],
     )
 
 
@@ -239,12 +245,14 @@ def _hypothesis(
         (t.phase, r)
         for t in abilities
         for r in t.rows
-        if r.player_dmg_pct is not None and r.top_dmg_pct is not None and r.name != spell_name(BOLT)
+        if r.player_dmg_pct is not None
+        and r.top_dmg_pct is not None
+        and r.ability_id not in BOLT_IDS
     ]
     rows.sort(key=lambda x: abs(x[1].player_dmg_pct - x[1].top_dmg_pct), reverse=True)
     numbers = [
         Number(
-            label=f"{r.name} ({phase}), % do dano",
+            label=mark_spells(f"{r.name} ({phase}), % do dano"),
             player=pct(r.player_dmg_pct),
             top=pct(r.top_dmg_pct),
         )
@@ -284,7 +292,7 @@ def _hypothesis(
         severity="atencao",
         kind="hipotese",
         phase=None,
-        explanation=text,
+        explanation=mark_spells(text),
         what_to_do="Compare a sua rotação com a dos tops nas habilidades acima. Na próxima "
         "versão, o coach (IA) vai investigar essas pistas.",
         numbers=numbers,
@@ -374,6 +382,7 @@ def build_analysis(
             rows=[
                 AbilityRow(
                     name=line.name,
+                    ability_id=line.key,
                     player_cpm=_r(line.player_cpm),
                     top_cpm=_r(line.top_cpm),
                     player_dmg_pct=_r(line.player_dmg_pct),
@@ -426,14 +435,14 @@ def build_analysis(
         rules=[
             RuleCheck(
                 id=c.id,
-                name=c.name,
+                name=mark_spells(c.name),
                 player_value=c.player_value,
                 top_value=c.top_value,
                 status=c.status,
-                note=c.note,
-                reference=c.reference,
+                note=mark_spells(c.note) if c.note else c.note,
+                reference=mark_spells(c.reference) if c.reference else c.reference,
                 impact_pct=_r(c.impact_pct),
-                details=list(c.details),
+                details=[mark_spells(d) for d in c.details],
             )
             for c in checks
         ],

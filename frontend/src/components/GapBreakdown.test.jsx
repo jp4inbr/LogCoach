@@ -1,11 +1,12 @@
 import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { axeViolations } from "../test/axe.js";
+import { byPlainText } from "../test/plainText.js";
 import { gap } from "../test/fixtures/components.js";
 import GapBreakdown from "./GapBreakdown.jsx";
 
 function row(label) {
-  return screen.getByText(label).closest("li");
+  return screen.getByText(byPlainText(label)).closest("li");
 }
 
 describe("GapBreakdown", () => {
@@ -22,6 +23,13 @@ describe("GapBreakdown", () => {
     expect(within(row("Azar com a Seta Prismática")).getByText("9,5%")).toBeInTheDocument();
     expect(within(row("Não explicado")).getByText("1,9%")).toBeInTheDocument();
     expect(screen.getByText("Em % do seu próprio dano na luta.")).toBeInTheDocument();
+  });
+
+  it("a Seta Prismática leva o ID principal (1295924) e o ícone", () => {
+    const { container } = render(<GapBreakdown gap={gap} />);
+    const ref = container.querySelector(".spell-ref");
+    expect(ref).toHaveAttribute("data-spell-id", "1295924");
+    expect(ref.querySelector("img")).not.toBeNull();
   });
 
   it("a barra reparte a largura em proporção às partes positivas", () => {
@@ -46,7 +54,7 @@ describe("GapBreakdown", () => {
 
     const luck = row("Sorte com a Seta Prismática (a seu favor)");
     expect(within(luck).getByText("−2,5%")).toHaveClass("text-up");
-    expect(screen.queryByText("Azar com a Seta Prismática")).not.toBeInTheDocument();
+    expect(screen.queryByText(byPlainText("Azar com a Seta Prismática"))).not.toBeInTheDocument();
   });
 
   it("não aparece ‘Erros’ com o rótulo errado quando o valor é favorável", () => {

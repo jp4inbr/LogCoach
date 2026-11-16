@@ -1,3 +1,4 @@
+import { byPlainText } from "../test/plainText.js";
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { axeViolations } from "../test/axe.js";
@@ -109,7 +110,7 @@ describe("Timeline", () => {
   it("mostra o nome de cada habilidade", () => {
     renderTimeline();
     for (const track of timeline) {
-      expect(screen.getByText(track.name)).toBeInTheDocument();
+      expect(screen.getByText(byPlainText(track.name))).toBeInTheDocument();
     }
   });
 

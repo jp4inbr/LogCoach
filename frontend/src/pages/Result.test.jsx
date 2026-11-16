@@ -1,9 +1,11 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
+import icons from "../data/spell-icons.json";
 import AuthProvider from "../components/AuthProvider.jsx";
 import { axeViolations } from "../test/axe.js";
 import analise from "../test/fixtures/analysis.json";
+import { byPlainText } from "../test/plainText.js";
 import { apiError, mockApi, setSession } from "../test/mockApi.js";
 import Result from "./Result.jsx";
 
@@ -162,12 +164,19 @@ describe("Result", () => {
     it("com o coach disponível mostra o resumo dele", async () => {
       await aberta(
         variacao((a) => {
-          a.result.coach = { available: true, headline: "Priorize chegar na Alma com Saraivada alta." };
+          a.result.coach = {
+            available: true,
+            headline:
+              "Priorize chegar na {{spell:451038|Alma Arcana}} com {{spell:1242974|Saraivada}} alta.",
+          };
         }),
       );
 
       expect(screen.getByText("Resumo do coach")).toBeInTheDocument();
-      expect(screen.getByText("Priorize chegar na Alma com Saraivada alta.")).toBeInTheDocument();
+      const resumo = screen.getByText("Resumo do coach").parentElement;
+      expect(resumo).toHaveTextContent("Priorize chegar na Alma Arcana com Saraivada alta.");
+      expect(resumo).not.toHaveTextContent("{{");
+      expect(resumo.querySelectorAll(".spell-ref img")).toHaveLength(2);
       expect(screen.queryByText("Explicação do coach em breve")).not.toBeInTheDocument();
     });
 
@@ -496,7 +505,9 @@ describe("Result", () => {
       expect(linha).toHaveTextContent("custou ~2,7% do dano");
       expect(linha).toHaveTextContent("Ideal: 20 ou mais (você: 2 de 5).");
       expect(within(linha).getByText("2 detalhes")).toBeInTheDocument();
-      expect(within(linha).getByText("Entrada aos 3:28 com 1 de Saraivada")).toBeInTheDocument();
+      expect(
+        within(linha).getByText(byPlainText("Entrada aos 3:28 com 1 de Saraivada")),
+      ).toBeInTheDocument();
     });
 
     it("regra com um detalhe só usa o singular; regra ok não mostra custo", async () => {
@@ -511,7 +522,9 @@ describe("Result", () => {
       const usos = screen.getByRole("rowheader", { name: /Usos de Toque dos Magos/ }).closest("tr");
       expect(usos).toHaveTextContent("✓ OK");
       expect(usos).not.toHaveTextContent("custou");
-      expect(usos).toHaveTextContent("Possível: quantos usos caberiam se fosse usado na recarga, do pull ao fim da luta.");
+      expect(usos).toHaveTextContent(
+        "Possível: quantos usos caberiam se fosse usado na recarga, do pull ao fim da luta.",
+      );
     });
 
     it("sem referência em nenhuma regra (análise antiga) a coluna some", async () => {
@@ -627,6 +640,55 @@ describe("Result", () => {
       );
       await screen.findByRole("alert");
       expect(await axeViolations(container)).toEqual([]);
+    });
+  });
+
+  describe("ícones das magias", () => {
+    const catalogo = Object.values(icons);
+    const marcadasNoTexto = (container) => container.querySelectorAll(".spell-ref").length;
+
+    it("resumo: nenhuma marcação crua, ícones em todos os cards e só arquivos do catálogo", async () => {
+      const { container } = await aberta();
+      expect(container.textContent).not.toContain("{{");
+      expect(container.textContent).not.toContain("spell:");
+      expect(container.querySelectorAll(".mistake .spell-ref").length).toBeGreaterThan(0);
+      const imgs = container.querySelectorAll("img.spell-icon");
+      expect(imgs.length).toBeGreaterThan(0);
+      for (const img of imgs) {
+        const arquivo = img.getAttribute("src").split("/icons/")[1];
+        expect(catalogo).toContain(arquivo);
+      }
+      expect(container.querySelector("[title*='{{'], [aria-label*='{{']")).toBeNull();
+    });
+
+    it("regras e tabela por habilidade: ícone nas linhas do catálogo, sem ele nas outras", async () => {
+      const corpo = structuredClone(analise);
+      corpo.result.abilities[0].rows[0].ability_id = 999999999;
+      const { container } = await aberta(corpo);
+      await userEvent.click(screen.getByRole("tab", { name: "Todas as regras" }));
+      expect(container.textContent).not.toContain("{{");
+      expect(container.querySelectorAll("table.rules .spell-ref").length).toBeGreaterThan(0);
+      expect(marcadasNoTexto(container)).toBeGreaterThan(0);
+
+      const tabela = container.querySelector("table.abilities");
+      const linhas = [...tabela.querySelectorAll("tbody tr")];
+      corpo.result.abilities[0].rows.forEach((row, i) => {
+        const tem = linhas[i].querySelector("th img.spell-icon") !== null;
+        expect(tem).toBe(row.ability_id in icons);
+      });
+      expect(container.querySelector("[title*='{{'], [aria-label*='{{']")).toBeNull();
+    });
+
+    it("linha do tempo: ícone no rótulo das trilhas do catálogo", async () => {
+      const { container } = await aberta();
+      await userEvent.click(screen.getByRole("tab", { name: "Linha do tempo" }));
+      const rotulos = [...container.querySelectorAll(".timeline-label")].filter(
+        (el) => el.textContent,
+      );
+      expect(rotulos).toHaveLength(analise.result.timeline.length);
+      analise.result.timeline.forEach((track, i) => {
+        expect(rotulos[i].querySelector("img.spell-icon") !== null).toBe(track.ability_id in icons);
+      });
     });
   });
 });

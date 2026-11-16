@@ -1,4 +1,5 @@
 import { formatClock } from "../lib/format.js";
+import { SpellName } from "./SpellText.jsx";
 
 // Linha do tempo dos cooldowns (RF11): a sua linha em cima, a dos melhores embaixo,
 // no mesmo eixo de tempo, com as fases da luta ao fundo.
@@ -56,7 +57,9 @@ function TimelineRow({ track, phases, pct }) {
   const describe = (times) => times.map(formatClock).join(", ") || "nenhum uso";
   return (
     <>
-      <div className="timeline-label">{track.name}</div>
+      <div className="timeline-label">
+        <SpellName id={track.ability_id}>{track.name}</SpellName>
+      </div>
       <div
         className="timeline-track"
         role="img"

@@ -1777,3 +1777,22 @@ caption {
   color: var(--accent-fg);
   background: var(--info-bg);
 }
+
+/* Ícone do jogo à esquerda do nome da magia. O ícone e a primeira palavra nunca se separam na
+   quebra de linha; o resto do nome quebra normalmente. */
+.spell-lead {
+  white-space: nowrap;
+}
+
+.spell-icon {
+  display: inline-block;
+  width: 1.15em;
+  height: 1.15em;
+  /* Sobe o ícone para o centro da altura das letras sem aumentar a altura da linha. */
+  vertical-align: -0.2em;
+  margin: -0.1em 0.3em 0 0;
+  border-radius: 0.2em;
+  border: 1px solid var(--border-control);
+  background: var(--surface-2);
+  object-fit: cover;
+}

@@ -88,6 +88,16 @@ spells:
   1308227: Espiral Imortal             # Immortal Coil
   1284109: Golpes Exaurientes          # Hollowing Strikes (tank)
 
+# IDs de magias, buffs e talentos do Mago Arcano que ganham ícone na tela (marcação
+# `{{spell:ID|texto}}` e catálogo do frontend; item 12.9). Ficam de fora a poção, o lust, a
+# Infusão de Poder (de outro jogador), o Evocador e as mecânicas do chefe.
+mage_spells: [
+  365350, 321507, 5143, 44425, 30451, 153626, 1295924, 212653, 235450, 414658, 45438,
+  342245, 55342, 263725, 451038, 1277009, 449569,
+  7268, 153640, 450499, 1295939, 1295942, 365362, 453326, 210833, 456139, 1242974, 342246,
+  342247, 236645, 1459, 1296930, 449322, 461531, 394195, 1223797, 448604, 1310414, 1241761,
+]
+
 npcs:
   259927: Nek'zali, a Enrosca-almas
   261509: Amani Indócil
