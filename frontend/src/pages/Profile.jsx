@@ -64,7 +64,7 @@ export default function Profile() {
 
   return (
     <div className="profile stack">
-      <div className="page-head">
+      <div className="page-head lit">
         <div>
           <p className="eyebrow">Plano grátis</p>
           <h1>Seu perfil</h1>

@@ -57,8 +57,15 @@ O bloco claro aparece duas vezes no CSS (na media query e em `[data-theme="light
 | `--ok-bg`, `--warn-bg`, `--error-bg` | situação a 12% | situação a 9–12% | Fundo dos avisos e selos |
 | `--warn-border`, `--error-border`, `--accent-border` | situação ou destaque a 35–45% | idem | Bordas de avisos e de lutas selecionadas |
 | `--info-bg` | `#ff8906` a 10% | `#bae8e8` a 45% | Fundo de avisos informativos |
-| `--glow`, `--coach-bg-1/2`, `--hatch`, `--hatch-strong`, `--accent-glow` | destaque translúcido | idem | Brilho do fundo, cartão do coach, faixa da intermissão, pulso |
+| `--glow-1` | `#ff8906` a 20% | `#ffd803` a 36% | Centro da luz quente (`.lit`): a única fonte de luz da tela, atrás do assunto dela |
+| `--glow-2` | `#f25f4c` a 11% | `#bae8e8` a 55% | Borda da luz: coral da paleta 13 no escuro, água-marinha da paleta 14 no claro |
+| `--glass` | `#181722` a 72% | `#e3f6f5` a 74% | Painéis translúcidos (cartões, erros, tabelas, lutas), com desfoque leve; sem suporte a `backdrop-filter`, `--surface` sólido |
+| `--glass-2` | `#2e2f3e` a 58% | `#bae8e8` a 60% | Pílulas translúcidas: navegação do cabeçalho, chave de tema, trilho dos erros |
+| `--glass-border` | `#fffffe` a 9% | `#272343` a 12% | Contorno fino dos painéis e pílulas (decorativo; o painel se separa do fundo pela cor) |
+| `--coach-bg-1/2`, `--hatch`, `--hatch-strong`, `--accent-glow` | destaque translúcido | idem | Cartão do coach, faixa da intermissão, pulso |
 | `--shadow` | preto a 45% | `#272343` a 25% | Sombra da dica flutuante |
+
+**A luz.** Cada tela tem uma fonte de luz quente só, um degradê radial de `--glow-1` para `--glow-2` preso ao que importa ali (classe `.lit`: o formulário do link no início, a diferença para os tops no resultado, a lista de lutas, o formulário de conta, os planos, o topo do perfil). O fundo da página continua `--bg` liso: a luz não é decoração espalhada. A intensidade é a mais alta que mantém o texto AA por cima: no escuro, o link rosa sobre o centro da luz mede 4,77:1, e acima de 20% ele reprova. O teste mede o texto, o link, o erro, o ok e o destaque sobre `--glow-1`, `--glass` e `--glass-2`.
 
 `--accent` serve só de **preenchimento** (botão, avatar). Quando o destaque vira texto, borda ou traço de gráfico, usa `--accent-fg`, porque o amarelo `#ffd803` sobre fundo claro não tem contraste.
 
@@ -148,6 +155,19 @@ Razões calculadas pelo teste `src/theme-contrast.test.js` com a fórmula de lum
 | `--muted` | `--info-bg/--surface` | 4.5 | 6.59 | 6.48 |
 | `--muted` | `--warn-bg/--surface` | 4.5 | 5.73 | 5.97 |
 | `--muted` | `--error-bg/--surface` | 4.5 | 6.46 | 6.03 |
+| `--text` | `--glass/--bg` | 4.5 | 18.15 | 13.73 |
+| `--muted` | `--glass/--bg` | 4.5 | 7.84 | 7.21 |
+| `--link` | `--glass/--bg` | 4.5 | 6.21 | 13.73 |
+| `--error` | `--glass/--bg` | 4.5 | 6.57 | 5.95 |
+| `--text` | `--glass-2/--bg` | 4.5 | 15.87 | 12.59 |
+| `--muted` | `--glass-2/--bg` | 4.5 | 6.85 | 6.61 |
+| `--link` | `--glass-2/--bg` | 4.5 | 5.43 | 12.59 |
+| `--text` | `--glow-1/--bg` | 4.5 | 13.93 | 13.04 |
+| `--muted` | `--glow-1/--bg` | 4.5 | 6.02 | 6.85 |
+| `--link` | `--glow-1/--bg` | 4.5 | 4.77 | 13.04 |
+| `--error` | `--glow-1/--bg` | 4.5 | 5.04 | 5.66 |
+| `--accent-fg` | `--glow-1/--bg` | 4.5 | 5.86 | 13.04 |
+| `--ok` | `--glow-1/--bg` | 4.5 | 8.00 | 6.23 |
 
 Séries vizinhas da barra da diferença (distância em OKLab; o teste exige 0,12 e, simulando protanopia e deuteranopia, 0,10):
 
@@ -177,6 +197,9 @@ Cores de situação (distância em OKLab na visão normal; o teste exige 0,12):
 * Azar, sorte e outros dados que não são situação não usam `--ok`, `--warn` nem `--error`.
 * **A mesma série mantém o matiz nos dois temas** (azar é azul em ambos); só o tom muda para passar no contraste.
 * Para destaque como texto, borda ou traço, use `--accent-fg`, nunca `--accent`.
+* **Luz e vidro também são tokens.** O degradê da luz usa `var(--glow-1)` e `var(--glow-2)`; cor fixa dentro de `radial-gradient(...)` reprova no teste como qualquer outra. Não aumente a opacidade de `--glow-1` sem refazer os pares de contraste: o texto fica direto sobre ela.
+* **Uma luz por tela.** `.lit` vai no assunto da tela, não em vários blocos; duas luzes viram decoração.
+* **Vidro sempre com reserva sólida:** o fundo translúcido só entra dentro de `@supports (backdrop-filter: ...)`; fora dele, o painel usa `--surface`.
 * Depois de mexer: `cd frontend && npm test` (o `theme-contrast.test.js` pega contraste, blocos diferentes, cor fixa, token que não é cor literal, como um `var()` apontando para si mesmo, e `var(--x)` sem token definido).
 * Se mexer na lógica de escolha do tema, mude `src/lib/theme.js` e o script do `index.html` juntos.
 * Confira os dois temas no navegador, inclusive a 360 px de largura.

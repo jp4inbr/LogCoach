@@ -12,7 +12,7 @@ export default function Plans() {
           <h1>Escolha como quer evoluir</h1>
         </div>
       </div>
-      <div className="plans">
+      <div className="plans lit">
         <section className="card plan">
           <h2>Grátis</h2>
           <p className="plan-price">R$ 0</p>

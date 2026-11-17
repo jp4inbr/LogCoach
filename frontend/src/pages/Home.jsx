@@ -26,7 +26,7 @@ export default function Home() {
 
   return (
     <div className="home">
-      <section className="hero">
+      <section className="hero lit">
         <p className="eyebrow">Coach de logs para Mago Arcano</p>
         <h1>Descubra os erros que mais custam seu dano</h1>
         <p className="lead">

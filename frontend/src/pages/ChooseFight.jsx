@@ -474,7 +474,7 @@ export default function ChooseFight({ code }) {
         </Notice>
       )}
 
-      <section aria-labelledby="fights-title">
+      <section className="lit" aria-labelledby="fights-title">
         <div className="fights-head">
           <h2 id="fights-title">1. Escolha a luta</h2>
           <div className="fights-refresh">

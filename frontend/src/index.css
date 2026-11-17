@@ -43,7 +43,11 @@
   --error-ink: #0f0e17;
   --info-bg: rgb(255 137 6 / 10%);
 
-  --glow: rgb(255 137 6 / 12%);
+  --glow-1: rgb(255 137 6 / 20%);
+  --glow-2: rgb(242 95 76 / 11%);
+  --glass: rgb(24 23 34 / 72%);
+  --glass-2: rgb(46 47 62 / 58%);
+  --glass-border: rgb(255 255 254 / 9%);
   --coach-bg-1: rgb(255 137 6 / 16%);
   --coach-bg-2: rgb(255 137 6 / 5%);
   --hatch: rgb(255 137 6 / 14%);
@@ -120,7 +124,11 @@
     --error-ink: #fffffe;
     --info-bg: rgb(186 232 232 / 45%);
 
-    --glow: rgb(255 216 3 / 22%);
+    --glow-1: rgb(255 216 3 / 36%);
+    --glow-2: rgb(186 232 232 / 55%);
+    --glass: rgb(227 246 245 / 74%);
+    --glass-2: rgb(186 232 232 / 60%);
+    --glass-border: rgb(39 35 67 / 12%);
     --coach-bg-1: rgb(255 216 3 / 28%);
     --coach-bg-2: rgb(186 232 232 / 40%);
     --hatch: rgb(39 35 67 / 12%);
@@ -166,7 +174,11 @@
   --error-ink: #fffffe;
   --info-bg: rgb(186 232 232 / 45%);
 
-  --glow: rgb(255 216 3 / 22%);
+  --glow-1: rgb(255 216 3 / 36%);
+  --glow-2: rgb(186 232 232 / 55%);
+  --glass: rgb(227 246 245 / 74%);
+  --glass-2: rgb(186 232 232 / 60%);
+  --glass-border: rgb(39 35 67 / 12%);
   --coach-bg-1: rgb(255 216 3 / 28%);
   --coach-bg-2: rgb(186 232 232 / 40%);
   --hatch: rgb(39 35 67 / 12%);
@@ -184,8 +196,36 @@
 
 body {
   margin: 0;
-  background: radial-gradient(1200px 500px at 80% -10%, var(--glow), transparent 60%), var(--bg);
+  background: var(--bg);
   min-height: 100vh;
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+/* ---------- Luz ----------
+   Cada tela tem uma fonte de luz quente só, presa ao que importa nela (classe .lit): o campo
+   do link no início, a diferença para os tops no resultado. Laranja e coral da paleta 13 no
+   escuro; amarelo e água-marinha da paleta 14 no claro, como luz do dia. A intensidade fica
+   baixa o bastante para o texto por cima manter o contraste AA (pares --glow-1 no teste). */
+.lit {
+  position: relative;
+  isolation: isolate;
+}
+
+.lit::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  left: 50%;
+  top: 45%;
+  width: min(1100px, 170vw);
+  height: 680px;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(closest-side, var(--glow-1), var(--glow-2) 55%, transparent);
+  pointer-events: none;
 }
 
 h1,
@@ -267,6 +307,8 @@ a {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  /* A luz (.lit::before) é maior que a tela: corta sem criar rolagem. */
+  overflow: clip;
 }
 
 .skip {
@@ -385,8 +427,7 @@ a {
 }
 
 .card {
-  background: var(--surface);
-  border: 1px solid var(--border);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius);
   padding: 20px;
   display: grid;
@@ -846,8 +887,7 @@ label {
   padding: 14px 16px;
   text-align: left;
   border-radius: var(--radius);
-  border: 1px solid var(--border);
-  background: var(--surface);
+  border: 1px solid var(--glass-border);
   color: var(--text);
   font: inherit;
   cursor: pointer;
@@ -1030,8 +1070,7 @@ label {
   gap: 12px;
   padding: 12px 16px;
   border-radius: var(--radius);
-  border: 1px solid var(--border);
-  background: var(--surface);
+  border: 1px solid var(--glass-border);
   font-weight: 400;
   cursor: pointer;
 }
@@ -1149,8 +1188,7 @@ label {
   gap: 4px;
   padding: 14px 16px;
   border-radius: var(--radius);
-  background: var(--surface);
-  border: 1px solid var(--border);
+  border: 1px solid var(--glass-border);
 }
 
 .stat-label {
@@ -1207,8 +1245,7 @@ label {
   gap: 10px;
   padding: 18px;
   border-radius: var(--radius);
-  background: var(--surface);
-  border: 1px solid var(--border);
+  border: 1px solid var(--glass-border);
   border-left: 4px solid var(--warn);
 }
 
@@ -1297,8 +1334,7 @@ caption {
 .table-wrap {
   overflow-x: auto;
   border-radius: var(--radius);
-  background: var(--surface);
-  border: 1px solid var(--border);
+  border: 1px solid var(--glass-border);
   padding: 8px 12px;
 }
 
@@ -1313,8 +1349,7 @@ caption {
 
 .compared {
   border-radius: var(--radius);
-  background: var(--surface);
-  border: 1px solid var(--border);
+  border: 1px solid var(--glass-border);
 }
 
 .compared summary {
@@ -1413,8 +1448,7 @@ caption {
   gap: 12px;
   padding: 16px;
   border-radius: var(--radius);
-  background: var(--surface);
-  border: 1px solid var(--border);
+  border: 1px solid var(--glass-border);
 }
 
 .timeline-legend {
@@ -1838,4 +1872,27 @@ caption {
 .lead,
 .page-head p {
   max-width: var(--measure);
+}
+
+/* ---------- Vidro ---------- */
+
+/* Superfícies translúcidas: a luz passa por trás, com desfoque leve. Sem suporte a
+   backdrop-filter, o fundo fica sólido (--surface), como antes. */
+:where(.glass, .card, .stat, .mistake, .compared, .timeline, .table-wrap, .fight, .player) {
+  background: var(--surface);
+}
+
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  :where(.glass, .card, .stat, .mistake, .compared, .timeline, .table-wrap, .fight, .player) {
+    background: var(--glass);
+    -webkit-backdrop-filter: blur(14px) saturate(1.15);
+    backdrop-filter: blur(14px) saturate(1.15);
+  }
+}
+
+/* O desfoque cria camada própria: o painel sob o mouse ou o foco sobe, para a dica de um termo
+   (.term) não ficar por baixo do painel seguinte. */
+:is(.card, .stat, .mistake, .compared, .timeline, .table-wrap):is(:hover, :focus-within) {
+  position: relative;
+  z-index: 2;
 }

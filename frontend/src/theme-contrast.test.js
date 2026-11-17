@@ -103,6 +103,18 @@ const pairs = [
   ["--accent-ink", "--accent-strong", TEXT],
   ["--error-ink", "--error", TEXT],
   // Situação sobre o próprio fundo de realce (translúcido, composto sobre bg e surface).
+  // Painéis e pílulas translúcidos (vidro) sobre o fundo, e o ponto mais forte da luz (.lit):
+  // o texto que fica direto sob o brilho mantém o contraste.
+  ...["--glass", "--glass-2", "--glow-1"].flatMap((bg) => [
+    ["--text", bg, TEXT, "--bg"],
+    ["--muted", bg, TEXT, "--bg"],
+    ["--link", bg, TEXT, "--bg"],
+    ["--accent-fg", bg, TEXT, "--bg"],
+    ["--error", bg, TEXT, "--bg"],
+    ["--ok", bg, TEXT, "--bg"],
+    ["--focus", bg, GRAPHIC, "--bg"],
+    ["--border-control", bg, GRAPHIC, "--bg"],
+  ]),
   ...["--bg", "--surface"].flatMap((base) => [
     ["--ok", "--ok-bg", TEXT, base],
     ["--warn-badge-fg", "--warn-badge-bg", TEXT, base],
