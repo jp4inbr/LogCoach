@@ -20,6 +20,9 @@ function block(selector) {
   throw new Error(`bloco sem fim: ${selector}`);
 }
 
+// Tokens que não são cor (medidas e tipografia): ficam fora das checagens de cor.
+const NOT_COLOR = /^--(radius|gap|max|font|size|measure)/;
+
 function tokens(body) {
   const out = {};
   for (const [, name, value] of body.matchAll(/(--[\w-]+):\s*([^;]+);/g)) out[name] = value.trim();
@@ -122,7 +125,7 @@ describe("tokens dos temas", () => {
   });
 
   it("os mesmos tokens de cor existem nos dois temas", () => {
-    const colorNames = (t) => Object.keys(t).filter((n) => /^--(?!radius|gap|max)/.test(n));
+    const colorNames = (t) => Object.keys(t).filter((n) => !NOT_COLOR.test(n));
     expect(colorNames(light).sort()).toEqual(colorNames(dark).sort());
   });
 
@@ -136,7 +139,7 @@ describe("tokens dos temas", () => {
       // Um token que referencia a si mesmo (ex.: --error-border: var(--error-border)) vira
       // valor inválido no navegador sem nenhum aviso; aqui ele não passa no parseColor.
       for (const [name, value] of Object.entries(t)) {
-        if (/^--(radius|gap|max)/.test(name)) continue;
+        if (NOT_COLOR.test(name)) continue;
         expect(() => parseColor(value), `${name}: ${value}`).not.toThrow();
       }
     },
