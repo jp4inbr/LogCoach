@@ -268,8 +268,7 @@ p {
 
 /* Números alinhados em tabelas, estatísticas e contagens. */
 table,
-.stat,
-.tabular {
+.stat {
   font-variant-numeric: tabular-nums;
 }
 
@@ -376,7 +375,7 @@ a {
 .topbar nav .link-button {
   display: inline-flex;
   align-items: center;
-  min-height: 40px;
+  min-height: 44px;
   padding: 0 14px;
   border-radius: 999px;
   color: var(--muted);
@@ -392,6 +391,7 @@ a {
 
 .topbar nav .button {
   margin-left: 4px;
+  min-height: 44px;
 }
 
 .content {
@@ -2017,6 +2017,12 @@ caption {
 
   .mistake-rank {
     font-size: 2rem;
+  }
+
+  /* Faixa do trilho: sete números cabem numa linha de 360 px. */
+  .rail ol {
+    gap: 0;
+    padding: 2px;
   }
 
   .compared-head .button {

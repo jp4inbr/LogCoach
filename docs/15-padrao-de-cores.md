@@ -50,7 +50,8 @@ O bloco claro aparece duas vezes no CSS (na media query e em `[data-theme="light
 | `--player` | `#ff8906` | `#dd6b00` | Marca do jogador na linha do tempo: laranja nos dois temas, contra o ciano dos tops |
 | `--luck` | `#3b82f6` | `#2563eb` | Série do azar (RNG) na barra "De onde vem essa diferença" e no ponto da lista. Não é situação |
 | `--ok` | `#4ade80` | `#166534` | Situação: ok |
-| `--warn` | `#fde047` | `#dfa800` | Situação: atenção, como preenchimento (barra do cartão de erro) |
+| `--warn` | `#fde047` | `#dfa800` | Situação: atenção, como preenchimento |
+| `--warn-fg` | `#fde047` | `#8a5000` | Atenção como texto: número do cartão de erro e do trilho dos erros. No claro, mais escuro que o texto do selo para passar 4,5:1 também sobre o vidro das pílulas |
 | `--warn-badge-bg`, `--warn-badge-fg` | `#fde047` a 12%, `#fde047` | `#ffefa8`, `#9a5b00` | Fundo e texto do selo de atenção |
 | `--error` | `#f87171` | `#b91c1c` | Situação: erro |
 | `--error-ink` | `#0f0e17` | `#fffffe` | Texto sobre `--error` (botão de perigo) |
@@ -76,7 +77,7 @@ Ok, atenção e erro continuam **verde, âmbar e vermelho** nos dois temas, com 
 * **Consistência** (heurística de Nielsen, item 8.1): a pessoa aprende uma vez que verde é ok e vermelho é erro, e isso vale em qualquer tema.
 * A paleta tem o laranja como destaque e o amarelo como botão. Usar essas cores para "atenção" confundiria destaque com aviso.
 
-Só o tom muda para passar no contraste de cada fundo. No escuro, o âmbar foi deslocado para amarelo (`#fde047`, antes `#fbbf24`) para não ficar parecido com o laranja do botão (`#ff8906`). No claro, a atenção é um amarelo dourado (`#dfa800`), mais escuro que o botão amarelo. O amarelo não tem contraste como texto sobre fundo claro, então o selo de atenção segue o formato do selo de erro: fundo amarelo clarinho (`#ffefa8`) e texto laranja (`#9a5b00`). A barra lateral do cartão fica em 1,93:1 contra o cartão menta, abaixo de 3:1; é aceito porque a severidade sempre vem escrita no selo.
+Só o tom muda para passar no contraste de cada fundo. No escuro, o âmbar foi deslocado para amarelo (`#fde047`, antes `#fbbf24`) para não ficar parecido com o laranja do botão (`#ff8906`). No claro, a atenção é um amarelo dourado (`#dfa800`), mais escuro que o botão amarelo. O amarelo não tem contraste como texto sobre fundo claro, então o selo de atenção segue o formato do selo de erro: fundo amarelo clarinho (`#ffefa8`) e texto laranja (`#9a5b00`). A faixa lateral do cartão de erro saiu no redesenho de 11/2026: a severidade agora vem no selo (símbolo e palavra) e no número do cartão e do trilho, em `--error` ou `--warn-fg`, que passam 4,5:1.
 
 **Situação não se confunde.** Ok, atenção e erro precisam se distinguir entre si e das outras cores do sistema (destaque, link, tops, azar e texto de apoio), em cada tema, não só passar no contraste contra o fundo. O teste mede isso na visão normal. Com daltonismo, verde, âmbar e vermelho se aproximam em qualquer tom que passe no contraste, então quem garante a leitura é o símbolo e a palavra do selo. Exceções aceitas, só no escuro: erro × link (decisão do Arthur: o link é sublinhado) e erro × laranja de destaque (0,109; o laranja é a cor exata da paleta).
 
@@ -168,6 +169,11 @@ Razões calculadas pelo teste `src/theme-contrast.test.js` com a fórmula de lum
 | `--error` | `--glow-1/--bg` | 4.5 | 5.04 | 5.66 |
 | `--accent-fg` | `--glow-1/--bg` | 4.5 | 5.86 | 13.04 |
 | `--ok` | `--glow-1/--bg` | 4.5 | 8.00 | 6.23 |
+| `--warn-fg` | `--bg` | 4.5 | 14.54 | 6.50 |
+| `--warn-fg` | `--surface` | 4.5 | 13.45 | 5.81 |
+| `--warn-fg` | `--surface-2` | 4.5 | 10.00 | 4.89 |
+| `--warn-fg` | `--glass/--bg` | 4.5 | 13.78 | 5.99 |
+| `--warn-fg` | `--glass-2/--bg` | 4.5 | 12.04 | 5.49 |
 
 Séries vizinhas da barra da diferença (distância em OKLab; o teste exige 0,12 e, simulando protanopia e deuteranopia, 0,10):
 
@@ -183,6 +189,7 @@ Cores de situação (distância em OKLab na visão normal; o teste exige 0,12):
 |---|---|---|
 | `--warn` × `--error` | 0,282 | 0,307 |
 | `--warn-badge-fg` × `--error` | 0,282 | 0,123 |
+| `--warn-fg` × `--error` | 0,282 | 0,123 |
 | `--player` × `--top` | 0,311 | 0,289 |
 | `--ok` × `--warn` | 0,189 | 0,348 |
 | `--ok` × `--error` | 0,328 | 0,273 |
