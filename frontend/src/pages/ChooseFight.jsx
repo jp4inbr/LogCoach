@@ -460,8 +460,8 @@ export default function ChooseFight({ code }) {
     <div className="choose">
       <div className="page-head">
         <div>
-          <p className="eyebrow">Relatório {data.code}</p>
           <h1>{data.title}</h1>
+          <p className="muted">Relatório {data.code}</p>
         </div>
         <a className="button ghost" href={href("/")}>
           <Icon name="arrow-left" /> Trocar o link

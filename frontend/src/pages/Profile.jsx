@@ -66,9 +66,11 @@ export default function Profile() {
     <div className="profile stack">
       <div className="page-head lit">
         <div>
-          <p className="eyebrow">Plano grátis</p>
           <h1>Seu perfil</h1>
-          <p className="muted">{account.email}</p>
+          <p className="page-meta">
+            <span className="muted">{account.email}</span>
+            <span className="pill">Plano grátis</span>
+          </p>
         </div>
         <a className="button primary" href={href("/")}>
           Nova análise

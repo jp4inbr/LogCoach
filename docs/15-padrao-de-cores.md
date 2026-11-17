@@ -18,7 +18,7 @@ Onde a paleta funciona em contraste, o hex é exatamente o dela. Onde não funci
 ## 15.2 Como o tema é escolhido
 
 1. **Primeira visita:** segue o sistema (`prefers-color-scheme`). Sem preferência ou sem suporte, vale o escuro.
-2. **Botão ☀/☾ no cabeçalho:** alterna e salva a escolha no `localStorage`, chave `logcoach.theme`, valor `light` ou `dark`.
+2. **Chave de tema em pílula no cabeçalho:** alterna e salva a escolha no `localStorage`, chave `logcoach.theme`, valor `light` ou `dark`.
 3. **Escolha salva:** vale mais que o sistema. Sem escolha salva, se o sistema mudar com a página aberta, o site acompanha. Com escolha salva (ou feita nesta visita, mesmo com o `localStorage` bloqueado), não.
 4. **Sem flash:** um script pequeno no `<head>` do `index.html` põe `data-theme` no `<html>` antes da primeira pintura. A mesma lógica está em `src/lib/theme.js`; os dois precisam ficar iguais e o teste confere.
 5. **Sem JavaScript:** o CSS funciona sozinho (`:root` é o escuro; `@media (prefers-color-scheme: light)` troca para o claro).

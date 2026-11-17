@@ -8,7 +8,6 @@ export default function Plans() {
     <div className="stack">
       <div className="page-head">
         <div>
-          <p className="eyebrow">Planos</p>
           <h1>Escolha como quer evoluir</h1>
         </div>
       </div>

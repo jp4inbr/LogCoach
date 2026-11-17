@@ -30,11 +30,9 @@ function Layout() {
       </a>
       <header className="topbar">
         <a className="brand" href={href("/")} aria-label="LogCoach, página inicial">
-          <span className="brand-mark" aria-hidden="true">
-            ✦
-          </span>
           LogCoach
         </a>
+        <p className="topbar-context">Coach de logs para Mago Arcano</p>
         <nav aria-label="Principal">
           <a href={href("/")} aria-current={!section ? "page" : undefined}>
             Analisar

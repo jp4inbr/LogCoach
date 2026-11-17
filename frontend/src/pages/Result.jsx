@@ -62,14 +62,16 @@ export default function Result({ id }) {
     <div className="result">
       <div className="page-head">
         <div>
-          <p className="eyebrow">
-            {fight.difficulty} · {fight.kill ? "Kill" : "Wipe"} em {formatClock(fight.duration_s)}
-          </p>
           <h1>{fight.boss}</h1>
-          <p className="muted">
-            {player.name}
-            {player.server && ` (${player.server})`} · {player.spec} · item level{" "}
-            {player.item_level}
+          <p className="page-meta">
+            <span className="page-meta-lead">
+              {player.name}
+              {player.server && ` (${player.server})`} · {player.spec} · item level{" "}
+              {player.item_level}
+            </span>
+            <span className={`page-meta-fight ${fight.kill ? "is-kill" : ""}`}>
+              {fight.difficulty} · {fight.kill ? "Kill" : "Wipe"} em {formatClock(fight.duration_s)}
+            </span>
           </p>
         </div>
         <a className="button ghost" href={href(`/relatorio/${result.report_code}`)}>

@@ -58,6 +58,7 @@
   --radius-sm: 8px;
   --gap: 16px;
   --max: 960px;
+  --max-frame: 1240px;
 
   /* Tipografia (não são cores; o teste de contraste pula os prefixos --font, --size e
      --measure). Uma família só, a Archivo variável: a largura (font-stretch) separa a voz da
@@ -325,59 +326,69 @@ a {
   z-index: 10;
 }
 
+/* Cabeçalho de três pontos: marca larga à esquerda, contexto apagado no centro, navegação e
+   chave de tema à direita. Mais largo que a coluna de leitura, como uma moldura. */
 .topbar {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  gap: 12px 20px;
   width: 100%;
-  max-width: var(--max);
+  max-width: var(--max-frame);
   margin: 0 auto;
-  padding: 16px;
+  padding: 18px 24px;
 }
 
 .brand {
+  justify-self: start;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  min-height: 44px;
   color: var(--text);
-  font-weight: 700;
-  font-size: 1.15rem;
+  font-size: var(--size-subtitle);
+  font-stretch: var(--font-wider);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  text-transform: uppercase;
   text-decoration: none;
 }
 
-.brand-mark {
-  display: grid;
-  place-items: center;
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
-  background: linear-gradient(135deg, var(--accent), var(--brand-2));
-  color: var(--accent-ink);
-  font-size: 0.95rem;
+.topbar-context {
+  color: var(--muted);
+  font-size: var(--size-small);
+  text-align: center;
+  white-space: nowrap;
 }
 
 .topbar nav {
+  justify-self: end;
   display: flex;
   align-items: center;
   gap: 4px;
 }
 
 .topbar nav a:not(.button),
-.topbar nav .link-button,
-.topbar nav .theme-toggle {
+.topbar nav .link-button {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: 999px;
   color: var(--muted);
   text-decoration: none;
-  padding: 6px 10px;
-  border-radius: var(--radius-sm);
 }
 
 .topbar nav a:not(.button):hover,
 .topbar nav .link-button:hover,
-.topbar nav .theme-toggle:hover,
 .topbar nav a[aria-current="page"] {
   color: var(--text);
-  background: var(--surface-2);
+  background: var(--glass-2);
+}
+
+.topbar nav .button {
+  margin-left: 4px;
+  border-radius: 999px;
 }
 
 .content {
@@ -385,23 +396,23 @@ a {
   width: 100%;
   max-width: var(--max);
   margin: 0 auto;
-  padding: 8px 16px 48px;
+  padding: 8px 16px 64px;
 }
 
 .footer {
-  max-width: var(--max);
   width: 100%;
+  max-width: var(--max-frame);
   margin: 0 auto;
-  padding: 24px 16px;
+  padding: 20px 24px 28px;
   color: var(--muted);
-  font-size: var(--size-small);
-  border-top: 1px solid var(--border);
+  font-size: var(--size-label);
+  text-align: center;
 }
 
 .page-head {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: flex-end;
   gap: var(--gap);
   flex-wrap: wrap;
   margin-bottom: 8px;
@@ -409,15 +420,24 @@ a {
 
 .page-head > div {
   display: grid;
-  gap: 4px;
+  gap: 8px;
 }
 
-.eyebrow {
-  color: var(--accent-fg);
-  font-size: var(--size-label);
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+/* Linha de dados abaixo do título: itens separados por um ponto discreto, que quebram juntos. */
+.page-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 14px;
+  color: var(--muted);
+}
+
+.page-meta-lead {
+  color: var(--text);
+}
+
+.page-meta-fight.is-kill {
+  color: var(--ok);
 }
 
 .loading {
@@ -518,20 +538,49 @@ a {
   text-decoration: underline;
 }
 
-/* Botão de tema no cabeçalho: ícone sozinho, alvo de toque de 40 px. */
+/* Chave de tema em pílula: trilho translúcido com a bolinha clara; no escuro ela fica à esquerda,
+   no claro à direita. Alvo de toque de 44 px, maior que o desenho. */
 .theme-toggle {
   display: inline-grid;
   place-items: center;
-  min-width: 40px;
-  min-height: 40px;
-  padding: 0;
+  min-width: 56px;
+  min-height: 44px;
+  padding: 0 2px;
   border: 0;
   background: none;
-  color: var(--muted);
+  color: var(--bg);
   font: inherit;
-  font-size: 1.15rem;
   line-height: 1;
   cursor: pointer;
+}
+
+.theme-toggle-track {
+  display: flex;
+  align-items: center;
+  width: 52px;
+  height: 30px;
+  padding: 3px;
+  border-radius: 999px;
+  background: var(--glass-2);
+  border: 1px solid var(--border-control);
+}
+
+.theme-toggle-knob {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--text);
+  font-size: 14px;
+}
+
+.theme-toggle[data-theme-state="light"] .theme-toggle-knob {
+  transform: translateX(22px);
+}
+
+.theme-toggle:hover .theme-toggle-track {
+  border-color: var(--accent-fg);
 }
 
 /* Troca de tema suave; sem animação para quem pede menos movimento. */
@@ -540,12 +589,18 @@ a {
   .card,
   .button,
   .topbar nav a,
-  .theme-toggle,
+  .theme-toggle-track,
   input {
     transition:
       background-color 0.2s ease,
       color 0.2s ease,
       border-color 0.2s ease;
+  }
+
+  .theme-toggle-knob {
+    transition:
+      transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+      background-color 0.2s ease;
   }
 }
 
@@ -1681,14 +1736,48 @@ caption {
 
 /* ---------- Celular (RNF08: a partir de 360 px) ---------- */
 
-@media (max-width: 560px) {
+/* Tela média: o contexto desce para baixo da marca, a navegação fica à direita. */
+@media (max-width: 860px) {
   .topbar {
-    flex-wrap: wrap;
+    grid-template-columns: auto 1fr;
+  }
+
+  .topbar-context {
+    grid-row: 2;
+    grid-column: 1 / -1;
+    text-align: left;
+    margin-top: -8px;
+  }
+}
+
+@media (max-width: 560px) {
+  /* Celular: marca e contexto na primeira linha, navegação inteira na segunda. */
+  .topbar {
+    grid-template-columns: auto 1fr;
+    padding: 12px 16px;
+  }
+
+  .topbar-context {
+    grid-row: 1;
+    grid-column: 2;
+    justify-self: end;
+    margin-top: 0;
+    font-size: var(--size-label);
+    white-space: normal;
+    text-align: right;
   }
 
   .topbar nav {
-    width: 100%;
+    grid-row: 2;
+    grid-column: 1 / -1;
+    justify-self: stretch;
+    flex-wrap: wrap;
     justify-content: space-between;
+  }
+
+  .topbar nav a:not(.button),
+  .topbar nav .link-button {
+    padding: 0 10px;
   }
 
   .link-row {
