@@ -57,6 +57,8 @@ flowchart LR
 
 **Demais telas (17/11):** o mesmo idioma em todas as rotas. O cabeçalho em chips aparece em todas as telas, sobre o fundo do hero (nas internas fica acima do conteúdo, sem sobrepor). Cada tela interna abre com uma **faixa-título** (componente `PageBand`): sobretítulo em caixa alta, o título (`h1`, com o mesmo texto de antes), uma 2ª linha atenuada quando a tela já tinha uma (jogador no resultado, e-mail no perfil, convite no cadastro) e a ação da tela à direita ("← Trocar o link", "← Escolher outra luta", "Nova análise"). Cartões, tabelas e avisos com cantos de 4–6 px; abas (Entrar/Criar conta, Resumo/Linha do tempo/Todas as regras) em chips. No Entrar/Cadastro, o título saiu de dentro do cartão e foi para a faixa, acima das abas, com o sobretítulo "Conta LogCoach". Os estados de erro sem título (ex.: relatório que não abriu) continuam sem faixa nem título novo.
 
+**Fundo único (17/11, fase 3):** a pedido do usuário, o cenário da tela inicial (fundo escuro, ou menta no tema claro, com a marca LogCoach gravada na placa em perspectiva) virou o fundo de **todas** as telas, fixo na janela enquanto a página rola. A faixa-título perdeu o fundo e a placa próprios e fica transparente sobre o cenário, como o título da tela inicial; o cabeçalho em chips também. Cartões, tabelas e avisos continuam em superfícies sólidas por cima do cenário.
+
 **Princípios de usabilidade aplicados**
 
 * **H2 · Correspondência com o mundo real:** a proposta é explicada em português, na linguagem do jogador.
