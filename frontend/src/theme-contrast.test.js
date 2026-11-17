@@ -196,6 +196,56 @@ describe.each(Object.entries(themes))("contraste WCAG AA, tema %s", (_name, them
   );
 });
 
+// Cenário de fundo (fase 3): a placa gravada fica atrás de TODAS as telas, então o texto
+// solto (faixa-título, títulos de seção, rodapé, dicas, botões fantasma) precisa passar sobre
+// cada face dela: o fundo do hero, as três faces lisas e o "pico de luz" (reflexo fixo da
+// chapa + brilho que passa, compostos sobre a face mais clara). Os detalhes finos da
+// gravação (letras e rebites) são enfeite de poucos pixels e ficam de fora.
+function backdropFaces(theme) {
+  const flat = ["--hero-bg", "--hero-slab-hi", "--hero-slab-lo", "--hero-slab-side"].map(
+    (name) => [name, parseColor(theme[name])],
+  );
+  const lit = over(
+    parseColor(theme["--hero-sheen"]),
+    over(parseColor(theme["--hero-glare"]), parseColor(theme["--hero-slab-hi"])),
+  );
+  return [...flat, ["pico de luz", lit]];
+}
+
+const LOOSE = [
+  ["--text", TEXT],
+  ["--muted", TEXT],
+  ["--accent-fg", TEXT],
+  ["--link", TEXT],
+  ["--error", TEXT],
+  ["--ok", TEXT],
+  ["--focus", GRAPHIC],
+  ["--border-control", GRAPHIC],
+];
+
+describe.each(Object.entries(themes))("texto solto sobre o cenário, tema %s", (_n, theme) => {
+  const cases = backdropFaces(theme).flatMap(([face, bg]) =>
+    LOOSE.map(([fg, min]) => [`${fg} sobre ${face}`, fg, bg, min]),
+  );
+  it.each(cases)("%s", (_label, fg, bg, min) => {
+    const value = ratio(over(parseColor(theme[fg]), bg), bg);
+    expect(value, `${fg}: ${value.toFixed(2)}`).toBeGreaterThanOrEqual(min);
+  });
+
+  // Avisos e realces translúcidos ficam sobre uma base sólida de --surface (nunca direto sobre
+  // a placa), então o texto deles é medido sobre a cor composta nessa base.
+  it.each(["--info-bg", "--warn-bg", "--error-bg", "--ok-bg"])(
+    "texto e apoio sobre %s composto em --surface",
+    (bgName) => {
+      const bg = over(parseColor(theme[bgName]), parseColor(theme["--surface"]));
+      for (const fg of ["--text", "--muted"]) {
+        const value = ratio(parseColor(theme[fg]), bg);
+        expect(value, `${fg} sobre ${bgName}: ${value.toFixed(2)}`).toBeGreaterThanOrEqual(TEXT);
+      }
+    },
+  );
+});
+
 // Séries vizinhas da barra da diferença (erros, azar, não explicado): cada uma passar contra o
 // fundo não basta, elas precisam se distinguir entre si. Distância em OKLab (perceptual):
 // 0,12 normal e 0,10 simulando protanopia e deuteranopia. Os valores antigos do claro
