@@ -1,17 +1,13 @@
 import { useAuth } from "../lib/auth-context.js";
 import { href } from "../lib/router.js";
+import PageBand from "../components/PageBand.jsx";
 
 // Tela extra: planos (RF15). Sem pagamento real no MVP.
 export default function Plans() {
   const { token } = useAuth();
   return (
     <div className="stack">
-      <div className="page-head">
-        <div>
-          <p className="eyebrow">Planos</p>
-          <h1>Escolha como quer evoluir</h1>
-        </div>
-      </div>
+      <PageBand eyebrow="Planos" title="Escolha como quer evoluir" />
       <div className="plans">
         <section className="card plan">
           <h2>Grátis</h2>

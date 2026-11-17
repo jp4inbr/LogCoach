@@ -111,6 +111,10 @@ const pairs = [
   ["--focus", "--hero-chip-bg", GRAPHIC],
   ["--border-control", "--hero-bg", GRAPHIC],
   ["--hero-dot", "--hero-chip-bg", GRAPHIC],
+  // Chip da página atual no cabeçalho (todas as rotas): a borda é o que marca o aria-current.
+  ["--border-control", "--hero-chip-bg", GRAPHIC],
+  // Aba ativa em chip: borda de destaque sobre o fundo do chip ativo.
+  ["--accent-fg", "--surface-2", GRAPHIC],
   ["--accent-fg", "--hero-bg", TEXT],
   ["--error", "--hero-bg", TEXT],
   // Série de azar da barra "De onde vem essa diferença", sobre o fundo da barra e dos pontos.

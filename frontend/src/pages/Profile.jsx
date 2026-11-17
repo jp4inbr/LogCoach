@@ -6,6 +6,7 @@ import { useAuth } from "../lib/auth-context.js";
 import { formatDateTime, formatDps, formatSignedPct } from "../lib/format.js";
 import { href, navigate } from "../lib/router.js";
 import { useRequest } from "../lib/useRequest.js";
+import PageBand from "../components/PageBand.jsx";
 
 // Tela 4: perfil, uso do plano, histórico e evolução (RF12, RF13, RF14, RNF07).
 export default function Profile() {
@@ -64,16 +65,16 @@ export default function Profile() {
 
   return (
     <div className="profile stack">
-      <div className="page-head">
-        <div>
-          <p className="eyebrow">Plano grátis</p>
-          <h1>Seu perfil</h1>
-          <p className="muted">{account.email}</p>
-        </div>
-        <a className="button primary" href={href("/")}>
-          Nova análise
-        </a>
-      </div>
+      <PageBand
+        eyebrow="Plano grátis"
+        title="Seu perfil"
+        sub={account.email}
+        aside={
+          <a className="button primary" href={href("/")}>
+            Nova análise
+          </a>
+        }
+      />
 
       <section className="card">
         <h2>Análises deste mês</h2>

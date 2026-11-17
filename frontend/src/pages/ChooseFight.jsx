@@ -8,6 +8,7 @@ import { formatClock } from "../lib/format.js";
 import { href, navigate } from "../lib/router.js";
 import { ANALYSIS_STEPS } from "../lib/steps.js";
 import { load, save } from "../lib/storage.js";
+import PageBand from "../components/PageBand.jsx";
 
 const DEMO_KEY = "logcoach.demoUsed";
 const CHARACTER_KEY = "logcoach.character";
@@ -457,15 +458,15 @@ export default function ChooseFight({ code }) {
 
   return (
     <div className="choose">
-      <div className="page-head">
-        <div>
-          <p className="eyebrow">Relatório {data.code}</p>
-          <h1>{data.title}</h1>
-        </div>
-        <a className="button ghost" href={href("/")}>
-          ← Trocar o link
-        </a>
-      </div>
+      <PageBand
+        eyebrow={`Relatório ${data.code}`}
+        title={data.title}
+        aside={
+          <a className="button ghost" href={href("/")}>
+            ← Trocar o link
+          </a>
+        }
+      />
 
       {data.sample && (
         <Notice tone="atencao" title="Relatório de exemplo">

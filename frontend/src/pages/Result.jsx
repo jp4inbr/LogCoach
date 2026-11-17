@@ -12,6 +12,7 @@ import { useAuth } from "../lib/auth-context.js";
 import { formatClock, formatDps, formatNumber, formatSignedPct } from "../lib/format.js";
 import { href } from "../lib/router.js";
 import { useRequest } from "../lib/useRequest.js";
+import PageBand from "../components/PageBand.jsx";
 
 const TABS = [
   { id: "resumo", label: "Resumo" },
@@ -59,22 +60,26 @@ export default function Result({ id }) {
 
   return (
     <div className="result">
-      <div className="page-head">
-        <div>
-          <p className="eyebrow">
+      <PageBand
+        eyebrow={
+          <>
             {fight.difficulty} · {fight.kill ? "Kill" : "Wipe"} em {formatClock(fight.duration_s)}
-          </p>
-          <h1>{fight.boss}</h1>
-          <p className="muted">
+          </>
+        }
+        title={fight.boss}
+        sub={
+          <>
             {player.name}
             {player.server && ` (${player.server})`} · {player.spec} · item level{" "}
             {player.item_level}
-          </p>
-        </div>
-        <a className="button ghost" href={href(`/relatorio/${result.report_code}`)}>
-          ← Escolher outra luta
-        </a>
-      </div>
+          </>
+        }
+        aside={
+          <a className="button ghost" href={href(`/relatorio/${result.report_code}`)}>
+            ← Escolher outra luta
+          </a>
+        }
+      />
 
       {result.source === "exemplo" && (
         <Notice tone="atencao" title="Resultado de exemplo">

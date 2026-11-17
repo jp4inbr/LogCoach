@@ -2,6 +2,7 @@ import { useState } from "react";
 import { api } from "../lib/api.js";
 import { useAuth } from "../lib/auth-context.js";
 import { href, navigate } from "../lib/router.js";
+import PageBand from "../components/PageBand.jsx";
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -51,6 +52,14 @@ export default function Login({ mode, next }) {
 
   return (
     <div className="auth">
+      <PageBand
+        eyebrow="Conta LogCoach"
+        title={isRegister ? "Crie sua conta grátis" : "Entre na sua conta"}
+        sub={
+          isRegister &&
+          "Com conta você guarda o histórico e faz até 5 análises por mês. Só pedimos e-mail e senha."
+        }
+      />
       <div className="card auth-card">
         <div className="tabs" role="tablist" aria-label="Entrar ou criar conta">
           <a
@@ -70,14 +79,6 @@ export default function Login({ mode, next }) {
             Criar conta
           </a>
         </div>
-
-        <h1>{isRegister ? "Crie sua conta grátis" : "Entre na sua conta"}</h1>
-        {isRegister && (
-          <p className="muted">
-            Com conta você guarda o histórico e faz até 5 análises por mês. Só pedimos e-mail e
-            senha.
-          </p>
-        )}
 
         <form onSubmit={submit} noValidate className="form">
           <div className="field">

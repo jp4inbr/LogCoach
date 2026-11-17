@@ -60,8 +60,8 @@
   --hero-chip-border: rgb(255 255 254 / 12%);
   --hero-dot: #ff8906;
 
-  --radius: 12px;
-  --radius-sm: 8px;
+  --radius: 6px;
+  --radius-sm: 4px;
   --gap: 16px;
   --max: 960px;
 
@@ -215,11 +215,14 @@ h3 {
 
 h1 {
   font-size: clamp(1.6rem, 4vw, 2.2rem);
-  letter-spacing: -0.01em;
+  font-weight: 750;
+  letter-spacing: -0.025em;
 }
 
 h2 {
   font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
 }
 
 h3 {
@@ -283,6 +286,9 @@ a {
   z-index: 10;
 }
 
+/* Cabeçalho em chips em todas as rotas (idioma da tela inicial). Nas telas internas ele fica
+   em fluxo, sobre o fundo do hero de ponta a ponta (sombra + recorte: pinta a largura toda
+   sem criar rolagem lateral); na inicial fica por cima do hero (.app-home, seção "Tela 1"). */
 .topbar {
   display: flex;
   align-items: center;
@@ -292,6 +298,9 @@ a {
   max-width: var(--max);
   margin: 0 auto;
   padding: 16px;
+  background: var(--hero-bg);
+  box-shadow: 0 0 0 100vmax var(--hero-bg);
+  clip-path: inset(0 -100vmax);
 }
 
 .brand {
@@ -317,25 +326,62 @@ a {
 
 .topbar nav {
   display: flex;
+  flex: 1;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
+}
+
+.topbar nav > a:first-child {
+  margin-left: auto;
 }
 
 .topbar nav a:not(.button),
 .topbar nav .link-button,
 .topbar nav .theme-toggle {
-  color: var(--muted);
-  text-decoration: none;
-  padding: 6px 10px;
+  min-height: 34px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
   border-radius: var(--radius-sm);
+  border: 1px solid var(--hero-chip-border);
+  background: var(--hero-chip-bg);
+  color: var(--text);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.topbar nav .theme-toggle {
+  justify-content: center;
+  min-width: 34px;
+  padding: 0;
+  margin-left: auto;
+  font-size: 1rem;
 }
 
 .topbar nav a:not(.button):hover,
 .topbar nav .link-button:hover,
 .topbar nav .theme-toggle:hover,
 .topbar nav a[aria-current="page"] {
+  border-color: var(--border-control);
+}
+
+/* "● Entrar": o ponto é enfeite (pseudo-elemento sem texto, fora do nome acessível). */
+.topbar .button.small {
+  min-height: 34px;
+  padding: 0 12px;
+  border-color: var(--hero-chip-border);
+  background: var(--hero-chip-bg);
   color: var(--text);
-  background: var(--surface-2);
+  font-size: 0.9rem;
+}
+
+.topbar .button.small::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--hero-dot);
 }
 
 .content {
@@ -356,18 +402,53 @@ a {
   border-top: 1px solid var(--border);
 }
 
-.page-head {
+/* Faixa-título das telas internas (PageBand): fundo do hero de ponta a ponta, colado no
+   cabeçalho, com uma placa inclinada à direita (enfeite) e o título forte. */
+.page-band {
+  position: relative;
+  isolation: isolate;
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: flex-end;
   gap: var(--gap);
   flex-wrap: wrap;
-  margin-bottom: 8px;
+  margin: -8px 0 12px;
+  padding: 28px 0 36px;
+  background: var(--hero-bg);
+  box-shadow: 0 0 0 100vmax var(--hero-bg);
+  clip-path: inset(0 -100vmax);
 }
 
-.page-head > div {
+.page-band::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: 45%;
+  /* Recortada em diagonal dentro da própria caixa: nada vaza para fora da faixa. */
+  background: linear-gradient(170deg, var(--hero-slab-hi), var(--hero-slab-lo) 80%);
+  clip-path: polygon(38% 0, 100% 0, 100% 100%, 0 100%);
+  mask-image: linear-gradient(90deg, black 55%, transparent);
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.page-band-text {
   display: grid;
-  gap: 4px;
+  gap: 6px;
+}
+
+.page-band h1 {
+  font-size: clamp(1.8rem, 3.2vw, 2.6rem);
+  line-height: 1.1;
+}
+
+.page-band-sub {
+  color: var(--muted);
+  font-size: 1.05rem;
+  font-weight: 500;
 }
 
 .eyebrow {
@@ -617,7 +698,7 @@ label {
   align-items: center;
   gap: 4px;
   padding: 2px 10px;
-  border-radius: 999px;
+  border-radius: var(--radius-sm);
   font-size: 0.8rem;
   font-weight: 600;
   white-space: nowrap;
@@ -685,18 +766,19 @@ label {
 
 /* ---------- Abas ---------- */
 
+/* Abas em chips (mesmo idioma do cabeçalho). O respiro interno evita cortar o anel de foco. */
 .tabs {
   display: flex;
-  gap: 4px;
-  border-bottom: 1px solid var(--border);
+  gap: 6px;
+  padding: 4px;
   overflow-x: auto;
 }
 
 .tab {
-  background: none;
-  border: 0;
-  border-bottom: 2px solid transparent;
-  padding: 10px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 14px;
   color: var(--muted);
   font: inherit;
   font-weight: 600;
@@ -711,78 +793,23 @@ label {
 
 .tab-active {
   color: var(--text);
-  border-bottom-color: var(--accent-fg);
+  background: var(--surface-2);
+  border-color: var(--accent-fg);
 }
 
 /* ---------- Tela 1: início ---------- */
 
-/* Na tela inicial o cabeçalho fica por cima do hero, em chips discretos (App.jsx põe
-   .app-home só na rota "/"; nas outras telas o cabeçalho é o de sempre). */
+/* Na tela inicial o cabeçalho (os mesmos chips das outras telas) fica por cima do hero, sem
+   fundo próprio e na largura toda (App.jsx põe .app-home só na rota "/"). */
 .app-home .topbar {
   position: absolute;
   inset: 0 0 auto;
   z-index: 3;
   max-width: none;
   padding: 20px 32px;
-}
-
-.app-home .topbar nav {
-  flex: 1;
-  gap: 6px;
-}
-
-.app-home .topbar nav > a:first-child {
-  margin-left: auto;
-}
-
-.app-home .topbar nav a:not(.button),
-.app-home .topbar nav .link-button,
-.app-home .topbar nav .theme-toggle {
-  min-height: 34px;
-  padding: 0 12px;
-  display: inline-flex;
-  align-items: center;
-  border-radius: 4px;
-  border: 1px solid var(--hero-chip-border);
-  background: var(--hero-chip-bg);
-  color: var(--text);
-  font-size: 0.9rem;
-  font-weight: 600;
-  text-decoration: none;
-}
-
-.app-home .topbar nav .theme-toggle {
-  justify-content: center;
-  min-width: 34px;
-  padding: 0;
-  margin-left: auto;
-  font-size: 1rem;
-}
-
-.app-home .topbar nav a:not(.button):hover,
-.app-home .topbar nav .link-button:hover,
-.app-home .topbar nav .theme-toggle:hover,
-.app-home .topbar nav a[aria-current="page"] {
-  border-color: var(--border-control);
-}
-
-/* "● Entrar": o ponto é enfeite (pseudo-elemento sem texto, fora do nome acessível). */
-.app-home .topbar .button.small {
-  min-height: 34px;
-  padding: 0 12px;
-  border-radius: 4px;
-  border-color: var(--hero-chip-border);
-  background: var(--hero-chip-bg);
-  color: var(--text);
-  font-size: 0.9rem;
-}
-
-.app-home .topbar .button.small::before {
-  content: "";
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--hero-dot);
+  background: none;
+  box-shadow: none;
+  clip-path: none;
 }
 
 .app-home .content {
@@ -1182,7 +1209,7 @@ label {
     padding: 12px 16px;
   }
 
-  .app-home .topbar nav > a:first-child {
+  .topbar nav > a:first-child {
     margin-left: 0;
   }
 
@@ -1248,11 +1275,12 @@ label {
 
 .auth {
   display: grid;
-  place-items: center;
-  padding: 24px 0;
+  gap: 24px;
+  padding-bottom: 24px;
 }
 
 .auth-card {
+  justify-self: center;
   width: min(440px, 100%);
   gap: 16px;
 }
@@ -2115,6 +2143,14 @@ caption {
 
   .link-row {
     flex-direction: column;
+  }
+
+  .page-band::after {
+    display: none;
+  }
+
+  .page-band {
+    padding: 20px 0 28px;
   }
 
   .timeline-grid {
