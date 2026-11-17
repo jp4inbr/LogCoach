@@ -36,7 +36,7 @@ describe("ThemeToggle", () => {
     stubSystemTheme("light");
     render(<ThemeToggle />);
     const icon = screen.getByRole("button").querySelector("[aria-hidden='true']");
-    expect(icon).toHaveTextContent("☾");
+    expect(icon).toHaveAttribute("data-icon", "moon");
   });
 
   it("funciona pelo teclado com Enter e Espaço", async () => {

@@ -16,7 +16,10 @@ describe("MistakeCard", () => {
       screen.getByRole("heading", { level: 3, name: "Entrada na Alma Arcana com pouca Saraivada" }),
     ).toBeInTheDocument();
     expect(screen.getByText("Custou cerca de 2,7% do seu dano")).toBeInTheDocument();
-    expect(screen.getByText("✕ Erro")).toHaveClass("badge-erro");
+    expect(screen.getByText("Erro")).toHaveClass("badge-erro");
+    expect(
+      screen.getByText("Erro").querySelector("[data-icon='x'][aria-hidden='true']"),
+    ).not.toBeNull();
     expect(screen.getByText(byMarkedText(soulEntry.explanation))).toBeInTheDocument();
     expect(screen.getByText("O que fazer")).toBeInTheDocument();
     expect(screen.getByText(byMarkedText(soulEntry.what_to_do))).toBeInTheDocument();
@@ -34,12 +37,15 @@ describe("MistakeCard", () => {
     expect(rowEl).toHaveTextContent("9 de 43");
   });
 
-  it("usa a gravidade como classe e mostra ‘! Atenção’", () => {
+  it("usa a gravidade como classe e mostra o selo de Atenção com o símbolo", () => {
     const { container } = render(
       <MistakeCard mistake={{ ...soulEntry, severity: "atencao" }} rank={2} />,
     );
     expect(container.querySelector("article")).toHaveClass("mistake-atencao");
-    expect(screen.getByText("! Atenção")).toHaveClass("badge-atencao");
+    expect(screen.getByText("Atenção")).toHaveClass("badge-atencao");
+    expect(
+      screen.getByText("Atenção").querySelector("[data-icon='alert'][aria-hidden='true']"),
+    ).not.toBeNull();
   });
 
   it("mostra a posição na lista, escondida do leitor de tela", () => {

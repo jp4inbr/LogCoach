@@ -12,7 +12,7 @@ function items() {
 describe("Steps", () => {
   it("lista as três etapas na ordem", () => {
     render(<Steps current={0} />);
-    expect(items().map((li) => li.textContent.replace(/^[✓\d]/, ""))).toEqual([
+    expect(items().map((li) => li.textContent.replace(/^\d/, ""))).toEqual([
       "Buscando sua luta",
       "Comparando com os melhores",
       "Coach analisando",
@@ -30,11 +30,12 @@ describe("Steps", () => {
     expect(c).toHaveClass("step-todo");
   });
 
-  it("as etapas anteriores à atual aparecem concluídas com ✓", () => {
+  it("as etapas anteriores à atual aparecem concluídas com o ícone de feito", () => {
     render(<Steps current={2} />);
     const [a, b, c] = items();
     expect(a).toHaveClass("step-done");
-    expect(a).toHaveTextContent("✓");
+    expect(a.querySelector(".step-dot [data-icon='check']")).not.toBeNull();
+    expect(a.querySelector(".step-dot")).toHaveAttribute("aria-hidden", "true");
     expect(b).toHaveClass("step-done");
     expect(c).toHaveClass("step-active");
     expect(c).toHaveTextContent("3");

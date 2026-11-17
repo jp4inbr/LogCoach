@@ -1,5 +1,6 @@
 import { formatNumber } from "../lib/format.js";
 import { plainSpellText } from "../lib/spellText.js";
+import Icon from "./Icon.jsx";
 import SpellText from "./SpellText.jsx";
 
 // Um erro do relatório: título, quanto custou, explicação, o que fazer e os números do código.
@@ -27,7 +28,15 @@ export default function MistakeCard({ mistake, rank }) {
           </h3>
           <p className="mistake-meta">
             <span className={`badge badge-${mistake.severity}`}>
-              {mistake.severity === "erro" ? "✕ Erro" : "! Atenção"}
+              {mistake.severity === "erro" ? (
+                <>
+                  <Icon name="x" /> Erro
+                </>
+              ) : (
+                <>
+                  <Icon name="alert" /> Atenção
+                </>
+              )}
             </span>
             {mistake.kind === "hipotese" && (
               <span

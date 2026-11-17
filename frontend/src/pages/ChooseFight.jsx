@@ -1,5 +1,6 @@
 import { useEffect, useEffectEvent, useRef, useState } from "react";
 import AutoRefreshNotice from "../components/AutoRefreshNotice.jsx";
+import Icon from "../components/Icon.jsx";
 import Notice from "../components/Notice.jsx";
 import Steps from "../components/Steps.jsx";
 import { api } from "../lib/api.js";
@@ -376,7 +377,7 @@ export default function ChooseFight({ code }) {
             </button>
           )}
           <a className="button ghost" href={href("/")}>
-            ← Trocar o link
+            <Icon name="arrow-left" /> Trocar o link
           </a>
         </div>
       </div>
@@ -463,7 +464,7 @@ export default function ChooseFight({ code }) {
           <h1>{data.title}</h1>
         </div>
         <a className="button ghost" href={href("/")}>
-          ← Trocar o link
+          <Icon name="arrow-left" /> Trocar o link
         </a>
       </div>
 

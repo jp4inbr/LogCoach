@@ -518,7 +518,7 @@ a {
   text-decoration: underline;
 }
 
-/* Botão de tema (☀/☾) no cabeçalho: ícone sozinho, alvo de toque de 40 px. */
+/* Botão de tema no cabeçalho: ícone sozinho, alvo de toque de 40 px. */
 .theme-toggle {
   display: inline-grid;
   place-items: center;
@@ -610,6 +610,12 @@ label {
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
+}
+
+/* Ícones desenhados (components/Icon.jsx): alinhados ao texto, sem mexer na altura da linha. */
+.icon {
+  flex: none;
+  vertical-align: -0.125em;
 }
 
 /* ---------- Avisos, selos e dicas ---------- */
@@ -1366,15 +1372,14 @@ caption {
   display: none;
 }
 
-.compared summary::before {
-  content: "▸";
-  /* Texto alternativo vazio: a seta é decorativa e não deve ser lida pelo leitor de tela. */
-  content: "▸" / "";
+.compared-chevron {
+  flex: none;
+  align-self: center;
   color: var(--accent-fg);
   transition: transform 0.15s;
 }
 
-.compared[open] summary::before {
+.compared[open] .compared-chevron {
   transform: rotate(90deg);
 }
 
@@ -1406,11 +1411,6 @@ caption {
 
 .eye-icon {
   flex: none;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
 }
 
 /* Ligado: mesmo destaque de seleção usado nas lutas (heurística "consistência"). */
@@ -1734,7 +1734,7 @@ caption {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .compared summary::before {
+  .compared-chevron {
     transition: none;
   }
 }

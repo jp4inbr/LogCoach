@@ -1,6 +1,7 @@
 import { useState } from "react";
 import ComparedPlayers from "../components/ComparedPlayers.jsx";
 import GapBreakdown from "../components/GapBreakdown.jsx";
+import Icon from "../components/Icon.jsx";
 import MistakeCard from "../components/MistakeCard.jsx";
 import Notice from "../components/Notice.jsx";
 import StatusBadge from "../components/StatusBadge.jsx";
@@ -48,7 +49,7 @@ export default function Result({ id }) {
           {!token && " Se ela é da sua conta, entre para abrir."}
         </Notice>
         <a className="button ghost" href={href("/")}>
-          ← Fazer uma nova análise
+          <Icon name="arrow-left" /> Fazer uma nova análise
         </a>
       </div>
     );
@@ -72,7 +73,7 @@ export default function Result({ id }) {
           </p>
         </div>
         <a className="button ghost" href={href(`/relatorio/${result.report_code}`)}>
-          ← Escolher outra luta
+          <Icon name="arrow-left" /> Escolher outra luta
         </a>
       </div>
 
@@ -197,8 +198,8 @@ function Summary({ result }) {
     <div className="stack">
       {coach.available ? (
         <div className="coach">
-          <span className="coach-avatar" aria-hidden="true">
-            ✦
+          <span className="coach-avatar">
+            <Icon name="message" size={20} />
           </span>
           <div>
             <strong>Resumo do coach</strong>

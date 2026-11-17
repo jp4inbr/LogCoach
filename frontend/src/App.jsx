@@ -1,4 +1,5 @@
 import AuthProvider from "./components/AuthProvider.jsx";
+import Icon from "./components/Icon.jsx";
 import ThemeToggle from "./components/ThemeToggle.jsx";
 import { useAuth } from "./lib/auth-context.js";
 import { href, navigate, useRoute } from "./lib/router.js";
@@ -109,7 +110,7 @@ function Page({ route }) {
         <div className="stack">
           <h1>Página não encontrada</h1>
           <a className="button ghost" href={href("/")}>
-            ← Voltar ao início
+            <Icon name="arrow-left" /> Voltar ao início
           </a>
         </div>
       );

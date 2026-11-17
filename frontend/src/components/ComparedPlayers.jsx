@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { formatDps, formatPseudonym } from "../lib/format.js";
 import { load, save } from "../lib/storage.js";
+import Icon from "./Icon.jsx";
 
 const SHOW_NAMES_KEY = "logcoach.showNames";
 
@@ -28,6 +29,7 @@ export default function ComparedPlayers({ comparison }) {
   return (
     <details className="compared">
       <summary>
+        <Icon name="chevron-right" className="compared-chevron" />
         <span className="compared-title">Com quem você foi comparado</span>
         <span className="muted">
           {comparison.label} · {players.length} {players.length === 1 ? "jogador" : "jogadores"}
@@ -52,7 +54,7 @@ export default function ComparedPlayers({ comparison }) {
             title={hasNames ? undefined : "Nomes reais indisponíveis nos dados de exemplo"}
             onClick={toggle}
           >
-            <EyeIcon open={revealed} />
+            <Icon name={revealed ? "eye" : "eye-off"} className="eye-icon" size={18} />
             Mostrar nomes
           </button>
         </div>
@@ -93,16 +95,5 @@ export default function ComparedPlayers({ comparison }) {
         </div>
       </div>
     </details>
-  );
-}
-
-// Olho aberto = nomes visíveis; olho riscado = nomes ocultos.
-function EyeIcon({ open }) {
-  return (
-    <svg className="eye-icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-      <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" />
-      <circle cx="12" cy="12" r="3" />
-      {!open && <line x1="3" y1="3" x2="21" y2="21" />}
-    </svg>
   );
 }

@@ -216,7 +216,7 @@ test.describe("erros ao abrir o relatório", () => {
     await pasteLink(page);
     await expect(page.getByText("Esse relatório é privado ou não existe.")).toBeVisible();
     await expect(page.getByRole("button", { name: "Tentar de novo" })).toHaveCount(0);
-    await page.getByRole("link", { name: "← Trocar o link" }).click();
+    await page.getByRole("link", { name: "Trocar o link" }).click();
     await expect(page.getByRole("heading", { level: 1 })).toContainText("Descubra os erros");
   });
 
@@ -405,7 +405,7 @@ test.describe("limite do plano", () => {
     expect(api.calls("POST /analyses")[0].authorization).toBeNull();
 
     // Volta para escolher outra luta: a demonstração já foi usada.
-    await page.getByRole("link", { name: "← Escolher outra luta" }).click();
+    await page.getByRole("link", { name: "Escolher outra luta" }).click();
     await expect(page.getByText("Você já usou a análise de demonstração")).toBeVisible();
     await expect(page.getByRole("button", { name: "Analisar" })).toHaveCount(0);
     await expect(page.getByRole("link", { name: "Criar conta grátis" })).toHaveAttribute(

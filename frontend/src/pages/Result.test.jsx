@@ -88,7 +88,7 @@ describe("Result", () => {
 
     it("o link 'Escolher outra luta' volta para o relatório da análise", async () => {
       await aberta();
-      expect(screen.getByRole("link", { name: "← Escolher outra luta" })).toHaveAttribute(
+      expect(screen.getByRole("link", { name: "Escolher outra luta" })).toHaveAttribute(
         "href",
         "#/relatorio/XhrmBaYkGCAQjH2D",
       );
@@ -215,7 +215,8 @@ describe("Result", () => {
       await aberta();
 
       const [primeiro] = screen.getAllByRole("article");
-      expect(primeiro).toHaveTextContent("✕ Erro");
+      expect(within(primeiro).getByText("Erro")).toHaveClass("badge-erro");
+      expect(primeiro.querySelector(".badge-erro [data-icon='x']")).not.toBeNull();
       expect(primeiro).toHaveTextContent("Custou cerca de 2,7% do seu dano");
       expect(within(primeiro).getByText("O que fazer")).toBeInTheDocument();
       expect(primeiro).toHaveTextContent("Chegue à Alma Arcana com 20 de Saraivada ou mais.");
@@ -241,7 +242,8 @@ describe("Result", () => {
       const cards = screen.getAllByRole("article");
       expect(cards[0]).toHaveClass("mistake-erro");
       expect(cards[1]).toHaveClass("mistake-atencao");
-      expect(cards[1]).toHaveTextContent("! Atenção");
+      expect(within(cards[1]).getByText("Atenção")).toHaveClass("badge-atencao");
+      expect(cards[1].querySelector(".badge-atencao [data-icon='alert']")).not.toBeNull();
     });
 
     it("a hipótese fica numa seção própria, marcada como não confirmada", async () => {
@@ -501,7 +503,8 @@ describe("Result", () => {
         .closest("tr");
       expect(linha).toHaveTextContent("2 de 5 (0, 20, 1, 18, 22)");
       expect(linha).toHaveTextContent("9 de 43");
-      expect(linha).toHaveTextContent("✕ Erro");
+      expect(within(linha).getByText("Erro")).toHaveClass("badge-erro");
+      expect(linha.querySelector(".badge-erro [data-icon='x']")).not.toBeNull();
       expect(linha).toHaveTextContent("custou ~2,7% do dano");
       expect(linha).toHaveTextContent("Ideal: 20 ou mais (você: 2 de 5).");
       expect(within(linha).getByText("2 detalhes")).toBeInTheDocument();
@@ -520,7 +523,8 @@ describe("Result", () => {
         .closest("tr");
       expect(within(combo).getByText("1 detalhe")).toBeInTheDocument();
       const usos = screen.getByRole("rowheader", { name: /Usos de Toque dos Magos/ }).closest("tr");
-      expect(usos).toHaveTextContent("✓ OK");
+      expect(within(usos).getByText("OK")).toHaveClass("badge-ok");
+      expect(usos.querySelector(".badge-ok [data-icon='check']")).not.toBeNull();
       expect(usos).not.toHaveTextContent("custou");
       expect(usos).toHaveTextContent(
         "Possível: quantos usos caberiam se fosse usado na recarga, do pull ao fim da luta.",
@@ -590,7 +594,7 @@ describe("Result", () => {
       const aviso = await screen.findByRole("alert");
       expect(aviso).toHaveTextContent("Não deu para abrir essa análise");
       expect(aviso).toHaveTextContent("Não encontramos essa análise.");
-      expect(screen.getByRole("link", { name: "← Fazer uma nova análise" })).toHaveAttribute(
+      expect(screen.getByRole("link", { name: "Fazer uma nova análise" })).toHaveAttribute(
         "href",
         "#/",
       );
