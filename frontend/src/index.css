@@ -55,7 +55,7 @@
   --hatch-strong: rgb(255 137 6 / 40%);
   --shadow: rgb(0 0 0 / 45%);
 
-  --radius: 12px;
+  --radius: 16px;
   --radius-sm: 8px;
   --gap: 16px;
   --max: 960px;
@@ -216,7 +216,6 @@ body {
    baixa o bastante para o texto por cima manter o contraste AA (pares --glow-1 no teste). */
 .lit {
   position: relative;
-  isolation: isolate;
 }
 
 .lit::before {
@@ -311,8 +310,10 @@ a {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  /* A luz (.lit::before) é maior que a tela: corta sem criar rolagem. */
+  /* A luz (.lit::before) é maior que a tela: corta sem criar rolagem. A camada própria
+     (isolation) deixa a luz atrás de todo o conteúdo da tela, e não só do bloco iluminado. */
   overflow: clip;
+  isolation: isolate;
 }
 
 .skip {
@@ -391,7 +392,6 @@ a {
 
 .topbar nav .button {
   margin-left: 4px;
-  border-radius: 999px;
 }
 
 .content {
@@ -463,10 +463,10 @@ a {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 8px;
   min-height: 44px;
-  padding: 0 18px;
-  border-radius: var(--radius-sm);
+  padding: 0 20px;
+  border-radius: 999px;
   border: 1px solid var(--border);
   background: var(--surface-2);
   color: var(--text);
@@ -613,8 +613,8 @@ input[type="email"],
 input[type="password"] {
   width: 100%;
   min-height: 44px;
-  padding: 0 14px;
-  border-radius: var(--radius-sm);
+  padding: 0 18px;
+  border-radius: 999px;
   border: 1px solid var(--border-control);
   background: var(--bg);
   color: var(--text);
@@ -936,10 +936,6 @@ label {
   color: var(--muted);
 }
 
-.hero-actions .button {
-  border-radius: 999px;
-}
-
 /* Como funciona: uma linha de três passos, sem cartões. O número na fonte larga carrega a
    ordem; a linha fina em cima amarra os três. */
 .how {
@@ -1002,12 +998,17 @@ label {
 .auth {
   display: grid;
   place-items: center;
-  padding: 24px 0;
+  padding: 40px 0 24px;
+}
+
+.auth.lit::before {
+  top: 40%;
 }
 
 .auth-card {
   width: min(440px, 100%);
-  gap: 16px;
+  gap: 18px;
+  padding: 28px;
 }
 
 /* ---------- Tela 2: escolher a luta ---------- */
@@ -1853,7 +1854,9 @@ caption {
 
 .plan-price {
   font-size: var(--size-headline);
-  font-weight: 700;
+  font-stretch: var(--font-wide);
+  font-weight: 800;
+  line-height: 1.1;
 }
 
 .plan-pro {
