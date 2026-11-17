@@ -57,6 +57,19 @@ async function carregado() {
 }
 
 describe("Profile", () => {
+  it("logado, abre com a faixa-título: plano, título e e-mail", async () => {
+    logado();
+    renderProfile();
+    await carregado();
+
+    const h1 = screen.getByRole("heading", { level: 1, name: "Seu perfil" });
+    const band = h1.closest(".page-band");
+    expect(band).not.toBeNull();
+    expect(band.querySelector(".eyebrow")).not.toBeNull();
+    expect(within(band).getByText("voce@exemplo.com")).toBeInTheDocument();
+    expect(within(band).getByRole("link", { name: "Nova análise" })).toBeInTheDocument();
+  });
+
   describe("sem login", () => {
     it("pede para entrar e volta ao perfil depois", async () => {
       mockApi({

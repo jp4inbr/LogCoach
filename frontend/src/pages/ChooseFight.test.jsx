@@ -183,6 +183,18 @@ describe("ChooseFight: abrir o relatório", () => {
     expect(screen.getByRole("link", { name: "← Trocar o link" })).toHaveAttribute("href", "#/");
   });
 
+  it("abre com a faixa-título: código do relatório, título e 'Trocar o link'", async () => {
+    abrir();
+    await screen.findByRole("heading", { level: 1, name: "The Venomous Abyss — Mítico" });
+
+    const h1 = screen.getByRole("heading", { level: 1, name: "The Venomous Abyss — Mítico" });
+    const band = h1.closest(".page-band");
+    expect(band).not.toBeNull();
+    expect(band.querySelector(".eyebrow")).not.toBeNull();
+    expect(within(band).getByText(`Relatório ${CODE}`)).toHaveClass("eyebrow");
+    expect(within(band).getByRole("link", { name: "← Trocar o link" })).toBeInTheDocument();
+  });
+
   it("lista as lutas com chefe, dificuldade, duração e kill ou wipe", async () => {
     abrir();
     await aguardarLista();

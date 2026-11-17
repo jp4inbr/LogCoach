@@ -32,6 +32,17 @@ describe("Plans", () => {
     ]);
   });
 
+  it("abre com a faixa-título (sobretítulo e h1)", () => {
+    mockApi();
+    renderPlans();
+
+    const h1 = screen.getByRole("heading", { level: 1, name: "Escolha como quer evoluir" });
+    const band = h1.closest(".page-band");
+    expect(band).not.toBeNull();
+    expect(band.querySelector(".eyebrow")).not.toBeNull();
+    expect(within(band).getByText("Planos")).toHaveClass("eyebrow");
+  });
+
   it("o plano Pro aparece como 'Em breve' e o botão não pode ser usado", () => {
     mockApi();
     renderPlans();

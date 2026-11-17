@@ -39,6 +39,19 @@ describe("Login (entrar)", () => {
     expect(screen.queryByText("Mínimo de 8 caracteres.")).not.toBeInTheDocument();
   });
 
+  it("abre com a faixa-título: sobretítulo e o h1 antes das abas", () => {
+    mockApi();
+    renderLogin();
+
+    const h1 = screen.getByRole("heading", { level: 1, name: "Entre na sua conta" });
+    const band = h1.closest(".page-band");
+    expect(band).not.toBeNull();
+    expect(band.querySelector(".eyebrow")).not.toBeNull();
+    // A faixa vem antes do cartão com as abas (a tela abre pelo título).
+    const abas = screen.getByRole("tablist", { name: "Entrar ou criar conta" });
+    expect(band.compareDocumentPosition(abas) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
   it("não mostra erro antes da primeira tentativa de enviar", async () => {
     mockApi();
     const user = userEvent.setup();

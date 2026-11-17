@@ -48,6 +48,17 @@ const aba = (nome) => screen.getByRole("tab", { name: nome });
 
 describe("Result", () => {
   describe("carregamento e cabeçalho", () => {
+    it("abre com a faixa-título: luta, chefe, jogador e 'Escolher outra luta'", async () => {
+      await aberta();
+
+      const h1 = screen.getByRole("heading", { level: 1, name: "Nek'zali, a Enrosca-almas" });
+      const band = h1.closest(".page-band");
+      expect(band).not.toBeNull();
+      expect(band.querySelector(".eyebrow")).not.toBeNull();
+      expect(within(band).getByText(/Harmonist/)).toHaveClass("page-band-sub");
+      expect(within(band).getByRole("link", { name: "← Escolher outra luta" })).toBeInTheDocument();
+    });
+
     it("mostra o carregamento e depois a análise pedida pelo id", async () => {
       const { api } = renderResult();
 
