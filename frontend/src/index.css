@@ -805,23 +805,35 @@ label {
   border-bottom-color: var(--accent-fg);
 }
 
-/* ---------- Tela 1: início ---------- */
+/* ---------- Tela 1: início ----------
+   O título e o campo do link no centro, sob a luz; "Como funciona" abaixo da dobra, como uma
+   linha de três passos, e o que já é suportado numa linha discreta no fim. */
 
 .home {
   display: grid;
-  gap: 32px;
+  gap: 72px;
 }
 
 .hero {
   display: grid;
-  gap: 16px;
-  padding: 32px 0 8px;
+  justify-items: center;
+  align-content: center;
+  gap: 20px;
+  min-height: min(calc(100svh - 120px), 720px);
+  padding: 24px 0 40px;
+  text-align: center;
+}
+
+.hero.lit::before {
+  top: 58%;
 }
 
 .hero h1 {
   font-size: var(--size-display);
   font-stretch: var(--font-wider);
-  max-width: 16ch;
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  max-width: 15ch;
 }
 
 .lead {
@@ -830,10 +842,76 @@ label {
   max-width: var(--measure);
 }
 
+.hero .lead {
+  max-width: 52ch;
+}
+
 .link-form {
   display: grid;
+  justify-items: center;
+  gap: 10px;
+  width: min(720px, 100%);
+  margin-top: 16px;
+}
+
+.link-form label {
+  font-size: var(--size-small);
+}
+
+.link-form .field-hint,
+.link-form .field-error {
+  text-align: center;
+}
+
+/* Campo do link em pílula larga, com o botão Analisar dentro dela. */
+.link-pill {
+  display: flex;
+  align-items: center;
   gap: 8px;
-  margin-top: 8px;
+  width: 100%;
+  padding: 5px;
+  border-radius: 999px;
+  border: 1px solid var(--border-control);
+  background: var(--surface);
+}
+
+.link-pill input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  padding: 0 18px;
+  border-radius: 999px;
+}
+
+.link-pill .button {
+  min-height: 48px;
+  padding: 0 28px;
+  border-radius: 999px;
+}
+
+.link-pill:has(input[aria-invalid="true"]) {
+  border-color: var(--error);
+}
+
+/* O anel de foco vai na pílula inteira; o campo dentro dela não desenha outro. */
+.link-pill:has(input:focus-visible) {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+}
+
+@supports selector(:has(*)) {
+  .link-pill input:focus-visible {
+    outline: none;
+  }
+}
+
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  .link-pill {
+    background: var(--glass);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+  }
 }
 
 .link-row {
@@ -849,45 +927,71 @@ label {
 .hero-actions {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 12px;
   flex-wrap: wrap;
   color: var(--muted);
+}
+
+.hero-actions .button {
+  border-radius: 999px;
+}
+
+/* Como funciona: uma linha de três passos, sem cartões. O número na fonte larga carrega a
+   ordem; a linha fina em cima amarra os três. */
+.how {
+  display: grid;
+  gap: 24px;
 }
 
 .how-list {
   list-style: none;
   counter-reset: how;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 32px;
   padding: 0;
-  margin: 12px 0 0;
+  margin: 0;
 }
 
 .how-list li {
   counter-increment: how;
   display: grid;
-  gap: 4px;
-  padding: 16px;
-  border-radius: var(--radius);
-  background: var(--surface);
-  border: 1px solid var(--border);
+  align-content: start;
+  gap: 6px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
 }
 
 .how-list li::before {
   content: counter(how);
-  display: grid;
-  place-items: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: var(--info-bg);
+  margin-bottom: 8px;
   color: var(--accent-fg);
-  font-weight: 700;
+  font-size: var(--size-headline);
+  font-stretch: var(--font-wider);
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.how-list strong {
+  font-size: var(--size-subtitle);
 }
 
 .how-list span {
   color: var(--muted);
+}
+
+.supported {
+  color: var(--muted);
+  font-size: var(--size-small);
+  text-align: center;
+  max-width: 72ch;
+  margin: 0 auto;
+}
+
+.supported strong {
+  color: var(--text);
 }
 
 /* ---------- Login ---------- */
@@ -1782,6 +1886,52 @@ caption {
 
   .link-row {
     flex-direction: column;
+  }
+
+  /* No celular o campo e o botão viram duas pílulas, uma embaixo da outra. */
+  .link-pill {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 0;
+    border: 0;
+    background: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  .link-pill input {
+    min-height: 52px;
+    border: 1px solid var(--border-control);
+    background: var(--surface);
+  }
+
+  .link-pill:has(input[aria-invalid="true"]) input {
+    border-color: var(--error);
+  }
+
+  .link-pill:has(input:focus-visible) {
+    outline: none;
+  }
+
+  @supports selector(:has(*)) {
+    .link-pill input:focus-visible {
+      outline: 2px solid var(--focus);
+      outline-offset: 2px;
+    }
+  }
+
+  .home {
+    gap: 48px;
+  }
+
+  .hero {
+    min-height: 0;
+    padding-top: 32px;
+  }
+
+  .how-list {
+    grid-template-columns: 1fr;
+    gap: 20px;
   }
 
   .timeline-grid {
