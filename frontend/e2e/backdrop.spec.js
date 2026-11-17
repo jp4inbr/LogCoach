@@ -118,11 +118,14 @@ test.describe("X3: o cenário fica fixo ao rolar", () => {
 
 /** Screenshot só do cenário: todo o resto fica invisível (sem tirar do layout). */
 async function backdropShot(page) {
-  await page.addStyleTag({
+  const style = await page.addStyleTag({
     content: `body * { visibility: hidden !important; }
       ${CENARIO}, ${CENARIO} * { visibility: visible !important; }`,
   });
-  return page.screenshot();
+  const shot = await page.screenshot();
+  // A troca de tela é só de hash (mesmo documento): o estilo sai antes da próxima.
+  await style.evaluate((el) => el.remove());
+  return shot;
 }
 
 test.describe("X4: o cenário das telas internas é o mesmo da tela inicial", () => {

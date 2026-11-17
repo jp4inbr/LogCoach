@@ -51,7 +51,7 @@
   --shadow: rgb(0 0 0 / 45%);
 
   --hero-bg: #08070d;
-  --hero-slab-hi: #3a3947;
+  --hero-slab-hi: #262531;
   --hero-slab-lo: #15141d;
   --hero-slab-side: #0f0e16;
   --hero-engrave-hi: rgb(255 255 254 / 18%);
@@ -59,6 +59,8 @@
   --hero-chip-bg: #1c1b26;
   --hero-chip-border: rgb(255 255 254 / 12%);
   --hero-dot: #ff8906;
+  --hero-glare: rgb(255 255 254 / 2%);
+  --hero-sheen: rgb(255 255 254 / 2%);
 
   --radius: 6px;
   --radius-sm: 4px;
@@ -128,12 +130,14 @@
     --hero-bg: #e6f2f2;
     --hero-slab-hi: #fdfefe;
     --hero-slab-lo: #cde5e5;
-    --hero-slab-side: #b4d4d5;
+    --hero-slab-side: #c4dfdf;
     --hero-engrave-hi: rgb(255 255 254 / 95%);
     --hero-engrave-lo: rgb(39 35 67 / 30%);
     --hero-chip-bg: #fbfefe;
     --hero-chip-border: rgb(39 35 67 / 18%);
     --hero-dot: #dd6b00;
+    --hero-glare: rgb(255 255 254 / 70%);
+    --hero-sheen: rgb(255 255 254 / 50%);
   }
 }
 
@@ -184,12 +188,14 @@
   --hero-bg: #e6f2f2;
   --hero-slab-hi: #fdfefe;
   --hero-slab-lo: #cde5e5;
-  --hero-slab-side: #b4d4d5;
+  --hero-slab-side: #c4dfdf;
   --hero-engrave-hi: rgb(255 255 254 / 95%);
   --hero-engrave-lo: rgb(39 35 67 / 30%);
   --hero-chip-bg: #fbfefe;
   --hero-chip-border: rgb(39 35 67 / 18%);
   --hero-dot: #dd6b00;
+  --hero-glare: rgb(255 255 254 / 70%);
+  --hero-sheen: rgb(255 255 254 / 50%);
 }
 
 :root[data-theme="dark"] {
@@ -266,7 +272,11 @@ a {
 
 /* ---------- Estrutura ---------- */
 
+/* .app é um contexto de empilhamento: o cenário (Backdrop, z-index -1) fica acima do fundo
+   do body e abaixo de todo o conteúdo. */
 .app {
+  position: relative;
+  z-index: 0;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
@@ -286,9 +296,9 @@ a {
   z-index: 10;
 }
 
-/* Cabeçalho em chips em todas as rotas (idioma da tela inicial). Nas telas internas ele fica
-   em fluxo, sobre o fundo do hero de ponta a ponta (sombra + recorte: pinta a largura toda
-   sem criar rolagem lateral); na inicial fica por cima do hero (.app-home, seção "Tela 1"). */
+/* Cabeçalho em chips em todas as rotas (idioma da tela inicial), transparente sobre o cenário.
+   Nas telas internas fica em fluxo, acima do conteúdo; na inicial fica por cima do hero
+   (.app-home, seção "Tela 1"). */
 .topbar {
   display: flex;
   align-items: center;
@@ -298,9 +308,6 @@ a {
   max-width: var(--max);
   margin: 0 auto;
   padding: 16px;
-  background: var(--hero-bg);
-  box-shadow: 0 0 0 100vmax var(--hero-bg);
-  clip-path: inset(0 -100vmax);
 }
 
 .brand {
@@ -402,37 +409,16 @@ a {
   border-top: 1px solid var(--border);
 }
 
-/* Faixa-título das telas internas (PageBand): fundo do hero de ponta a ponta, colado no
-   cabeçalho, com uma placa inclinada à direita (enfeite) e o título forte. */
+/* Faixa-título das telas internas (PageBand): transparente sobre o cenário de fundo, só com
+   sobretítulo, título forte, 2ª linha atenuada e a ação da tela. */
 .page-band {
-  position: relative;
-  isolation: isolate;
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
   gap: var(--gap);
   flex-wrap: wrap;
-  margin: -8px 0 12px;
-  padding: 28px 0 36px;
-  background: var(--hero-bg);
-  box-shadow: 0 0 0 100vmax var(--hero-bg);
-  clip-path: inset(0 -100vmax);
-}
-
-.page-band::after {
-  content: "";
-  position: absolute;
-  z-index: -1;
-  top: 0;
-  bottom: 0;
-  right: 0;
-  width: 45%;
-  /* Recortada em diagonal dentro da própria caixa: nada vaza para fora da faixa. */
-  background: linear-gradient(170deg, var(--hero-slab-hi), var(--hero-slab-lo) 80%);
-  clip-path: polygon(38% 0, 100% 0, 100% 100%, 0 100%);
-  mask-image: linear-gradient(90deg, black 55%, transparent);
-  opacity: 0.6;
-  pointer-events: none;
+  margin: 0 0 12px;
+  padding: 28px 0 32px;
 }
 
 .page-band-text {
@@ -665,6 +651,8 @@ label {
 
 /* ---------- Avisos, selos e dicas ---------- */
 
+/* Avisos e realces translúcidos (avisos, luta subindo ou pausada, atualização automática,
+   coach) ficam sobre uma base sólida de --surface: nunca direto sobre o cenário. */
 .notice {
   display: flex;
   justify-content: space-between;
@@ -674,7 +662,8 @@ label {
   padding: 14px 16px;
   border-radius: var(--radius);
   border: 1px solid var(--border);
-  background: var(--info-bg);
+  background-color: var(--surface);
+  background-image: linear-gradient(var(--info-bg), var(--info-bg));
 }
 
 .notice-body {
@@ -683,12 +672,14 @@ label {
 }
 
 .notice-atencao {
-  background: var(--warn-bg);
+  background-color: var(--surface);
+  background-image: linear-gradient(var(--warn-bg), var(--warn-bg));
   border-color: var(--warn-border);
 }
 
 .notice-erro {
-  background: var(--error-bg);
+  background-color: var(--surface);
+  background-image: linear-gradient(var(--error-bg), var(--error-bg));
   border-color: var(--error-border);
 }
 
@@ -832,15 +823,19 @@ label {
 }
 
 /* Fundo: a marca gravada numa placa em perspectiva (a "chapa de metal" da referência). */
-.hero-art {
-  position: absolute;
+/* Cenário de fundo de todas as telas (Backdrop): fixo na viewport, atrás do conteúdo, numa
+   camada própria do compositor (rolar não repinta a placa). */
+.backdrop {
+  position: fixed;
   inset: 0;
   z-index: -1;
   overflow: hidden;
   perspective: 1100px;
   perspective-origin: 70% 0%;
+  background: var(--hero-bg);
   pointer-events: none;
   user-select: none;
+  will-change: transform;
 }
 
 .hero-slab {
@@ -859,7 +854,7 @@ label {
   overflow: hidden;
   border-radius: 6px;
   background:
-    linear-gradient(115deg, var(--hero-engrave-hi), transparent 35%),
+    linear-gradient(115deg, var(--hero-glare), transparent 35%),
     linear-gradient(170deg, var(--hero-slab-hi) 10%, var(--hero-slab-lo) 75%);
   box-shadow: inset 0 2px 0 var(--hero-engrave-hi);
 }
@@ -884,8 +879,7 @@ label {
   position: absolute;
   inset: -20% auto -20% 0;
   width: 30%;
-  background: linear-gradient(100deg, transparent, var(--hero-engrave-hi), transparent);
-  opacity: 0.5;
+  background: linear-gradient(100deg, transparent, var(--hero-sheen), transparent);
   transform: translateX(-120%);
 }
 
@@ -1102,6 +1096,14 @@ label {
 }
 
 /* Abaixo da dobra: mesmo idioma visual (cantos retos, números em destaque, espaço). */
+/* O cenário da inicial mora dentro do hero; o que vem abaixo da dobra (e o rodapé) sobe uma
+   camada para ficar por cima dele. */
+.app-home .home-below,
+.app-home .footer {
+  position: relative;
+  z-index: 1;
+}
+
 .home-below {
   display: grid;
   gap: 32px;
@@ -1363,7 +1365,8 @@ label {
   cursor: progress;
   border-style: dashed;
   border-color: var(--accent-border);
-  background: var(--info-bg);
+  background-color: var(--surface);
+  background-image: linear-gradient(var(--info-bg), var(--info-bg));
 }
 
 .fight-uploading .fight-reason {
@@ -1424,7 +1427,8 @@ label {
   cursor: not-allowed;
   border-style: dashed;
   border-color: var(--warn-border);
-  background: var(--warn-bg);
+  background-color: var(--surface);
+  background-image: linear-gradient(var(--warn-bg), var(--warn-bg));
 }
 
 .fight-paused .fight-reason {
@@ -1456,7 +1460,8 @@ label {
   padding: 12px 16px;
   border-radius: var(--radius);
   border: 1px solid var(--accent-border);
-  background: var(--info-bg);
+  background-color: var(--surface);
+  background-image: linear-gradient(var(--info-bg), var(--info-bg));
 }
 
 .auto-refresh p {
@@ -1466,7 +1471,8 @@ label {
 .auto-refresh-stopped {
   border-style: dashed;
   border-color: var(--warn-border);
-  background: var(--warn-bg);
+  background-color: var(--surface);
+  background-image: linear-gradient(var(--warn-bg), var(--warn-bg));
 }
 
 /* Contagem até a próxima busca: na mesma linha da frase de estado, fora da região viva. */
@@ -1667,7 +1673,8 @@ label {
   align-items: flex-start;
   padding: 16px;
   border-radius: var(--radius);
-  background: linear-gradient(135deg, var(--coach-bg-1), var(--coach-bg-2));
+  background-color: var(--surface);
+  background-image: linear-gradient(135deg, var(--coach-bg-1), var(--coach-bg-2));
   border: 1px solid var(--accent-border);
 }
 
@@ -2145,12 +2152,8 @@ caption {
     flex-direction: column;
   }
 
-  .page-band::after {
-    display: none;
-  }
-
   .page-band {
-    padding: 20px 0 28px;
+    padding: 20px 0 24px;
   }
 
   .timeline-grid {

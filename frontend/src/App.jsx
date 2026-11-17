@@ -1,4 +1,5 @@
 import AuthProvider from "./components/AuthProvider.jsx";
+import Backdrop from "./components/Backdrop.jsx";
 import ThemeToggle from "./components/ThemeToggle.jsx";
 import { useAuth } from "./lib/auth-context.js";
 import { href, navigate, useRoute } from "./lib/router.js";
@@ -25,6 +26,8 @@ function Layout() {
   return (
     // Na tela inicial o cabeçalho fica por cima do hero (estilo de chips); nas outras, nada muda.
     <div className={section ? "app" : "app app-home"}>
+      {/* Cenário de fundo de todas as telas; na inicial, ele vem dentro do hero (Home). */}
+      {section && <Backdrop />}
       <a className="skip" href="#conteudo">
         Pular para o conteúdo
       </a>

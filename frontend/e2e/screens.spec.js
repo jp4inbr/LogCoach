@@ -325,7 +325,9 @@ const RESULT_CHECKS = {
     [".badge-atencao", "backgroundColor", "--warn-badge-bg"],
     [".badge-erro", "color", "--error"],
     [".badge-erro", "backgroundColor", "--error-bg"],
-    [".notice-atencao", "backgroundColor", "--warn-bg"],
+    // Fase 3: o aviso pinta o --warn-bg como camada sobre uma base sólida (--surface), para
+    // não ficar translúcido direto sobre o cenário; antes era o background-color.
+    [".notice-atencao", "backgroundImage", "--warn-bg"],
   ],
   "Linha do tempo": [
     [".mark-player", "backgroundColor", "--player"],
@@ -346,10 +348,11 @@ async function expectMeaning(page, theme, checks, label) {
       0,
     );
     const value = await target.evaluate((el, p) => getComputedStyle(el)[p], prop);
-    const expected =
+    let expected =
       MEANING[theme][token] !== undefined
         ? rgbOf(MEANING[theme][token])
         : TRANSLUCENT[theme][token];
+    if (prop === "backgroundImage") expected = `linear-gradient(${expected}, ${expected})`;
     expect(expected, `${token} sem valor de referência`).toBeTruthy();
     expect(value, `${label}: ${selector} ${prop} = ${token}`).toBe(expected);
   }
@@ -377,7 +380,7 @@ test.describe("W11: cores de significado intactas", () => {
       await expectMeaning(
         page,
         theme,
-        [[".notice-atencao", "backgroundColor", "--warn-bg"]],
+        [[".notice-atencao", "backgroundImage", "--warn-bg"]],
         "escolher luta",
       );
     });

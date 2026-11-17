@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import Backdrop from "../components/Backdrop.jsx";
 import Notice from "../components/Notice.jsx";
 import { useAuth } from "../lib/auth-context.js";
 import { parseReportCode, SAMPLE_LINK } from "../lib/links.js";
@@ -44,7 +45,7 @@ const SEALS = [
 
 // Tela 1: início. O link é validado antes de enviar (RF03, heurística "prevenção de erros").
 // O hero segue a linguagem de um painel escuro com a marca gravada em perspectiva ao fundo
-// (só CSS, decorativo) e a barra do link no rodapé, no formato de um campo de prompt.
+// (o cenário de todas as telas, Backdrop) e a barra do link no rodapé, em formato de prompt.
 export default function Home() {
   const { token } = useAuth();
   const [link, setLink] = useState("");
@@ -68,19 +69,7 @@ export default function Home() {
   return (
     <div className="home">
       <section className="hero" aria-labelledby="hero-title">
-        <div className="hero-art" aria-hidden="true">
-          <div className="hero-slab">
-            <div className="hero-slab-top">
-              <span className="hero-word">LogCoach</span>
-              <span className="hero-sheen" />
-            </div>
-            <div className="hero-slab-front">
-              <span className="hero-rivet" />
-              <span className="hero-rivet" />
-            </div>
-          </div>
-          <div className="hero-veil" />
-        </div>
+        <Backdrop />
 
         <div className="hero-inner">
           <div className="hero-copy">

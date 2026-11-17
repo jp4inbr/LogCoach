@@ -202,9 +202,10 @@ describe.each(Object.entries(themes))("contraste WCAG AA, tema %s", (_name, them
 // chapa + brilho que passa, compostos sobre a face mais clara). Os detalhes finos da
 // gravação (letras e rebites) são enfeite de poucos pixels e ficam de fora.
 function backdropFaces(theme) {
-  const flat = ["--hero-bg", "--hero-slab-hi", "--hero-slab-lo", "--hero-slab-side"].map(
-    (name) => [name, parseColor(theme[name])],
-  );
+  const flat = ["--hero-bg", "--hero-slab-hi", "--hero-slab-lo", "--hero-slab-side"].map((name) => [
+    name,
+    parseColor(theme[name]),
+  ]);
   const lit = over(
     parseColor(theme["--hero-sheen"]),
     over(parseColor(theme["--hero-glare"]), parseColor(theme["--hero-slab-hi"])),
