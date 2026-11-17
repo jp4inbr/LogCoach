@@ -46,6 +46,7 @@ O bloco claro aparece duas vezes no CSS (na media query e em `[data-theme="light
 | `--accent-fg` | `#ff8906` | `#272343` | Destaque como texto, borda e traço de gráfico |
 | `--focus` | `#ff8906` | `#272343` | Anel de foco do teclado |
 | `--brand-2` | `#e53170` | `#bae8e8` | Segunda cor do degradê da marca |
+| `--brand-highlight` | `#ff8906` a 0% | `#ffd803` | Marca-texto sob o "Coach" da marca no cabeçalho (só no claro; no escuro o "Coach" é laranja, pelo `--accent-fg`) |
 | `--top` | `#22d3ee` | `#0c7c9c` | Cor dos tops na comparação |
 | `--player` | `#ff8906` | `#dd6b00` | Marca do jogador na linha do tempo: laranja nos dois temas, contra o ciano dos tops |
 | `--luck` | `#3b82f6` | `#2563eb` | Série do azar (RNG) na barra "De onde vem essa diferença" e no ponto da lista. Não é situação |

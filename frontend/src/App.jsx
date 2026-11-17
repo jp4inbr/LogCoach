@@ -1,4 +1,5 @@
 import AuthProvider from "./components/AuthProvider.jsx";
+import Splash from "./components/Splash.jsx";
 import ThemeToggle from "./components/ThemeToggle.jsx";
 import { useAuth } from "./lib/auth-context.js";
 import { href, navigate, useRoute } from "./lib/router.js";
@@ -12,6 +13,8 @@ import Result from "./pages/Result.jsx";
 export default function App() {
   return (
     <AuthProvider>
+      {/* Fora do Layout: toca uma vez por carregamento, sem depender da rota. */}
+      <Splash />
       <Layout />
     </AuthProvider>
   );
@@ -30,9 +33,15 @@ function Layout() {
       <header className="topbar">
         <a className="brand" href={href("/")} aria-label="LogCoach, página inicial">
           <span className="brand-mark" aria-hidden="true">
-            ✦
+            {/* Marca "Pulso": o traço de um gráfico de desempenho subindo. */}
+            <svg viewBox="0 0 64 64" focusable="false">
+              <path d="M11 44 H19 L25 30 L32 46 L39 26 L45 34 L52 16" />
+            </svg>
           </span>
-          LogCoach
+          {/* Num span só: o gap do .brand separaria "Log" de "Coach". */}
+          <span>
+            Log<span className="brand-accent">Coach</span>
+          </span>
         </a>
         <nav aria-label="Principal">
           <a href={href("/")} aria-current={!section ? "page" : undefined}>
