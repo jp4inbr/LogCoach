@@ -188,25 +188,71 @@ test.describe("localStorage bloqueado", () => {
   });
 });
 
-test.describe("celular 360×740", () => {
-  test.use({ viewport: { width: 360, height: 740 } });
+// Nenhuma tela rola de lado: celular (360) e desktop (1280), nos dois temas, com cada tela no
+// estado em que a pessoa a vê (luta escolhida, resultado aberto, perfil logado).
+const ME = {
+  email: "voce@exemplo.com",
+  created_at: "2026-10-01T12:00:00Z",
+  plan: "gratis",
+  analyses_this_month: 1,
+  monthly_limit: 5,
+};
+const LAYOUT_SCREENS = {
+  início: { path: "/", ready: (page) => page.getByRole("heading", { level: 1 }) },
+  login: { path: "/entrar?modo=login", ready: (page) => page.getByLabel("E-mail") },
+  cadastro: { path: "/entrar?modo=cadastro", ready: (page) => page.getByLabel("E-mail") },
+  planos: {
+    path: "/planos",
+    ready: (page) => page.getByRole("heading", { name: "Escolha como quer evoluir" }),
+  },
+  "escolher luta": {
+    path: `/relatorio/${REPORT_CODE}`,
+    ready: (page) => page.getByRole("heading", { name: "1. Escolha a luta" }),
+    async prepare(page) {
+      await page.getByRole("button", { name: /Nek'zali.*luta 34/ }).click();
+      await expect(page.getByText("Harmonist")).toBeVisible();
+    },
+  },
+  resultado: {
+    path: "/analise/7dbcd6251c8c4000818a61ea67785e36",
+    ready: (page) => page.getByRole("heading", { level: 1 }),
+  },
+  perfil: {
+    path: "/perfil",
+    login: true,
+    ready: (page) => page.getByRole("heading", { level: 1, name: "Seu perfil" }),
+  },
+};
 
-  for (const theme of ["light", "dark"]) {
-    test(`o cabeçalho não gera rolagem horizontal (${theme})`, async ({ page }) => {
-      await seedStorage(page, { [THEME_KEY]: theme, ...session() });
-      await mockApi(page, { ...happyRoutes(), "GET /me": { body: { email: "voce@exemplo.com" } } });
-      for (const path of ["/", "/planos", "/entrar?modo=login"]) {
-        await page.goto(`/#${path}`);
-        await expect(toggleButton(page)).toBeVisible();
-        const sizes = await page.evaluate(() => ({
-          scroll: document.documentElement.scrollWidth,
-          client: document.documentElement.clientWidth,
-        }));
-        expect(sizes.scroll, `${path} em ${theme}`).toBeLessThanOrEqual(sizes.client);
+for (const width of [360, 1280]) {
+  test.describe(`sem rolagem horizontal em ${width} px`, () => {
+    test.use({ viewport: { width, height: width === 360 ? 740 : 800 } });
+
+    for (const theme of ["light", "dark"]) {
+      for (const [name, screen] of Object.entries(LAYOUT_SCREENS)) {
+        test(`${name} (${theme})`, async ({ page }) => {
+          await seedStorage(page, { [THEME_KEY]: theme, ...(screen.login ? session() : {}) });
+          await mockApi(page, {
+            ...happyRoutes(),
+            "GET /me": { body: ME },
+            "GET /me/analyses": { body: [] },
+          });
+          await page.goto(`/#${screen.path}`);
+          await expect(screen.ready(page)).toBeVisible();
+          if (screen.prepare) await screen.prepare(page);
+          await expect(toggleButton(page)).toBeVisible();
+          const sizes = await page.evaluate(() => ({
+            scroll: document.documentElement.scrollWidth,
+            client: document.documentElement.clientWidth,
+            body: document.body.scrollWidth,
+          }));
+          expect(sizes.scroll, `${name} em ${theme}`).toBeLessThanOrEqual(sizes.client);
+          expect(sizes.body, `${name} em ${theme} (body)`).toBeLessThanOrEqual(sizes.client);
+        });
       }
-    });
-  }
-});
+    }
+  });
+}
 
 // ---------- contraste real (axe-core com color-contrast ligado) ----------
 
@@ -232,6 +278,11 @@ const SCREENS = {
     async prepare(page) {
       await page.locator(".compared > summary").click();
     },
+  },
+  "perfil logado": {
+    path: "/perfil",
+    login: true,
+    ready: (page) => page.getByRole("heading", { level: 1, name: "Seu perfil" }),
   },
   "resultado com nomes à mostra": {
     path: "/analise/7dbcd6251c8c4000818a61ea67785e36",
@@ -260,8 +311,13 @@ test.describe("contraste e acessibilidade no navegador", () => {
             player.server = "Servidor";
           });
         }
-        await seedStorage(page, { [THEME_KEY]: theme });
-        await mockApi(page, { ...happyRoutes(), [`GET /analyses/${result.id}`]: { body: result } });
+        await seedStorage(page, { [THEME_KEY]: theme, ...(screen.login ? session() : {}) });
+        await mockApi(page, {
+          ...happyRoutes(),
+          [`GET /analyses/${result.id}`]: { body: result },
+          "GET /me": { body: ME },
+          "GET /me/analyses": { body: [] },
+        });
 
         await page.goto(`/#${screen.path}`);
         await expect(screen.ready(page)).toBeVisible();
