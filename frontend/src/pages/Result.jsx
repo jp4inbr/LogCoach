@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import ComparedPlayers from "../components/ComparedPlayers.jsx";
 import GapBreakdown from "../components/GapBreakdown.jsx";
 import Icon from "../components/Icon.jsx";
 import MistakeCard from "../components/MistakeCard.jsx";
+import MistakeRail from "../components/MistakeRail.jsx";
 import Notice from "../components/Notice.jsx";
 import StatusBadge from "../components/StatusBadge.jsx";
 import TargetsTable from "../components/TargetsTable.jsx";
@@ -12,6 +13,7 @@ import SpellText, { SpellName } from "../components/SpellText.jsx";
 import { useAuth } from "../lib/auth-context.js";
 import { formatClock, formatDps, formatNumber, formatSignedPct } from "../lib/format.js";
 import { href } from "../lib/router.js";
+import { plainSpellText } from "../lib/spellText.js";
 import { useRequest } from "../lib/useRequest.js";
 
 const TABS = [
@@ -196,6 +198,19 @@ function Summary({ result }) {
   // Primeiro os erros que as regras confirmam; as hipóteses vêm depois, separadas (RF23, RF24).
   const mistakes = result.mistakes.filter((mistake) => mistake.kind === "regra");
   const hypotheses = result.mistakes.filter((mistake) => mistake.kind === "hipotese");
+  // Trilho numerado: um link por erro, na ordem de custo (só com dois erros ou mais).
+  const railItems = useMemo(
+    () =>
+      result.mistakes
+        .filter((mistake) => mistake.kind === "regra")
+        .map((mistake, index) => ({
+          id: `erro-${index + 1}`,
+          rank: index + 1,
+          title: plainSpellText(mistake.title),
+          severity: mistake.severity,
+        })),
+    [result.mistakes],
+  );
   return (
     <div className="stack">
       {coach.available ? (
@@ -224,13 +239,19 @@ function Summary({ result }) {
       <GapBreakdown gap={result.gap} />
 
       <h2>Erros do maior para o menor impacto</h2>
+      {railItems.length >= 2 && <MistakeRail items={railItems} />}
       {mistakes.length === 0 ? (
         <Notice title="Nenhum erro encontrado">
           Sua luta bateu com os melhores em todas as regras.
         </Notice>
       ) : (
         mistakes.map((mistake, index) => (
-          <MistakeCard key={mistake.id} mistake={mistake} rank={index + 1} />
+          <MistakeCard
+            key={mistake.id}
+            mistake={mistake}
+            rank={index + 1}
+            id={`erro-${index + 1}`}
+          />
         ))
       )}
 

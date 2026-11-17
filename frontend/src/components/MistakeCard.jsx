@@ -6,7 +6,8 @@ import SpellText from "./SpellText.jsx";
 // Um erro do relatório: título, quanto custou, explicação, o que fazer e os números do código.
 // Na hipótese (RF23/RF24) não há custo confirmado: o número é a diferença que as regras não
 // explicam, e o card fica sem posição na lista (rank nulo).
-export default function MistakeCard({ mistake, rank }) {
+// id: âncora do trilho dos erros (MistakeRail); o cartão recebe o foco quando o link é usado.
+export default function MistakeCard({ mistake, rank, id }) {
   const impact =
     mistake.impact_pct === null
       ? "Sem custo em dano calculado (risco de morte ou efeito indireto)"
@@ -15,7 +16,11 @@ export default function MistakeCard({ mistake, rank }) {
         : `Custou cerca de ${formatNumber(mistake.impact_pct)}% do seu dano`;
 
   return (
-    <article className={`mistake mistake-${mistake.severity}`}>
+    <article
+      className={`mistake mistake-${mistake.severity}`}
+      id={id}
+      tabIndex={id ? -1 : undefined}
+    >
       <header className="mistake-head">
         {rank && (
           <span className="mistake-rank" aria-hidden="true">

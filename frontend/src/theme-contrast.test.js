@@ -115,6 +115,9 @@ const pairs = [
     ["--focus", bg, GRAPHIC, "--bg"],
     ["--border-control", bg, GRAPHIC, "--bg"],
   ]),
+  // Atenção como texto (número do cartão e do trilho dos erros) sobre fundo, cartão e vidro.
+  ...["--bg", "--surface", "--surface-2"].map((bg) => ["--warn-fg", bg, TEXT]),
+  ...["--glass", "--glass-2"].map((bg) => ["--warn-fg", bg, TEXT, "--bg"]),
   ...["--bg", "--surface"].flatMap((base) => [
     ["--ok", "--ok-bg", TEXT, base],
     ["--warn-badge-fg", "--warn-badge-bg", TEXT, base],
@@ -273,6 +276,10 @@ describe.each(Object.entries(themes))("cores de situação, tema %s", (name, the
 
   it("o texto do selo de atenção não se confunde com o erro", () => {
     expect(distance(theme["--warn-badge-fg"], theme["--error"])).toBeGreaterThanOrEqual(0.12);
+  });
+
+  it("o número de atenção (cartão e trilho) não se confunde com o erro", () => {
+    expect(distance(theme["--warn-fg"], theme["--error"])).toBeGreaterThanOrEqual(0.12);
   });
 });
 

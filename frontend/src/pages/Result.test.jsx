@@ -211,6 +211,43 @@ describe("Result", () => {
       expect(within(cards[1]).getByText("2")).toBeInTheDocument();
     });
 
+    it("trilho 'Erros por custo': um link por erro, na ordem e com a âncora de cada cartão", async () => {
+      await aberta();
+
+      const trilho = screen.getByRole("navigation", { name: "Erros por custo" });
+      const links = within(trilho).getAllByRole("link");
+      const cartoes = screen.getAllByRole("article").filter((card) => card.id.startsWith("erro-"));
+      expect(links).toHaveLength(cartoes.length);
+      expect(links.map((link) => link.getAttribute("href"))).toEqual(
+        cartoes.map((card) => `#${card.id}`),
+      );
+      cartoes.forEach((card, index) => {
+        const titulo = within(card).getByRole("heading", { level: 3 }).textContent;
+        expect(links[index]).toHaveAccessibleName(`${index + 1}. ${titulo}`);
+      });
+      // A hipótese não tem posição na lista, então não entra no trilho.
+      expect(screen.getAllByRole("article")).toHaveLength(cartoes.length + 1);
+    });
+
+    it("o trilho só aparece no Resumo e com dois erros ou mais", async () => {
+      const user = userEvent.setup();
+      await aberta();
+      await user.click(aba("Todas as regras"));
+      expect(screen.queryByRole("navigation", { name: "Erros por custo" })).toBeNull();
+      await user.click(aba("Resumo"));
+      expect(screen.getByRole("navigation", { name: "Erros por custo" })).toBeInTheDocument();
+    });
+
+    it("com um erro só não há trilho", async () => {
+      await aberta(
+        variacao((a) => {
+          const primeiro = a.result.mistakes.find((m) => m.kind === "regra");
+          a.result.mistakes = a.result.mistakes.filter((m) => m === primeiro || m.kind !== "regra");
+        }),
+      );
+      expect(screen.queryByRole("navigation", { name: "Erros por custo" })).toBeNull();
+    });
+
     it("cada erro mostra gravidade, custo, o que fazer e os números", async () => {
       await aberta();
 
