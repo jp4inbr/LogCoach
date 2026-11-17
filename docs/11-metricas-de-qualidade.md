@@ -4,7 +4,7 @@
 
 | Métrica | Meta | Como medir | Resultado |
 |---|---|---|---|
-| Testes passando | 100% | `pytest` no CI | **100%** — 630 de 630 no backend, com 1 pulado de propósito (16/11), 127 deles do motor; 601 de 601 no Vitest e 47 de 47 no Playwright no frontend (CI, 16/11); com a tela inicial repaginada, 639 de 639 e 74 de 74 (rodada local, 16/11). Ver itens 10.3 e 10.4 |
+| Testes passando | 100% | `pytest` no CI | **100%** — 630 de 630 no backend, com 1 pulado de propósito (16/11), 127 deles do motor; 601 de 601 no Vitest e 47 de 47 no Playwright no frontend (CI, 16/11); com a tela inicial repaginada, 639 de 639 e 74 de 74 (rodada local, 16/11); com todas as telas repaginadas, 651 de 651 e 240 de 240 (rodada local, 17/11). Ver itens 10.3 e 10.4 |
 | Cobertura de testes do motor de análise | ≥ 70% | `pytest --cov=app/engine` | **99%** — 1.462 linhas em `app/engine/`, 11 sem teste; backend inteiro 98% (CI, 16/11; ver 10.3) |
 | Erros de lint | 0 | `ruff check` e `eslint` no CI | **0** — CI verde no backend e no frontend, Ubuntu e Windows (PR #31, 16/11) |
 | Tempo de carregamento das páginas | < 3 s (RNF01) | DevTools do navegador | **0,7 s em 4G e 1,8 s em 3G rápido** — tela inicial, build de produção (mediana de 5 medições, ver 11.1) |

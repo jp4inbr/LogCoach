@@ -65,6 +65,8 @@ O bloco claro aparece duas vezes no CSS (na media query e em `[data-theme="light
 | `--hero-chip-bg`, `--hero-chip-border` | `#1c1b26`, branco a 12% | `#fbfefe`, `#272343` a 18% | Chips do cabeçalho na tela inicial |
 | `--hero-dot` | `#ff8906` | `#dd6b00` | Ponto do "● Entrar" na tela inicial (laranja nos dois temas, como o `--player`) |
 
+**Forma (17/11):** `--radius` 6 px (cartões, avisos, tabelas) e `--radius-sm` 4 px (botões, campos, abas, selos), no idioma da tela inicial. O cabeçalho em chips (`--hero-chip-bg`, `--hero-chip-border`, borda `--border-control` no chip da página atual) e a faixa-título das telas internas (`--hero-bg` e as faces `--hero-slab-*` na placa à direita) usam os tokens do hero em todas as rotas; nenhuma cor nova entrou. As cores de situação, jogador × top, azar e o aviso amarelo de exemplo continuam com os mesmos valores (conferido no navegador por `e2e/screens.spec.js`, W11).
+
 `--accent` serve só de **preenchimento** (botão, avatar). Quando o destaque vira texto, borda ou traço de gráfico, usa `--accent-fg`, porque o amarelo `#ffd803` sobre fundo claro não tem contraste.
 
 ## 15.4 Cores de situação

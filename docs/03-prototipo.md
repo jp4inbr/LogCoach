@@ -55,6 +55,8 @@ flowchart LR
 * **Rodapé do hero:** à esquerda, "Criar conta grátis" com o aviso "Você pode fazer 1 análise sem conta." (some com login); no centro, o campo do link como uma barra de prompt: **+** carrega o log de exemplo, o campo e **↑** (Analisar). No celular, "Analisar" desce para uma linha própria, com texto.
 * **Abaixo da dobra:** "Como funciona" (os mesmos três passos) e "O que já é suportado", no mesmo estilo (cantos pouco arredondados, números 01–03).
 
+**Demais telas (17/11):** o mesmo idioma em todas as rotas. O cabeçalho em chips aparece em todas as telas, sobre o fundo do hero (nas internas fica acima do conteúdo, sem sobrepor). Cada tela interna abre com uma **faixa-título** (componente `PageBand`): sobretítulo em caixa alta, o título (`h1`, com o mesmo texto de antes), uma 2ª linha atenuada quando a tela já tinha uma (jogador no resultado, e-mail no perfil, convite no cadastro) e a ação da tela à direita ("← Trocar o link", "← Escolher outra luta", "Nova análise"). Cartões, tabelas e avisos com cantos de 4–6 px; abas (Entrar/Criar conta, Resumo/Linha do tempo/Todas as regras) em chips. No Entrar/Cadastro, o título saiu de dentro do cartão e foi para a faixa, acima das abas, com o sobretítulo "Conta LogCoach". Os estados de erro sem título (ex.: relatório que não abriu) continuam sem faixa nem título novo.
+
 **Princípios de usabilidade aplicados**
 
 * **H2 · Correspondência com o mundo real:** a proposta é explicada em português, na linguagem do jogador.
