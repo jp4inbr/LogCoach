@@ -16,7 +16,7 @@ description: Organização das tarefas e prazos do time.
 
 ## 6.1 Papéis
 
-> Cada linha é uma frente de trabalho. As frentes "a definir" estão abertas: os integrantes se inscrevem de acordo com o que conseguem entregar.
+> Cada linha é uma frente de trabalho.
 
 | Pessoa | Papel | Entregas |
 |---|---|---|
@@ -29,10 +29,10 @@ description: Organização das tarefas e prazos do time.
 | **Matheus Morgado** | Qualidade da Apresentação | Elaborar os slides e garantir que o material estará disponível e correto na hora da apresentação à banca |
 | **Arthur** | Relatório de IA | Item 9, a partir dos prompts, interações e relatórios dos membros do grupo |
 | **Arthur** | Casos de teste | Cenários de erro e validação em linguagem simples (base dos testes Pytest) e item 10 |
-| _a definir_ | Teste de usabilidade | Aplicar o roteiro e o questionário SUS (8.3) e registrar os resultados |
-| _a definir_ | Pesquisa | Formulário com jogadores brasileiros (evidências do problema) |
-| _a definir_ | Aplicação da Usabilidade | Acompanhar como os princípios de usabilidade entram na aplicação, junto ao front/backend, e manter o item 8 |
-| _a definir_ | Diagramas | Converter os fluxogramas em Mermaid (arquitetura, fluxo de telas, motor de análise, cronograma) em diagramas apresentáveis para o GitBook e os slides |
+| **Arthur** | Teste de usabilidade | Aplicar o roteiro e o questionário SUS (8.3) e registrar os resultados |
+| **Arthur** | Pesquisa | Formulário com jogadores brasileiros (evidências do problema) |
+| **Arthur** | Aplicação da Usabilidade | Acompanhar como os princípios de usabilidade entram na aplicação, junto ao front/backend, e manter o item 8 |
+| **Arthur** | Diagramas | Converter os fluxogramas em Mermaid (arquitetura, fluxo de telas, motor de análise, cronograma) em diagramas apresentáveis para o GitBook e os slides |
 
 ## 6.2 Cronograma
 
