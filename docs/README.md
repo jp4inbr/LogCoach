@@ -37,5 +37,4 @@ O jogador cola o link do seu log de combate do Warcraft Logs e o LogCoach mostra
 | Matheus Morgado   |
 | Matheus Damasceno |
 | Pedro Nogueira    |
-| Thales Almeida    |
 | Yohanan Amaral    |
