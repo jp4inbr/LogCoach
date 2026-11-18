@@ -1,5 +1,5 @@
 ---
-description: Como frontend, backend, banco de dados e IA se conectam.
+description: Como frontend, backend e banco de dados se conectam.
 ---
 
 # 5. Diagrama de Arquitetura
@@ -30,12 +30,11 @@ flowchart LR
     CL -->|GraphQL + OAuth| WCL[API Warcraft Logs v2]
     API --> DB[(Banco<br/>SQLite em dev / PostgreSQL)]
     M5 -->|resultado salvo| DB
-    M5 -. próxima etapa, passo 5 .-> AI[IA - Gemini via Vertex AI<br/>ainda não ligada]
 ```
 
 > Se o diagrama não renderizar no GitBook, ative a integração **Mermaid** no espaço ou exporte uma imagem pelo [mermaid.live](https://mermaid.live).
 >
-> As linhas tracejadas são o modo exemplo (sem internet) e a IA, que ainda não está ligada (passo 5).
+> As linhas tracejadas são o modo exemplo (sem internet).
 
 ## Como uma análise funciona
 
@@ -45,9 +44,6 @@ flowchart LR
 4. O `EngineAnalyzer` (`services/analyzer.py`) entrega a luta do jogador e as dos tops ao motor (`engine/`), que mede a luta por fase, aplica as regras do Mago Arcano e do chefe (YAML) com os limites tirados dos próprios tops e monta as tabelas por habilidade e por alvo (RF22).
 5. O motor explica a diferença para os tops em % do dano do jogador: **erros + sorte + não explicado** (RF23). O `report.py` monta o `AnalysisResult` (item 12.9).
 6. O resultado é salvo no banco e mostrado ao jogador.
-7. **Próxima etapa (passo 5):** só os fatos, as tabelas e os guias vão para a IA (Gemini), que ordena e explica em português. Se a IA falhar, o relatório sai só com as regras (RF17). Hoje o relatório já sai só com as regras.
-
-**Por que a IA não recebe o log bruto:** o log tem milhares de eventos. Mandar tudo seria caro e aumentaria o risco de a IA inventar coisas. O código calcula os números e a IA só explica.
 
 ## Componentes
 
@@ -57,7 +53,6 @@ flowchart LR
 | Backend          | FastAPI (Python)                       | Rotas, autenticação, orquestração da análise                                                           |
 | Motor de análise | Python (`backend/app/engine/`)         | Medidas por fase, regras com limites tirados dos tops, diferença para os tops, tabelas por habilidade e por alvo (ver item 12) |
 | Banco            | PostgreSQL (Cloud SQL) / SQLite em dev | Usuários, análises, cópia dos tops por 24 h                                                            |
-| IA               | Gemini via Vertex AI (passo 5, ainda não ligada) | Explicar e priorizar os erros em português                                                   |
 | Fonte de dados   | API Warcraft Logs v2 (GraphQL), cliente em `backend/app/wcl/` | Lutas, eventos da luta e rankings; no modo exemplo, arquivos de `app/samples/` |
 
 ## Ambientes

@@ -8,7 +8,7 @@ description: Heurísticas de Nielsen aplicadas, validação de entradas e teste 
 
 ## 8.1 Heurísticas de Nielsen aplicadas
 
-As evidências são prints da alfa rodando (versão de 27/10/2026, relatório de exemplo do Nek'zali Mítico). As três heurísticas marcadas com "após o motor" aparecem na tela de resultado. O motor de análise entrou em 04/11/2026 (PR #27) e a tela passou a mostrar os números calculados a partir do log; os prints delas serão tirados nessa versão. O resumo do coach (IA) ainda não está ligado: por enquanto o resultado sai só com as regras (RF17).
+As evidências são prints da alfa rodando (versão de 27/10/2026, relatório de exemplo do Nek'zali Mítico). As três heurísticas marcadas com "após o motor" aparecem na tela de resultado. O motor de análise entrou em 04/11/2026 (PR #27) e a tela passou a mostrar os números calculados a partir do log; os prints delas serão tirados nessa versão.
 
 | Heurística | Onde aparece no LogCoach | Evidência (print) | Tela no protótipo (item 3) |
 |---|---|---|---|
@@ -68,7 +68,6 @@ Nomes em português e lutas fora do recorte em cinza, cada uma com o motivo ("A 
 | Luta curta demais | "A luta tem menos de 60 s. Escolha uma tentativa mais longa" |
 | Limite do plano grátis | "Você usou suas 5 análises do mês. Veja o plano Pro" |
 | API do Warcraft Logs fora do ar | "O Warcraft Logs não respondeu. Tente de novo em alguns minutos" |
-| IA falhou | Relatório só com as regras + aviso "Explicação do coach indisponível agora" |
 | E-mail ou senha inválidos | Aviso no próprio campo, antes de enviar |
 
 ## 8.3 Teste de usabilidade

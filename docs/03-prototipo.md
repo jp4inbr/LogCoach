@@ -93,7 +93,7 @@ flowchart LR
 {% endtab %}
 
 {% tab title="." icon="5" %}
-#### Tela 5 — Ação da IA: análise e resumo do coach
+#### Tela 5 — Análise e resumo do coach
 
 {% embed url="https://www.figma.com/design/yjxWAryp4t2GiXn8oCfiFk/A3---LogCoach?node-id=8-3474&t=0SjmXLgCnoA2cRQ8-4" %}
 

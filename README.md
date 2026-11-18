@@ -1,12 +1,12 @@
 # LogCoach - Coach de Desempenho para World of Warcraft
 
-> **Status do Projeto:** Versão Alfa (Entrega RT03 - Consolidação, Usabilidade, IA e Testes). O motor de análise já roda com dados reais do Warcraft Logs e compara com os top 10 do bracket; a explicação pela IA (Gemini) é a próxima etapa, e por enquanto o relatório sai só com as regras.
+> **Status do Projeto:** Versão Alfa (Entrega RT03 - Consolidação, Usabilidade, IA e Testes). O motor de análise já roda com dados reais do Warcraft Logs e compara com os top 10 do bracket.
 
 ## 1. Sobre o Projeto (Escopo RT01)
 
 O **LogCoach** é uma aplicação web responsiva voltada ao setor de Entretenimento e Esportes Eletrônicos (e-sports) que transforma o log de combate do World of Warcraft (Warcraft Logs) — hoje um dado bruto, extenso e em inglês — em um diagnóstico claro e priorizado em português do Brasil.
 
-A partir do link público de um relatório do Warcraft Logs, o sistema compara a luta do jogador com a média dos **10 melhores jogadores do mundo na mesma faixa de item level (bracket)**, aplica regras determinísticas da especialização e do chefe, e utiliza Inteligência Artificial para explicar em linguagem simples quais erros mais custaram dano (DPS) e o que corrigir primeiro.
+A partir do link público de um relatório do Warcraft Logs, o sistema compara a luta do jogador com a média dos **10 melhores jogadores do mundo na mesma faixa de item level (bracket)**, aplica regras determinísticas da especialização e do chefe, e explica em linguagem simples quais erros mais custaram dano (DPS) e o que corrigir primeiro.
 
 - **Curso:** Engenharia de Software — Centro Universitário UNA
 - **Unidade Curricular:** Usabilidade e Desenvolvimento Web (Projeto A3)
@@ -20,7 +20,6 @@ A partir do link público de um relatório do Warcraft Logs, o sistema compara a
 | **Backend** | Python 3.12 + FastAPI | API REST, autenticação JWT + Argon2, controle de limite do plano e orquestração |
 | **Motor de Análise** | Python (`app/engine/`) | Regras YAML (`arcane_mage.yaml` e `nekzali.yaml`) com limites tirados dos top 10, diferença para os tops (erros + sorte + não explicado) e tabelas por habilidade e por alvo, por fase |
 | **Banco de Dados** | SQLModel (SQLite / PostgreSQL) | Persistência de usuários, histórico de análises e evolução por chefe, com atenção à conformidade com a LGPD |
-| **Inteligência Artificial** | Gemini via Vertex AI (GCP) | Explicação e priorização dos erros em português a partir dos fatos estruturados (próxima etapa, ainda não ligada) |
 | **Fonte de Dados** | Warcraft Logs API v2 (GraphQL) | Coleta de eventos de combate, fases e rankings por bracket de item level (OAuth2) |
 
 ## 3. Estrutura do Repositório
@@ -30,12 +29,11 @@ LogCoach/
 ├── .github/workflows/ci.yml   # Pipeline CI: Ruff (lint/format), Pytest, ESLint e Vite Build
 ├── backend/                   # API FastAPI e Motor de Análise
 │   ├── app/
-│   │   ├── ai/                # Integração com a IA (ainda vazio: próxima etapa)
 │   │   ├── api/               # Rotas REST (/auth, /me, /reports/resolve, players, prefetch, /analyses)
 │   │   ├── engine/            # Motor determinístico (measures, checks, baseline, abilities, targets, report...)
 │   │   ├── rules/             # Regras da especialização (arcane_mage.yaml)
 │   │   ├── encounters/        # Regras e mecânicas do chefe (nekzali.yaml)
-│   │   ├── guides/            # Guias em português enviados como contexto para a IA
+│   │   ├── guides/            # Guias em português
 │   │   ├── i18n/              # Tradução de magias e NPCs por ID (pt_br.yaml)
 │   │   ├── samples/           # Kill de referência e top 10 do bracket para o modo exemplo (offline/demo)
 │   │   ├── services/          # ReportSource, TopsSource, EngineAnalyzer, planos e validação
@@ -90,7 +88,7 @@ O projeto implementa e demonstra as **10 heurísticas de usabilidade de Jakob Ni
 
 8. **Design estético e minimalista:** Exibição priorizada dos erros de maior impacto no resumo, com informações complementares organizadas em abas.
 
-9. **Reconhecimento e recuperação de erros:** Mensagens claras associadas a códigos de erro, como `invalid_link`, `fight_too_short` e `plan_limit`, além de relatório só com as regras quando a IA não está disponível (RF17; hoje o relatório já sai assim, até a IA ser ligada).
+9. **Reconhecimento e recuperação de erros:** Mensagens claras associadas a códigos de erro, como `invalid_link`, `fight_too_short` e `plan_limit`.
 
 10. **Ajuda e documentação:** Glossário interativo implementado em `Term.jsx`, explicando conceitos como *bracket* de item level e tempo ativo.
 

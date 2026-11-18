@@ -26,7 +26,7 @@ Metas registradas: primeira análise em até 5 minutos (RNF09), análise complet
 
 Especialista em uma única especialização, em português e focado em dizer o que corrigir primeiro.
 
-O mecanismo: as regras do Mago Arcano e de cada chefe foram definidas por um jogador do 1% melhor dessa especialização, e cada limite de desempenho sai dos 10 melhores logs do mesmo chefe, dificuldade e faixa de item level do jogador. O motor encontra os erros com dados e a IA só explica. Isso evita o alerta falso dos checklists rígidos, que ignoram o contexto da luta, e a resposta genérica das ferramentas de IA para todas as classes.
+O mecanismo: as regras do Mago Arcano e de cada chefe foram definidas por um jogador do 1% melhor dessa especialização, e cada limite de desempenho sai dos 10 melhores logs do mesmo chefe, dificuldade e faixa de item level do jogador. O motor encontra os erros com dados. Isso evita o alerta falso dos checklists rígidos, que ignoram o contexto da luta, e a resposta genérica das ferramentas de IA para todas as classes.
 
 Referências de mercado registradas: Warcraft Logs e Raider.IO guardam e ranqueiam, deixando a interpretação para o jogador; WoWAnalyzer, ParsePal e WowCoach analisam, mas em inglês e com regras rígidas ou abordagem genérica.
 
@@ -44,11 +44,9 @@ Referências de mercado registradas: Warcraft Logs e Raider.IO guardam e ranquei
 
 **O que existe:** análise por link público do Warcraft Logs; comparação com os 10 melhores do mesmo bracket; regras com a referência usada; diferença para os tops separada em erros, sorte e não explicado; tabelas por habilidade e por alvo, por fase; linha do tempo; contas, histórico e evolução; tema claro e escuro.
 
-**Ainda não ligado:** a explicação pela IA (Gemini via Vertex AI). Por enquanto o relatório sai só com as regras, e esse também é o comportamento reserva quando a IA falhar (RF17).
-
 **Fora do escopo do trabalho acadêmico:** outras classes e especializações, JxJ, Mítica+, envio de arquivo de log, logs privados, outros idiomas, aplicativo nativo e análise em tempo real.
 
-**Regras de produto que não mudam sem falar com o especialista do grupo:** comparação só com o mesmo bracket; valores em porcentagem, nunca dano bruto; a IA não consulta o Warcraft Logs nem faz contas; nunca enviar o log bruto ou nomes reais à IA. As decisões detalhadas estão no `CLAUDE.md`.
+**Regras de produto que não mudam sem falar com o especialista do grupo:** comparação só com o mesmo bracket; valores em porcentagem, nunca dano bruto. As decisões detalhadas estão no `CLAUDE.md`.
 
 **Planos:** Grátis com 5 análises por mês. Pro aparece como "Em breve", sem preço e sem pagamento real.
 
@@ -62,7 +60,7 @@ Referências de mercado registradas: Warcraft Logs e Raider.IO guardam e ranquei
 ## Brand Commitments
 
 - O nome do produto é LogCoach, e "coach" é a parte que explica os erros em português.
-- A voz é a de um coach direto, em linguagem simples, que diz o que mudar. Azar nunca é cobrado como erro, e o que for hipótese da IA aparece marcado como hipótese.
+- A voz é a de um coach direto, em linguagem simples, que diz o que mudar. Azar nunca é cobrado como erro.
 - O padrão de cores existente está em `docs/15-padrao-de-cores.md`. Decisões visuais não pertencem a este arquivo.
 
 ## Evidence on Hand
@@ -77,7 +75,7 @@ Referências de mercado registradas: Warcraft Logs e Raider.IO guardam e ranquei
 
 1. **Confiança no diagnóstico vem primeiro.** Quando houver conflito, não se sacrifica a confiança: sem alerta falso, azar separado de erro, toda cobrança com a referência usada e hipóteses marcadas, mesmo que a tela fique mais longa.
 2. **Dizer o que corrigir primeiro.** O jogador recebe prioridades pelo custo real, não um inventário de métricas.
-3. **Dados e regras encontram os erros; a IA explica.** Todo número vem do código, e o relatório continua útil sem a IA.
+3. **Dados e regras encontram os erros.** Todo número vem do código.
 4. **Comparação justa.** A diferença mostrada deve ser de execução, não de equipamento: mesmo chefe, dificuldade e bracket, sempre em porcentagem.
 5. **Profundidade para o competitivo, caminho para quem quer melhorar.** O nível de detalhe atende quem disputa o topo, e quem joga de forma mais relaxada ainda consegue entender o que fazer.
 

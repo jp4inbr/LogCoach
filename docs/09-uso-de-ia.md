@@ -1,13 +1,12 @@
 # 9. Relatório sobre o Uso da Inteligência Artificial
 
-> Estado em 04/11/2026: seções 9.2 e 9.3 com as frentes A a F. A IA dentro do produto (Gemini) é o passo 5 e ainda não está ligada; hoje o relatório sai só das regras do motor, que é o comportamento previsto no RF17 quando a IA não responde.
+> Estado em 04/11/2026: seções 9.2 e 9.3 com as frentes A a F.
 
 ## 9.1 Ferramentas utilizadas
 
 | Ferramenta | Onde | Para quê |
 |---|---|---|
 | Claude (Anthropic), no chat do claude.ai e como agente na IDE (Claude Code) | Desenvolvimento | Comparação de temas, escopo, pesquisa de mercado, rascunho da documentação, plano de tarefas, escrita de código e testes |
-| Gemini via Vertex AI (Google Cloud) | Dentro do produto | Explicar e priorizar os erros do jogador em português |
 
 ## 9.2 Como o Claude foi usado no desenvolvimento
 
@@ -20,7 +19,7 @@
   - **Contas, histórico e telas (frentes E e F, Pedro, PR #2):** cadastro e login, limite do plano, rotas de análise, 29 testes e as telas em React. O Claude escreveu o código e os testes; o Pedro testou o fluxo no PC e no celular; o Arthur revisou e ajustou antes do merge (ver 9.3).
   - **Documentação da RT03:** rascunho dos itens 8.1 (prints tirados da alfa), 8.3 (roteiro do teste e SUS), 10 e 12, revisados pelo grupo.
   - **Cliente do Warcraft Logs (frente B, Arthur):** cliente único da API v2 (GraphQL), lista leve de lutas, Magos Arcanos buscados por luta, pré-busca dos eventos quando o jogador é escolhido, cache de 6 h, pausa de consultas depois de falha (respeitando o `Retry-After`), limites de pontos por cliente e por hora, e erro `wcl_unavailable` com mensagem por causa (limite, fora do ar, timeout, rede). O Claude escreveu o código e os testes; o Arthur definiu os limites e conferiu as respostas na API real.
-  - **Regras e guias (frente C, Arthur):** regras do Mago Arcano e do Nek'zali em YAML (`arcane_mage.yaml`, `nekzali.yaml`) e guias em português que vão para a IA. O Arthur ditou as regras como jogador; o Claude organizou em YAML e redigiu os guias, que o Arthur revisou termo a termo.
+  - **Regras e guias (frente C, Arthur):** regras do Mago Arcano e do Nek'zali em YAML (`arcane_mage.yaml`, `nekzali.yaml`) e guias em português. O Arthur ditou as regras como jogador; o Claude organizou em YAML e redigiu os guias, que o Arthur revisou termo a termo.
   - **Motor de análise (frente D, Arthur, passo 4, PR #27):** fases da luta, tabelas por habilidade e por alvo (jogador × tops, sempre em %), regras com limites tirados dos 10 melhores do bracket, impacto de cada erro em % do dano do próprio jogador, diferença para os tops dividida em erros + sorte + não explicado, defensivo pelos picos de dano, busca dos tops com cache de 24 h e RF21, DPS oficial do Warcraft Logs, desconto do dano creditado ao Evocador Aumentação e, por fim, o `EngineAnalyzer` ligado à rota de análises e à tela de resultado (o exemplo escrito à mão saiu).
 
 **Método de trabalho nas frentes do Arthur (Claude Code):**
@@ -52,56 +51,17 @@
 | Defensivo | Claude | A versão inicial cobrava defensivo por sobreposição fixa de mecânicas. O Arthur trocou por picos de dano no log (evitável, defensivo cabia, faltou cura ou ok) |
 | Prismatic Bolt | Claude Code | O Arthur pediu separar decisão (procs esperados) de sorte: azar nunca vira erro nem impacto, entra só na linha de sorte da diferença |
 
-## 9.4 Prompt do coach (produto)
-
-```text
-Você é um coach de Mago Arcano em World of Warcraft.
-Você recebe três coisas (nunca o log bruto):
-1. Fatos calculados pelo motor (JSON): resultado das regras da especialização
-   e do encontro, com a comparação por fase com os 10 melhores do mesmo item level.
-2. O guia da luta e da especialização: como o chefe funciona, como o Mago
-   Arcano deve jogar e o que NÃO é erro (ex.: segurar o Surge até 15 s para
-   casar com a poção; defensivo só é cobrado em pico de dano em que a vida caiu de verdade
-   e havia um disponível; dano de mecânica evitável é erro de posicionamento; vida baixa
-   com pouca cura é problema da cura, não do Mago).
-3. Uma tabela por fase com casts por minuto e % do dano de cada habilidade,
-   do jogador e da média dos 10 melhores.
-A diferença para os 10 melhores já vem dividida em três partes: erros
-(soma dos impactos), sorte (procs abaixo do esperado) e não explicado.
-Cada regra traz a referência usada (mediana ou pior dos tops); cite-a.
-Sorte nunca é erro.
-Explique, em português do Brasil, os erros de maior impacto, do mais grave
-ao menos grave. Use só os números fornecidos. Não invente dados.
-Para cada erro: o que aconteceu, em que fase, quanto custou e o que fazer
-na próxima tentativa.
-
-Antes de concluir, responda para si mesmo:
-- O cooldown fora da janela foi erro ou uma escolha válida (ex.: segurar
-  para uma janela de burst mais valiosa)?
-- O erro se repete ao longo da luta ou foi pontual?
-- É erro de execução (mão) ou de planejamento (quando usar)?
-- O erro tem relação com uma mecânica do chefe naquele momento?
-- A parte "não explicado" aparece na tabela por habilidade ou por alvo?
-  Se sim, aponte como HIPÓTESE, citando os números da tabela.
-Se os fatos não bastarem para responder, diga isso em vez de supor.
-```
-
-As perguntas acima são a **camada 3** do motor (ver item 12): o que não dá para virar regra fixa fica para a IA julgar, sempre a partir dos fatos calculados pelo código.
-
-## 9.5 Validação humana vs. automação
+## 9.4 Validação humana vs. automação
 
 - Todo conteúdo de WoW (regras, termos, recomendações) revisado pelo Arthur, jogador de alto nível de Mago Arcano.
 - Dados de mercado e premiações conferidos nas fontes oficiais (Blizzard, Wowhead).
 - Código gerado com IA só entra no repositório depois da autorrevisão, da revisão de especialista da área e dos testes passarem (604 testes Pytest passando em 04/11, com as fixtures do kill de referência e do top 10).
 - Números do motor conferidos pelo Arthur contra o Warcraft Logs (DPS, tempo ativo, mortes) e contra a conta da diferença no kill de referência.
 
-## 9.6 Riscos e mitigação
+## 9.5 Riscos e mitigação
 
 | Risco | Mitigação |
 |---|---|
-| Alucinação | A IA do produto só recebe números calculados pelo código, nunca o log bruto; o prompt proíbe inventar dados |
 | Informação desatualizada | Datas e números conferidos em fontes de 2026; regras em YAML atualizadas a cada patch |
 | Erros de sintaxe / código errado | Linters, CI e testes Pytest; revisão de especialista ao fechar cada área |
 | Regra de jogo errada proposta pela IA | Decisões de jogo só do Arthur, registradas com data no `CLAUDE.md` |
-| Dependência da IA | Se a IA cair, o relatório sai só com as regras (RF17) |
-| Custo | Limite de tamanho de entrada e saída por análise (RNF13) |
