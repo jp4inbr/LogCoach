@@ -1,16 +1,22 @@
 import { useState } from "react";
+import PasswordField from "../components/PasswordField.jsx";
+import PasswordStrength from "../components/PasswordStrength.jsx";
 import { api } from "../lib/api.js";
 import { useAuth } from "../lib/auth-context.js";
+import { MIN_PASSWORD } from "../lib/passwordStrength.js";
 import { href, navigate } from "../lib/router.js";
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // Login e cadastro (RF02). Os erros aparecem no próprio campo, antes de enviar (item 8.2).
+// Os campos de senha têm "Mostrar senha"; no cadastro, a senha é digitada duas vezes e um
+// medidor mostra a força dela (só informa: o mínimo de 8 caracteres é a única exigência).
 export default function Login({ mode, next }) {
   const { login } = useAuth();
   const isRegister = mode === "cadastro";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
   const [touched, setTouched] = useState(false);
   const [serverError, setServerError] = useState(null);
   const [sending, setSending] = useState(false);
@@ -19,18 +25,24 @@ export default function Login({ mode, next }) {
     ? "Digite um e-mail válido, como voce@exemplo.com."
     : null;
   const passwordError = isRegister
-    ? password.length < 8
-      ? "A senha precisa ter pelo menos 8 caracteres."
+    ? password.length < MIN_PASSWORD
+      ? `A senha precisa ter pelo menos ${MIN_PASSWORD} caracteres.`
       : null
     : password
       ? null
       : "Digite sua senha.";
+  const confirmError =
+    isRegister && confirm !== password
+      ? confirm
+        ? "As senhas não são iguais."
+        : "Digite a senha de novo para confirmar."
+      : null;
 
   async function submit(event) {
     event.preventDefault();
     setTouched(true);
     setServerError(null);
-    if (emailError || passwordError) return;
+    if (emailError || passwordError || confirmError) return;
 
     setSending(true);
     try {
@@ -93,22 +105,35 @@ export default function Login({ mode, next }) {
             {touched && emailError && <p className="field-error">{emailError}</p>}
           </div>
 
-          <div className="field">
-            <label htmlFor="password">Senha</label>
-            <input
-              id="password"
-              type="password"
-              autoComplete={isRegister ? "new-password" : "current-password"}
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              aria-invalid={touched && passwordError ? "true" : "false"}
-            />
+          <PasswordField
+            id="password"
+            label="Senha"
+            value={password}
+            onChange={setPassword}
+            autoComplete={isRegister ? "new-password" : "current-password"}
+            invalid={touched && Boolean(passwordError)}
+            describedBy={isRegister ? "password-help" : undefined}
+          >
             {touched && passwordError ? (
               <p className="field-error">{passwordError}</p>
             ) : (
-              isRegister && <p className="field-hint">Mínimo de 8 caracteres.</p>
+              isRegister && <PasswordStrength id="password-help" password={password} />
             )}
-          </div>
+          </PasswordField>
+
+          {isRegister && (
+            <PasswordField
+              id="password-confirm"
+              label="Confirmar senha"
+              toggleLabel="Mostrar a confirmação da senha"
+              value={confirm}
+              onChange={setConfirm}
+              autoComplete="new-password"
+              invalid={touched && Boolean(confirmError)}
+            >
+              {touched && confirmError && <p className="field-error">{confirmError}</p>}
+            </PasswordField>
+          )}
 
           {serverError && (
             <p className="field-error" role="alert">

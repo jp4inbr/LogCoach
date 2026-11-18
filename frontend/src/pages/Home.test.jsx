@@ -152,6 +152,34 @@ describe("Home", () => {
     expect(window.location.hash).toBe("#/relatorio/XhrmBaYkGCAQjH2D");
   });
 
+  it("'Usar o log de exemplo' continua disponível depois de um erro, sem recarregar", async () => {
+    mockApi();
+    const user = userEvent.setup();
+    renderHome();
+
+    await user.click(screen.getByRole("button", { name: "Analisar" }));
+    expect(screen.getByText("Cole o link do seu log do Warcraft Logs.")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Usar o log de exemplo" }));
+    expect(campo()).toHaveValue(SAMPLE_LINK);
+    expect(campo()).toHaveFocus();
+    expect(screen.queryByText("Cole o link do seu log do Warcraft Logs.")).not.toBeInTheDocument();
+  });
+
+  it("'Usar o log de exemplo' volta ao log de exemplo depois de trocar o link", async () => {
+    mockApi();
+    const user = userEvent.setup();
+    renderHome();
+
+    await user.click(screen.getByRole("button", { name: "Usar o log de exemplo" }));
+    await user.clear(campo());
+    await user.type(campo(), "https://exemplo.com/outro");
+    await user.click(screen.getByRole("button", { name: "Analisar" }));
+
+    await user.click(screen.getByRole("button", { name: "Usar o log de exemplo" }));
+    expect(campo()).toHaveValue(SAMPLE_LINK);
+  });
+
   it("não chama a API ao enviar o link (só a próxima tela fala com o servidor)", async () => {
     const api = mockApi();
     const user = userEvent.setup();

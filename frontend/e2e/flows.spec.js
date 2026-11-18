@@ -189,6 +189,21 @@ test.describe("erros ao abrir o relatório", () => {
     await expect(page.getByLabel("Link do relatório no Warcraft Logs")).toHaveValue(REPORT_LINK);
   });
 
+  test("o botão de exemplo continua lá depois de um erro e de voltar do relatório", async ({
+    page,
+  }) => {
+    await mockApi(page, happyRoutes());
+    await page.goto("/");
+    await page.getByRole("button", { name: "Analisar" }).click();
+    await page.getByRole("button", { name: "Usar o log de exemplo" }).click();
+    await expect(page.getByLabel("Link do relatório no Warcraft Logs")).toHaveValue(REPORT_LINK);
+
+    await page.getByRole("button", { name: "Analisar" }).click();
+    await page.getByRole("link", { name: "← Trocar o link" }).click();
+    await page.getByRole("button", { name: "Usar o log de exemplo" }).click();
+    await expect(page.getByLabel("Link do relatório no Warcraft Logs")).toHaveValue(REPORT_LINK);
+  });
+
   test("Warcraft Logs fora do ar: mensagem do servidor e Tentar de novo", async ({ page }) => {
     const message = "O Warcraft Logs está fora do ar no momento. Tente de novo em alguns minutos.";
     const api = await mockApi(page, {
@@ -267,7 +282,7 @@ test.describe("conta", () => {
     await expect(page.getByRole("link", { name: "Entrar" }).first()).toBeVisible();
 
     await page.getByLabel("E-mail").fill("  Voce@Exemplo.com ");
-    await page.getByLabel("Senha").fill("senha-segura-1");
+    await page.getByLabel("Senha", { exact: true }).fill("senha-segura-1");
     await page.getByRole("button", { name: "Entrar" }).last().click();
 
     await expect(page).toHaveURL(/#\/perfil$/);
@@ -300,7 +315,7 @@ test.describe("conta", () => {
     });
     await page.goto("/#/entrar?modo=login");
     await page.getByLabel("E-mail").fill("voce@exemplo.com");
-    await page.getByLabel("Senha").fill("errada");
+    await page.getByLabel("Senha", { exact: true }).fill("errada");
     await page.getByRole("button", { name: "Entrar" }).last().click();
     await expect(page.getByRole("alert")).toHaveText("E-mail ou senha incorretos.");
     expect(await page.evaluate(() => localStorage.getItem("logcoach.session"))).toBeNull();
@@ -310,7 +325,7 @@ test.describe("conta", () => {
     const api = await mockApi(page, {});
     await page.goto("/#/entrar?modo=cadastro");
     await page.getByLabel("E-mail").fill("sem-arroba");
-    await page.getByLabel("Senha").fill("curta");
+    await page.getByLabel("Senha", { exact: true }).fill("curta");
     await page.getByRole("button", { name: "Criar conta" }).last().click();
     await expect(page.getByText("Digite um e-mail válido, como voce@exemplo.com.")).toBeVisible();
     await expect(page.getByText("A senha precisa ter pelo menos 8 caracteres.")).toBeVisible();
@@ -333,7 +348,8 @@ test.describe("conta", () => {
     );
     await expect(page.getByRole("heading", { name: "Crie sua conta grátis" })).toBeVisible();
     await page.getByLabel("E-mail").fill("novo@exemplo.com");
-    await page.getByLabel("Senha").fill("senha-segura-1");
+    await page.getByLabel("Senha", { exact: true }).fill("senha-segura-1");
+    await page.getByLabel("Confirmar senha", { exact: true }).fill("senha-segura-1");
     await page.getByRole("button", { name: "Criar conta" }).last().click();
 
     await expect(page).toHaveURL(new RegExp(`#/relatorio/${REPORT_CODE}$`));
@@ -356,9 +372,29 @@ test.describe("conta", () => {
     });
     await page.goto("/#/entrar?modo=cadastro");
     await page.getByLabel("E-mail").fill("novo@exemplo.com");
-    await page.getByLabel("Senha").fill("senha-segura-1");
+    await page.getByLabel("Senha", { exact: true }).fill("senha-segura-1");
+    await page.getByLabel("Confirmar senha", { exact: true }).fill("senha-segura-1");
     await page.getByRole("button", { name: "Criar conta" }).last().click();
     await expect(page.getByRole("alert")).toHaveText("Esse e-mail já tem conta. Tente entrar.");
+  });
+
+  test("cadastro: olho em cada senha, confirmação e medidor de força", async ({ page }) => {
+    const api = await mockApi(page, {});
+    await page.goto("/#/entrar?modo=cadastro");
+    const senha = page.getByLabel("Senha", { exact: true });
+    const confirmar = page.getByLabel("Confirmar senha", { exact: true });
+
+    await senha.fill("Lua-de-Prata-27");
+    await expect(page.getByText("Força da senha: Forte")).toBeVisible();
+    await page.getByRole("button", { name: "Mostrar senha" }).click();
+    await expect(senha).toHaveAttribute("type", "text");
+    await expect(confirmar).toHaveAttribute("type", "password");
+
+    await confirmar.fill("Lua-de-Prata-28");
+    await page.getByLabel("E-mail").fill("novo@exemplo.com");
+    await page.getByRole("button", { name: "Criar conta" }).last().click();
+    await expect(page.getByText("As senhas não são iguais.")).toBeVisible();
+    expect(api.all()).toHaveLength(0);
   });
 
   test("sessão vencida guardada: sai da conta sozinha", async ({ page }) => {

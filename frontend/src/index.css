@@ -703,6 +703,59 @@ label {
   font-size: 0.9rem;
 }
 
+/* Campo de senha com o olho ao lado (PasswordField.jsx). */
+.password-row {
+  display: flex;
+  gap: 8px;
+}
+
+.password-row input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.password-toggle {
+  flex: none;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 10px;
+}
+
+/* Medidor de força da senha (PasswordStrength.jsx): 4 segmentos + o nome do nível. */
+.strength {
+  display: grid;
+  gap: 6px;
+}
+
+.strength-bar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+}
+
+.strength-bar span {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--surface-2);
+}
+
+.strength-0 .strength-bar .on {
+  background: var(--error);
+}
+
+.strength-1 .strength-bar .on {
+  background: var(--warn);
+}
+
+.strength-2 .strength-bar .on,
+.strength-3 .strength-bar .on {
+  background: var(--ok);
+}
+
+.strength-label {
+  color: var(--text);
+}
+
 .actions {
   display: flex;
   align-items: center;

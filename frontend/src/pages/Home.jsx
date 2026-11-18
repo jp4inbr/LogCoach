@@ -55,25 +55,27 @@ export default function Home() {
               Analisar
             </button>
           </div>
-          {error ? (
+          {error && (
             <p id="link-error" className="field-error">
               {error}
             </p>
-          ) : (
-            <p id="link-hint" className="field-hint">
-              Não tem um log à mão?{" "}
-              <button
-                type="button"
-                className="link-button"
-                onClick={() => {
-                  setLink(SAMPLE_LINK);
-                  setError(null);
-                }}
-              >
-                Usar o log de exemplo
-              </button>
-            </p>
           )}
+          {/* Sempre à mão, também depois de um erro ou de trocar o link: um clique volta ao
+              log de exemplo, sem recarregar a página. */}
+          <p id="link-hint" className="field-hint">
+            Não tem um log à mão?{" "}
+            <button
+              type="button"
+              className="link-button"
+              onClick={() => {
+                setLink(SAMPLE_LINK);
+                setError(null);
+                document.getElementById("link")?.focus();
+              }}
+            >
+              Usar o log de exemplo
+            </button>
+          </p>
         </form>
 
         {!token && (

@@ -16,12 +16,14 @@ function renderLogin(props = { mode: "login" }) {
 
 const campoEmail = () => screen.getByLabelText("E-mail");
 const campoSenha = () => screen.getByLabelText("Senha");
+const campoConfirmar = () => screen.getByLabelText("Confirmar senha");
 const enviar = (nome) => screen.getByRole("button", { name: nome });
 const EMAIL_INVALIDO = "Digite um e-mail válido, como voce@exemplo.com.";
 
-async function preencher(user, email, senha) {
+async function preencher(user, email, senha, confirmar) {
   if (email) await user.type(campoEmail(), email);
   if (senha) await user.type(campoSenha(), senha);
+  if (confirmar) await user.type(campoConfirmar(), confirmar);
 }
 
 describe("Login (entrar)", () => {
@@ -223,6 +225,46 @@ describe("Login (entrar)", () => {
   });
 });
 
+describe("Login (mostrar senha)", () => {
+  it("o olho mostra e oculta a senha digitada, sem apagar o que foi digitado", async () => {
+    mockApi();
+    const user = userEvent.setup();
+    renderLogin();
+    const olho = screen.getByRole("button", { name: "Mostrar senha" });
+
+    await user.type(campoSenha(), "segredo-1");
+    expect(campoSenha()).toHaveAttribute("type", "password");
+    expect(olho).toHaveAttribute("aria-pressed", "false");
+
+    await user.click(olho);
+    expect(campoSenha()).toHaveAttribute("type", "text");
+    expect(campoSenha()).toHaveValue("segredo-1");
+    expect(olho).toHaveAttribute("aria-pressed", "true");
+
+    await user.click(olho);
+    expect(campoSenha()).toHaveAttribute("type", "password");
+  });
+
+  it("o olho não envia o formulário", async () => {
+    const api = mockApi();
+    const user = userEvent.setup();
+    renderLogin();
+
+    await user.click(screen.getByRole("button", { name: "Mostrar senha" }));
+
+    expect(api.calls()).toEqual([]);
+    expect(screen.queryByText("Digite sua senha.")).not.toBeInTheDocument();
+  });
+
+  it("ao entrar não pede confirmação nem mostra o medidor", () => {
+    mockApi();
+    renderLogin();
+
+    expect(screen.queryByLabelText("Confirmar senha")).not.toBeInTheDocument();
+    expect(screen.queryByText(/Força da senha/)).not.toBeInTheDocument();
+  });
+});
+
 describe("Login (criar conta)", () => {
   const cadastro = { mode: "cadastro" };
 
@@ -263,7 +305,7 @@ describe("Login (criar conta)", () => {
     const user = userEvent.setup();
     renderLogin(cadastro);
 
-    await preencher(user, "Nova@Exemplo.com", "12345678");
+    await preencher(user, "Nova@Exemplo.com", "12345678", "12345678");
     await user.click(enviar("Criar conta"));
 
     expect(api.calls("POST /auth/register")[0].body).toEqual({
@@ -286,7 +328,7 @@ describe("Login (criar conta)", () => {
     const user = userEvent.setup();
     renderLogin(cadastro);
 
-    await preencher(user, "voce@exemplo.com", "12345678");
+    await preencher(user, "voce@exemplo.com", "12345678", "12345678");
     await user.click(enviar("Criar conta"));
 
     expect(await screen.findByRole("alert")).toHaveTextContent(
@@ -303,10 +345,78 @@ describe("Login (criar conta)", () => {
     const user = userEvent.setup();
     renderLogin({ mode: "cadastro", next: "/relatorio/XhrmBaYkGCAQjH2D" });
 
-    await preencher(user, "voce@exemplo.com", "12345678");
+    await preencher(user, "voce@exemplo.com", "12345678", "12345678");
     await user.click(enviar("Criar conta"));
 
     expect(window.location.hash).toBe("#/relatorio/XhrmBaYkGCAQjH2D");
+  });
+
+  it("cada senha tem o seu olho, independente do outro", async () => {
+    mockApi();
+    const user = userEvent.setup();
+    renderLogin(cadastro);
+
+    await user.click(screen.getByRole("button", { name: "Mostrar a confirmação da senha" }));
+
+    expect(campoConfirmar()).toHaveAttribute("type", "text");
+    expect(campoSenha()).toHaveAttribute("type", "password");
+  });
+
+  it("confirmação vazia: pede para digitar de novo e não chama a API", async () => {
+    const api = mockApi();
+    const user = userEvent.setup();
+    renderLogin(cadastro);
+
+    await preencher(user, "voce@exemplo.com", "12345678");
+    await user.click(enviar("Criar conta"));
+
+    expect(screen.getByText("Digite a senha de novo para confirmar.")).toBeInTheDocument();
+    expect(campoConfirmar()).toHaveAttribute("aria-invalid", "true");
+    expect(api.calls()).toEqual([]);
+  });
+
+  it("senhas diferentes: avisa no campo e não chama a API", async () => {
+    const api = mockApi();
+    const user = userEvent.setup();
+    renderLogin(cadastro);
+
+    await preencher(user, "voce@exemplo.com", "12345678", "12345679");
+    await user.click(enviar("Criar conta"));
+
+    expect(screen.getByText("As senhas não são iguais.")).toBeInTheDocument();
+    expect(api.calls()).toEqual([]);
+
+    await user.clear(campoConfirmar());
+    await user.type(campoConfirmar(), "12345678");
+    expect(screen.queryByText("As senhas não são iguais.")).not.toBeInTheDocument();
+  });
+
+  it("medidor de força: aparece ao digitar e sobe com uma senha mais forte", async () => {
+    mockApi();
+    const user = userEvent.setup();
+    renderLogin(cadastro);
+
+    await user.type(campoSenha(), "12345678");
+    expect(screen.getByText(/Força da senha/)).toHaveTextContent("Força da senha: Fraca");
+
+    await user.clear(campoSenha());
+    await user.type(campoSenha(), "Lua-de-Prata-27");
+    expect(screen.getByText(/Força da senha/)).toHaveTextContent("Força da senha: Forte");
+  });
+
+  it("senha fraca com 8 caracteres não bloqueia: o medidor só informa", async () => {
+    const api = mockApi({
+      "POST /auth/register": { status: 201, body: { access_token: "jwt-novo" } },
+      "GET /me": { body: {} },
+    });
+    const user = userEvent.setup();
+    renderLogin(cadastro);
+
+    await preencher(user, "voce@exemplo.com", "aaaaaaaa", "aaaaaaaa");
+    expect(screen.getByText(/Força da senha/)).toHaveTextContent("Fraca");
+    await user.click(enviar("Criar conta"));
+
+    expect(api.calls("POST /auth/register")).toHaveLength(1);
   });
 
   it("sem violações de acessibilidade, com e sem erros na tela", async () => {
@@ -316,6 +426,10 @@ describe("Login (criar conta)", () => {
     expect(await axeViolations(container)).toEqual([]);
 
     await user.click(enviar("Criar conta"));
+    expect(await axeViolations(container)).toEqual([]);
+
+    await user.type(campoSenha(), "Lua-de-Prata-27");
+    await user.click(screen.getByRole("button", { name: "Mostrar senha" }));
     expect(await axeViolations(container)).toEqual([]);
   });
 });
