@@ -2,7 +2,7 @@ import logging
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
@@ -76,6 +76,22 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Rotas com prefixo /api para produção na Vercel
+api_router = APIRouter(prefix="/api")
+api_router.include_router(auth.router)
+api_router.include_router(me.router)
+api_router.include_router(reports.router)
+api_router.include_router(analyses.router)
+
+
+@api_router.get("/health")
+def api_health() -> dict[str, str]:
+    return {"status": "ok"}
+
+
+app.include_router(api_router)
+
+# Rotas na raiz mantidas para desenvolvimento local e testes automatizados
 app.include_router(auth.router)
 app.include_router(me.router)
 app.include_router(reports.router)
