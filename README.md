@@ -205,5 +205,4 @@ A documentação complementa este README com os requisitos, as decisões de arqu
 - Matheus Damasceno
 - Matheus Morgado
 - Pedro Nogueira
-- Thales Almeida
 - Yohanan Amaral
