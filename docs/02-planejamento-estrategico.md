@@ -10,7 +10,7 @@ Esta página registra como o LogCoach evoluiu depois da RT01: o feedback recebid
 
 ### 2.1 Feedback incorporado após a RT01
 
-<table><thead><tr><th width="335.25">Feedback do professor</th><th width="402.75">Mudança no escopo</th></tr></thead><tbody><tr><td><strong>Focar no jogador competitivo, de alto nível</strong></td><td>Público definido como quem joga raide Heroica/Mítica e Mítica+ alta. Quem está aprendendo a rotação básica fica fora do MVP</td></tr><tr><td><strong>Destacar as premiações para mostrar valor</strong></td><td>O contexto do projeto abre com MDI e AWC 2026 (US$ 300 mil cada) e com a Race to World First</td></tr><tr><td><strong>Focar no público brasileiro no MVP</strong></td><td>Interface, relatório e respostas da IA só em português. Inglês fica para depois</td></tr></tbody></table>
+<table><thead><tr><th width="335.25">Feedback do professor</th><th width="402.75">Mudança no escopo</th></tr></thead><tbody><tr><td><strong>Focar no jogador competitivo, de alto nível</strong></td><td>Público definido como quem joga raide Heroica/Mítica e Mítica+ alta. Quem está aprendendo a rotação básica fica fora do MVP</td></tr><tr><td><strong>Destacar as premiações para mostrar valor</strong></td><td>O contexto do projeto abre com MDI e AWC 2026 (US$ 300 mil cada) e com a Race to World First</td></tr><tr><td><strong>Focar no público brasileiro no MVP</strong></td><td>Interface e relatório só em português. Inglês fica para depois</td></tr></tbody></table>
 
 {% hint style="success" %}
 **Resultado:** o LogCoach ficou mais estreito e mais profundo. Em vez de atender qualquer jogador, atende quem já joga em alto nível e precisa de análise fina, em português.
@@ -22,7 +22,7 @@ Esta página registra como o LogCoach evoluiu depois da RT01: o feedback recebid
 
 Para que a análise seja realmente especializada já na primeira versão, o MVP foi recortado em uma especialização, uma raide, três chefes e duas dificuldades:
 
-<table data-search="false"><thead><tr><th width="192.75">Item</th><th width="545.25">Decisão</th></tr></thead><tbody><tr><td><strong>Especialização</strong></td><td>Mago Arcano</td></tr><tr><td><strong>Conteúdo</strong></td><td>Raide The Venomous Abyss (Midnight, Temporada 2)</td></tr><tr><td><strong>Chefes</strong></td><td>1º Nek'zali the Soulcoiler, 2º Entombed Sentinels, 3º The Lost Explorers</td></tr><tr><td><strong>Dificuldade</strong></td><td>Mítico</td></tr><tr><td><strong>Entrada</strong></td><td>Link do relatório no Warcraft Logs</td></tr><tr><td><strong>Comparação</strong></td><td>Média dos 10 melhores logs de Mago Arcano no mesmo chefe e dificuldade, na mesma faixa de item level do jogador</td></tr><tr><td><strong>IA</strong></td><td>Gemini via Vertex AI (Google Cloud)</td></tr><tr><td><strong>Idioma</strong></td><td>Português</td></tr></tbody></table>
+<table data-search="false"><thead><tr><th width="192.75">Item</th><th width="545.25">Decisão</th></tr></thead><tbody><tr><td><strong>Especialização</strong></td><td>Mago Arcano</td></tr><tr><td><strong>Conteúdo</strong></td><td>Raide The Venomous Abyss (Midnight, Temporada 2)</td></tr><tr><td><strong>Chefes</strong></td><td>1º Nek'zali the Soulcoiler, 2º Entombed Sentinels, 3º The Lost Explorers</td></tr><tr><td><strong>Dificuldade</strong></td><td>Mítico</td></tr><tr><td><strong>Entrada</strong></td><td>Link do relatório no Warcraft Logs</td></tr><tr><td><strong>Comparação</strong></td><td>Média dos 10 melhores logs de Mago Arcano no mesmo chefe e dificuldade, na mesma faixa de item level do jogador</td></tr><tr><td><strong>Idioma</strong></td><td>Português</td></tr></tbody></table>
 
 #### Ordem dos chefes
 
@@ -69,7 +69,7 @@ Fonte: MythicStats, seção "Average stats" (dados do Warcraft Logs), consultado
 {% step %}
 #### Alfa · RT03 (28/10/2026)
 
-Análise elaborada da luta contra Nek'zali, explicação por IA e histórico de análises.
+Análise elaborada da luta contra Nek'zali e histórico de análises.
 {% endstep %}
 
 {% step %}

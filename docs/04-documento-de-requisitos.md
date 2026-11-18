@@ -104,18 +104,6 @@ O sistema deve calcular a diferença entre o jogador e a média dos melhores log
 
 <details>
 
-<summary><strong>RF09. Explicação por IA com contexto estruturado</strong></summary>
-
-O sistema deve enviar à IA, sem o log bruto: os fatos calculados pelas regras, o guia da luta e da especialização, a tabela comparativa por habilidade (RF22) e as perguntas de julgamento; e receber a explicação em português.
-
-{% hint style="info" %}
-**Prioridade:** **Alta**
-{% endhint %}
-
-</details>
-
-<details>
-
 <summary><strong>RF10. Relatório de erros por impacto</strong></summary>
 
 O sistema deve mostrar um relatório com os erros ordenados do maior para o menor impacto.
@@ -188,30 +176,6 @@ O sistema deve mostrar a tela de planos (sem pagamento real no MVP).
 
 <details>
 
-<summary><strong>RF16. Chat com o coach</strong></summary>
-
-O usuário deve poder perguntar ao coach sobre um erro específico do relatório.
-
-{% hint style="info" %}
-**Prioridade:** **Baixa**
-{% endhint %}
-
-</details>
-
-<details>
-
-<summary><strong>RF17. Fallback sem IA</strong></summary>
-
-Se a IA falhar, o sistema deve mostrar o relatório só com as regras.
-
-{% hint style="info" %}
-**Prioridade:** **Alta**
-{% endhint %}
-
-</details>
-
-<details>
-
 <summary><strong>RF18. Regras do encontro</strong></summary>
 
 O sistema deve aplicar as regras do encontro (fases, intermissões, janelas de burst, golpes de raide e períodos em que o chefe não pode ser atacado), que ajustam as regras da especialização.
@@ -274,19 +238,7 @@ O sistema deve montar, por fase, uma tabela com casts por minuto e % do dano de 
 
 <summary><strong>RF23. Diferença não explicada</strong></summary>
 
-O sistema deve marcar a diferença de dano por fase que as regras não explicam ("diferença não explicada"), para a IA investigar na tabela do RF22.
-
-{% hint style="info" %}
-**Prioridade:** **Média**
-{% endhint %}
-
-</details>
-
-<details>
-
-<summary><strong>RF24. Hipóteses da IA e revisão de regras</strong></summary>
-
-O que a IA apontar fora das regras deve aparecer no relatório como hipótese, com os números do código ao lado, e ficar registrado para revisão (possível regra nova).
+O sistema deve marcar a diferença de dano por fase que as regras não explicam ("diferença não explicada").
 
 {% hint style="info" %}
 **Prioridade:** **Média**
@@ -326,7 +278,7 @@ As páginas do sistema devem carregar em menos de 3 segundos.
 
 <summary><strong>RNF02. Análise completa em até 2 min, com progresso</strong></summary>
 
-Uma análise completa, que inclui a busca dos dados, a aplicação das regras e a geração da explicação pela IA, deve terminar em menos de 2 minutos. Enquanto a análise roda, o sistema deve mostrar ao usuário um indicador de progresso.
+Uma análise completa, que inclui a busca dos dados, e a aplicação das regras, deve terminar em menos de 2 minutos. Enquanto a análise roda, o sistema deve mostrar ao usuário um indicador de progresso.
 
 {% hint style="info" %}
 **Categoria: Desempenho**
@@ -432,9 +384,9 @@ No teste com usuários, o sistema deve alcançar nota de pelo menos 68 na escala
 
 <details>
 
-<summary><strong>RNF11. Interface e IA em português do Brasil</strong></summary>
+<summary><strong>RNF11. Interface em português do Brasil</strong></summary>
 
-Toda a interface do sistema e todas as respostas geradas pela IA devem estar em português do Brasil.
+Toda a interface do sistema deve estar em português do Brasil.
 
 {% hint style="info" %}
 **Categoria: Idioma**
@@ -454,26 +406,14 @@ As regras de análise devem ficar em arquivos de configuração: um arquivo para
 
 </details>
 
-<details>
-
-<summary><strong>RNF13. Limite de uso de IA por análise</strong></summary>
-
-O uso de IA em cada análise deve ser limitado, com um tamanho máximo para o conteúdo enviado e para a resposta recebida, para controlar o custo.
-
-{% hint style="info" %}
-**Categoria: Custo**
-{% endhint %}
-
-</details>
-
 ## 4.3 Rastreabilidade com usabilidade
 
 | Heurística (Nielsen)                 | Requisitos                                           |
 | ------------------------------------ | ---------------------------------------------------- |
 | Visibilidade do status do sistema    | RF13, RNF02 (barra de progresso)                     |
-| Correspondência com o mundo real     | RF09, RNF11                                          |
+| Correspondência com o mundo real     | RNF11                                                |
 | Prevenção de erros                   | RF03, RF04 (lutas não suportadas em cinza)           |
 | Reconhecer em vez de lembrar         | RF10, RF11, RF19                                     |
 | Design estético e minimalista        | RF10 (erros de maior impacto primeiro)               |
-| Ajudar a reconhecer e corrigir erros | RF17 e mensagens de erro (item 10)                   |
+| Ajudar a reconhecer e corrigir erros | Mensagens de erro (item 10)                          |
 | Controle e liberdade do usuário      | RF25 (o usuário escolhe mostrar ou ocultar os nomes) |
