@@ -19,6 +19,8 @@ O **LogCoach** transforma o log de combate do World of Warcraft, hoje um dado br
 | **Objetivo geral**    | Reduzir o tempo e o conhecimento técnico necessários para transformar um log de combate em informação útil, indicando em português os erros de maior impacto e a ordem em que devem ser corrigidos |
 | **Papel da IA**       | Explicar os erros em linguagem simples e indicar o que corrigir primeiro                                                                                                                           |
 
+***
+
 {% hint style="info" %}
 _Não joga World of Warcraft?_ Os termos do jogo e do LogCoach usados nesta documentação estão explicados no glossário abaixo.
 {% endhint %}
@@ -155,32 +157,141 @@ _Não joga World of Warcraft?_ Os termos do jogo e do LogCoach usados nesta docu
 World of Warcraft (WoW) é um jogo online em que grupos de 5 a 30 jogadores enfrentam chefes difíceis. No nível mais alto, isso virou competição de verdade, com torneios oficiais e premiação em dinheiro:
 
 {% tabs %}
-{% tab title="MDI 2026" %}
-**Mythic Dungeon International (MDI) 2026**
+{% tab title="MDI " %}
+**Mythic Dungeon International (MDI)**&#x20;
 
-A final global aconteceu na BlizzCon 2026, nos Estados Unidos, com **US$ 300 mil em prêmios**.
+Campeonato global de eSports de _World of Warcraft_ (WoW) organizado pela Blizzard Entertainment, focado em corrida de velocidade (_speedrunning_) de masmorras no modo Mítico+**.** A final global aconteceu na BlizzCon 2026, nos Estados Unidos, com **US$ 300 mil em prêmios**.
+
+O valor da final é só a última etapa de um circuito que começa meses antes. Os times passam por uma eliminatória aberta, uma fase de grupos e uma final de temporada, cada uma com premiação própria. Somadas, as etapas distribuíram **US$ 490 mil** em 2026, e nenhum dos quatro times da final global era brasileiro ou latino-americano: o Brasil disputa pela região americana, contra as equipes dos Estados Unidos.
+
+| Etapa do MDI 2026                    | Premiação            | 1º lugar    |
+| ------------------------------------ | -------------------- | ----------- |
+| Fase de grupos (3 grupos de 8 times) | US$ 30 mil por grupo | US$ 9 mil   |
+| Final da temporada (8 times)         | US$ 100 mil          | US$ 40 mil  |
+| Final global na BlizzCon (4 times)   | US$ 300 mil          | US$ 150 mil |
+
+Fonte: Raider.IO, página "Prizes" do MDI BlizzCon 2026; finalistas: MMOs.com, 04/09/2026.
 {% endtab %}
 
-{% tab title="AWC 2026" %}
-**Arena World Championship (AWC) 2026**
+{% tab title="AWC " %}
+**Arena World Championship (AWC)**&#x20;
 
 Representa o lado JxJ (jogador contra jogador) do jogo e também distribui **US$ 300 mil em prêmios** na temporada.
+
+A final do AWC reuniu seis equipes no palco da BlizzCon, vindas da Europa, da América do Norte e da China. Assim como no MDI, nenhuma equipe da América Latina chegou à final, o que mostra que o Brasil ainda não tem presença no topo do e-sport oficial de WoW.
+
+Fonte: Blizzard, "Unveiling the AWC & MDI Road to BlizzCon in 2026!"; Bolverk Games, 10/09/2026.&#x20;
 {% endtab %}
 
 {% tab title="Race to World First" %}
 **Race to World First**
 
-Corrida entre as melhores guildas do mundo para derrotar primeiro o chefe final de cada raide nova. O evento é patrocinado por diversas grandes empresas de tecnologia e acompanhado ao vivo pela comunidade. Na raide atual, _The Venomous Abyss_, a **Team Liquid venceu pela quinta vez seguida**.
+Corrida entre as melhores guildas do mundo para derrotar primeiro o chefe final de cada raide nova. O evento é patrocinado por diversas grandes empresas de tecnologia e acompanhado ao vivo pela comunidade. Na raide atual, _The Venomous Abyss_, a **Team Liquid (time americano) venceu pela quinta vez seguida**.
+
+A corrida de 2026 durou 16 dias. A linha do tempo abaixo mostra o tamanho do esforço: a guilda vencedora precisou de cerca de 311 tentativas só no chefe final, e a segunda colocada terminou apenas 26 minutos depois. É esse nível de detalhe na execução que separa as melhores guildas do mundo.
+
+{% stepper %}
+{% step %}
+### 18/08 · A raide abre
+
+The Venomous Abyss é liberada no Mítico e a corrida começa
+{% endstep %}
+
+{% step %}
+### 30/08 · Penúltimo chefe
+
+A Liquid derrota o Coiled Altar depois de 310 tentativas.
+{% endstep %}
+
+{% step %}
+### 03/09 · World Firs
+
+A Liquid derrota Ula'tek depois de cerca de 311 tentativas. A Echo termina 26 minutos depois.
+{% endstep %}
+
+{% step %}
+### 13 e 14/10 · Hall of Fame completo
+
+As 200 vagas para as primeiras guildas do mundo a derrotar o chefe final se esgotam
+{% endstep %}
+{% endstepper %}
+
+Fontes: LFCarry (atualizado em 16/11/2026); Method, cobertura ao vivo da corrida; MythicStats (dados do Warcraft Logs).&#x20;
 {% endtab %}
 {% endtabs %}
+
+***
+
+Os cartões abaixo resumem o tamanho do cenário competitivo do WoW hoje. Os dois primeiros mostram o valor do jogo como e-sport: dinheiro em prêmios e público assistindo. O último mostra a raide Mítica, o modo que o LogCoach analisa: quantas guildas competem no mundo.
+
+<table data-view="cards"><thead><tr><th></th><th></th><th></th><th data-hidden data-card-cover data-type="image">Cover image</th></tr></thead><tbody><tr><td><h4>US$ 600 mil</h4></td><td>em prêmios nas finais de MDI e AWC na BlizzCon 2026</td><td>Fonte: Blizzard</td><td><a href=".gitbook/assets/capa-premiacao-escuro.png">capa-premiacao-escuro.png</a></td></tr><tr><td><h4>465,8 milhões</h4></td><td>de horas de WoW assistidas na Twitch em 12 meses</td><td>Fonte: SullyGnome (nov/2025–nov/2026)</td><td><a href=".gitbook/assets/capa-audiencia-escuro.png">capa-audiencia-escuro.png</a></td></tr><tr><td><h4>5.792</h4></td><td>guildas no mundo mataram ao menos 1 chefe Mítico na raide atual</td><td>Fonte: Raider.IO (17/11/2026)</td><td><a href=".gitbook/assets/capa-guildas-escuro.png">capa-guildas-escuro.png</a></td></tr></tbody></table>
 
 Chegar a esse nível exige mais do que horas de jogo. O jogador precisa **estudar o próprio desempenho**. Para isso, toda luta pode ser gravada em um **log de combate** e enviada ao site **Warcraft Logs**. O log registra cada habilidade usada, cada segundo em que o jogador ficou parado e cada morte.
 
 O obstáculo é que esse log é um **dado bruto**: tabelas e gráficos que exigem horas de análise e muito conhecimento do jogo para virar informação útil. A informação necessária para evoluir já existe, mas não está pronta para ser usada.
 
+***
+
 {% hint style="info" %}
 **Recorte brasileiro:** o Brasil tem comunidade própria no jogo desde 2011, com servidores nacionais e fórum oficial em português. Mesmo assim, quase todo o conteúdo avançado (guias, ferramentas e análises) está em inglês.
 {% endhint %}
+
+A cena brasileira de raide Mítica existe e é competitiva, mas é pequena perto do resto do mundo e ainda está longe do topo. Os números abaixo mostram esse retrato na temporada atual.
+
+{% columns %}
+{% column width="33.33333333333333%" %}
+**51 guildas brasileiras**
+
+Fazem raide Mítica na temporada atual. Só **8** completaram a raide.
+{% endcolumn %}
+
+{% column width="66.66666666666667%" %}
+As 51 guildas representam **0,9%** das 5.792 guildas Míticas do mundo. A melhor delas, a Perma Desvantagem, está em **218º** lugar no ranking mundial, enquanto só as 200 primeiras guildas a derrotar o chefe final entram no Hall of Fame. Como cada guilda de raide Mítica tem 20 jogadores, a cena brasileira reúne pelo menos cerca de 1.000 jogadores, número estimado pelo grupo a partir do ranking.
+
+Fonte: Raider.IO, consultado em 17/11/2026. O filtro "Brasil" conta as guildas dos servidores brasileiros.
+{% endcolumn %}
+{% endcolumns %}
+
+***
+
+O gráfico mostra quantas guildas brasileiras pararam em cada etapa da raide, do primeiro ao oitavo chefe. A maior parte está no meio do caminho, entre o 4º e o 7º chefe: são guildas que já jogam no nível mais alto, mas ainda não conseguem fechar a raide. É exatamente o público em que uma análise mais fina de cada jogador pode fazer diferença.
+
+```mermaid
+%%{init: {"theme": "base", "themeVariables": {
+  "xyChart": {
+    "backgroundColor": "#ffffff",
+    "titleColor": "#000000",
+    "xAxisLabelColor": "#000000",
+    "xAxisTitleColor": "#000000",
+    "xAxisTickColor": "#000000",
+    "xAxisLineColor": "#000000",
+    "yAxisLabelColor": "#000000",
+    "yAxisTitleColor": "#000000",
+    "yAxisTickColor": "#000000",
+    "yAxisLineColor": "#000000",
+    "plotColorPalette": "#ff8906"
+  }
+}}}%%
+xychart-beta
+    title "Guildas brasileiras x Progresso no Mítico (The Venomous Abyss)"
+    x-axis ["1/8", "2/8", "3/8", "4/8", "5/8", "6/8", "7/8", "8/8"]
+    y-axis "Guildas" 0 --> 12
+    bar [7, 5, 1, 7, 4, 9, 10, 8]
+```
+
+Fonte: Raider.IO, rankings de The Venomous Abyss no Mítico (Brasil, EUA/Oceania, Europa e mundo), consultados em 17/11/2026.
+
+***
+
+### O que é o LogCoach ?
+
+O LogCoach é uma ferramenta de análise de desempenho criada para jogadores brasileiros profissionais de World of Warcraft. Ela usa os dados do Warcraft Logs, a plataforma de registro de combate que a comunidade competitiva já adota, para comparar a execução de cada jogador com a da elite mundial e apontar em português, de forma clara e objetiva, onde ele está perdendo desempenho e o que precisa ajustar.
+
+O diagnóstico combina regras de análise determinísticas, que garantem precisão e transparência, com uma camada de inteligência artificial que transforma os números em orientações práticas. O MVP começa pelo Mago Arcano no chefe Nek’zali, um encontro em que a diferença entre os jogadores está na execução individual.
+
+O objetivo é encurtar a distância entre a cena brasileira e o topo mundial: hoje só 51 guildas do Brasil derrotaram ao menos um chefe Mítico na raide atual, e a melhor delas está na 218ª posição do mundo.
+
+
 
 ***
 
@@ -212,6 +323,12 @@ O jogador brasileiro que não domina inglês técnico fica para trás, porque n�
 {% endtab %}
 {% endtabs %}
 
+A barreira não está no jogo em si. Desde 2011 o World of Warcraft tem cliente traduzido para o português, o 9º idioma oficial do jogo e o 3º da América Latina. O que continua em inglês é o material para quem quer jogar no nível mais alto: guias, ferramentas de análise e conteúdo dos melhores jogadores.
+
+Fonte: Engadget, 22/07/2011, citando o comunicado oficial da Blizzard.&#x20;
+
+***
+
 ### Evidências do problema
 
 {% stepper %}
@@ -229,14 +346,39 @@ Os colegas de jogo de Arthur confirmam a dificuldade de analisar o registro e ex
 #### Mercado
 
 Já existem ferramentas de análise, do Warcraft Logs ao WoWAnalyzer e a soluções com IA como ParsePal e WowCoach, mas todas em inglês. As automáticas aplicam regras rígidas ou genéricas, sem considerar o contexto da luta. Nenhuma é focada no jogador brasileiro, e as que trazem informações avançadas não fazem isso de forma intuitiva e fácil de digerir.
+
+Essa ausência chama atenção pelo tamanho do público. O Brasil é o **3º país do mundo em número de jogadores** de videogame, com 123,3 milhões de pessoas, e o **9º em receita**, com US$ 2,7 bilhões em 2025. Mesmo assim, nenhuma ferramenta de análise de log é pensada para ele.
+
+Fonte: Newzoo, citada pelo PocketGamer.biz em 29/04/2026.
 {% endstep %}
 
 {% step %}
 #### Premiações
 
 Torneios com US$ 300 mil em prêmios mostram que desempenho no WoW tem valor real e não é só lazer. Para quem compete, cada melhoria de desempenho tem impacto concreto.
+
+Somando os dois campeonatos oficiais, as finais na BlizzCon 2026 distribuíram **US$ 600 mil**. O detalhe por competição está abaixo.
+
+| Competição | Etapa                   | Premiação                         |
+| ---------- | ----------------------- | --------------------------------- |
+| MDI        | Fase de grupos          | US$ 90 mil (US$ 30 mil por grupo) |
+| MDI        | Final da temporada      | US$ 100 mil                       |
+| MDI        | Final global (BlizzCon) | US$ 300 mil                       |
+| AWC        | Final (BlizzCon)        | US$ 300 mil                       |
+
+Fontes: Raider.IO (prêmios do MDI); Blizzard (AWC e total da BlizzCon).
+{% endstep %}
+
+{% step %}
+#### Distância até o topo
+
+Os dados de raide mostram onde o jogador brasileiro está. Das 804 guildas do mundo que completaram a raide atual no Mítico, só **8** são brasileiras, e a melhor delas está em **218º** lugar, logo atrás das 200 vagas do Hall of Fame. O Brasil já tem guildas no nível mais alto; o que falta é o ajuste fino de desempenho para subir no ranking, que é o que o LogCoach entrega.
+
+Fonte: Raider.IO, consultado em 17/11/2026.
 {% endstep %}
 {% endstepper %}
+
+***
 
 ### Relação com princípios de usabilidade
 
@@ -300,7 +442,9 @@ A IA explica os erros encontrados em português simples e indica o que corrigir 
 **Dados e regras encontram os erros; a IA explica.** A identificação dos erros vem de dados reais (a comparação com os melhores logs) e de regras fixas da especialização. A IA entra na etapa final: traduz o resultado em linguagem simples e indica a prioridade de correção.
 {% endhint %}
 
-#### Funcionalidades principais
+***
+
+### Funcionalidades principais
 
 | Funcionalidade             | O que entrega ao jogador                                                |
 | -------------------------- | ----------------------------------------------------------------------- |
@@ -310,7 +454,9 @@ A IA explica os erros encontrados em português simples e indica o que corrigir 
 | **Explicação por IA**      | Erros explicados em português, em linguagem simples                     |
 | **Histórico e evolução**   | Acompanhamento da evolução ao longo do tempo, para usuários cadastrados |
 
-#### Planos
+***
+
+### Planos
 
 {% columns %}
 {% column %}
@@ -325,8 +471,6 @@ A IA explica os erros encontrados em português simples e indica o que corrigir 
 Análises ilimitadas.
 {% endcolumn %}
 {% endcolumns %}
-
-
 
 ***
 
@@ -358,7 +502,7 @@ A escolha vem do próprio fluxo de uso:
 
 ## 1.5 Fontes de Pesquisa e Referências
 
-### Benchmarking
+Benchmarking
 
 | Ferramenta                                       | O que faz                                       | Limite                                  |
 | ------------------------------------------------ | ----------------------------------------------- | --------------------------------------- |
@@ -376,15 +520,23 @@ O mercado se divide em dois grupos:
 **Diferencial do LogCoach:** especialista em uma especialização, em português e focado em dizer o que corrigir primeiro.
 {% endhint %}
 
+### Dados do cenário competitivo <a href="#user-content-dados-do-cenario-competitivo" id="user-content-dados-do-cenario-competitivo"></a>
+
+Os números usados nesta documentação vêm de uma pesquisa feita pelo grupo em 17/11/2026. A tabela abaixo reúne os principais, com a fonte de cada um. Os rankings do Raider.IO e os números da Twitch mudam com o tempo, por isso a data da consulta acompanha cada dado.
+
+Dados de mercado e da cena competitiva
+
+<table data-search="false"><thead><tr><th>Dado</th><th>Valor</th><th>Fonte</th></tr></thead><tbody><tr><td>Guildas brasileiras com ao menos 1 chefe Mítico na raide atual</td><td>51</td><td>Raider.IO, 17/11/2026</td></tr><tr><td>Guildas brasileiras que completaram a raide no Mítico</td><td>8 (de 804 no mundo)</td><td>Raider.IO, 17/11/2026</td></tr><tr><td>Melhor guilda brasileira</td><td>Perma Desvantagem, 218º do mundo</td><td>Raider.IO, 17/11/2026</td></tr><tr><td>Guildas no mundo com ao menos 1 chefe Mítico</td><td>5.792</td><td>Raider.IO, 17/11/2026</td></tr><tr><td>Prêmios nas finais de MDI e AWC (BlizzCon 2026)</td><td>US$ 600 mil</td><td>Blizzard</td></tr><tr><td>Race to World First de The Venomous Abyss</td><td>Liquid, 16 dias, ~311 tentativas no chefe final</td><td>LFCarry, Method</td></tr><tr><td>Horas de WoW assistidas na Twitch</td><td>465,8 milhões em 12 meses</td><td>SullyGnome</td></tr><tr><td>Pico de audiência da BlizzCon 2026</td><td>1,76 milhão de espectadores</td><td>Streams Charts</td></tr><tr><td>Brasil no mercado mundial de jogos</td><td>3º em jogadores (123,3 milhões), 9º em receita (US$ 2,7 bilhões)</td><td>Newzoo</td></tr><tr><td>Brasileiros que jogam</td><td>75,3%; 21,1% preferem o PC</td><td>Pesquisa Game Brasil 2026</td></tr><tr><td>Times brasileiros nas finais de MDI e AWC 2026</td><td>Nenhum</td><td>Raider.IO, MMOs.com</td></tr></tbody></table>
+
 ### Referências (ABNT)
 
 <details>
 
 <summary>Referências</summary>
 
-BLIZZARD ENTERTAINMENT. **The Mythic Dungeon International returns!** 2026. Disponível em: https://worldofwarcraft.blizzard.com/news/24276958. Acesso em: 12 out. 2026.
+BLIZZARD ENTERTAINMENT. **The Mythic Dungeon International returns!** 2026. Disponível em: [https://worldofwarcraft.blizzard.com/news/24276958](https://worldofwarcraft.blizzard.com/news/24276958). Acesso em: 12 out. 2026.
 
-BLIZZARD ENTERTAINMENT. **Curse of Ula'tek: The Venomous Abyss raid goes live August 18**. 2026. Disponível em: https://worldofwarcraft.blizzard.com/news/24294062. Acesso em: 12 out. 2026.
+BLIZZARD ENTERTAINMENT. **Curse of Ula'tek: The Venomous Abyss raid goes live August 18**. 2026. Disponível em: [https://worldofwarcraft.blizzard.com/news/24294062](https://worldofwarcraft.blizzard.com/news/24294062). Acesso em: 12 out. 2026.
 
 BROOKE, J. SUS: a quick and dirty usability scale. _In_: JORDAN, P. W. _et al_. (ed.). **Usability evaluation in industry**. London: Taylor & Francis, 1996. p. 189-194.
 
@@ -392,15 +544,39 @@ INTERNATIONAL ORGANIZATION FOR STANDARDIZATION. **ISO 9241-11:2018**: ergonomics
 
 KRUG, S. **Não me faça pensar**: atualizado. Rio de Janeiro: Alta Books, 2014.
 
-NIELSEN, J. **10 usability heuristics for user interface design**. Nielsen Norman Group, 1994. Disponível em: https://www.nngroup.com/articles/ten-usability-heuristics/. Acesso em: 12 out. 2026.
+NIELSEN, J. **10 usability heuristics for user interface design**. Nielsen Norman Group, 1994. Disponível em: [https://www.nngroup.com/articles/ten-usability-heuristics/](https://www.nngroup.com/articles/ten-usability-heuristics/). Acesso em: 12 out. 2026.
 
 NORMAN, D. A. **O design do dia a dia**. Rio de Janeiro: Rocco, 2006.
 
-TECMUNDO. **World of Warcraft**: como migrar para um servidor brasileiro? 2011. Disponível em: https://www.tecmundo.com.br/jogos/16654-world-of-warcraft-como-migrar-para-um-servidor-brasileiro-.htm. Acesso em: 12 out. 2026.
+TECMUNDO. **World of Warcraft**: como migrar para um servidor brasileiro? 2011. Disponível em: [https://www.tecmundo.com.br/jogos/16654-world-of-warcraft-como-migrar-para-um-servidor-brasileiro-.htm](https://www.tecmundo.com.br/jogos/16654-world-of-warcraft-como-migrar-para-um-servidor-brasileiro-.htm). Acesso em: 12 out. 2026.
 
-WARCRAFT LOGS. **API v2 documentation**. Disponível em: https://www.warcraftlogs.com/v2-api-docs/warcraft/. Acesso em: 12 out. 2026.
+WARCRAFT LOGS. **API v2 documentation**. Disponível em: [https://www.warcraftlogs.com/v2-api-docs/warcraft/](https://www.warcraftlogs.com/v2-api-docs/warcraft/). Acesso em: 12 out. 2026.
 
-WOWHEAD. **Unveiling the AWC and MDI road to BlizzCon in 2026**. 2026. Disponível em: https://www.wowhead.com/news=380845. Acesso em: 12 out. 2026.
+WOWHEAD. **Unveiling the AWC and MDI road to BlizzCon in 2026**. 2026. Disponível em: [https://www.wowhead.com/news=380845](https://www.wowhead.com/news=380845). Acesso em: 12 out. 2026.
+
+ENGADGET. **Fully localized WoW launching in Brazil**. 22 jul. 2011. Disponível em: [https://www.engadget.com/2011/07/22/fully-localized-wow-launching-in-brazil/](https://www.engadget.com/2011/07/22/fully-localized-wow-launching-in-brazil/). Acesso em: 17 nov. 2026.
+
+FORBES BRASIL. **Consumo de games estabiliza e jogadores se preocupam com uso de IA no desenvolvimento**. 9 abr. 2026. Disponível em: [https://forbes.com.br/forbes-tech/2026/04/consumo-de-games-estabiliza-e-jogadores-se-preocupam-com-uso-de-ia-no-desenvolvimento/](https://forbes.com.br/forbes-tech/2026/04/consumo-de-games-estabiliza-e-jogadores-se-preocupam-com-uso-de-ia-no-desenvolvimento/). Acesso em: 17 nov. 2026.
+
+LFCARRY. **WoW Race to World First 2026**. 2026. Disponível em: [https://lfcarry.com/guides/wow-race-to-world-first](https://lfcarry.com/guides/wow-race-to-world-first). Acesso em: 17 nov. 2026.
+
+MEIO & MENSAGEM. **Após pico, número de jogadores brasileiros cai, segundo PGB**. 9 abr. 2026. Disponível em: [https://www.meioemensagem.com.br/marketing/apos-pico-numero-de-jogadores-brasileiros-cai-segundo-pgb](https://www.meioemensagem.com.br/marketing/apos-pico-numero-de-jogadores-brasileiros-cai-segundo-pgb). Acesso em: 17 nov. 2026.
+
+METHOD. **Raid progress**: The Venomous Abyss. 2026. Disponível em: [https://www.method.gg/raidprogress](https://www.method.gg/raidprogress). Acesso em: 17 nov. 2026.
+
+MMOS.COM. **WoW MDI 2026 Grand Finals teams and schedule**. 4 set. 2026. Disponível em: [https://mmos.com/news/mmorpg-news/wow-mdi-2026-grand-finals](https://mmos.com/news/mmorpg-news/wow-mdi-2026-grand-finals). Acesso em: 17 nov. 2026.
+
+MYTHICSTATS. **Top guilds mythic raid progression**. Disponível em: [https://mythicstats.com/raid-top](https://mythicstats.com/raid-top). Acesso em: 17 nov. 2026.
+
+POCKETGAMER.BIZ. **Brazil wants to produce games, not just consume them, as Gamescom Latam 2026 kicks off**. 29 abr. 2026. Disponível em: [https://www.pocketgamer.biz/brazil-wants-to-produce-games-not-just-consume-them-as-gamescom-latam-2026-kicks-off/](https://www.pocketgamer.biz/brazil-wants-to-produce-games-not-just-consume-them-as-gamescom-latam-2026-kicks-off/). Acesso em: 17 nov. 2026.
+
+RAIDER.IO. **MDI BlizzCon 2026**: prizes. 2026. Disponível em: [https://raider.io/events/mdi-blizzcon-2026/prizes](https://raider.io/events/mdi-blizzcon-2026/prizes). Acesso em: 17 nov. 2026.
+
+RAIDER.IO. **The Venomous Abyss**: Mythic rankings. Disponível em: [https://raider.io/the-venomous-abyss/rankings/brazil/mythic/0](https://raider.io/the-venomous-abyss/rankings/brazil/mythic/0). Acesso em: 17 nov. 2026.
+
+STREAMS CHARTS. **BlizzCon 2026**: 1.76M viewers. 14 set. 2026. Disponível em: [https://streamscharts.com/news/blizzcon-2026-viewership-stats](https://streamscharts.com/news/blizzcon-2026-viewership-stats). Acesso em: 17 nov. 2026.
+
+SULLYGNOME. **World of Warcraft Twitch stats over the past 365 days**. Disponível em: [https://sullygnome.com/game/World\_of\_Warcraft/365/summary](https://sullygnome.com/game/World_of_Warcraft/365/summary). Acesso em: 17 nov. 2026.
 
 </details>
 
@@ -496,4 +672,3 @@ A plataforma escolhida é web responsiva. O jogador já está no computador quan
 O fluxo do LogCoach começa depois da luta: o log já foi enviado ao Warcraft Logs e o jogador cola o link. O sistema analisa lutas concluídas e não acompanha a luta enquanto ela acontece.
 
 </details>
-
