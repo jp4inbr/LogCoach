@@ -5,7 +5,7 @@ description: Visão e modelo de negócio do LogCoach em uma página.
 # 2. Planejamento Estratégico do Produto
 
 {% hint style="info" %}
-Esta página registra como o LogCoach evoluiu depois da RT01: o feedback recebido, o recorte do MVP,  e o roadmap até a banca.
+Esta página registra como o LogCoach evoluiu depois da RT01: o feedback recebido, o recorte do MVP, e o roadmap até a banca.
 {% endhint %}
 
 ### 2.1 Feedback incorporado após a RT01
@@ -28,11 +28,38 @@ Para que a análise seja realmente especializada já na primeira versão, o MVP 
 
 A ordem de implementação segue a complexidade de cada luta. Quanto mais alvos ao mesmo tempo, mais a escolha de alvo influencia o dano, e mais cuidado as regras de comparação exigem.
 
-<table><thead><tr><th width="70.25">Ordem</th><th width="130.25">Chefe</th><th width="209.75">Como é a luta</th><th width="320.25">Impacto na análise</th></tr></thead><tbody><tr><td><strong>1º</strong></td><td>Nek'zali the Soulcoiler</td><td>Um alvo principal, com fases bem marcadas</td><td>Comparação com os melhores logs mais justa. </td></tr><tr><td><strong>2º</strong></td><td>Entombed Sentinels</td><td>A raide se divide em dois grupos, um em cada chefe</td><td>A escolha de alvo muda muito o dano; as regras precisam de mais cuidado</td></tr><tr><td><strong>3º</strong></td><td>The Lost Explorers</td><td>Três chefes ao mesmo tempo</td><td>A escolha de alvo muda muito o dano; as regras precisam de mais cuidado</td></tr></tbody></table>
+<table><thead><tr><th width="70.25">Ordem</th><th width="130.25">Chefe</th><th width="209.75">Como é a luta</th><th width="320.25">Impacto na análise</th></tr></thead><tbody><tr><td><strong>1º</strong></td><td>Nek'zali the Soulcoiler</td><td>Um alvo principal, com fases bem marcadas</td><td>Comparação com os melhores logs mais justa.</td></tr><tr><td><strong>2º</strong></td><td>Entombed Sentinels</td><td>A raide se divide em dois grupos, um em cada chefe</td><td>A escolha de alvo muda muito o dano; as regras precisam de mais cuidado</td></tr><tr><td><strong>3º</strong></td><td>The Lost Explorers</td><td>Três chefes ao mesmo tempo</td><td>A escolha de alvo muda muito o dano; as regras precisam de mais cuidado</td></tr></tbody></table>
 
 {% hint style="info" %}
 **Por que Nek'zali primeiro:** com um alvo principal e fases bem marcadas, a comparação com os 10 melhores logs fica mais justa. É o cenário ideal para validar o método antes de partir para as lutas com vários alvos.
 {% endhint %}
+
+Os dados da corrida confirmam essa escolha. O gráfico abaixo mostra quantas tentativas, em média, as 20 melhores guildas do mundo precisaram para derrotar cada chefe da raide no Mítico. No Nek'zali foi **uma tentativa**, contra mais de **300** nos dois últimos chefes. Ou seja, no Nek'zali a mecânica da luta não é o que separa os jogadores; o que separa é a execução individual de cada um, que é exatamente o que o LogCoach mede quando compara o jogador com os 10 melhores logs.
+
+```mermaid
+%%{init: {"theme": "base", "themeVariables": {
+  "xyChart": {
+    "backgroundColor": "#ffffff",
+    "titleColor": "#000000",
+    "xAxisLabelColor": "#000000",
+    "xAxisTitleColor": "#000000",
+    "xAxisTickColor": "#000000",
+    "xAxisLineColor": "#000000",
+    "yAxisLabelColor": "#000000",
+    "yAxisTitleColor": "#000000",
+    "yAxisTickColor": "#000000",
+    "yAxisLineColor": "#000000",
+    "plotColorPalette": "#ff8906"
+  }
+}}}%%
+xychart-beta
+    title "Tentativas médias do top 20 mundial x Chefe (The Venomous Abyss, Mítico)"
+    x-axis ["Nek'zali", "Explorers", "Vashnik", "Sentinels", "Sszorak", "Twin Fangs", "Ula'tek", "Coiled Altar"]
+    y-axis "Tentativas" 0 --> 340
+    bar [1, 7, 17, 18, 28, 63, 315, 329]
+```
+
+Fonte: MythicStats, seção "Average stats" (dados do Warcraft Logs), consultado em 17/11/2026.
 
 ***
 
@@ -55,5 +82,7 @@ Inclusão dos chefes Entombed Sentinels e The Lost Explorers e teste com jogador
 #### Pós-MVP · 2027
 
 Mais especializações, Mítica+, versão em inglês e pagamento real.
+
+A versão em inglês tem um público medido: só na temporada atual, 1.696 guildas fazem raide Mítica na região americana e 2.459 na Europa, contra 51 no Brasil (Raider.IO, 17/11/2026). Com o método validado em português, abrir o produto para esses jogadores multiplica o mercado sem mudar o motor.
 {% endstep %}
 {% endstepper %}

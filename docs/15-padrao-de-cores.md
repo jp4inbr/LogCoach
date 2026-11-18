@@ -1,5 +1,7 @@
 ---
-description: Paletas do tema claro e escuro, tokens de cor, desvios por contraste e regras para mexer nas cores.
+description: >-
+  Paletas do tema claro e escuro, tokens de cor, desvios por contraste e regras
+  para mexer nas cores.
 ---
 
 # 15. Padrão de Cores (Tema Claro e Escuro)
@@ -30,35 +32,7 @@ O tema aplicado também define `color-scheme` (formulários e barra de rolagem n
 
 O bloco claro aparece duas vezes no CSS (na media query e em `[data-theme="light"]`) porque o CSS não permite compartilhar. O teste exige que os dois sejam idênticos.
 
-| Token | Escuro | Claro | Onde é usado |
-|---|---|---|---|
-| `--bg` | `#0f0e17` | `#fffffe` | Fundo da página, campos de texto |
-| `--surface` | `#181722` | `#e3f6f5` | Cartões, painéis |
-| `--surface-2` | `#2e2f3e` | `#bae8e8` | Botões comuns, abas, realces |
-| `--border` | `#3b3c4f` | `#a6dcdc` | Divisórias e bordas de cartões (decorativas) |
-| `--border-control` | `#7f8199` | `#5e7385` | Borda dos campos de texto |
-| `--text` | `#fffffe` | `#272343` | Texto principal e títulos |
-| `--muted` | `#a7a9be` | `#4b5169` | Texto de apoio |
-| `--link` | `#ff5c8f` | `#272343` | Links no texto e botões com cara de link, como "Usar o log de exemplo" (no claro, sempre sublinhados) |
-| `--accent` | `#ff8906` | `#ffd803` | Preenchimento do botão principal e do avatar do coach |
-| `--accent-strong` | `#ff9f33` | `#f5c800` | Botão principal ao passar o mouse |
-| `--accent-ink` | `#0f0e17` | `#272343` | Texto sobre `--accent` |
-| `--accent-fg` | `#ff8906` | `#272343` | Destaque como texto, borda e traço de gráfico |
-| `--focus` | `#ff8906` | `#272343` | Anel de foco do teclado |
-| `--brand-2` | `#e53170` | `#bae8e8` | Segunda cor do degradê da marca |
-| `--top` | `#22d3ee` | `#0c7c9c` | Cor dos tops na comparação |
-| `--player` | `#ff8906` | `#dd6b00` | Marca do jogador na linha do tempo: laranja nos dois temas, contra o ciano dos tops |
-| `--luck` | `#3b82f6` | `#2563eb` | Série do azar (RNG) na barra "De onde vem essa diferença" e no ponto da lista. Não é situação |
-| `--ok` | `#4ade80` | `#166534` | Situação: ok |
-| `--warn` | `#fde047` | `#dfa800` | Situação: atenção, como preenchimento (barra do cartão de erro) |
-| `--warn-badge-bg`, `--warn-badge-fg` | `#fde047` a 12%, `#fde047` | `#ffefa8`, `#9a5b00` | Fundo e texto do selo de atenção |
-| `--error` | `#f87171` | `#b91c1c` | Situação: erro |
-| `--error-ink` | `#0f0e17` | `#fffffe` | Texto sobre `--error` (botão de perigo) |
-| `--ok-bg`, `--warn-bg`, `--error-bg` | situação a 12% | situação a 9–12% | Fundo dos avisos e selos |
-| `--warn-border`, `--error-border`, `--accent-border` | situação ou destaque a 35–45% | idem | Bordas de avisos e de lutas selecionadas |
-| `--info-bg` | `#ff8906` a 10% | `#bae8e8` a 45% | Fundo de avisos informativos |
-| `--glow`, `--coach-bg-1/2`, `--hatch`, `--hatch-strong`, `--accent-glow` | destaque translúcido | idem | Brilho do fundo, cartão do coach, faixa da intermissão, pulso |
-| `--shadow` | preto a 45% | `#272343` a 25% | Sombra da dica flutuante |
+<table data-search="false"><thead><tr><th width="153.26666259765625">Token</th><th width="106.0833740234375">Escuro</th><th width="106.066650390625">Claro</th><th width="356.85003662109375">Onde é usado</th></tr></thead><tbody><tr><td><code>--bg</code></td><td><code>#0f0e17</code></td><td><code>#fffffe</code></td><td>Fundo da página, campos de texto</td></tr><tr><td><code>--surface</code></td><td><code>#181722</code></td><td><code>#e3f6f5</code></td><td>Cartões, painéis</td></tr><tr><td><code>--surface-2</code></td><td><code>#2e2f3e</code></td><td><code>#bae8e8</code></td><td>Botões comuns, abas, realces</td></tr><tr><td><code>--border</code></td><td><code>#3b3c4f</code></td><td><code>#a6dcdc</code></td><td>Divisórias e bordas de cartões (decorativas)</td></tr><tr><td><code>--border-control</code></td><td><code>#7f8199</code></td><td><code>#5e7385</code></td><td>Borda dos campos de texto</td></tr><tr><td><code>--text</code></td><td><code>#fffffe</code></td><td><code>#272343</code></td><td>Texto principal e títulos</td></tr><tr><td><code>--muted</code></td><td><code>#a7a9be</code></td><td><code>#4b5169</code></td><td>Texto de apoio</td></tr><tr><td><code>--link</code></td><td><code>#ff5c8f</code></td><td><code>#272343</code></td><td>Links no texto e botões com cara de link, como "Usar o log de exemplo" (no claro, sempre sublinhados)</td></tr><tr><td><code>--accent</code></td><td><code>#ff8906</code></td><td><code>#ffd803</code></td><td>Preenchimento do botão principal e do avatar do coach</td></tr><tr><td><code>--accent-strong</code></td><td><code>#ff9f33</code></td><td><code>#f5c800</code></td><td>Botão principal ao passar o mouse</td></tr><tr><td><code>--accent-ink</code></td><td><code>#0f0e17</code></td><td><code>#272343</code></td><td>Texto sobre <code>--accent</code></td></tr><tr><td><code>--accent-fg</code></td><td><code>#ff8906</code></td><td><code>#272343</code></td><td>Destaque como texto, borda e traço de gráfico</td></tr><tr><td><code>--focus</code></td><td><code>#ff8906</code></td><td><code>#272343</code></td><td>Anel de foco do teclado</td></tr><tr><td><code>--brand-2</code></td><td><code>#e53170</code></td><td><code>#bae8e8</code></td><td>Segunda cor do degradê da marca</td></tr><tr><td><code>--brand-highlight</code></td><td><code>#ff8906</code> a 0%</td><td><code>#ffd803</code></td><td>Marca-texto sob o "Coach" da marca no cabeçalho (só no claro; no escuro o "Coach" é laranja, pelo <code>--accent-fg</code>)</td></tr><tr><td><code>--top</code></td><td><code>#22d3ee</code></td><td><code>#0c7c9c</code></td><td>Cor dos tops na comparação</td></tr><tr><td><code>--player</code></td><td><code>#ff8906</code></td><td><code>#dd6b00</code></td><td>Marca do jogador na linha do tempo: laranja nos dois temas, contra o ciano dos tops</td></tr><tr><td><code>--luck</code></td><td><code>#3b82f6</code></td><td><code>#2563eb</code></td><td>Série do azar (RNG) na barra "De onde vem essa diferença" e no ponto da lista. Não é situação</td></tr><tr><td><code>--ok</code></td><td><code>#4ade80</code></td><td><code>#166534</code></td><td>Situação: ok</td></tr><tr><td><code>--warn</code></td><td><code>#fde047</code></td><td><code>#dfa800</code></td><td>Situação: atenção, como preenchimento (barra do cartão de erro)</td></tr><tr><td><code>--warn-badge-bg</code>, <code>--warn-badge-fg</code></td><td><code>#fde047</code> a 12%, <code>#fde047</code></td><td><code>#ffefa8</code>, <code>#9a5b00</code></td><td>Fundo e texto do selo de atenção</td></tr><tr><td><code>--error</code></td><td><code>#f87171</code></td><td><code>#b91c1c</code></td><td>Situação: erro</td></tr><tr><td><code>--error-ink</code></td><td><code>#0f0e17</code></td><td><code>#fffffe</code></td><td>Texto sobre <code>--error</code> (botão de perigo)</td></tr><tr><td><code>--ok-bg</code>, <code>--warn-bg</code>, <code>--error-bg</code></td><td>situação a 12%</td><td>situação a 9–12%</td><td>Fundo dos avisos e selos</td></tr><tr><td><code>--warn-border</code>, <code>--error-border</code>, <code>--accent-border</code></td><td>situação ou destaque a 35–45%</td><td>idem</td><td>Bordas de avisos e de lutas selecionadas</td></tr><tr><td><code>--info-bg</code></td><td><code>#ff8906</code> a 10%</td><td><code>#bae8e8</code> a 45%</td><td>Fundo de avisos informativos</td></tr><tr><td><code>--glow</code>, <code>--coach-bg-1/2</code>, <code>--hatch</code>, <code>--hatch-strong</code>, <code>--accent-glow</code></td><td>destaque translúcido</td><td>idem</td><td>Brilho do fundo, cartão do coach, faixa da intermissão, pulso</td></tr><tr><td><code>--shadow</code></td><td>preto a 45%</td><td><code>#272343</code> a 25%</td><td>Sombra da dica flutuante</td></tr></tbody></table>
 
 `--accent` serve só de **preenchimento** (botão, avatar). Quando o destaque vira texto, borda ou traço de gráfico, usa `--accent-fg`, porque o amarelo `#ffd803` sobre fundo claro não tem contraste.
 
@@ -81,92 +55,21 @@ Cor nunca é a única pista: erros e avisos sempre têm texto, ícone ou selo.
 
 Meta: WCAG 2.x AA (4,5:1 para texto, 3:1 para elementos gráficos).
 
-| Item da paleta | Problema | O que o LogCoach usa |
-|---|---|---|
-| Texto `#fffffe` sobre o botão `#ff8906` | 2,38:1 (reprova) | Texto do botão `#0f0e17`: 8,06:1 |
-| Botão amarelo `#ffd803` como texto, borda ou linha no claro | cerca de 1,4:1 sobre branco | `--accent-fg` `#272343`: 14,91:1. O amarelo fica só como preenchimento de botão |
-| Link `#ffd803` (a paleta clara usa o contorno como link) | Reprova sobre branco | Link no claro `#272343`, sempre sublinhado |
-| Link `#e53170` (terciária do escuro) | 4,57:1 no fundo, 4,23:1 em cartão (reprova) | `#ff5c8f`: 6,55:1 no fundo, 6,06:1 em cartão. `#e53170` ficou só na marca (`--brand-2`) |
-| Parágrafo claro `#2d334a` | Igual ao texto, sem nível de apoio | `--text` `#272343`; `--muted` `#4b5169` (7,83:1) para apoio |
-| Secundária clara `#e3f6f5` e terciária `#bae8e8` | Servem de fundo, não de texto | Viram `--surface` e `--surface-2` |
-| Cartões e bordas | A paleta não define | `--surface` escuro `#181722` (entre o fundo e `#2e2f3e`); bordas derivadas |
-| Verde, âmbar e vermelho | Fora da paleta (decisão do Arthur, seção 15.4) | Tons ajustados por fundo |
-| `--top` (ciano) | Fora da paleta; precisa diferir do destaque e do verde de ok | `#22d3ee` no escuro, `#0c7c9c` no claro |
+<table data-search="false"><thead><tr><th width="220.050048828125">Item da paleta</th><th width="217.3834228515625">Problema</th><th width="304.6500244140625">O que o LogCoach usa</th></tr></thead><tbody><tr><td>Texto <code>#fffffe</code> sobre o botão <code>#ff8906</code></td><td>2,38:1 (reprova)</td><td>Texto do botão <code>#0f0e17</code>: 8,06:1</td></tr><tr><td>Botão amarelo <code>#ffd803</code> como texto, borda ou linha no claro</td><td>cerca de 1,4:1 sobre branco</td><td><code>--accent-fg</code> <code>#272343</code>: 14,91:1. O amarelo fica só como preenchimento de botão</td></tr><tr><td>Link <code>#ffd803</code> (a paleta clara usa o contorno como link)</td><td>Reprova sobre branco</td><td>Link no claro <code>#272343</code>, sempre sublinhado</td></tr><tr><td>Link <code>#e53170</code> (terciária do escuro)</td><td>4,57:1 no fundo, 4,23:1 em cartão (reprova)</td><td><code>#ff5c8f</code>: 6,55:1 no fundo, 6,06:1 em cartão. <code>#e53170</code> ficou só na marca (<code>--brand-2</code>)</td></tr><tr><td>Parágrafo claro <code>#2d334a</code></td><td>Igual ao texto, sem nível de apoio</td><td><code>--text</code> <code>#272343</code>; <code>--muted</code> <code>#4b5169</code> (7,83:1) para apoio</td></tr><tr><td>Secundária clara <code>#e3f6f5</code> e terciária <code>#bae8e8</code></td><td>Servem de fundo, não de texto</td><td>Viram <code>--surface</code> e <code>--surface-2</code></td></tr><tr><td>Cartões e bordas</td><td>A paleta não define</td><td><code>--surface</code> escuro <code>#181722</code> (entre o fundo e <code>#2e2f3e</code>); bordas derivadas</td></tr><tr><td>Verde, âmbar e vermelho</td><td>Fora da paleta (decisão do Arthur, seção 15.4)</td><td>Tons ajustados por fundo</td></tr><tr><td><code>--top</code> (ciano)</td><td>Fora da paleta; precisa diferir do destaque e do verde de ok</td><td><code>#22d3ee</code> no escuro, <code>#0c7c9c</code> no claro</td></tr></tbody></table>
 
 ## 15.6 Contraste medido
 
 Razões calculadas pelo teste `src/theme-contrast.test.js` com a fórmula de luminância relativa do WCAG. "Mín." é o mínimo exigido. Fundos translúcidos aparecem como `fundo/base`: a cor é composta sobre a base antes de medir.
 
-| Primeiro plano | Fundo | Mín. | Escuro | Claro |
-|---|---|---|---|---|
-| `--text` | `--bg` | 4.5 | 19.16 | 14.91 |
-| `--muted` | `--bg` | 4.5 | 8.27 | 7.83 |
-| `--link` | `--bg` | 4.5 | 6.55 | 14.91 |
-| `--text` | `--surface` | 4.5 | 17.72 | 13.33 |
-| `--muted` | `--surface` | 4.5 | 7.65 | 7.00 |
-| `--link` | `--surface` | 4.5 | 6.06 | 13.33 |
-| `--text` | `--surface-2` | 4.5 | 13.18 | 11.22 |
-| `--muted` | `--surface-2` | 4.5 | 5.69 | 5.89 |
-| `--link` | `--surface-2` | 4.5 | 4.51 | 11.22 |
-| `--accent-fg` | `--surface-2` | 4.5 | 5.55 | 11.22 |
-| `--accent-fg` | `--bg` | 4.5 | 8.06 | 14.91 |
-| `--ok` | `--bg` | 4.5 | 11.00 | 7.13 |
-| `--error` | `--bg` | 4.5 | 6.93 | 6.47 |
-| `--focus` | `--bg` | 3 | 8.06 | 14.91 |
-| `--accent-fg` | `--bg` | 3 | 8.06 | 14.91 |
-| `--border-control` | `--bg` | 3 | 5.02 | 4.92 |
-| `--top` | `--bg` | 3 | 10.61 | 4.79 |
-| `--player` | `--bg` | 3 | 8.06 | 3.40 |
-| `--accent-fg` | `--surface` | 4.5 | 7.46 | 13.33 |
-| `--ok` | `--surface` | 4.5 | 10.17 | 6.37 |
-| `--error` | `--surface` | 4.5 | 6.41 | 5.78 |
-| `--focus` | `--surface` | 3 | 7.46 | 13.33 |
-| `--accent-fg` | `--surface` | 3 | 7.46 | 13.33 |
-| `--border-control` | `--surface` | 3 | 4.65 | 4.40 |
-| `--top` | `--surface` | 3 | 9.81 | 4.29 |
-| `--player` | `--surface` | 3 | 7.46 | 3.04 |
-| `--luck` | `--surface-2` | 3 | 3.59 | 3.89 |
-| `--luck` | `--surface` | 3 | 4.82 | 4.62 |
-| `--accent-ink` | `--accent` | 4.5 | 8.06 | 10.71 |
-| `--accent-ink` | `--accent-strong` | 4.5 | 9.36 | 9.34 |
-| `--error-ink` | `--error` | 4.5 | 6.93 | 6.47 |
-| `--ok` | `--ok-bg/--bg` | 4.5 | 8.93 | 6.12 |
-| `--warn-badge-fg` | `--warn-badge-bg/--bg` | 4.5 | 11.25 | 4.69 |
-| `--error` | `--error-bg/--bg` | 4.5 | 5.97 | 5.56 |
-| `--text` | `--info-bg/--bg` | 4.5 | 16.82 | 13.14 |
-| `--text` | `--warn-bg/--bg` | 4.5 | 14.83 | 12.65 |
-| `--accent-fg` | `--info-bg/--bg` | 4.5 | 7.08 | 13.14 |
-| `--muted` | `--info-bg/--bg` | 4.5 | 7.26 | 6.90 |
-| `--muted` | `--warn-bg/--bg` | 4.5 | 6.40 | 6.65 |
-| `--muted` | `--error-bg/--bg` | 4.5 | 7.12 | 6.73 |
-| `--ok` | `--ok-bg/--surface` | 4.5 | 8.04 | 5.51 |
-| `--warn-badge-fg` | `--warn-badge-bg/--surface` | 4.5 | 10.08 | 4.69 |
-| `--error` | `--error-bg/--surface` | 4.5 | 5.41 | 4.98 |
-| `--text` | `--info-bg/--surface` | 4.5 | 15.27 | 12.34 |
-| `--text` | `--warn-bg/--surface` | 4.5 | 13.28 | 11.37 |
-| `--accent-fg` | `--info-bg/--surface` | 4.5 | 6.43 | 12.34 |
-| `--muted` | `--info-bg/--surface` | 4.5 | 6.59 | 6.48 |
-| `--muted` | `--warn-bg/--surface` | 4.5 | 5.73 | 5.97 |
-| `--muted` | `--error-bg/--surface` | 4.5 | 6.46 | 6.03 |
+<table data-search="false"><thead><tr><th width="186.7333984375">Primeiro plano</th><th width="208.4833984375">Fundo</th><th width="118.2166748046875">Mín.</th><th width="112.1832275390625">Escuro</th><th width="107.8167724609375">Claro</th></tr></thead><tbody><tr><td><code>--text</code></td><td><code>--bg</code></td><td>4.5</td><td>19.16</td><td>14.91</td></tr><tr><td><code>--muted</code></td><td><code>--bg</code></td><td>4.5</td><td>8.27</td><td>7.83</td></tr><tr><td><code>--link</code></td><td><code>--bg</code></td><td>4.5</td><td>6.55</td><td>14.91</td></tr><tr><td><code>--text</code></td><td><code>--surface</code></td><td>4.5</td><td>17.72</td><td>13.33</td></tr><tr><td><code>--muted</code></td><td><code>--surface</code></td><td>4.5</td><td>7.65</td><td>7.00</td></tr><tr><td><code>--link</code></td><td><code>--surface</code></td><td>4.5</td><td>6.06</td><td>13.33</td></tr><tr><td><code>--text</code></td><td><code>--surface-2</code></td><td>4.5</td><td>13.18</td><td>11.22</td></tr><tr><td><code>--muted</code></td><td><code>--surface-2</code></td><td>4.5</td><td>5.69</td><td>5.89</td></tr><tr><td><code>--link</code></td><td><code>--surface-2</code></td><td>4.5</td><td>4.51</td><td>11.22</td></tr><tr><td><code>--accent-fg</code></td><td><code>--surface-2</code></td><td>4.5</td><td>5.55</td><td>11.22</td></tr><tr><td><code>--accent-fg</code></td><td><code>--bg</code></td><td>4.5</td><td>8.06</td><td>14.91</td></tr><tr><td><code>--ok</code></td><td><code>--bg</code></td><td>4.5</td><td>11.00</td><td>7.13</td></tr><tr><td><code>--error</code></td><td><code>--bg</code></td><td>4.5</td><td>6.93</td><td>6.47</td></tr><tr><td><code>--focus</code></td><td><code>--bg</code></td><td>3</td><td>8.06</td><td>14.91</td></tr><tr><td><code>--accent-fg</code></td><td><code>--bg</code></td><td>3</td><td>8.06</td><td>14.91</td></tr><tr><td><code>--border-control</code></td><td><code>--bg</code></td><td>3</td><td>5.02</td><td>4.92</td></tr><tr><td><code>--top</code></td><td><code>--bg</code></td><td>3</td><td>10.61</td><td>4.79</td></tr><tr><td><code>--player</code></td><td><code>--bg</code></td><td>3</td><td>8.06</td><td>3.40</td></tr><tr><td><code>--accent-fg</code></td><td><code>--surface</code></td><td>4.5</td><td>7.46</td><td>13.33</td></tr><tr><td><code>--ok</code></td><td><code>--surface</code></td><td>4.5</td><td>10.17</td><td>6.37</td></tr><tr><td><code>--error</code></td><td><code>--surface</code></td><td>4.5</td><td>6.41</td><td>5.78</td></tr><tr><td><code>--focus</code></td><td><code>--surface</code></td><td>3</td><td>7.46</td><td>13.33</td></tr><tr><td><code>--accent-fg</code></td><td><code>--surface</code></td><td>3</td><td>7.46</td><td>13.33</td></tr><tr><td><code>--border-control</code></td><td><code>--surface</code></td><td>3</td><td>4.65</td><td>4.40</td></tr><tr><td><code>--top</code></td><td><code>--surface</code></td><td>3</td><td>9.81</td><td>4.29</td></tr><tr><td><code>--player</code></td><td><code>--surface</code></td><td>3</td><td>7.46</td><td>3.04</td></tr><tr><td><code>--luck</code></td><td><code>--surface-2</code></td><td>3</td><td>3.59</td><td>3.89</td></tr><tr><td><code>--luck</code></td><td><code>--surface</code></td><td>3</td><td>4.82</td><td>4.62</td></tr><tr><td><code>--accent-ink</code></td><td><code>--accent</code></td><td>4.5</td><td>8.06</td><td>10.71</td></tr><tr><td><code>--accent-ink</code></td><td><code>--accent-strong</code></td><td>4.5</td><td>9.36</td><td>9.34</td></tr><tr><td><code>--error-ink</code></td><td><code>--error</code></td><td>4.5</td><td>6.93</td><td>6.47</td></tr><tr><td><code>--ok</code></td><td><code>--ok-bg/--bg</code></td><td>4.5</td><td>8.93</td><td>6.12</td></tr><tr><td><code>--warn-badge-fg</code></td><td><code>--warn-badge-bg/--bg</code></td><td>4.5</td><td>11.25</td><td>4.69</td></tr><tr><td><code>--error</code></td><td><code>--error-bg/--bg</code></td><td>4.5</td><td>5.97</td><td>5.56</td></tr><tr><td><code>--text</code></td><td><code>--info-bg/--bg</code></td><td>4.5</td><td>16.82</td><td>13.14</td></tr><tr><td><code>--text</code></td><td><code>--warn-bg/--bg</code></td><td>4.5</td><td>14.83</td><td>12.65</td></tr><tr><td><code>--accent-fg</code></td><td><code>--info-bg/--bg</code></td><td>4.5</td><td>7.08</td><td>13.14</td></tr><tr><td><code>--muted</code></td><td><code>--info-bg/--bg</code></td><td>4.5</td><td>7.26</td><td>6.90</td></tr><tr><td><code>--muted</code></td><td><code>--warn-bg/--bg</code></td><td>4.5</td><td>6.40</td><td>6.65</td></tr><tr><td><code>--muted</code></td><td><code>--error-bg/--bg</code></td><td>4.5</td><td>7.12</td><td>6.73</td></tr><tr><td><code>--ok</code></td><td><code>--ok-bg/--surface</code></td><td>4.5</td><td>8.04</td><td>5.51</td></tr><tr><td><code>--warn-badge-fg</code></td><td><code>--warn-badge-bg/--surface</code></td><td>4.5</td><td>10.08</td><td>4.69</td></tr><tr><td><code>--error</code></td><td><code>--error-bg/--surface</code></td><td>4.5</td><td>5.41</td><td>4.98</td></tr><tr><td><code>--text</code></td><td><code>--info-bg/--surface</code></td><td>4.5</td><td>15.27</td><td>12.34</td></tr><tr><td><code>--text</code></td><td><code>--warn-bg/--surface</code></td><td>4.5</td><td>13.28</td><td>11.37</td></tr><tr><td><code>--accent-fg</code></td><td><code>--info-bg/--surface</code></td><td>4.5</td><td>6.43</td><td>12.34</td></tr><tr><td><code>--muted</code></td><td><code>--info-bg/--surface</code></td><td>4.5</td><td>6.59</td><td>6.48</td></tr><tr><td><code>--muted</code></td><td><code>--warn-bg/--surface</code></td><td>4.5</td><td>5.73</td><td>5.97</td></tr><tr><td><code>--muted</code></td><td><code>--error-bg/--surface</code></td><td>4.5</td><td>6.46</td><td>6.03</td></tr></tbody></table>
 
 Séries vizinhas da barra da diferença (distância em OKLab; o teste exige 0,12 e, simulando protanopia e deuteranopia, 0,10):
 
-| Par | Escuro | Claro |
-|---|---|---|
-| `--error` × `--luck` | 0,32 | 0,362 |
-| `--luck` × `--muted` | 0,20 | 0,206 |
-| `--error` × `--muted` | 0,177 | 0,220 |
+<table><thead><tr><th width="192.816650390625">Par</th><th width="152.4666748046875">Escuro</th><th width="246.3333740234375">Claro</th></tr></thead><tbody><tr><td><code>--error</code> × <code>--luck</code></td><td>0,32</td><td>0,362</td></tr><tr><td><code>--luck</code> × <code>--muted</code></td><td>0,20</td><td>0,206</td></tr><tr><td><code>--error</code> × <code>--muted</code></td><td>0,177</td><td>0,220</td></tr></tbody></table>
 
 Cores de situação (distância em OKLab na visão normal; o teste exige 0,12):
 
-| Par | Escuro | Claro |
-|---|---|---|
-| `--warn` × `--error` | 0,282 | 0,307 |
-| `--warn-badge-fg` × `--error` | 0,282 | 0,123 |
-| `--player` × `--top` | 0,311 | 0,289 |
-| `--ok` × `--warn` | 0,189 | 0,348 |
-| `--ok` × `--error` | 0,328 | 0,273 |
-| `--ok` × `--top` | 0,163 | 0,159 |
+<table><thead><tr><th width="329.050048828125">Par</th><th width="122.8834228515625">Escuro</th><th width="135.216552734375">Claro</th></tr></thead><tbody><tr><td><code>--warn</code> × <code>--error</code></td><td>0,282</td><td>0,307</td></tr><tr><td><code>--warn-badge-fg</code> × <code>--error</code></td><td>0,282</td><td>0,123</td></tr><tr><td><code>--player</code> × <code>--top</code></td><td>0,311</td><td>0,289</td></tr><tr><td><code>--ok</code> × <code>--warn</code></td><td>0,189</td><td>0,348</td></tr><tr><td><code>--ok</code> × <code>--error</code></td><td>0,328</td><td>0,273</td></tr><tr><td><code>--ok</code> × <code>--top</code></td><td>0,163</td><td>0,159</td></tr></tbody></table>
 
 ## 15.7 Regras para quem for mexer
 
@@ -183,11 +86,4 @@ Cores de situação (distância em OKLab na visão normal; o teste exige 0,12):
 
 ## 15.8 Onde está o código
 
-| Arquivo | O que tem |
-|---|---|
-| `frontend/src/index.css` | Tokens dos dois temas e botão de tema |
-| `frontend/index.html` | Script inline que evita o flash e `theme-color` |
-| `frontend/src/lib/theme.js` | Resolução do tema, `applyTheme`, `saveTheme` e o hook `useTheme()` |
-| `frontend/src/components/ThemeToggle.jsx` | Botão no cabeçalho ("Ativar tema claro" / "Ativar tema escuro") |
-| `frontend/src/lib/theme.test.js`, `src/components/ThemeToggle.test.jsx`, `src/App.test.jsx` | Testes da escolha, do botão e do cabeçalho |
-| `frontend/src/theme-contrast.test.js` | Tokens, contraste e cores-base das paletas |
+<table><thead><tr><th width="335.4500732421875">Arquivo</th><th width="377.88330078125">O que tem</th></tr></thead><tbody><tr><td><code>frontend/src/index.css</code></td><td>Tokens dos dois temas e botão de tema</td></tr><tr><td><code>frontend/index.html</code></td><td>Script inline que evita o flash e <code>theme-color</code></td></tr><tr><td><code>frontend/src/lib/theme.js</code></td><td>Resolução do tema, <code>applyTheme</code>, <code>saveTheme</code> e o hook <code>useTheme()</code></td></tr><tr><td><code>frontend/src/components/ThemeToggle.jsx</code></td><td>Botão no cabeçalho ("Ativar tema claro" / "Ativar tema escuro")</td></tr><tr><td><code>frontend/src/lib/theme.test.js</code>, <code>src/components/ThemeToggle.test.jsx</code>, <code>src/App.test.jsx</code></td><td>Testes da escolha, do botão e do cabeçalho</td></tr><tr><td><code>frontend/src/theme-contrast.test.js</code></td><td>Tokens, contraste e cores-base das paletas</td></tr></tbody></table>

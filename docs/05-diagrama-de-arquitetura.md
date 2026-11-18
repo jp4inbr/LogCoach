@@ -32,8 +32,6 @@ flowchart LR
     M5 -->|resultado salvo| DB
 ```
 
-> Se o diagrama não renderizar no GitBook, ative a integração **Mermaid** no espaço ou exporte uma imagem pelo [mermaid.live](https://mermaid.live).
->
 > As linhas tracejadas são o modo exemplo (sem internet).
 
 ## Como uma análise funciona
@@ -47,13 +45,13 @@ flowchart LR
 
 ## Componentes
 
-| Componente       | Tecnologia                             | Responsabilidade                                                                                       |
-| ---------------- | -------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| Frontend         | React + Vite                           | Telas, validação de entrada, exibição do relatório                                                     |
-| Backend          | FastAPI (Python)                       | Rotas, autenticação, orquestração da análise                                                           |
-| Motor de análise | Python (`backend/app/engine/`)         | Medidas por fase, regras com limites tirados dos tops, diferença para os tops, tabelas por habilidade e por alvo (ver item 12) |
-| Banco            | PostgreSQL (Cloud SQL) / SQLite em dev | Usuários, análises, cópia dos tops por 24 h                                                            |
-| Fonte de dados   | API Warcraft Logs v2 (GraphQL), cliente em `backend/app/wcl/` | Lutas, eventos da luta e rankings; no modo exemplo, arquivos de `app/samples/` |
+| Componente       | Tecnologia                                                    | Responsabilidade                                                                                                               |
+| ---------------- | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| Frontend         | React + Vite                                                  | Telas, validação de entrada, exibição do relatório                                                                             |
+| Backend          | FastAPI (Python)                                              | Rotas, autenticação, orquestração da análise                                                                                   |
+| Motor de análise | Python (`backend/app/engine/`)                                | Medidas por fase, regras com limites tirados dos tops, diferença para os tops, tabelas por habilidade e por alvo (ver item 12) |
+| Banco            | PostgreSQL (Cloud SQL) / SQLite em dev                        | Usuários, análises, cópia dos tops por 24 h                                                                                    |
+| Fonte de dados   | API Warcraft Logs v2 (GraphQL), cliente em `backend/app/wcl/` | Lutas, eventos da luta e rankings; no modo exemplo, arquivos de `app/samples/`                                                 |
 
 ## Ambientes
 
