@@ -10,7 +10,7 @@ description: Modelo visual das principais telas do sistema.
 flowchart LR
     A[Início<br/>cola o link] --> B[Escolhe a luta<br/>e o personagem]
     B --> C[Análise em andamento]
-    C --> D[Resumo do coach<br/>erros principais]
+    C --> D[Erros principais]
     D --> E[Resultado completo]
     D --> F[Perfil / histórico]
 ```
@@ -93,7 +93,7 @@ flowchart LR
 {% endtab %}
 
 {% tab title="." icon="5" %}
-#### Tela 5 — Análise e resumo do coach
+#### Tela 5 — Análise
 
 {% embed url="https://www.figma.com/design/yjxWAryp4t2GiXn8oCfiFk/A3---LogCoach?node-id=8-3474&t=0SjmXLgCnoA2cRQ8-4" %}
 
@@ -108,9 +108,7 @@ flowchart LR
   * Tempo ativo&#x20;
 * **Bloco expansível "Com quem você foi comparado":** Top 10 do bracket 326–328 · 10 jogadores.
 * **Abas:** "Resumo", "Linha do tempo" e "Todas as regras".
-* **Resumo do coach:** parágrafo em linguagem natural que informa a diferença para a média dos melhores e aponta as maiores perdas.&#x20;
 * **Erros do maior para o menor impacto:** cartões numerados. Cada um traz o título do erro, um selo de situação e quanto custou.&#x20;
-* **Campo "Pergunte ao coach sobre este erro":** permite tirar dúvidas sobre um erro específico.
 
 **Princípios de usabilidade aplicados**
 
@@ -204,7 +202,6 @@ Dois cartões, lado a lado:
 **Pro**
 
 * Análises ilimitadas
-* Pergunta ao coach
 * Comparação entre análises
 
 {% hint style="warning" %}

@@ -176,18 +176,6 @@ O sistema deve mostrar a tela de planos (sem pagamento real no MVP).
 
 <details>
 
-<summary><strong>RF16. Chat com o coach</strong></summary>
-
-O usuário deve poder perguntar ao coach sobre um erro específico do relatório.
-
-{% hint style="info" %}
-**Prioridade:** **Baixa**
-{% endhint %}
-
-</details>
-
-<details>
-
 <summary><strong>RF18. Regras do encontro</strong></summary>
 
 O sistema deve aplicar as regras do encontro (fases, intermissões, janelas de burst, golpes de raide e períodos em que o chefe não pode ser atacado), que ajustam as regras da especialização.
