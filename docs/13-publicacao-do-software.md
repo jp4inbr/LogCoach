@@ -4,7 +4,7 @@ description: Link de acesso à versão publicada.
 
 # 13. Publicação do Software
 
-<table data-search="false"><thead><tr><th width="243.88330078125">Item</th><th width="485.083251953125">Plano</th></tr></thead><tbody><tr><td>Frontend</td><td>Firebase Hosting ou Cloud Storage (Google Cloud)</td></tr><tr><td>Backend</td><td>Cloud Run (container)</td></tr><tr><td>Banco</td><td>Cloud SQL (PostgreSQL)</td></tr><tr><td>Custos</td><td>Créditos do Google Cloud do grupo</td></tr><tr><td>URL pública</td><td><em>a adicionar</em></td></tr><tr><td>Plano B na apresentação</td><td>Rodar local com <code>DATA_SOURCE=exemplo</code>: o motor real roda sobre o kill de referência e os 10 tops guardados em <code>backend/app/samples/</code>, sem internet</td></tr></tbody></table>
+<table data-search="false"><thead><tr><th width="243.88330078125">Item</th><th width="485.083251953125">Plano</th></tr></thead><tbody><tr><td>Frontend</td><td>Firebase Hosting ou Cloud Storage (Google Cloud)</td></tr><tr><td>Backend</td><td>Cloud Run (container)</td></tr><tr><td>Banco</td><td>Cloud SQL (PostgreSQL)</td></tr><tr><td>Custos</td><td>Créditos do Google Cloud do grupo</td></tr><tr><td>URL pública</td><td><a href="https://logcoach.vercel.app/">https://logcoach.vercel.app/</a></td></tr><tr><td>Plano B na apresentação</td><td>Rodar local com <code>DATA_SOURCE=exemplo</code>: o motor real roda sobre o kill de referência e os 10 tops guardados em <code>backend/app/samples/</code>, sem internet</td></tr></tbody></table>
 
 ## Cuidados do deploy no Cloud Run
 
