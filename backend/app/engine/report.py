@@ -293,8 +293,7 @@ def _hypothesis(
         kind="hipotese",
         phase=None,
         explanation=mark_spells(text),
-        what_to_do="Compare a sua rotação com a dos tops nas habilidades acima. Na próxima "
-        "versão, o coach (IA) vai investigar essas pistas.",
+        what_to_do="Compare a sua rotação com a dos tops nas habilidades acima.",
         numbers=numbers,
     )
 

@@ -669,7 +669,7 @@ describe("ChooseFight: rodar a análise", () => {
     await user.click(analisar());
     await avancar(4000);
 
-    expect(passoAtual()).toHaveTextContent("Coach analisando");
+    expect(passoAtual()).toHaveTextContent("Montando o relatório");
     expect(window.location.hash).toBe("");
 
     await avancar(3500);

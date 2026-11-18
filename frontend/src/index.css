@@ -45,8 +45,6 @@
   --info-bg: rgb(255 137 6 / 10%);
 
   --glow: rgb(255 137 6 / 12%);
-  --coach-bg-1: rgb(255 137 6 / 16%);
-  --coach-bg-2: rgb(255 137 6 / 5%);
   --hatch: rgb(255 137 6 / 14%);
   --hatch-strong: rgb(255 137 6 / 40%);
   --shadow: rgb(0 0 0 / 45%);
@@ -111,8 +109,6 @@
     --info-bg: rgb(186 232 232 / 45%);
 
     --glow: rgb(255 216 3 / 22%);
-    --coach-bg-1: rgb(255 216 3 / 28%);
-    --coach-bg-2: rgb(186 232 232 / 40%);
     --hatch: rgb(39 35 67 / 12%);
     --hatch-strong: rgb(39 35 67 / 40%);
     --shadow: rgb(39 35 67 / 25%);
@@ -158,8 +154,6 @@
   --info-bg: rgb(186 232 232 / 45%);
 
   --glow: rgb(255 216 3 / 22%);
-  --coach-bg-1: rgb(255 216 3 / 28%);
-  --coach-bg-2: rgb(186 232 232 / 40%);
   --hatch: rgb(39 35 67 / 12%);
   --hatch-strong: rgb(39 35 67 / 40%);
   --shadow: rgb(39 35 67 / 25%);
@@ -1368,31 +1362,6 @@ label {
   color: var(--ok);
 }
 
-.coach {
-  display: flex;
-  gap: 14px;
-  align-items: flex-start;
-  padding: 16px;
-  border-radius: var(--radius);
-  background: linear-gradient(135deg, var(--coach-bg-1), var(--coach-bg-2));
-  border: 1px solid var(--accent-border);
-}
-
-.coach p {
-  margin-top: 4px;
-}
-
-.coach-avatar {
-  flex: none;
-  display: grid;
-  place-items: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: var(--accent);
-  color: var(--accent-ink);
-}
-
 .mistake {
   display: grid;
   gap: 10px;
@@ -1587,14 +1556,6 @@ caption {
 
 .compared-name {
   overflow-wrap: anywhere;
-}
-
-.ask {
-  display: grid;
-  gap: 8px;
-  padding: 16px;
-  border-radius: var(--radius);
-  border: 1px dashed var(--border);
 }
 
 /* Linha do tempo (RF11) */

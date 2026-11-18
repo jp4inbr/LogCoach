@@ -248,7 +248,7 @@
         "kind": "hipotese",
         "phase": null,
         "explanation": "As regras não explicam 1,9% da diferença para os tops (já descontados os erros e a sorte da {{spell:1295924|Seta Prismática}}). Nenhuma regra mede essa parte; é hipótese, não fato. Maiores diferenças na tabela por habilidade: {{spell:44425|Salva Arcana}} na Fase 2 (27,8% do seu dano; tops: 21,0%); {{spell:5143|Mísseis Arcanos}} na Fase 2 (30,9% do seu dano; tops: 35,5%); {{spell:30451|Impacto Arcano}} na Fase 2 (6,0% do seu dano; tops: 2,3%).",
-        "what_to_do": "Compare a sua rotação com a dos tops nas habilidades acima. Na próxima versão, o coach (IA) vai investigar essas pistas.",
+        "what_to_do": "Compare a sua rotação com a dos tops nas habilidades acima.",
         "numbers": [
           {
             "label": "{{spell:44425|Salva Arcana}} (Fase 2), % do dano",

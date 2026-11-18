@@ -30,7 +30,7 @@ describe("Home", () => {
     expect(passos).toEqual([
       "Cole o linkDo relatório público no Warcraft Logs.",
       "Escolha a lutaE o seu Mago Arcano naquela tentativa.",
-      "Leia o coachOs erros do maior para o menor impacto, com o que fazer.",
+      "Veja os errosOs erros do maior para o menor impacto, com o que fazer.",
     ]);
     expect(screen.getByText("O que já é suportado")).toBeInTheDocument();
     expect(screen.getByText(/· Mítico\. Outros chefes aparecem na lista/)).toBeInTheDocument();

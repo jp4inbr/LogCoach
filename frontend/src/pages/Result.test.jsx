@@ -154,43 +154,14 @@ describe("Result", () => {
     });
   });
 
-  describe("coach e erros (aba Resumo)", () => {
-    it("motor sem IA: avisa que o coach vem na próxima versão", async () => {
+  describe("erros (aba Resumo)", () => {
+    it("diz de onde vêm os números, sem prometer um coach", async () => {
       await aberta();
-      expect(screen.getByText("Explicação do coach em breve")).toBeInTheDocument();
-      expect(screen.queryByText("Resumo do coach")).not.toBeInTheDocument();
-    });
-
-    it("com o coach disponível mostra o resumo dele", async () => {
-      await aberta(
-        variacao((a) => {
-          a.result.coach = {
-            available: true,
-            headline:
-              "Priorize chegar na {{spell:451038|Alma Arcana}} com {{spell:1242974|Saraivada}} alta.",
-          };
-        }),
-      );
-
-      expect(screen.getByText("Resumo do coach")).toBeInTheDocument();
-      const resumo = screen.getByText("Resumo do coach").parentElement;
-      expect(resumo).toHaveTextContent("Priorize chegar na Alma Arcana com Saraivada alta.");
-      expect(resumo).not.toHaveTextContent("{{");
-      expect(resumo.querySelectorAll(".spell-ref img")).toHaveLength(2);
-      expect(screen.queryByText("Explicação do coach em breve")).not.toBeInTheDocument();
-    });
-
-    it("IA fora do ar em análise de exemplo: avisa que só valem as regras", async () => {
-      await aberta(
-        variacao((a) => {
-          a.result.source = "exemplo";
-        }),
-      );
-
-      expect(screen.getByText("Explicação do coach indisponível agora")).toBeInTheDocument();
       expect(
-        screen.getByText(/Os erros abaixo vêm só das regras, que são calculadas direto do log/),
+        screen.getByText(/Tudo aqui é calculado direto do seu log e comparado com os melhores/),
       ).toBeInTheDocument();
+      expect(screen.queryByText(/Resumo do coach|Pergunte ao coach/)).not.toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "Perguntar" })).not.toBeInTheDocument();
     });
 
     it("lista os erros das regras do maior para o menor impacto, numerados", async () => {
@@ -271,28 +242,9 @@ describe("Result", () => {
       expect(screen.queryByRole("article")).not.toBeInTheDocument();
       expect(screen.queryByText("O que as regras não explicam")).not.toBeInTheDocument();
     });
-
-    it("a pergunta ao coach aparece desabilitada, como recurso do plano Pro", async () => {
-      await aberta();
-
-      expect(screen.getByLabelText("Pergunte ao coach sobre um erro")).toBeDisabled();
-      expect(screen.getByRole("button", { name: "Perguntar" })).toBeDisabled();
-      expect(screen.getByText("Em breve, no plano Pro.")).toBeInTheDocument();
-    });
   });
 
   describe("avisos de dados", () => {
-    it("resultado de exemplo tem o aviso amarelo", async () => {
-      await aberta(
-        variacao((a) => {
-          a.result.source = "exemplo";
-        }),
-      );
-
-      const aviso = screen.getByText("Resultado de exemplo").closest(".notice");
-      expect(aviso).toHaveClass("notice-atencao");
-    });
-
     it("resultado do motor não tem o aviso de exemplo", async () => {
       await aberta();
       expect(screen.queryByText("Resultado de exemplo")).not.toBeInTheDocument();

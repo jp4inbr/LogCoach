@@ -19,7 +19,7 @@ const TABS = [
   { id: "regras", label: "Todas as regras" },
 ];
 
-// Telas 3 e 5: resumo do coach e resultado completo em abas (RF10, RF11, RF17, RF22).
+// Telas 3 e 5: resumo e resultado completo em abas (RF10, RF11, RF22).
 export default function Result({ id }) {
   const { token } = useAuth();
   const request = useRequest(`/analyses/${id}`, token);
@@ -75,13 +75,6 @@ export default function Result({ id }) {
           ← Escolher outra luta
         </a>
       </div>
-
-      {result.source === "exemplo" && (
-        <Notice tone="atencao" title="Resultado de exemplo">
-          Os números desta tela ainda não vêm do seu log: são um exemplo para mostrar como o
-          relatório funciona. O motor de análise entra na próxima etapa.
-        </Notice>
-      )}
 
       <div className="stats">
         <div className="stat">
@@ -189,34 +182,15 @@ export default function Result({ id }) {
 }
 
 function Summary({ result }) {
-  const { coach } = result;
   // Primeiro os erros que as regras confirmam; as hipóteses vêm depois, separadas (RF23, RF24).
   const mistakes = result.mistakes.filter((mistake) => mistake.kind === "regra");
   const hypotheses = result.mistakes.filter((mistake) => mistake.kind === "hipotese");
   return (
     <div className="stack">
-      {coach.available ? (
-        <div className="coach">
-          <span className="coach-avatar" aria-hidden="true">
-            ✦
-          </span>
-          <div>
-            <strong>Resumo do coach</strong>
-            <p>
-              <SpellText text={coach.headline} />
-            </p>
-          </div>
-        </div>
-      ) : result.source === "motor" ? (
-        <Notice title="Explicação do coach em breve">
-          Por enquanto o relatório sai só das regras, calculadas direto do seu log. O coach vai
-          explicar e ordenar os erros na próxima versão.
-        </Notice>
-      ) : (
-        <Notice tone="atencao" title="Explicação do coach indisponível agora">
-          Os erros abaixo vêm só das regras, que são calculadas direto do log e continuam valendo.
-        </Notice>
-      )}
+      {/* De onde vêm os números: só das regras, calculadas direto do log. */}
+      <p className="muted">
+        Tudo aqui é calculado direto do seu log e comparado com os melhores do seu item level.
+      </p>
 
       <GapBreakdown gap={result.gap} />
 
@@ -243,17 +217,6 @@ function Summary({ result }) {
           ))}
         </>
       )}
-
-      <div className="ask">
-        <label htmlFor="ask">Pergunte ao coach sobre um erro</label>
-        <div className="link-row">
-          <input id="ask" type="text" placeholder="Ex.: por que segurar a Salva Arcana?" disabled />
-          <button type="button" className="button ghost" disabled>
-            Perguntar
-          </button>
-        </div>
-        <p className="field-hint">Em breve, no plano Pro.</p>
-      </div>
     </div>
   );
 }
