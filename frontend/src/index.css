@@ -26,6 +26,7 @@
   --accent-glow: rgb(255 137 6 / 25%);
   --focus: #ff8906;
   --brand-2: #e53170;
+  --brand-highlight: rgb(255 137 6 / 0%);
   --top: #22d3ee;
   --player: #ff8906;
   --luck: #3b82f6;
@@ -116,6 +117,7 @@
     --accent-glow: rgb(39 35 67 / 20%);
     --focus: #272343;
     --brand-2: #bae8e8;
+    --brand-highlight: #ffd803;
     --top: #0c7c9c;
     --player: #dd6b00;
     --luck: #2563eb;
@@ -169,6 +171,7 @@
   --accent-glow: rgb(39 35 67 / 20%);
   --focus: #272343;
   --brand-2: #bae8e8;
+  --brand-highlight: #ffd803;
   --top: #0c7c9c;
   --player: #dd6b00;
   --luck: #2563eb;
@@ -523,6 +526,7 @@ a {
   align-items: center;
   min-height: 44px;
   color: var(--text);
+  gap: 8px;
   font-size: var(--size-subtitle);
   font-stretch: var(--font-wider);
   font-weight: 800;
@@ -537,6 +541,32 @@ a {
   font-size: var(--size-small);
   text-align: center;
   white-space: nowrap;
+}
+
+.brand-mark {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--accent), var(--brand-2));
+  color: var(--accent-ink);
+}
+
+.brand-mark svg {
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* "Coach" da marca: laranja no escuro; no claro, texto escuro com marca-texto amarelo. */
+.brand-accent {
+  color: var(--accent-fg);
+  background: linear-gradient(transparent 62%, var(--brand-highlight) 62%);
 }
 
 .topbar nav {
@@ -632,6 +662,156 @@ a {
   padding: 20px;
   display: grid;
   gap: 12px;
+}
+
+/* ---------- Abertura (Splash.jsx) ---------- */
+
+/* Tela cheia por cima de tudo, sem bloquear cliques: o site já está pronto por baixo. */
+.splash {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  background: var(--bg);
+  pointer-events: none;
+}
+
+.splash-leaving {
+  animation: splash-out 500ms ease forwards;
+}
+
+.splash-mark {
+  width: min(40vmin, 220px);
+  height: auto;
+  overflow: visible;
+}
+
+.splash-stop-a {
+  stop-color: var(--accent);
+}
+
+.splash-stop-b {
+  stop-color: var(--brand-2);
+}
+
+/* No SVG, transform-origin em coordenadas do viewBox (0 a 64). */
+.splash-square,
+.splash-dot,
+.splash-ripple {
+  transform-box: view-box;
+}
+
+.splash-square {
+  transform-origin: 32px 32px;
+  opacity: 0;
+  animation:
+    splash-square-in 450ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards,
+    splash-square-press 260ms ease 2050ms;
+}
+
+/* O traço se desenha do começo até o ponto (pathLength="100" no SVG). */
+.splash-line {
+  fill: none;
+  stroke: var(--accent-ink);
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  animation: splash-draw 1200ms cubic-bezier(0.65, 0, 0.35, 1) 450ms forwards;
+}
+
+.splash-dot {
+  fill: var(--accent-ink);
+  transform-origin: 52px 16px;
+  transform: scale(0);
+  animation:
+    splash-dot-in 280ms cubic-bezier(0.3, 1.6, 0.5, 1) 1600ms forwards,
+    splash-dot-press 300ms ease 2050ms;
+}
+
+/* O "clique": duas ondas saindo do ponto. */
+.splash-ripple {
+  fill: none;
+  stroke: var(--accent-ink);
+  stroke-width: 2;
+  transform-origin: 52px 16px;
+  opacity: 0;
+  animation: splash-ripple 650ms ease-out forwards;
+}
+
+.splash-ripple-1 {
+  animation-delay: 2150ms;
+}
+
+.splash-ripple-2 {
+  animation-delay: 2270ms;
+}
+
+@keyframes splash-square-in {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes splash-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes splash-dot-in {
+  to {
+    transform: scale(1);
+  }
+}
+
+@keyframes splash-dot-press {
+  0% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(0.6);
+  }
+  70% {
+    transform: scale(1.25);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes splash-square-press {
+  40% {
+    transform: scale(0.96);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+@keyframes splash-ripple {
+  from {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(3.6);
+  }
+}
+
+@keyframes splash-out {
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
 }
 
 /* ---------- Botões e campos ---------- */

@@ -25,7 +25,7 @@ LogCoach/
 │   │   │                 # tops, anonymize
 │   │   ├── rules/        # regras do Mago Arcano em YAML (arcane_mage.yaml)
 │   │   ├── encounters/   # regras de cada chefe em YAML (nekzali.yaml)
-│   │   ├── guides/       # guias em português para a IA (arcane_mage.md, nekzali.md)
+│   │   ├── guides/       # guias em português (arcane_mage.md, nekzali.md)
 │   │   ├── i18n/         # nomes em português por ID (pt_br.yaml)
 │   │   ├── samples/      # modo exemplo: kill de referência e tops (tops/)
 │   │   └── config.py, db.py, models.py, schemas.py, security.py, errors.py, main.py

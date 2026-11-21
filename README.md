@@ -1,12 +1,12 @@
 # LogCoach - Coach de Desempenho para World of Warcraft
 
-> **Status do Projeto:** Versão Alfa (Entrega RT03 - Consolidação, Usabilidade, IA e Testes). O motor de análise já roda com dados reais do Warcraft Logs e compara com os top 10 do bracket; o relatório é todo programático (sem IA generativa).
+> **Status do Projeto:** Versão Alfa (Entrega RT03 - Consolidação, Usabilidade, IA e Testes). O motor de análise já roda com dados reais do Warcraft Logs e compara com os top 10 do bracket.
 
 ## 1. Sobre o Projeto (Escopo RT01)
 
 O **LogCoach** é uma aplicação web responsiva voltada ao setor de Entretenimento e Esportes Eletrônicos (e-sports) que transforma o log de combate do World of Warcraft (Warcraft Logs) — hoje um dado bruto, extenso e em inglês — em um diagnóstico claro e priorizado em português do Brasil.
 
-A partir do link público de um relatório do Warcraft Logs, o sistema compara a luta do jogador com a média dos **10 melhores jogadores do mundo na mesma faixa de item level (bracket)**, aplica regras determinísticas da especialização e do chefe, e utiliza Inteligência Artificial para explicar em linguagem simples quais erros mais custaram dano (DPS) e o que corrigir primeiro.
+A partir do link público de um relatório do Warcraft Logs, o sistema compara a luta do jogador com a média dos **10 melhores jogadores do mundo na mesma faixa de item level (bracket)**, aplica regras determinísticas da especialização e do chefe, e explica em linguagem simples quais erros mais custaram dano (DPS) e o que corrigir primeiro.
 
 - **Curso:** Engenharia de Software — Centro Universitário UNA
 - **Unidade Curricular:** Usabilidade e Desenvolvimento Web (Projeto A3)
@@ -33,7 +33,7 @@ LogCoach/
 │   │   ├── engine/            # Motor determinístico (measures, checks, baseline, abilities, targets, report...)
 │   │   ├── rules/             # Regras da especialização (arcane_mage.yaml)
 │   │   ├── encounters/        # Regras e mecânicas do chefe (nekzali.yaml)
-│   │   ├── guides/            # Guias em português do Arcano e do Nek'zali (referência)
+│   │   ├── guides/            # Guias em português
 │   │   ├── i18n/              # Tradução de magias e NPCs por ID (pt_br.yaml)
 │   │   ├── samples/           # Kill de referência e top 10 do bracket para o modo exemplo (offline/demo)
 │   │   ├── services/          # ReportSource, TopsSource, EngineAnalyzer, planos e validação
@@ -88,7 +88,7 @@ O projeto implementa e demonstra as **10 heurísticas de usabilidade de Jakob Ni
 
 8. **Design estético e minimalista:** Exibição priorizada dos erros de maior impacto no resumo, com informações complementares organizadas em abas.
 
-9. **Reconhecimento e recuperação de erros:** Mensagens claras associadas a códigos de erro, como `invalid_link`, `fight_too_short` e `plan_limit`, e relatório totalmente programático, sem depender de serviço de IA.
+9. **Reconhecimento e recuperação de erros:** Mensagens claras associadas a códigos de erro, como `invalid_link`, `fight_too_short` e `plan_limit`.
 
 10. **Ajuda e documentação:** Glossário interativo implementado em `Term.jsx`, explicando conceitos como *bracket* de item level e tempo ativo.
 
@@ -205,5 +205,4 @@ A documentação complementa este README com os requisitos, as decisões de arqu
 - Matheus Damasceno
 - Matheus Morgado
 - Pedro Nogueira
-- Thales Almeida
 - Yohanan Amaral

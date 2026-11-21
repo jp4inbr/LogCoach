@@ -1,27 +1,16 @@
 ---
-description: Heurísticas de Nielsen aplicadas, validação de entradas e teste de usabilidade.
+description: >-
+  Heurísticas de Nielsen aplicadas, validação de entradas e teste de
+  usabilidade.
 ---
 
 # 8. Relatório de Princípios de Usabilidade Aplicados
 
-> Entrega da RT03. Evidências da seção 8.1 a partir da alfa; resultados da seção 8.3 após o teste com usuários.
-
 ## 8.1 Heurísticas de Nielsen aplicadas
 
-As evidências são prints da alfa rodando (versão de 27/10/2026, relatório de exemplo do Nek'zali Mítico). As três heurísticas marcadas com "após o motor" aparecem na tela de resultado. O motor de análise entrou em 04/11/2026 (PR #27) e a tela passou a mostrar os números calculados a partir do log; os prints delas serão tirados nessa versão. O relatório sai 100% das regras e das tabelas do motor, sem IA generativa (RF17).
+As evidências são prints da alfa rodando, com o relatório de exemplo do Nek'zali Mítico. As Figuras 1 a 8 são da versão de 27/10/2026. As Figuras 9 a 11 são da tela de resultado com o motor de análise, o tema claro e escuro e os ícones das magias (`main` de 15/11/2026, PRs #27, #29 e #30), com os números calculados a partir do log.
 
-| Heurística | Onde aparece no LogCoach | Evidência (print) | Tela no protótipo (item 3) |
-|---|---|---|---|
-| Visibilidade do status do sistema | Barra de progresso em etapas durante a análise: "Buscando sua luta → Comparando com os melhores → Montando o relatório"; no perfil, uso do plano no mês | [Figura 1](#figura-1-andamento-em-etapas) | 4, 8 e 9 |
-| Correspondência com o mundo real | Interface em português, com os nomes do cliente do jogo em pt-BR ("Nek'zali, a Enrosca-almas", "Mítico", "Kill", "Wipe"); relatório gerado pelo motor em linguagem simples | [Figura 2](#figura-2-escolher-a-luta) | 2, 4 e 5 |
-| Controle e liberdade do usuário | Botões "← Trocar o link" e "← Escolher outra luta"; o voltar do navegador funciona em todas as telas; no perfil, alterar a senha e excluir a conta; botão ☀/☾ no cabeçalho para trocar o tema, que segue o sistema até a pessoa escolher ([item 15](15-padrao-de-cores.md)) | [Figura 3](#figura-3-voltar-sem-perder-o-caminho) | 3, 5 e 8 |
-| Consistência e padrões | Mesmas cores e ícones para ok / atenção / erro nos erros, nas regras, nos avisos e na linha do tempo; login no padrão e-mail e senha; tema claro e escuro com as mesmas cores de situação nos dois ([item 15](15-padrao-de-cores.md)) | _após o motor_ | 1, 6 e 7 |
-| Prevenção de erros | Link conferido antes de enviar; lutas que não podem ser analisadas aparecem em cinza, com o motivo; exclusão da conta em área vermelha, com confirmação e aviso de que não dá para desfazer; plano Pro marcado como "Em breve" | [Figura 4](#figura-4-link-conferido-antes-de-enviar) e [Figura 2](#figura-2-escolher-a-luta) | 2, 3, 8 e 9 |
-| Reconhecer em vez de lembrar | Cada luta identificada por chefe, número, duração e resultado; o personagem da última análise (ou o único da luta) já vem marcado; jogador e melhores lado a lado no mesmo eixo; os erros principais ficam no topo do resultado | [Figura 5](#figura-5-personagem-marcado-sozinho) | 3 e 6 |
-| Flexibilidade e eficiência | Atalho "Usar o log de exemplo" para quem não tem um log à mão; usuário frequente pula a escolha do personagem; "Nova análise" a um clique, direto do perfil | [Figura 6](#figura-6-atalho-do-log-de-exemplo) e [Figura 5](#figura-5-personagem-marcado-sozinho) | 2, 7 e 8 |
-| Design estético e minimalista | Resumo só com os erros de maior impacto; detalhes nas abas "Linha do tempo" e "Todas as regras"; login só com e-mail e senha; planos em dois cartões lado a lado | _após o motor_ | 1, 5 e 9 |
-| Ajudar a reconhecer e corrigir erros | Mensagens no próprio campo dizendo o que fazer; cada luta bloqueada explica o motivo; limite do plano com o caminho para resolver | [Figura 7](#figura-7-erros-mostrados-no-campo) e [Figura 8](#figura-8-limite-do-plano) | 3 |
-| Ajuda e documentação | Termos técnicos ("bracket", "tempo ativo", tabela por habilidade) com linha pontilhada e explicação ao passar o mouse ou tocar; "Como funciona" em três passos no início; quando ainda não há evolução para mostrar, o perfil diz o que fazer | _após o motor_ | 2, 7 e 8 |
+<table data-search="false"><thead><tr><th>Heurística</th><th>Onde aparece no LogCoach</th><th>Evidência (print)</th><th>Tela no protótipo (item 3)</th></tr></thead><tbody><tr><td>Visibilidade do status do sistema</td><td>Barra de progresso em etapas durante a análise: "Buscando sua luta → Comparando com os melhores → Coach analisando"; no perfil, uso do plano no mês</td><td><a href="08-principios-de-usabilidade.md#figura-1-andamento-em-etapas">Figura 1</a></td><td>4, 8 e 9</td></tr><tr><td>Correspondência com o mundo real</td><td>Interface em português, com os nomes do cliente do jogo em pt-BR ("Nek'zali, a Enrosca-almas", "Mítico", "Kill", "Wipe"); relatório do coach em linguagem simples</td><td><a href="08-principios-de-usabilidade.md#figura-2-escolher-a-luta">Figura 2</a></td><td>2, 4 e 5</td></tr><tr><td>Controle e liberdade do usuário</td><td>Botões "← Trocar o link" e "← Escolher outra luta"; o voltar do navegador funciona em todas as telas; no perfil, alterar a senha e excluir a conta; botão ☀/☾ no cabeçalho para trocar o tema, que segue o sistema até a pessoa escolher (<a href="15-padrao-de-cores.md">item 15</a>)</td><td><a href="08-principios-de-usabilidade.md#figura-3-voltar-sem-perder-o-caminho">Figura 3</a></td><td>3, 5 e 8</td></tr><tr><td>Consistência e padrões</td><td>Mesmas cores e ícones para ok / atenção / erro nos erros, nas regras, nos avisos e na linha do tempo; login no padrão e-mail e senha; tema claro e escuro com as mesmas cores de situação nos dois (<a href="15-padrao-de-cores.md">item 15</a>)</td><td><a href="08-principios-de-usabilidade.md#figura-9-mesmas-cores-nos-dois-temas">Figura 9</a></td><td>1, 6 e 7</td></tr><tr><td>Prevenção de erros</td><td>Link conferido antes de enviar; lutas que não podem ser analisadas aparecem em cinza, com o motivo; exclusão da conta em área vermelha, com confirmação e aviso de que não dá para desfazer; plano Pro marcado como "Em breve"</td><td><a href="08-principios-de-usabilidade.md#figura-4-link-conferido-antes-de-enviar">Figura 4</a> e <a href="08-principios-de-usabilidade.md#figura-2-escolher-a-luta">Figura 2</a></td><td>2, 3, 8 e 9</td></tr><tr><td>Reconhecer em vez de lembrar</td><td>Cada luta identificada por chefe, número, duração e resultado; o personagem da última análise (ou o único da luta) já vem marcado; jogador e melhores lado a lado no mesmo eixo; os erros principais ficam no topo do resultado</td><td><a href="08-principios-de-usabilidade.md#figura-5-personagem-marcado-sozinho">Figura 5</a></td><td>3 e 6</td></tr><tr><td>Flexibilidade e eficiência</td><td>Atalho "Usar o log de exemplo" para quem não tem um log à mão; usuário frequente pula a escolha do personagem; "Nova análise" a um clique, direto do perfil</td><td><a href="08-principios-de-usabilidade.md#figura-6-atalho-do-log-de-exemplo">Figura 6</a> e <a href="08-principios-de-usabilidade.md#figura-5-personagem-marcado-sozinho">Figura 5</a></td><td>2, 7 e 8</td></tr><tr><td>Design estético e minimalista</td><td>Resumo só com os erros de maior impacto; detalhes nas abas "Linha do tempo" e "Todas as regras"; login só com e-mail e senha; planos em dois cartões lado a lado</td><td><a href="08-principios-de-usabilidade.md#figura-10-resumo-primeiro-detalhes-nas-abas">Figura 10</a></td><td>1, 5 e 9</td></tr><tr><td>Ajudar a reconhecer e corrigir erros</td><td>Mensagens no próprio campo dizendo o que fazer; cada luta bloqueada explica o motivo; limite do plano com o caminho para resolver</td><td><a href="08-principios-de-usabilidade.md#figura-7-erros-mostrados-no-campo">Figura 7</a> e <a href="08-principios-de-usabilidade.md#figura-8-limite-do-plano">Figura 8</a></td><td>3</td></tr><tr><td>Ajuda e documentação</td><td>Termos técnicos ("bracket", "tempo ativo", tabela por habilidade) com linha pontilhada e explicação ao passar o mouse ou tocar; "Como funciona" em três passos no início; quando ainda não há evolução para mostrar, o perfil diz o que fazer</td><td><a href="08-principios-de-usabilidade.md#figura-11-dica-do-termo-bracket">Figura 11</a></td><td>2, 7 e 8</td></tr></tbody></table>
 
 ### Figura 1: andamento em etapas
 
@@ -57,24 +46,42 @@ Nomes em português e lutas fora do recorte em cinza, cada uma com o motivo ("A 
 
 ![Aviso "A análise não foi concluída. Você usou suas 5 análises do mês. Veja o plano Pro." com o botão Ver planos](.gitbook/assets/8-1-erros-limite-plano.png)
 
+### Figura 9: mesmas cores nos dois temas
+
+Na aba "Todas as regras", cada regra tem o mesmo selo de situação (✓ OK, ! Atenção, × Erro), com ícone e texto além da cor. Os selos repetem as cores dos erros, dos avisos e da linha do tempo, e são iguais no tema escuro e no claro.
+
+![Aba Todas as regras no tema escuro: regras do Surto Arcano, do Toque dos Magos e da Salva Arcana, com os selos OK e Atenção](.gitbook/assets/8-1-consistencia-escuro.png)
+
+![A mesma aba no tema claro, com os mesmos selos OK e Atenção](.gitbook/assets/8-1-consistencia-claro.png)
+
+### Figura 10: resumo primeiro, detalhes nas abas
+
+O resumo mostra só quatro números, de onde vem a diferença para os tops (erros, azar e não explicado) e os erros do maior para o menor impacto, cada um com quanto custou e o que fazer. Linha do tempo e regras ficam nas outras abas.
+
+![Aba Resumo do resultado: DPS, média do Top 10, diferença de 18%, tempo ativo, a barra da diferença e o primeiro erro com o que fazer](.gitbook/assets/8-1-minimalista-resumo.png)
+
+### Figura 11: dica do termo bracket
+
+![Dica aberta sobre "Top 10 do bracket 326–328": faixa de 3 níveis de item level do Warcraft Logs; você é comparado só com quem tem equipamento parecido](.gitbook/assets/8-1-ajuda-dica.png)
+
 ## 8.2 Validação de entradas e tratamento de erros
 
-| Situação | Mensagem ao usuário |
-|---|---|
-| Link não é do Warcraft Logs | "Esse link não parece ser do Warcraft Logs. Ele deve começar com warcraftlogs.com/reports/" |
-| Relatório privado ou inexistente | "Não conseguimos abrir esse relatório. Confira se ele está público no Warcraft Logs" |
-| Luta de chefe não suportado | Luta aparece cinza: "Chefe ainda não suportado" |
-| Nenhum Mago Arcano na luta | "Não achamos nenhum Mago Arcano nessa luta" |
-| Luta curta demais | "A luta tem menos de 60 s. Escolha uma tentativa mais longa" |
-| Limite do plano grátis | "Você usou suas 5 análises do mês. Veja o plano Pro" |
-| API do Warcraft Logs fora do ar | "O Warcraft Logs não respondeu. Tente de novo em alguns minutos" |
-| E-mail ou senha inválidos | Aviso no próprio campo, antes de enviar |
+| Situação                         | Mensagem ao usuário                                                                         |
+| -------------------------------- | ------------------------------------------------------------------------------------------- |
+| Link não é do Warcraft Logs      | "Esse link não parece ser do Warcraft Logs. Ele deve começar com warcraftlogs.com/reports/" |
+| Relatório privado ou inexistente | "Não conseguimos abrir esse relatório. Confira se ele está público no Warcraft Logs"        |
+| Luta de chefe não suportado      | Luta aparece cinza: "Chefe ainda não suportado"                                             |
+| Nenhum Mago Arcano na luta       | "Não achamos nenhum Mago Arcano nessa luta"                                                 |
+| Luta curta demais                | "A luta tem menos de 60 s. Escolha uma tentativa mais longa"                                |
+| Limite do plano grátis           | "Você usou suas 5 análises do mês. Veja o plano Pro"                                        |
+| API do Warcraft Logs fora do ar  | "O Warcraft Logs não respondeu. Tente de novo em alguns minutos"                            |
+| E-mail ou senha inválidos        | Aviso no próprio campo, antes de enviar                                                     |
 
 ## 8.3 Teste de usabilidade
 
-- **Participantes:** 5 pessoas — 3 jogadores de WoW e 2 leigos.
-- **Tarefas:** 1) analisar um log a partir do link; 2) achar o erro mais grave; 3) achar a evolução no histórico.
-- **Medidas:** tempo para concluir, se precisou de ajuda, nota SUS (meta ≥ 68), tempo da 1ª análise (meta ≤ 5 min, RNF09) e taxa de sucesso (meta ≥ 80%).
+* **Participantes:** 5 pessoas — 3 jogadores de WoW e 2 leigos.
+* **Tarefas:** 1) analisar um log a partir do link; 2) achar o erro mais grave; 3) achar a evolução no histórico.
+* **Medidas:** tempo para concluir, se precisou de ajuda, nota SUS (meta ≥ 68), tempo da 1ª análise (meta ≤ 5 min, RNF09) e taxa de sucesso (meta ≥ 80%).
 
 ### 8.3.1 Roteiro (para quem aplica)
 
@@ -91,11 +98,11 @@ Nomes em português e lutas fora do recorte em cinza, cada uma com o motivo ("A 
 
 **Tarefas (ler uma por vez; cronometrar do fim da leitura até concluir)**
 
-| Tarefa | O que ler para o participante | Concluída quando | Tempo-limite |
-|---|---|---|---|
-| 1 | "Um amigo te mandou este link do log dele. Descubra o que o LogCoach diz sobre a luta do personagem Harmonist." (entregar o link) | Chega à tela de resultado | 5 min |
-| 2 | "Pelo relatório, qual foi o erro que mais custou dano nessa luta? E o que o site sugere fazer?" | Aponta o 1º erro da lista e lê o "O que fazer" | 3 min |
-| 3 | "Entre com a conta `teste1@logcoach.dev` (senha na folha) e descubra se o DPS desse jogador melhorou entre as análises." | Abre o Perfil e responde olhando o gráfico ou o histórico | 3 min |
+| Tarefa | O que ler para o participante                                                                                                     | Concluída quando                                          | Tempo-limite |
+| ------ | --------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- | ------------ |
+| 1      | "Um amigo te mandou este link do log dele. Descubra o que o LogCoach diz sobre a luta do personagem Harmonist." (entregar o link) | Chega à tela de resultado                                 | 5 min        |
+| 2      | "Pelo relatório, qual foi o erro que mais custou dano nessa luta? E o que o site sugere fazer?"                                   | Aponta o 1º erro da lista e lê o "O que fazer"            | 3 min        |
+| 3      | "Entre com a conta `teste1@logcoach.dev` (senha na folha) e descubra se o DPS desse jogador melhorou entre as análises."          | Abre o Perfil e responde olhando o gráfico ou o histórico | 3 min        |
 
 Na tarefa 3, com o log de exemplo, as duas análises são da mesma luta: a resposta certa é que o DPS **ficou igual**. O que se mede é se a pessoa acha o Perfil e lê o histórico.
 
@@ -111,18 +118,7 @@ Para cada tarefa, anotar: **tempo**, **concluiu? (sim / com ajuda / não)** e **
 
 Cada frase é respondida de 1 (discordo totalmente) a 5 (concordo totalmente).
 
-| # | Frase |
-|---|---|
-| 1 | Eu acho que gostaria de usar este sistema com frequência. |
-| 2 | Eu achei o sistema desnecessariamente complexo. |
-| 3 | Eu achei o sistema fácil de usar. |
-| 4 | Eu acho que precisaria da ajuda de uma pessoa com conhecimento técnico para usar o sistema. |
-| 5 | Eu achei que as várias funções do sistema estão bem integradas. |
-| 6 | Eu achei que o sistema apresenta muita inconsistência. |
-| 7 | Eu imagino que as pessoas aprenderão a usar este sistema rapidamente. |
-| 8 | Eu achei o sistema muito complicado de usar. |
-| 9 | Eu me senti confiante ao usar o sistema. |
-| 10 | Eu precisei aprender várias coisas antes de conseguir usar o sistema. |
+<table data-search="false"><thead><tr><th>#</th><th>Frase</th></tr></thead><tbody><tr><td>1</td><td>Eu acho que gostaria de usar este sistema com frequência.</td></tr><tr><td>2</td><td>Eu achei o sistema desnecessariamente complexo.</td></tr><tr><td>3</td><td>Eu achei o sistema fácil de usar.</td></tr><tr><td>4</td><td>Eu acho que precisaria da ajuda de uma pessoa com conhecimento técnico para usar o sistema.</td></tr><tr><td>5</td><td>Eu achei que as várias funções do sistema estão bem integradas.</td></tr><tr><td>6</td><td>Eu achei que o sistema apresenta muita inconsistência.</td></tr><tr><td>7</td><td>Eu imagino que as pessoas aprenderão a usar este sistema rapidamente.</td></tr><tr><td>8</td><td>Eu achei o sistema muito complicado de usar.</td></tr><tr><td>9</td><td>Eu me senti confiante ao usar o sistema.</td></tr><tr><td>10</td><td>Eu precisei aprender várias coisas antes de conseguir usar o sistema.</td></tr></tbody></table>
 
 **Como calcular a nota de cada participante (0 a 100)**
 
@@ -137,13 +133,13 @@ A nota do sistema é a média dos 5 participantes. Acima de 68 é considerada ac
 ### 8.3.3 Resultados
 
 | Participante | Perfil | Tarefa 1 | Tarefa 2 | Tarefa 3 | SUS |
-|---|---|---|---|---|---|
-| P1 |  |  |  |  |  |
-| P2 |  |  |  |  |  |
-| P3 |  |  |  |  |  |
-| P4 |  |  |  |  |  |
-| P5 |  |  |  |  |  |
-| **Média** |  |  |  |  |  |
+| ------------ | ------ | -------- | -------- | -------- | --- |
+| P1           |        |          |          |          |     |
+| P2           |        |          |          |          |     |
+| P3           |        |          |          |          |     |
+| P4           |        |          |          |          |     |
+| P5           |        |          |          |          |     |
+| **Média**    |        |          |          |          |     |
 
 Em cada tarefa, anotar o tempo e o resultado (ex.: "2:10, sim" ou "4:30, com ajuda").
 

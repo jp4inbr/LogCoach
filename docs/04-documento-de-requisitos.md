@@ -104,18 +104,6 @@ O sistema deve calcular a diferença entre o jogador e a média dos melhores log
 
 <details>
 
-<summary><strong>RF09. Explicação em português gerada pelo motor</strong></summary>
-
-O sistema deve explicar cada erro em português a partir dos fatos calculados pelas regras e da tabela comparativa por habilidade (RF22), sem usar IA generativa: todo número e todo texto do relatório vêm do código, e o log bruto não sai do backend.
-
-{% hint style="info" %}
-**Prioridade:** **Alta**
-{% endhint %}
-
-</details>
-
-<details>
-
 <summary><strong>RF10. Relatório de erros por impacto</strong></summary>
 
 O sistema deve mostrar um relatório com os erros ordenados do maior para o menor impacto.
@@ -188,30 +176,6 @@ O sistema deve mostrar a tela de planos (sem pagamento real no MVP).
 
 <details>
 
-<summary><strong>RF16. Chat com o coach (cancelado)</strong></summary>
-
-Cancelado em 21/11/2026: dependia de IA, que deixou de fazer parte do produto. O número do requisito foi mantido para não quebrar as referências.
-
-{% hint style="info" %}
-**Prioridade:** **Baixa**
-{% endhint %}
-
-</details>
-
-<details>
-
-<summary><strong>RF17. Relatório sem dependência de IA</strong></summary>
-
-O relatório deve ser gerado só pelas regras e pelas tabelas do motor, sem depender de serviço externo de IA, então não há modo de falha por indisponibilidade de IA.
-
-{% hint style="info" %}
-**Prioridade:** **Alta**
-{% endhint %}
-
-</details>
-
-<details>
-
 <summary><strong>RF18. Regras do encontro</strong></summary>
 
 O sistema deve aplicar as regras do encontro (fases, intermissões, janelas de burst, golpes de raide e períodos em que o chefe não pode ser atacado), que ajustam as regras da especialização.
@@ -274,19 +238,7 @@ O sistema deve montar, por fase, uma tabela com casts por minuto e % do dano de 
 
 <summary><strong>RF23. Diferença não explicada</strong></summary>
 
-O sistema deve marcar a diferença de dano por fase que as regras não explicam ("diferença não explicada"), para o jogador investigar na tabela do RF22.
-
-{% hint style="info" %}
-**Prioridade:** **Média**
-{% endhint %}
-
-</details>
-
-<details>
-
-<summary><strong>RF24. Hipóteses do motor e revisão de regras</strong></summary>
-
-O que o motor apontar fora das regras (a diferença não explicada, RF23) deve aparecer no relatório como hipótese, com os números do código ao lado, para revisão do especialista (possível regra nova).
+O sistema deve marcar a diferença de dano por fase que as regras não explicam ("diferença não explicada").
 
 {% hint style="info" %}
 **Prioridade:** **Média**
@@ -326,7 +278,7 @@ As páginas do sistema devem carregar em menos de 3 segundos.
 
 <summary><strong>RNF02. Análise completa em até 2 min, com progresso</strong></summary>
 
-Uma análise completa, que inclui a busca dos dados, a aplicação das regras e a montagem do relatório, deve terminar em menos de 2 minutos. Enquanto a análise roda, o sistema deve mostrar ao usuário um indicador de progresso.
+Uma análise completa, que inclui a busca dos dados, e a aplicação das regras, deve terminar em menos de 2 minutos. Enquanto a análise roda, o sistema deve mostrar ao usuário um indicador de progresso.
 
 {% hint style="info" %}
 **Categoria: Desempenho**
@@ -434,7 +386,7 @@ No teste com usuários, o sistema deve alcançar nota de pelo menos 68 na escala
 
 <summary><strong>RNF11. Interface em português do Brasil</strong></summary>
 
-Toda a interface do sistema e todos os textos do relatório devem estar em português do Brasil.
+Toda a interface do sistema deve estar em português do Brasil.
 
 {% hint style="info" %}
 **Categoria: Idioma**
@@ -454,24 +406,12 @@ As regras de análise devem ficar em arquivos de configuração: um arquivo para
 
 </details>
 
-<details>
-
-<summary><strong>RNF13. Limite de uso de IA por análise (cancelado)</strong></summary>
-
-Cancelado em 21/11/2026: o produto não usa IA, então não há custo por análise a limitar. O que continua limitado são as consultas ao Warcraft Logs (item 12.8).
-
-{% hint style="info" %}
-**Categoria: Custo**
-{% endhint %}
-
-</details>
-
 ## 4.3 Rastreabilidade com usabilidade
 
 | Heurística (Nielsen)                 | Requisitos                                           |
 | ------------------------------------ | ---------------------------------------------------- |
 | Visibilidade do status do sistema    | RF13, RNF02 (barra de progresso)                     |
-| Correspondência com o mundo real     | RF09, RNF11                                          |
+| Correspondência com o mundo real     | RNF11                                                |
 | Prevenção de erros                   | RF03, RF04 (lutas não suportadas em cinza)           |
 | Reconhecer em vez de lembrar         | RF10, RF11, RF19                                     |
 | Design estético e minimalista        | RF10 (erros de maior impacto primeiro)               |
