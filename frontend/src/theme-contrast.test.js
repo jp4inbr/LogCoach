@@ -87,8 +87,8 @@ const pairs = [
   ]),
   // Destaque como texto em realces: aba ativa, botão de olho ligado, luta selecionada.
   ["--accent-fg", "--surface-2", TEXT],
-  // "Coach" da marca no cabeçalho, sobre o marca-texto (transparente no escuro).
-  ["--accent-fg", "--brand-highlight", TEXT],
+  // "Coach" da marca (cabeçalho e abertura): cor do próprio texto, sobre o fundo e o cartão.
+  ...["--bg", "--surface"].map((bg) => ["--brand-text", bg, TEXT]),
   ...["--bg", "--surface"].flatMap((bg) => [
     ["--accent-fg", bg, TEXT],
     ["--ok", bg, TEXT],

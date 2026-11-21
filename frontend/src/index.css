@@ -26,7 +26,7 @@
   --accent-glow: rgb(255 137 6 / 25%);
   --focus: #ff8906;
   --brand-2: #e53170;
-  --brand-highlight: rgb(255 137 6 / 0%);
+  --brand-text: #ff8906;
   --top: #22d3ee;
   --player: #ff8906;
   --luck: #3b82f6;
@@ -117,7 +117,7 @@
     --accent-glow: rgb(39 35 67 / 20%);
     --focus: #272343;
     --brand-2: #bae8e8;
-    --brand-highlight: #ffd803;
+    --brand-text: #8a5000;
     --top: #0c7c9c;
     --player: #dd6b00;
     --luck: #2563eb;
@@ -171,7 +171,7 @@
   --accent-glow: rgb(39 35 67 / 20%);
   --focus: #272343;
   --brand-2: #bae8e8;
-  --brand-highlight: #ffd803;
+  --brand-text: #8a5000;
   --top: #0c7c9c;
   --player: #dd6b00;
   --luck: #2563eb;
@@ -563,10 +563,10 @@ a {
   stroke-linejoin: round;
 }
 
-/* "Coach" da marca: laranja no escuro; no claro, texto escuro com marca-texto amarelo. */
+/* "Coach" da marca: laranja no escuro e âmbar escuro (--warn-fg) no claro, sempre como cor do
+   texto e com contraste alto; amarelo puro como texto não passa sobre o fundo claro. */
 .brand-accent {
-  color: var(--accent-fg);
-  background: linear-gradient(transparent 62%, var(--brand-highlight) 62%);
+  color: var(--brand-text);
 }
 
 .topbar nav {
