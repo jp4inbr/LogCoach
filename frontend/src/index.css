@@ -2424,7 +2424,6 @@ caption {
 }
 
 /* Medida de leitura: texto corrido não passa de ~68 caracteres por linha. */
-.mistake > p,
 .notice-body,
 .lead,
 .page-head p {
