@@ -66,6 +66,14 @@ colors:
   light-glass: "rgb(227 246 245 / 74%)"
   light-glass-2: "rgb(186 232 232 / 60%)"
   light-glass-border: "rgb(39 35 67 / 12%)"
+  dark-veil-frame: "rgb(15 14 23 / 82%)"
+  dark-veil-center: "rgb(15 14 23 / 82%)"
+  dark-veil-edge: "rgb(15 14 23 / 22%)"
+  dark-veil-inner: "rgb(15 14 23 / 62%)"
+  light-veil-frame: "rgb(255 249 238 / 84%)"
+  light-veil-center: "rgb(255 249 238 / 78%)"
+  light-veil-edge: "rgb(255 249 238 / 0%)"
+  light-veil-inner: "rgb(255 249 238 / 68%)"
 typography:
   display:
     fontFamily: '"Archivo Variable", Archivo Fallback, Segoe UI, system-ui, sans-serif'
@@ -212,15 +220,18 @@ components:
 
 Cada tela é um quarto escuro (ou, no tema claro, uma sala ao sol) com uma única fonte de luz quente, e ela cai sobre o que importa ali. Na tela inicial, sobre o título e o campo do link. No resultado, sobre a frase da diferença para os tops ("Os tops fizeram 18% mais dano que você"), que acende antes de tudo; logo abaixo vêm os erros em ordem de custo, cada um com o número da posição grande, e um trilho numerado leva de um para o outro. O log do jogador é o objeto sob a luz.
 
-O resto fica quieto: fundo liso, painéis translúcidos por onde a luz passa, texto neutro, e a cor só aparece em ação ou em diagnóstico. A marca é tipográfica, "LOGCOACH" em caixa alta numa sans larga e pesada, e o cabeçalho tem três pontos: marca, contexto apagado no centro e a chave de tema em pílula. A confiança continua vindo de deixar claro o que é erro, o que é sorte e o que é hipótese.
+Atrás de tudo há um lugar: Silvermoon de dia no tema claro e Suramar à noite no escuro, pintadas com a mesma composição, como se fosse a mesma praça em duas horas do dia. A cidade aparece no início e no login e recua para um desfoque nas telas de uso, onde o assunto são os dados.
 
-O vocabulário veio da inspiração do usuário (o site "Five Years" do estúdio Porto Rocha): a luz única, a marca larga, o cabeçalho de três pontos, o trilho numerado translúcido e o vazio generoso. Ficaram de fora a fotografia e tudo o que não é dado do produto.
+O resto fica quieto: um véu da cor do fundo sobre a cidade, painéis translúcidos por onde a luz passa, texto neutro, e a cor só aparece em ação ou em diagnóstico. A marca é tipográfica, "LOGCOACH" em caixa alta numa sans larga e pesada, e o cabeçalho tem três pontos: marca, contexto apagado no centro e a chave de tema em pílula. A confiança continua vindo de deixar claro o que é erro, o que é sorte e o que é hipótese.
+
+O vocabulário veio da inspiração do usuário (o site "Five Years" do estúdio Porto Rocha): a luz única, a marca larga, o cabeçalho de três pontos, o trilho numerado translúcido e o vazio generoso. Ficou de fora a fotografia; o cenário pintado veio depois, por escolha do usuário, para dar lugar e clima ao produto sem competir com os dados.
 
 Referências rejeitadas: o painel de estatísticas em cartões iguais, a planilha crua de log, o painel de IA genérico (faíscas, degradês roxos), o visual gamer agressivo (neon, ângulos cortados, fontes de esport) e, do imaginário de fantasia, as fontes medievais e o pergaminho.
 
 **Key Characteristics:**
 
-- Uma luz quente por tela (`.lit`), presa ao assunto dela; fundo da página liso em `--bg`.
+- Uma luz quente por tela (`.lit`), presa ao assunto dela.
+- Cenário pintado fixo atrás de todas as telas: Silvermoon (claro) e Suramar (escuro), sob um véu da cor do fundo.
 - Painéis e pílulas translúcidos com desfoque leve, e fundo sólido quando o navegador não tem `backdrop-filter`.
 - Uma família, a Archivo variável: larga para a marca, os títulos e os números; normal para a leitura.
 - Coluna de leitura de 960 px dentro de uma moldura de 1240 px (cabeçalho e rodapé).
@@ -247,7 +258,8 @@ As duas paletas do Happy Hues continuam (decisão do usuário): a 13 no escuro e
 
 ### Neutral
 
-- **Noite Azulada / Branco Quente** (`--bg`): fundo da página e dos campos. O `body` é sempre só este token.
+- **Noite Azulada / Branco Quente** (`--bg`): fundo da página e dos campos, e o que aparece enquanto a cidade carrega. O `body` é sempre só este token.
+- **Véu** (`--veil-frame`, `--veil-center`, `--veil-edge`, `--veil-inner`): a cor do fundo por cima da cidade, no escuro a Noite Azulada e no claro um branco quente (`rgb(255 249 238)`), que mantém o sol de Silvermoon em vez de virar neblina. Forte atrás do cabeçalho, do rodapé e do assunto da tela; transparente ou quase nas bordas; `--veil-inner` nas telas de uso.
 - **Luz** (`--glow-1` no centro, `--glow-2` na borda): degradê radial atrás do assunto da tela. A opacidade é a mais alta que mantém o texto AA por cima (o link rosa no centro da luz mede 4,77:1).
 - **Vidro** (`--glass`, `--glass-2`, `--glass-border`): painéis (cartões, erros, tabelas, lutas) e pílulas (navegação, chave de tema, trilho). Sem `backdrop-filter`, o painel cai para `--surface`.
 - **Superfície** (`--surface`, `--surface-2`): reserva sólida do vidro, botões comuns, bloco "O que fazer" e realces.
@@ -306,6 +318,20 @@ Cabeçalho e rodapé numa moldura de até 1240 px; o conteúdo numa coluna de at
 Tabelas largas rolam dentro do próprio contêiner. Nenhuma tela rola de lado em 360 px (testado no e2e, nas sete telas, nos dois temas).
 
 **Regra do Boletim.** Diagnóstico primeiro, erros por custo depois, dados completos por último. Nada novo entra acima da decomposição da diferença.
+
+## Cenário
+
+`components/Backdrop.jsx`, uma vez só no `App`, fixo na viewport, `aria-hidden` e sem eventos de ponteiro.
+
+- **As cidades.** Silvermoon de dia (claro) e Suramar à noite (escuro), as duas na mesma composição (poste à esquerda, elfa no canto, faixas atravessando, árvore à direita, arco ao fundo). Arquivos em `public/cenario/`: WebP de 1440 e 2400 px de largura e um corte 9:16 para celular em pé (centrado na cúpula em Silvermoon e na torre com o raio em Suramar), de 69 a 232 kB.
+- **Dois modos.** `pleno` no início e no login: a cidade nítida, com véu forte atrás do cabeçalho, do rodapé e do centro (elipse), e transparente nas bordas. `fundo` nas telas de uso (escolher luta, resultado, perfil, planos): a cidade desfocada (`blur(14px)`, escala 1,08 para esconder a borda do desfoque) sob `--veil-inner`. A troca entre os modos é uma transição de 0,4 s.
+- **Rolagem do início.** O véu de uso sobe com a rolagem até metade da tela (`animation-timeline: scroll(root)`): a cidade recua quando "Como funciona" chega. Sem suporte, o véu fica em 60%.
+- **Troca de tema.** A cidade nova acende por cima da antiga em 0,5 s (`@starting-style` e `display` com `allow-discrete`); nenhum fade com `prefers-reduced-motion`.
+- **Carga.** As duas imagens nascem com `loading="lazy"`; a do tema inativo está em `display: none` e não baixa. Depois que a página carrega e o navegador fica ocioso, as duas viram `eager` e a outra vem em segundo plano.
+- **Luz sobre o cenário.** No início e no login, a `.lit` usa só `--glow-1` (a borda água-marinha do claro embaçava a cidade quente).
+- **Crédito.** O rodapé diz de onde vêm os cenários (World of Warcraft © Blizzard Entertainment) e que o projeto é acadêmico, sem fins comerciais. Se o LogCoach virar produto pago, as imagens saem.
+
+**Regra do Texto sobre a Cidade.** Nenhum texto fica direto sobre a cidade sem véu. O contraste é medido nos pixels de verdade (`e2e/contrast.js`: a tela é desenhada sem o texto e cada texto é comparado com o que fica atrás dele), nas cinco telas, nos dois temas, no desktop e no celular, e no início em três pontos da rolagem. Mudou o véu ou a imagem, roda `e2e/backdrop.spec.js`.
 
 ## Elevation & Depth
 
@@ -392,6 +418,7 @@ Funcional e curto: troca de tema em 0,2 s, deslize da chave em 0,25 s, seta de e
 - **Do** manter alvos de 44 px nas ações principais e no trilho.
 - **Do** escrever o número dentro de uma frase em português que diga o que ele significa.
 - **Do** conferir os dois temas e 360 px depois de qualquer mudança visual.
+- **Do** manter as duas cidades na mesma composição, se uma for trocada.
 
 ### Don't:
 
@@ -399,7 +426,8 @@ Funcional e curto: troca de tema em 0,2 s, deslize da chave em 0,25 s, seta de e
 - **Don't** usar faixa colorida lateral (mais de 1 px) em cartões, avisos ou itens de lista.
 - **Don't** montar estatísticas como cartões iguais lado a lado.
 - **Don't** usar glifo Unicode ou emoji como ícone.
-- **Don't** espalhar luz, brilho ou degradê como decoração; nada de degradê roxo, faíscas ou neon.
+- **Don't** espalhar luz, brilho ou degradê como decoração; nada de degradê roxo, faíscas ou neon na interface (o roxo de Suramar é do cenário, não dos componentes).
+- **Don't** pôr texto sobre a cidade sem véu, nem afinar o véu sem rodar a medida de contraste do cenário.
 - **Don't** usar fontes medievais, pergaminho ou o visual gamer agressivo.
 - **Don't** usar verde, âmbar ou vermelho como decoração, nem `--accent` como texto ou borda.
 - **Don't** colocar sombra em cartões.

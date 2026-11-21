@@ -1,4 +1,5 @@
 import AuthProvider from "./components/AuthProvider.jsx";
+import Backdrop from "./components/Backdrop.jsx";
 import Icon from "./components/Icon.jsx";
 import ThemeToggle from "./components/ThemeToggle.jsx";
 import { useAuth } from "./lib/auth-context.js";
@@ -25,6 +26,7 @@ function Layout() {
 
   return (
     <div className="app">
+      <Backdrop mode={!section || section === "entrar" ? "pleno" : "fundo"} />
       <a className="skip" href="#conteudo">
         Pular para o conteúdo
       </a>
@@ -75,7 +77,11 @@ function Layout() {
       </main>
 
       <footer className="footer">
-        LogCoach · Trabalho A3 de Usabilidade de Software · UNA · Dados do Warcraft Logs
+        <p>LogCoach · Trabalho A3 de Usabilidade de Software · UNA · Dados do Warcraft Logs</p>
+        <p>
+          Cenários de Silvermoon e Suramar, de World of Warcraft © Blizzard Entertainment. Projeto
+          acadêmico, sem fins comerciais.
+        </p>
       </footer>
     </div>
   );
