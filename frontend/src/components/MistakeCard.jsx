@@ -70,9 +70,18 @@ export default function MistakeCard({ mistake, rank, id, details }) {
       <p>
         <SpellText text={explanation} />
       </p>
+      <div className="mistake-todo">
+        <strong>O que fazer</strong>
+        <p>
+          <SpellText text={mistake.what_to_do} />
+        </p>
+      </div>
       {details?.length > 0 && (
         <details className="mistake-details">
-          <summary>Ver detalhes ({details.length})</summary>
+          <summary>
+            <Icon name="chevron-right" className="mistake-details-chevron" />
+            Ver detalhes ({details.length})
+          </summary>
           <ul>
             {details.map((detail, index) => (
               <li key={index}>
@@ -82,12 +91,6 @@ export default function MistakeCard({ mistake, rank, id, details }) {
           </ul>
         </details>
       )}
-      <div className="mistake-todo">
-        <strong>O que fazer</strong>
-        <p>
-          <SpellText text={mistake.what_to_do} />
-        </p>
-      </div>
 
       {mistake.numbers.length > 0 && (
         <table className="numbers">

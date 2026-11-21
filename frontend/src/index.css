@@ -1684,8 +1684,22 @@ label {
   gap: 6px;
   padding: 4px 0;
   cursor: pointer;
+  list-style: none;
   color: var(--accent-fg);
   font-weight: 600;
+}
+
+.mistake-details summary::-webkit-details-marker {
+  display: none;
+}
+
+.mistake-details-chevron {
+  flex: none;
+  transition: transform 0.15s;
+}
+
+.mistake-details[open] .mistake-details-chevron {
+  transform: rotate(90deg);
 }
 
 .mistake-details summary:hover {
@@ -2253,7 +2267,8 @@ caption {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .compared-chevron {
+  .compared-chevron,
+  .mistake-details-chevron {
     transition: none;
   }
 }

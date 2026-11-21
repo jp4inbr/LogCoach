@@ -156,8 +156,15 @@ test.describe("detalhes expandíveis dos erros", () => {
     const firstCard = page.locator("#erro-1");
     const details = firstCard.locator("details.mistake-details");
     await expect(details).toBeVisible();
+    await expect(details.locator("summary [data-icon='chevron-right']")).toBeVisible();
     await expect(details).not.toHaveAttribute("open", "");
     await expect(details.locator("ul")).toBeHidden();
+    const todoBeforeDetails = await firstCard.evaluate((card) => {
+      const todo = card.querySelector(".mistake-todo");
+      const det = card.querySelector("details.mistake-details");
+      return Boolean(todo && det && todo.compareDocumentPosition(det) & Node.DOCUMENT_POSITION_FOLLOWING);
+    });
+    expect(todoBeforeDetails).toBe(true);
 
     await details.locator("summary").click();
     await expect(details).toHaveAttribute("open", "");

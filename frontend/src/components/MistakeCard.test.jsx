@@ -126,9 +126,15 @@ describe("MistakeCard", () => {
     const { container } = render(<MistakeCard mistake={soulEntry} rank={1} details={details} />);
 
     const section = container.querySelector("details.mistake-details");
+    const todo = container.querySelector(".mistake-todo");
     expect(section).not.toBeNull();
+    expect(todo).not.toBeNull();
+    expect(todo.compareDocumentPosition(section) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(section).not.toHaveAttribute("open");
     expect(within(section).getByText("Ver detalhes (2)")).toBeInTheDocument();
+    expect(
+      section.querySelector("summary [data-icon='chevron-right'][aria-hidden='true']"),
+    ).not.toBeNull();
     // O parágrafo de explicação não repete "Detalhes: ..." inline.
     expect(container.querySelector("p:not(.mistake-meta):not(.mistake-impact)")).not.toHaveTextContent(
       "Detalhes:",
