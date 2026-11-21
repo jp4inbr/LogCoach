@@ -40,7 +40,7 @@ O bloco claro aparece duas vezes no CSS (na media query e em `[data-theme="light
 | `--text` | `#fffffe` | `#272343` | Texto principal e títulos |
 | `--muted` | `#a7a9be` | `#4b5169` | Texto de apoio |
 | `--link` | `#ff5c8f` | `#272343` | Links no texto e botões com cara de link, como "Usar o log de exemplo" (no claro, sempre sublinhados) |
-| `--accent` | `#ff8906` | `#ffd803` | Preenchimento do botão principal e do avatar do coach |
+| `--accent` | `#ff8906` | `#ffd803` | Preenchimento do botão principal |
 | `--accent-strong` | `#ff9f33` | `#f5c800` | Botão principal ao passar o mouse |
 | `--accent-ink` | `#0f0e17` | `#272343` | Texto sobre `--accent` |
 | `--accent-fg` | `#ff8906` | `#272343` | Destaque como texto, borda e traço de gráfico |
@@ -63,12 +63,12 @@ O bloco claro aparece duas vezes no CSS (na media query e em `[data-theme="light
 | `--glass` | `#181722` a 72% | `#e3f6f5` a 74% | Painéis translúcidos (cartões, erros, tabelas, lutas), com desfoque leve; sem suporte a `backdrop-filter`, `--surface` sólido |
 | `--glass-2` | `#2e2f3e` a 58% | `#bae8e8` a 60% | Pílulas translúcidas: navegação do cabeçalho, chave de tema, trilho dos erros |
 | `--glass-border` | `#fffffe` a 9% | `#272343` a 12% | Contorno fino dos painéis e pílulas (decorativo; o painel se separa do fundo pela cor) |
-| `--coach-bg-1/2`, `--hatch`, `--hatch-strong`, `--accent-glow` | destaque translúcido | idem | Cartão do coach, faixa da intermissão, pulso |
+| `--hatch`, `--hatch-strong`, `--accent-glow` | destaque translúcido | idem | Faixa da intermissão, pulso |
 | `--shadow` | preto a 45% | `#272343` a 25% | Sombra da dica flutuante |
 
 **A luz.** Cada tela tem uma fonte de luz quente só, um degradê radial de `--glow-1` para `--glow-2` preso ao que importa ali (classe `.lit`: o formulário do link no início, a diferença para os tops no resultado, a lista de lutas, o formulário de conta, os planos, o topo do perfil). O fundo da página continua `--bg` liso: a luz não é decoração espalhada. A intensidade é a mais alta que mantém o texto AA por cima: no escuro, o link rosa sobre o centro da luz mede 4,77:1, e acima de 20% ele reprova. O teste mede o texto, o link, o erro, o ok e o destaque sobre `--glow-1`, `--glass` e `--glass-2`.
 
-`--accent` serve só de **preenchimento** (botão, avatar). Quando o destaque vira texto, borda ou traço de gráfico, usa `--accent-fg`, porque o amarelo `#ffd803` sobre fundo claro não tem contraste.
+`--accent` serve só de **preenchimento** (botão principal). Quando o destaque vira texto, borda ou traço de gráfico, usa `--accent-fg`, porque o amarelo `#ffd803` sobre fundo claro não tem contraste.
 
 ## 15.4 Cores de situação
 

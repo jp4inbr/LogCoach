@@ -8,12 +8,12 @@ description: Heurísticas de Nielsen aplicadas, validação de entradas e teste 
 
 ## 8.1 Heurísticas de Nielsen aplicadas
 
-As evidências são prints da alfa rodando (versão de 27/10/2026, relatório de exemplo do Nek'zali Mítico). As três heurísticas marcadas com "após o motor" aparecem na tela de resultado. O motor de análise entrou em 04/11/2026 (PR #27) e a tela passou a mostrar os números calculados a partir do log; os prints delas serão tirados nessa versão. O resumo do coach (IA) ainda não está ligado: por enquanto o resultado sai só com as regras (RF17).
+As evidências são prints da alfa rodando (versão de 27/10/2026, relatório de exemplo do Nek'zali Mítico). As três heurísticas marcadas com "após o motor" aparecem na tela de resultado. O motor de análise entrou em 04/11/2026 (PR #27) e a tela passou a mostrar os números calculados a partir do log; os prints delas serão tirados nessa versão. O relatório sai 100% das regras e das tabelas do motor, sem IA generativa (RF17).
 
 | Heurística | Onde aparece no LogCoach | Evidência (print) | Tela no protótipo (item 3) |
 |---|---|---|---|
-| Visibilidade do status do sistema | Barra de progresso em etapas durante a análise: "Buscando sua luta → Comparando com os melhores → Coach analisando"; no perfil, uso do plano no mês | [Figura 1](#figura-1-andamento-em-etapas) | 4, 8 e 9 |
-| Correspondência com o mundo real | Interface em português, com os nomes do cliente do jogo em pt-BR ("Nek'zali, a Enrosca-almas", "Mítico", "Kill", "Wipe"); relatório do coach em linguagem simples | [Figura 2](#figura-2-escolher-a-luta) | 2, 4 e 5 |
+| Visibilidade do status do sistema | Barra de progresso em etapas durante a análise: "Buscando sua luta → Comparando com os melhores → Montando o relatório"; no perfil, uso do plano no mês | [Figura 1](#figura-1-andamento-em-etapas) | 4, 8 e 9 |
+| Correspondência com o mundo real | Interface em português, com os nomes do cliente do jogo em pt-BR ("Nek'zali, a Enrosca-almas", "Mítico", "Kill", "Wipe"); relatório gerado pelo motor em linguagem simples | [Figura 2](#figura-2-escolher-a-luta) | 2, 4 e 5 |
 | Controle e liberdade do usuário | Botões "← Trocar o link" e "← Escolher outra luta"; o voltar do navegador funciona em todas as telas; no perfil, alterar a senha e excluir a conta; botão ☀/☾ no cabeçalho para trocar o tema, que segue o sistema até a pessoa escolher ([item 15](15-padrao-de-cores.md)) | [Figura 3](#figura-3-voltar-sem-perder-o-caminho) | 3, 5 e 8 |
 | Consistência e padrões | Mesmas cores e ícones para ok / atenção / erro nos erros, nas regras, nos avisos e na linha do tempo; login no padrão e-mail e senha; tema claro e escuro com as mesmas cores de situação nos dois ([item 15](15-padrao-de-cores.md)) | _após o motor_ | 1, 6 e 7 |
 | Prevenção de erros | Link conferido antes de enviar; lutas que não podem ser analisadas aparecem em cinza, com o motivo; exclusão da conta em área vermelha, com confirmação e aviso de que não dá para desfazer; plano Pro marcado como "Em breve" | [Figura 4](#figura-4-link-conferido-antes-de-enviar) e [Figura 2](#figura-2-escolher-a-luta) | 2, 3, 8 e 9 |
@@ -68,7 +68,6 @@ Nomes em português e lutas fora do recorte em cinza, cada uma com o motivo ("A 
 | Luta curta demais | "A luta tem menos de 60 s. Escolha uma tentativa mais longa" |
 | Limite do plano grátis | "Você usou suas 5 análises do mês. Veja o plano Pro" |
 | API do Warcraft Logs fora do ar | "O Warcraft Logs não respondeu. Tente de novo em alguns minutos" |
-| IA falhou | Relatório só com as regras + aviso "Explicação do coach indisponível agora" |
 | E-mail ou senha inválidos | Aviso no próprio campo, antes de enviar |
 
 ## 8.3 Teste de usabilidade

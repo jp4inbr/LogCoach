@@ -17,7 +17,6 @@ O **LogCoach** transforma o log de combate do World of Warcraft, hoje um dado br
 | **Setor**             | Entretenimento e Esportes Eletrônicos (e-sports)                                                                                                                                                   |
 | **Público-alvo**      | Jogadores competitivos brasileiros de World of Warcraft que gravam suas lutas no Warcraft Logs e querem melhorar o próprio desempenho                                                              |
 | **Objetivo geral**    | Reduzir o tempo e o conhecimento técnico necessários para transformar um log de combate em informação útil, indicando em português os erros de maior impacto e a ordem em que devem ser corrigidos |
-| **Papel da IA**       | Explicar os erros em linguagem simples e indicar o que corrigir primeiro                                                                                                                           |
 
 {% hint style="info" %}
 _Não joga World of Warcraft?_ Os termos do jogo e do LogCoach usados nesta documentação estão explicados no glossário abaixo.
@@ -122,9 +121,8 @@ _Não joga World of Warcraft?_ Os termos do jogo e do LogCoach usados nesta docu
 
 * _Jogador no Top 10:_ quando o log analisado já está no Top 10 do bracket, ele sai da comparação e entra o 11º colocado; o relatório reconhece a posição.
 * _Bracket:_ faixa de item level usada pelo Warcraft Logs, de 3 em 3 níveis (por exemplo, 326–328). O LogCoach compara o jogador só com quem está no mesmo bracket, para que a diferença mostrada seja de execução, e não de equipamento.
-* _Coach:_ a parte do LogCoach que, com IA, explica os erros em português e diz o que corrigir primeiro.
-* _Diferença não explicada:_ parte da diferença de dano de uma fase que nenhuma regra explica. Serve de sinal para a IA investigar a tabela de habilidades daquela fase.
-* _Hipótese do coach:_ algo que a IA apontou fora das regras. Aparece no relatório marcado como hipótese, com os números ao lado.
+* _Diferença não explicada:_ parte da diferença de dano de uma fase que nenhuma regra explica. O motor marca essa diferença para o jogador investigar nas tabelas por habilidade e por alvo daquela fase.
+* _Hipótese do motor:_ diferença não explicada que o motor aponta fora das regras, com pistas tiradas das tabelas. Aparece no relatório marcada como hipótese, com os números ao lado.
 * _Ranking:_ lista dos melhores desempenhos em cada chefe e dificuldade, publicada pelo Warcraft Logs.
 * _Regras da especialização:_ regras fixas que valem em qualquer luta, como tempo parado, uso de cooldowns, recurso desperdiçado, procs perdidos e mortes.
 * _Regras do encontro:_ regras que descrevem cada chefe (fases, intermissões, janelas de burst e golpes de raide) e ajustam as regras da especialização.
@@ -290,25 +288,25 @@ O sistema aplica regras fixas da especialização e avalia quatro pontos: tempo 
 {% endstep %}
 
 {% step %}
-#### Explicação pela IA
+#### Explicação em português
 
-A IA explica os erros encontrados em português simples e indica o que corrigir primeiro.
+O motor gera o relatório em português simples, ordenando os erros encontrados e indicando o que corrigir primeiro.
 {% endstep %}
 {% endstepper %}
 
 {% hint style="info" %}
-**Dados e regras encontram os erros; a IA explica.** A identificação dos erros vem de dados reais (a comparação com os melhores logs) e de regras fixas da especialização. A IA entra na etapa final: traduz o resultado em linguagem simples e indica a prioridade de correção.
+**Dados e regras encontram e explicam os erros.** A identificação e a explicação dos erros vêm de dados reais (a comparação com os melhores logs) e de regras da especialização e do encontro, sem IA generativa: todo número e todo texto do relatório vêm do motor, em português simples e por ordem de impacto.
 {% endhint %}
 
 #### Funcionalidades principais
 
-| Funcionalidade             | O que entrega ao jogador                                                |
-| -------------------------- | ----------------------------------------------------------------------- |
-| **Análise por link**       | Análise a partir do link do Warcraft Logs, sem precisar baixar arquivo  |
-| **Relatório priorizado**   | Erros que mais custaram desempenho, do maior para o menor impacto       |
-| **Comparação lado a lado** | Desempenho do jogador ao lado da média dos melhores jogadores           |
-| **Explicação por IA**      | Erros explicados em português, em linguagem simples                     |
-| **Histórico e evolução**   | Acompanhamento da evolução ao longo do tempo, para usuários cadastrados |
+| Funcionalidade              | O que entrega ao jogador                                                |
+| --------------------------- | ----------------------------------------------------------------------- |
+| **Análise por link**        | Análise a partir do link do Warcraft Logs, sem precisar baixar arquivo  |
+| **Relatório priorizado**    | Erros que mais custaram desempenho, do maior para o menor impacto       |
+| **Comparação lado a lado**  | Desempenho do jogador ao lado da média dos melhores jogadores           |
+| **Explicação em português** | Erros explicados pelo motor em português, em linguagem simples          |
+| **Histórico e evolução**    | Acompanhamento da evolução ao longo do tempo, para usuários cadastrados |
 
 #### Planos
 

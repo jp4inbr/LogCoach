@@ -10,7 +10,7 @@ description: Modelo visual das principais telas do sistema.
 flowchart LR
     A[Início<br/>cola o link] --> B[Escolhe a luta<br/>e o personagem]
     B --> C[Análise em andamento]
-    C --> D[Resumo do coach<br/>erros principais]
+    C --> D[Resumo<br/>erros principais]
     D --> E[Resultado completo]
     D --> F[Perfil / histórico]
 ```
@@ -44,7 +44,7 @@ flowchart LR
 
 * **Topo:** logo do LogCoach e botões "Analisar", "Planos" e "Entrar".
 * **Centro:** frase de valor ("Descubra os erros que mais custam seu dano") e campo para colar o link do log do Warcraft Logs.
-* **Abaixo do campo:** instruções de como funciona o processo, contendo as abas "1 - Cole o link", "2 - Escolha a luta" e "3- Leia o coach".
+* **Abaixo do campo:** instruções de como funciona o processo, contendo as abas "1 - Cole o link", "2 - Escolha a luta" e "3 - Leia o relatório".
 * **Rodapé:** chefes e especialização suportados, para o jogador saber, antes de colar o link, se o log dele pode ser analisado.
 
 **Princípios de usabilidade aplicados**
@@ -83,7 +83,7 @@ flowchart LR
 **Objetivo:** mostrar as etapas a serem efetuadas, carregando uma por uma.
 
 * **Centro:** cartão "Analisando sua luta", com a luta, a dificuldade e o personagem (Nek'zali, a Enrosca-almas · Mítico · Harmonist).
-* **Etapas, marcadas conforme concluem:** Buscando sua luta → Comparando com os melhores → Coach analisando.
+* **Etapas, marcadas conforme concluem:** Buscando sua luta → Comparando com os melhores → Montando o relatório.
 * **Abaixo das etapas:** "Leva menos de 2 minutos. Você pode deixar esta aba aberta."
 
 **Princípios de usabilidade aplicados**
@@ -93,7 +93,7 @@ flowchart LR
 {% endtab %}
 
 {% tab title="." icon="5" %}
-#### Tela 5 — Ação da IA: análise e resumo do coach
+#### Tela 5 — Resultado: resumo da análise
 
 {% embed url="https://www.figma.com/design/yjxWAryp4t2GiXn8oCfiFk/A3---LogCoach?node-id=8-3474&t=0SjmXLgCnoA2cRQ8-4" %}
 
@@ -108,14 +108,13 @@ flowchart LR
   * Tempo ativo&#x20;
 * **Bloco expansível "Com quem você foi comparado":** Top 10 do bracket 326–328 · 10 jogadores.
 * **Abas:** "Resumo", "Linha do tempo" e "Todas as regras".
-* **Resumo do coach:** parágrafo em linguagem natural que informa a diferença para a média dos melhores e aponta as maiores perdas.&#x20;
+* **De onde vem a diferença:** quebra da diferença para a média dos melhores em erros, sorte e diferença não explicada.
 * **Erros do maior para o menor impacto:** cartões numerados. Cada um traz o título do erro, um selo de situação e quanto custou.&#x20;
-* **Campo "Pergunte ao coach sobre este erro":** permite tirar dúvidas sobre um erro específico.
 
 **Princípios de usabilidade aplicados**
 
 * **H8 · Design estético e minimalista:** primeiro os números-chave e os erros de maior impacto. O detalhe fica nas outras abas.
-* **H2 · Correspondência com o mundo real:** o diagnóstico vem escrito como um coach falaria, em português.
+* **H2 · Correspondência com o mundo real:** o diagnóstico vem escrito pelo motor em linguagem simples, em português, dizendo o que corrigir.
 * **H3 · Controle e liberdade do usuário:** dá para voltar e escolher outra luta.
 {% endtab %}
 
@@ -204,7 +203,6 @@ Dois cartões, lado a lado:
 **Pro**
 
 * Análises ilimitadas
-* Pergunta ao coach
 * Comparação entre análises
 
 {% hint style="warning" %}
