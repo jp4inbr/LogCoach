@@ -4,7 +4,7 @@ description: Testes unitários, de integração e de usabilidade realizados.
 
 # 10. Relatório de Testes
 
-> Entrega da RT03. Resultados do backend de 16/11/2026 (CI do PR #31, com a `main` de 15/11 e o motor de análise); do frontend, de 07/11 (item 10.4). Falta só o T07, que depende da IA (passo 5).
+> Entrega da RT03. Resultados do backend de 16/11/2026 (CI do PR #31, com a `main` de 15/11 e o motor de análise); do frontend, de 07/11 (item 10.4). O T07 foi cancelado em 21/11: o produto não usa mais IA.
 
 ## 10.1 Ferramenta
 
@@ -28,7 +28,7 @@ pytest --cov=app       # com a cobertura por arquivo (a mesma conta do CI)
 | T04 | Regra de uso de cooldowns               | Luta com cooldown usado menos vezes que o possível | Status "atenção"                                  | Passou (`test_engine_rules.py`, `test_t04_cooldown_used_less_than_possible`) |
 | T05 | Comparador                              | Jogador vs. média dos top logs de exemplo          | Diferença calculada corretamente                  | Passou (`test_engine_base.py`, `test_t05_top_value_is_the_mean_of_the_tops`) |
 | T06 | Ordenação dos erros                     | 5 erros com impactos diferentes                    | Ordenados do maior para o menor impacto           | Passou (motor, `test_e2e_t06_mistakes_come_sorted_by_impact`) |
-| T07 | Falha da IA                             | IA simulando erro                                  | Relatório só com as regras                        | Pendente (a IA entra no passo 5)    |
+| T07 | Falha da IA                             | IA simulando erro                                  | Relatório só com as regras                        | Cancelado (o produto não usa IA)    |
 | T08 | Limite do plano grátis                  | 6ª análise no mês                                  | Bloqueada                                         | Passou                              |
 | T09 | Luta curta                              | Luta de 40 s                                       | Mensagem de luta curta                            | Passou                              |
 | T10 | Sem Mago Arcano                         | Luta sem a especialização                          | Mensagem adequada                                 | Passou (jogador fora da luta)       |

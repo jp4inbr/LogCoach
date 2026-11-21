@@ -49,8 +49,6 @@
   --glass: rgb(24 23 34 / 72%);
   --glass-2: rgb(46 47 62 / 58%);
   --glass-border: rgb(255 255 254 / 9%);
-  --coach-bg-1: rgb(255 137 6 / 16%);
-  --coach-bg-2: rgb(255 137 6 / 5%);
   --hatch: rgb(255 137 6 / 14%);
   --hatch-strong: rgb(255 137 6 / 40%);
   --shadow: rgb(0 0 0 / 45%);
@@ -141,8 +139,6 @@
     --glass: rgb(227 246 245 / 74%);
     --glass-2: rgb(186 232 232 / 60%);
     --glass-border: rgb(39 35 67 / 12%);
-    --coach-bg-1: rgb(255 216 3 / 28%);
-    --coach-bg-2: rgb(186 232 232 / 40%);
     --hatch: rgb(39 35 67 / 12%);
     --hatch-strong: rgb(39 35 67 / 40%);
     --shadow: rgb(39 35 67 / 25%);
@@ -196,8 +192,6 @@
   --glass: rgb(227 246 245 / 74%);
   --glass-2: rgb(186 232 232 / 60%);
   --glass-border: rgb(39 35 67 / 12%);
-  --coach-bg-1: rgb(255 216 3 / 28%);
-  --coach-bg-2: rgb(186 232 232 / 40%);
   --hatch: rgb(39 35 67 / 12%);
   --hatch-strong: rgb(39 35 67 / 40%);
   --shadow: rgb(39 35 67 / 25%);
@@ -1587,31 +1581,6 @@ label {
   color: var(--ok);
 }
 
-.coach {
-  display: flex;
-  gap: 14px;
-  align-items: flex-start;
-  padding: 16px;
-  border-radius: var(--radius);
-  background: linear-gradient(135deg, var(--coach-bg-1), var(--coach-bg-2));
-  border: 1px solid var(--accent-border);
-}
-
-.coach p {
-  margin-top: 4px;
-}
-
-.coach-avatar {
-  flex: none;
-  display: grid;
-  place-items: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: var(--accent);
-  color: var(--accent-ink);
-}
-
 /* Cartão de erro: o número da posição grande, na fonte larga e na cor da situação, ocupa a
    coluna da esquerda; a gravidade também vem escrita no selo. */
 .mistake {
@@ -1845,14 +1814,6 @@ caption {
 
 .compared-name {
   overflow-wrap: anywhere;
-}
-
-.ask {
-  display: grid;
-  gap: 8px;
-  padding: 16px;
-  border-radius: var(--radius);
-  border: 1px dashed var(--border);
 }
 
 /* Linha do tempo (RF11) */

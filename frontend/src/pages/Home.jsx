@@ -96,7 +96,7 @@ export default function Home() {
             <span>E o seu Mago Arcano naquela tentativa.</span>
           </li>
           <li>
-            <strong>Leia o coach</strong>
+            <strong>Leia o relatório</strong>
             <span>Os erros do maior para o menor impacto, com o que fazer.</span>
           </li>
         </ol>

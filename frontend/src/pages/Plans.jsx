@@ -33,7 +33,6 @@ export default function Plans() {
           <p className="plan-price">Em breve</p>
           <ul>
             <li>Análises ilimitadas</li>
-            <li>Pergunte ao coach sobre cada erro</li>
             <li>Comparação entre duas análises suas</li>
           </ul>
           <button type="button" className="button ghost block" disabled>

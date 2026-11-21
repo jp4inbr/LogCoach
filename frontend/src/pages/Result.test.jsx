@@ -154,45 +154,7 @@ describe("Result", () => {
     });
   });
 
-  describe("coach e erros (aba Resumo)", () => {
-    it("motor sem IA: avisa que o coach vem na próxima versão", async () => {
-      await aberta();
-      expect(screen.getByText("Explicação do coach em breve")).toBeInTheDocument();
-      expect(screen.queryByText("Resumo do coach")).not.toBeInTheDocument();
-    });
-
-    it("com o coach disponível mostra o resumo dele", async () => {
-      await aberta(
-        variacao((a) => {
-          a.result.coach = {
-            available: true,
-            headline:
-              "Priorize chegar na {{spell:451038|Alma Arcana}} com {{spell:1242974|Saraivada}} alta.",
-          };
-        }),
-      );
-
-      expect(screen.getByText("Resumo do coach")).toBeInTheDocument();
-      const resumo = screen.getByText("Resumo do coach").parentElement;
-      expect(resumo).toHaveTextContent("Priorize chegar na Alma Arcana com Saraivada alta.");
-      expect(resumo).not.toHaveTextContent("{{");
-      expect(resumo.querySelectorAll(".spell-ref img")).toHaveLength(2);
-      expect(screen.queryByText("Explicação do coach em breve")).not.toBeInTheDocument();
-    });
-
-    it("IA fora do ar em análise de exemplo: avisa que só valem as regras", async () => {
-      await aberta(
-        variacao((a) => {
-          a.result.source = "exemplo";
-        }),
-      );
-
-      expect(screen.getByText("Explicação do coach indisponível agora")).toBeInTheDocument();
-      expect(
-        screen.getByText(/Os erros abaixo vêm só das regras, que são calculadas direto do log/),
-      ).toBeInTheDocument();
-    });
-
+  describe("erros (aba Resumo)", () => {
     it("lista os erros das regras do maior para o menor impacto, numerados", async () => {
       await aberta();
 
@@ -330,14 +292,6 @@ describe("Result", () => {
       expect(screen.getByText("Sua luta bateu com os melhores em todas as regras.")).toBeVisible();
       expect(screen.queryByRole("article")).not.toBeInTheDocument();
       expect(screen.queryByText("O que as regras não explicam")).not.toBeInTheDocument();
-    });
-
-    it("a pergunta ao coach aparece desabilitada, como recurso do plano Pro", async () => {
-      await aberta();
-
-      expect(screen.getByLabelText("Pergunte ao coach sobre um erro")).toBeDisabled();
-      expect(screen.getByRole("button", { name: "Perguntar" })).toBeDisabled();
-      expect(screen.getByText("Em breve, no plano Pro.")).toBeInTheDocument();
     });
   });
 

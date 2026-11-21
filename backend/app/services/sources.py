@@ -1092,7 +1092,7 @@ def fill_real_names(result: AnalysisResult, names_file: Path) -> None:
     """Põe o nome real dos tops a partir do names.local.json, se ele existir na máquina (RF25).
 
     O arquivo é um mapa por bracket e por fixture: `{"nekzali_mythic_326_328":
-    {"top01.json.gz": {"top01": {"name", "server"}}}}`. Nunca vai para o git nem para a IA.
+    {"top01.json.gz": {"top01": {"name", "server"}}}}`. Nunca vai para o git.
     """
     if not names_file.exists():
         return

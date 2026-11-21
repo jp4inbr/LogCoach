@@ -28,7 +28,6 @@ LogCoach/
 │   │   ├── guides/       # guias em português para a IA (arcane_mage.md, nekzali.md)
 │   │   ├── i18n/         # nomes em português por ID (pt_br.yaml)
 │   │   ├── samples/      # modo exemplo: kill de referência e tops (tops/)
-│   │   ├── ai/           # integração com a IA: ainda vazio (passo 5)
 │   │   └── config.py, db.py, models.py, schemas.py, security.py, errors.py, main.py
 │   ├── scripts/          # save_fixtures.py: baixa o kill de referência e o top 10
 │   └── tests/            # Pytest (test_engine_*, test_analyzer, test_reports, test_wcl*...)

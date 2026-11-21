@@ -11,7 +11,7 @@ description: Demonstração do projeto e do seu valor para a banca.
 | 1 | Gancho                | 1 min | Premiações de US$ 300 mil e a Race to World First: desempenho em WoW tem valor real |
 | 2 | Problema              | 2 min | Log de combate é dado bruto; ferramentas atuais são rígidas e em inglês             |
 | 3 | Público               | 1 min | Jogador brasileiro no nível competitivo                                             |
-| 4 | Solução               | 2 min | Regras + comparação com os melhores + IA explicando em português                    |
+| 4 | Solução               | 2 min | Regras + comparação com os melhores + explicação em português                    |
 | 5 | Demo ao vivo          | 5 min | Colar o link do log → escolher a luta → clicar no personagem → resultado (roteiro abaixo) |
 | 6 | Usabilidade           | 3 min | Heurísticas aplicadas, tratamento de erros, resultado do SUS                        |
 | 7 | IA no desenvolvimento | 2 min | Como usamos e como validamos                                                        |
@@ -30,7 +30,7 @@ description: Demonstração do projeto e do seu valor para a banca.
    - Linha do tempo da luta.
    - Todas as regras, cada uma com a referência tirada dos tops (ex.: "mediana dos 10 tops").
    - Tabelas por habilidade e por alvo, em % (jogador × tops).
-5. Dizer que o **resumo do coach (IA) ainda não está ligado**: hoje o relatório sai só com as regras (RF17); a explicação em português pelo Gemini é o próximo passo.
+5. Dizer que o relatório é **100% programático**: decidimos não usar IA generativa no produto; os erros e os textos saem das regras e dos tops.
 
 ## Como rodar a demo
 

@@ -11,7 +11,6 @@ description: Link de acesso à versão publicada.
 | Frontend                | Firebase Hosting ou Cloud Storage (Google Cloud) |
 | Backend                 | Cloud Run (container)                            |
 | Banco                   | Cloud SQL (PostgreSQL)                           |
-| IA                      | Vertex AI (Gemini)                               |
 | Custos                  | Créditos do Google Cloud do grupo                |
 | URL pública             | _a adicionar_                                    |
 | Plano B na apresentação | Rodar local com `DATA_SOURCE=exemplo`: o motor real roda sobre o kill de referência e os 10 tops guardados em `backend/app/samples/`, sem internet |

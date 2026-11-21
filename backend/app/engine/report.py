@@ -24,7 +24,6 @@ from app.schemas import (
     AbilityRow,
     AbilityTable,
     AnalysisResult,
-    Coach,
     Comparison,
     FightInfo,
     Gap,
@@ -43,7 +42,7 @@ SURGE, TOUCH, SOUL, POTION, PI, BOLT = 365350, 321507, 451038, 1236616, 10060, 1
 # Seta Prismática: o cast, o dano e o proc (a linha da tabela pode vir por qualquer um).
 BOLT_IDS = frozenset({BOLT, 1295939, 1295942})
 
-# Diferença não explicada (RF23) acima disso vira hipótese para a IA investigar.
+# Diferença não explicada (RF23) acima disso vira hipótese para o jogador investigar.
 UNEXPLAINED_MIN_PCT = 1.0
 
 # Regras que ficam só no quadro de regras, nunca como card de erro: o Prismatic Bolt mistura
@@ -239,7 +238,7 @@ def _sort_key(m: Mistake) -> tuple:
 def _hypothesis(
     unexplained: float, abilities: list[AbilityTable], targets: list[TargetTable]
 ) -> Mistake:
-    """Diferença que nenhuma regra mede (RF23), com pistas das tabelas para a IA (RF24). A
+    """Diferença que nenhuma regra mede (RF23), com pistas das tabelas (RF24). A
     Seta Prismática fica fora das pistas: a diferença dela já está na sorte (`gap.luck_pct`)."""
     rows = [
         (t.phase, r)
@@ -293,8 +292,8 @@ def _hypothesis(
         kind="hipotese",
         phase=None,
         explanation=mark_spells(text),
-        what_to_do="Compare a sua rotação com a dos tops nas habilidades acima. Na próxima "
-        "versão, o coach (IA) vai investigar essas pistas.",
+        what_to_do="Compare a sua rotação com a dos tops nas habilidades acima: as pistas "
+        "estão nos números deste erro.",
         numbers=numbers,
     )
 
@@ -430,7 +429,6 @@ def build_analysis(
         player=player_info,
         comparison=comparison,
         summary=summary,
-        coach=Coach(available=False, headline=None),
         mistakes=mistakes,
         rules=[
             RuleCheck(

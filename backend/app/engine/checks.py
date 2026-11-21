@@ -29,7 +29,7 @@ class Check:
     reference: str | None = None  # de onde saiu o limite ("mediana dos 10 tops: 6%")
     impact_pct: float | None = None  # % do dano do jogador; None = sem conta (ou risco)
     note: str | None = None
-    details: tuple[str, ...] = field(default_factory=tuple)  # fatos para o texto e para a IA
+    details: tuple[str, ...] = field(default_factory=tuple)  # fatos para o texto
 
 
 @dataclass(frozen=True)
@@ -397,7 +397,7 @@ VERDICT_TEXT = {
 
 
 def _peak_line(peak) -> str:
-    """Um pico em português, para a tela e para a IA."""
+    """Um pico em português, para a tela."""
     shown = [m for m in peak.mechanics if m.share >= 0.1] or list(peak.mechanics[:1])
     mechanics = ", ".join(
         f"{m.name} {num(100 * m.share, 0)}%"

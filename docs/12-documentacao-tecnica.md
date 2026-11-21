@@ -34,7 +34,6 @@ npm run lint
 | `DATA_SOURCE` | `wcl` (relatórios reais) ou `exemplo` (arquivos de `app/samples/`, sem internet: plano B da demo e CI). Vazio = `wcl` se houver as chaves do WCL, senão `exemplo`. `wcl` sem as chaves não sobe |
 | `APP_ENV` | `dev` (padrão) ou `prod`. Em `prod` o backend não sobe sem `JWT_SECRET` |
 | `NAMES_FILE` | Mapa pseudônimo → nome real do modo exemplo (RF25). Padrão: `tests/fixtures/names.local.json`, fora do git |
-| `GOOGLE_CLOUD_PROJECT` | Projeto do Google Cloud (Vertex AI) |
 | `DATABASE_URL` | Banco (SQLite em dev, PostgreSQL em produção). Vazio = `backend/logcoach.db`; caminho SQLite relativo (`sqlite:///./x.db`) é resolvido a partir de `backend/`, não da pasta de onde o uvicorn sobe. O arquivo é criado sozinho na primeira subida |
 | `JWT_SECRET` | Assinatura do login. Vazio em dev = chave temporária (o login cai a cada reinício); obrigatório com `APP_ENV=prod` |
 
@@ -103,7 +102,7 @@ Os arquivos de exemplo são marcados como exemplo (`"sample": true` e `"source":
 
 No `WclReportSource`: entram só Magos com spec Arcano **na luta escolhida**; spec e item level vêm da própria luta (`friendlySpecs` e `friendlyItemLevels`, na ordem de `friendlyPlayers`; se faltar a spec de algum Mago, completa com `playerDetails(fightIDs: [luta])`); chefe suportado = encontro com YAML em `encounters/`, dificuldade listada em `difficulties` do YAML (Nek'zali: só Mítico) e luta de 60 s ou mais; chefe e dificuldade em pt-BR (`pt_br.yaml`). Report privado ou inexistente vira `report_not_available`; o que é culpa do Warcraft Logs ou nossa vira `wcl_unavailable` (12.3). Nos dois casos o link de exemplo (`XhrmBaYkGCAQjH2D`) abre com os arquivos de `app/samples/` (plano B da demo), e essa resposta não entra no cache. Consulta conferida no report de referência.
 
-**Nomes na resposta (RF25).** Em `POST /analyses` e `GET /analyses/{id}`, cada jogador comparado vem em `comparison.players` (hoje o top 10; o 11º do bracket quando o log analisado está no top 10 (RF21) e os colegas de raide entram com o motor) com `display_name` (pseudônimo estável: `top01`… pela posição no ranking, `raid_01`… pela ordem de ID; a tela mostra "Top 1", "Raide 1") e `name` (nome real, ou nulo quando não há). O jogador analisado vem com `display_name` = `name`. Quem decide o que mostrar é o frontend. A IA recebe só os pseudônimos: os nomes reais nunca entram no pacote da IA.
+**Nomes na resposta (RF25).** Em `POST /analyses` e `GET /analyses/{id}`, cada jogador comparado vem em `comparison.players` (hoje o top 10; o 11º do bracket quando o log analisado está no top 10 (RF21) e os colegas de raide entram com o motor) com `display_name` (pseudônimo estável: `top01`… pela posição no ranking, `raid_01`… pela ordem de ID; a tela mostra "Top 1", "Raide 1") e `name` (nome real, ou nulo quando não há). O jogador analisado vem com `display_name` = `name`. Quem decide o que mostrar é o frontend. Os nomes reais só saem do backend para a tela, nunca para serviço externo.
 
 ## 12.4 Motor de análise: as três camadas de regras
 
@@ -111,7 +110,7 @@ No `WclReportSource`: entram só Magos com spec Arcano **na luta escolhida**; sp
 |---|---|---|---|
 | **1. Regras da especialização** (determinísticas) | Valem em qualquer luta | Tempo parado, quantas vezes cada cooldown foi usado vs. o máximo possível, recurso desperdiçado, procs perdidos, mortes | `backend/app/rules/arcane_mage.yaml` |
 | **2. Regras do encontro** (determinísticas) | Descrevem a luta, uma por chefe | Fases e intermissões, janelas de burst esperadas, golpes de raide (onde se espera defensivo), períodos em que o chefe não pode ser atacado | `backend/app/encounters/nekzali.yaml` |
-| **3. Perguntas de julgamento** (IA) | O que não vira regra fixa | "Valeu segurar o cooldown para a próxima fase?", "o erro se repete em todos os pulls?", "é erro de execução ou de planejamento?" | Prompt do coach (item 9) |
+| **3. Perguntas de julgamento** (jogador) | O que não vira regra fixa | "Valeu segurar o cooldown para a próxima fase?", "o erro se repete em todos os pulls?", "é erro de execução ou de planejamento?" | O motor entrega os fatos ao lado (`details`); quem julga é o jogador. Desde 21/11 não há IA |
 
 A camada 2 **ajusta** a camada 1. Exemplo: tempo parado durante uma intermissão não conta como erro; um cooldown segurado para uma janela de burst mais valiosa conta como acerto.
 
@@ -122,29 +121,27 @@ A camada 2 **ajusta** a camada 1. Exemplo: tempo parado durante uma intermissão
 3. **Cruzamento.** Para cada janela, verifica se o cooldown do jogador caiu dentro dela (com tolerância de alguns segundos). Para cada golpe de raide, verifica se havia defensivo ativo.
 4. **Com quem comparar.** Os 10 melhores logs da mesma especialização, chefe e dificuldade **dentro da faixa de item level do jogador** (o "bracket" do Warcraft Logs, de 3 em 3 níveis: 326–328, 329–331…). Assim a diferença mostrada é de execução, não de equipamento. Se o jogador já estiver nesse top 10, o relatório reconhece e o log analisado sai da comparação e entra o 11º colocado do bracket (outro log do mesmo personagem no top 10 continua como um top qualquer) (item 12.13).
 5. **Comparação por fase.** Como cada luta tem duração diferente, o sistema compara "X segundos após o início da fase" do jogador com o mesmo ponto nos melhores logs, e não o tempo absoluto.
-6. **Saída.** Um JSON de fatos (ex.: "CD principal usado 2 de 4 vezes possíveis; 1 fora de janela de burst na fase 2") vai para a IA, junto com as perguntas da camada 3.
+6. **Saída.** Um JSON de fatos (ex.: "CD principal usado 2 de 4 vezes possíveis; 1 fora de janela de burst na fase 2") vira o relatório (item 12.9); a camada 3 fica com o jogador.
 
-## 12.6 O que a IA recebe
+## 12.6 Sem IA no produto
 
-A IA não consulta o Warcraft Logs nem faz conta. O backend monta um pacote com três partes:
+Decisão de 21/11: o relatório é todo programático. Não há chamada a Gemini/Vertex AI, nem pacote para modelo, nem resposta reserva. O backend entrega o `AnalysisResult` (item 12.9) com três partes:
 
 | Parte | O que é | Quem produz |
 |---|---|---|
-| **Fatos das regras** | Erros conhecidos, com certeza (ex.: "4º Surge 4,5 s depois do Touch") | Motor, a partir dos YAML |
-| **Guia da luta e da spec** | Texto curto: como o chefe funciona, como o Arcano joga, o que não é erro (`backend/app/guides/nekzali.md` e `arcane_mage.md`) | Arthur (um por chefe e um por spec) |
+| **Fatos das regras** | Erros conhecidos, com certeza (ex.: "4º Surge 4,5 s depois do Touch"), ordenados por impacto | Motor, a partir dos YAML |
 | **Tabela por habilidade** | Por fase: casts por minuto e % do dano de cada habilidade, jogador vs. média dos top 10 do mesmo bracket | Motor (RF22), genérico para qualquer spec |
+| **Hipótese** | A diferença que nenhuma regra explica, com as pistas das tabelas (RF23, RF24) | Motor |
 
-Com isso a IA ordena os erros, explica em português e aponta como **hipótese** o que destoar na tabela sem ter regra (RF24). A tabela usa casts **por minuto** porque a duração das fases muda entre kills.
+Os guias em `backend/app/guides/` ficam como referência do Arthur; o código não os lê. A tabela usa casts **por minuto** porque a duração das fases muda entre kills.
 
-**Marcação de magias (ainda não feito, passo 5).** Os textos do motor levam `{{spell:<id>|texto}}` nas menções às magias do Mago (item 12.9). O pacote da IA mantém a marcação, e a IA **deve preservá-la** em tudo que escrever (`coach.headline` e qualquer texto novo): ao citar uma magia do Mago, usar a mesma forma `{{spell:<id>|texto}}`, com o ID principal. Validar a marcação da resposta (e cair no relatório só com as regras, RF17, se vier quebrada) fica para o passo 5.
+**Marcação de magias.** Os textos do motor levam `{{spell:<id>|texto}}` nas menções às magias do Mago (item 12.9); a tela troca pelo ícone e pelo nome.
 
-**Idioma.** Os nomes de habilidades, adds e fases chegam do Warcraft Logs em inglês. O motor troca pelo nome em português do cliente do jogo usando `backend/app/i18n/pt_br.yaml` (por ID), antes de montar o pacote. Assim a IA e o relatório falam a língua do jogador brasileiro.
+**Idioma.** Os nomes de habilidades, adds e fases chegam do Warcraft Logs em inglês. O motor troca pelo nome em português do cliente do jogo usando `backend/app/i18n/pt_br.yaml` (por ID), ao montar o relatório. Assim o relatório fala a língua do jogador brasileiro.
 
-**Diferença não explicada (RF23).** Se o jogador fez, por exemplo, 25% menos dano que os tops no Stage Two e as regras só explicam parte disso, o motor marca a sobra. É um sinal para a IA olhar a tabela daquela fase com mais atenção.
+**Diferença não explicada (RF23).** Se o jogador fez, por exemplo, 25% menos dano que os tops no Stage Two e as regras só explicam parte disso, o motor marca a sobra. É um sinal para o jogador olhar a tabela daquela fase com mais atenção.
 
-**Do achado à regra.** As hipóteses da IA ficam registradas. O Arthur revisa e, se for um padrão de verdade, ele vira regra no YAML e passa a ser checado de graça em toda análise.
-
-**Fora do MVP:** dar à IA ferramentas para consultar o log por conta própria. Fica para depois da banca, se o custo e o limite da API permitirem.
+**Do achado à regra.** As hipóteses do relatório servem de pista. O Arthur revisa e, se for um padrão de verdade, ele vira regra no YAML e passa a ser checado de graça em toda análise.
 
 ### Métricas da comparação (Mago Arcano)
 
@@ -247,8 +244,7 @@ O motor devolve um `AnalysisResult` (`backend/app/schemas.py`); o frontend só l
 | `fight`, `player` | Chefe, dificuldade, kill/wipe, duração; nome, reino (`server`), `display_name` (= `name`: o analisado nunca é ocultado), spec e item level | RF25 |
 | `comparison` | Com quem comparou (`label`, `bracket`, `size`), se o jogador já está no top 10 e `players`: cada comparado com `rank`, `display_name` (`top01`…), `name` (real, ou nulo no modo exemplo), `server`, `item_level` e `dps`. `stale`: tops de mais de 24 h (Warcraft Logs fora do ar); `sample`: cópia do exemplo (plano B). Nos dois a tela avisa que a comparação não é a de hoje | RF21, RF25 |
 | `summary` | DPS do jogador, média dos tops, diferença em %, tempo ativo | RF08 |
-| `coach` | `available` falso quando a IA falhou; `headline` é o resumo do coach | RF17 |
-| `mistakes` | Erros **já ordenados**: primeiro os de regra, do maior para o menor impacto (risco, com `impact_pct` nulo, no fim); depois as hipóteses. Na hipótese, `impact_pct` é a diferença que nenhuma regra explica (RF23), e o texto traz as pistas do coach (RF24); a tela mostra as hipóteses numa seção à parte, "O que as regras não explicam", sem posição e sem "custou X%". Cada um: `title`, `impact_pct` (ou `null` se é risco, não dano), `severity` (`atencao`/`erro`), `kind` (`regra` ou `hipotese`), `phase`, `explanation`, `what_to_do` e `numbers` (você × melhores) | RF10, RF24 |
+| `mistakes` | Erros **já ordenados**: primeiro os de regra, do maior para o menor impacto (risco, com `impact_pct` nulo, no fim); depois as hipóteses. Na hipótese, `impact_pct` é a diferença que nenhuma regra explica (RF23), e o texto traz as pistas das tabelas (RF24); a tela mostra as hipóteses numa seção à parte, "O que as regras não explicam", sem posição e sem "custou X%". Cada um: `title`, `impact_pct` (ou `null` se é risco, não dano), `severity` (`atencao`/`erro`), `kind` (`regra` ou `hipotese`), `phase`, `explanation`, `what_to_do` e `numbers` (você × melhores) | RF10, RF24 |
 | `rules` | Todas as regras checadas, com valor do jogador, dos melhores e `status` (`ok`/`atencao`/`erro`); `reference` (de onde saiu o limite: "mediana dos 10 tops: 6,8%", ou a reserva do YAML com poucos tops), `impact_pct` (% do dano do jogador; nulo sem conta ou risco) e `details` (fatos da regra, ex.: "Surto aos 4:49: Toque só 42,9 s depois") | RF07, RF18 |
 | `phases` | Fases com início e fim em segundos e se é intermissão | RF20 |
 | `timeline` | Por cooldown: segundos **desde o início da luta** de cada uso do jogador (`player_s`) e do log de referência dos tops (`top_s`). O motor calcula por fase e converte com `phases[].start_s` | RF11 |
@@ -262,7 +258,7 @@ Os textos (`title`, `explanation`, `what_to_do`) saem em português, com os nome
 
 Toda menção a magia ou talento do **Mago Arcano** nos textos ao jogador sai marcada como `{{spell:<id>|<texto exibido>}}`, por exemplo `{{spell:365350|Surtos Arcanos}}`, `o {{spell:365350|Surto}}`, `12 de {{spell:1242974|Saraivada}}`. O `<id>` é o ID principal da magia (o mesmo para todas as formas escritas: Surto = 365350, Toque = 321507, Salva = 44425...); o texto exibido é exatamente o que a pessoa lê (plural, forma curta), sem artigos nem preposições e sem `|`, `{` ou `}`. O frontend troca a marcação por ícone + texto, com o ícone à esquerda. Poção, lust, Infusão de Poder, Evocador e mecânicas do chefe **não** são marcados.
 
-- **Com marcação:** `Mistake.title`, `Mistake.explanation`, `Mistake.what_to_do`, `Number.label` (de `Mistake.numbers`), `RuleCheck.name`, `RuleCheck.note`, `RuleCheck.reference` e `RuleCheck.details[]`. São os únicos campos de texto do resultado que citam magias do Mago; `Coach.headline` (o resumo do coach, `None` até a IA entrar) também leva a marcação e a tela já o lê com ela (ver a IA, abaixo).
+- **Com marcação:** `Mistake.title`, `Mistake.explanation`, `Mistake.what_to_do`, `Number.label` (de `Mistake.numbers`), `RuleCheck.name`, `RuleCheck.note`, `RuleCheck.reference` e `RuleCheck.details[]`. São os únicos campos de texto do resultado que citam magias do Mago.
 - **Sem marcação (texto puro):** `AbilityRow.name`, `TimelineTrack.name`, `TargetRow.name`, `Number.player`/`top`, nomes de jogadores e de fases. Para o ícone dessas linhas: `AbilityRow.ability_id` (ID do cast, ou do primeiro dano da linha) e `TimelineTrack.ability_id`; o frontend procura o ID no catálogo e, se não achar (item de equipamento, por exemplo), mostra só o texto.
 - **No código:** `engine/names.py` tem `spell_ref(id, texto=None)`, `strip_spell_refs(texto)` (o texto como a pessoa lê; só os testes usam) e `mark_spells(texto)`, que marca toda forma escrita das magias do Mago: os nomes de `mage_spells` no `pt_br.yaml` mais plurais e formas curtas (`EXTRA_SPELL_FORMS`). `engine/report.py` aplica `mark_spells` nos campos acima, depois de montar o texto; o resto do motor continua comparando por ID.
 - **Nomes de dados não podem ser marcados por engano.** `mark_spells` roda sobre texto já montado, que leva nomes vindos de dados (origem dos picos de dano, mecânicas do chefe, buffs). Por isso `tests/test_spell_refs.py` exige `mark_spells(nome) == nome` para todo nome do `pt_br.yaml` fora de `mage_spells`, todo `name` dos YAML de `app/encounters/` e todo nome de habilidade das fixtures que não seja do Mago. **Chefe novo (YAML novo, fixtures novas) tem de passar nesse teste**; se um nome colidir com uma forma do Mago, trocar a forma ou o nome.
@@ -358,7 +354,7 @@ Escopo fechado com o Arthur em 03/11. `measures.py` lê a luta uma vez e devolve
 
 **Dano recebido.** Até 03/11 a busca pedia `DamageTaken` com `targetID` do jogador e vinha só o dano que ele causou nele mesmo: no WCL, o "source" desse filtro é quem recebe o dano. Corrigido em `wcl/fetch.py` e fixtures baixadas de novo em 03/11 (Harmonist: 1.364 golpes recebidos, antes 533).
 
-**Montagem do resultado (`engine/report.py`).** `build_analysis(...)` recebe a luta do jogador, as lutas dos tops (com o DPS do ranking, podendo vir de um gerador: cada luta é medida e largada) e o cabeçalho pronto (`FightInfo`, `PlayerInfo`, `Comparison`), e devolve o `AnalysisResult` com `source="motor"`. Mede o jogador e cada top (`measure`, tops com `dps=` do ranking), roda `run_checks` e `gap`, e monta: `summary` (DPS oficial; tempo ativo com a mesma régua do check `active_time`, tops pela mediana), `rules` (um por check), `mistakes` (um por check em atenção/erro, com textos em português por id de regra em `TEXTS`, os números do check e os `details`; com impacto do maior para o menor, os sem impacto no fim com erro antes de atenção; a fase só quando todos os momentos do erro caem na mesma), a hipótese `unexplained_gap` quando o não explicado passa de 1% (pistas: maiores diferenças de % do dano na tabela por habilidade, fora a Seta Prismática, que já está na sorte, e dano no chefe 5 pontos abaixo dos tops), `phases` (intermissão pelo WCL ou pelo YAML do encontro), `timeline` (Surto, Toque, Alma Arcana, poção e Infusão de Poder; `top_s` do 1º top), `abilities` e `targets`. A sorte do Prismatic Bolt nunca vira `Mistake`, e os textos nunca citam outro jogador pelo nome (RF25). Sem tops, as regras usam a reserva do YAML e o `summary` repete o jogador no lugar dos tops. `coach` sai com `available=False` até a IA (passo 5). No kill de referência: diferença 18,0% = 6,6 + 9,5 + 1,9 (`tests/test_engine_report.py`).
+**Montagem do resultado (`engine/report.py`).** `build_analysis(...)` recebe a luta do jogador, as lutas dos tops (com o DPS do ranking, podendo vir de um gerador: cada luta é medida e largada) e o cabeçalho pronto (`FightInfo`, `PlayerInfo`, `Comparison`), e devolve o `AnalysisResult` com `source="motor"`. Mede o jogador e cada top (`measure`, tops com `dps=` do ranking), roda `run_checks` e `gap`, e monta: `summary` (DPS oficial; tempo ativo com a mesma régua do check `active_time`, tops pela mediana), `rules` (um por check), `mistakes` (um por check em atenção/erro, com textos em português por id de regra em `TEXTS`, os números do check e os `details`; com impacto do maior para o menor, os sem impacto no fim com erro antes de atenção; a fase só quando todos os momentos do erro caem na mesma), a hipótese `unexplained_gap` quando o não explicado passa de 1% (pistas: maiores diferenças de % do dano na tabela por habilidade, fora a Seta Prismática, que já está na sorte, e dano no chefe 5 pontos abaixo dos tops), `phases` (intermissão pelo WCL ou pelo YAML do encontro), `timeline` (Surto, Toque, Alma Arcana, poção e Infusão de Poder; `top_s` do 1º top), `abilities` e `targets`. A sorte do Prismatic Bolt nunca vira `Mistake`, e os textos nunca citam outro jogador pelo nome (RF25). Sem tops, as regras usam a reserva do YAML e o `summary` repete o jogador no lugar dos tops. Não há campo `coach`: o produto não usa IA. No kill de referência: diferença 18,0% = 6,6 + 9,5 + 1,9 (`tests/test_engine_report.py`).
 
 ## 12.13 Busca dos tops (cache de 24 h, RF21)
 

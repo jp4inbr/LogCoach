@@ -139,7 +139,7 @@ class TopEntry:
 
     rank: int  # posição real no ranking do WCL
     display_name: str  # "top01"… pela posição no ranking (RF25)
-    name: str | None  # nome real (só para o botão de mostrar nomes; nunca para a IA)
+    name: str | None  # nome real (só para o botão de mostrar nomes; nunca vai para o git)
     server: str | None
     item_level: int | None
     dps: float

@@ -40,7 +40,6 @@ describe("Plans", () => {
     expect(pro.getByText("Em breve")).toBeInTheDocument();
     expect(pro.getAllByRole("listitem").map((item) => item.textContent)).toEqual([
       "Análises ilimitadas",
-      "Pergunte ao coach sobre cada erro",
       "Comparação entre duas análises suas",
     ]);
     expect(pro.getByRole("button", { name: "Disponível depois da versão beta" })).toBeDisabled();

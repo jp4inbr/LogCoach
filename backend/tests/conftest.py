@@ -17,7 +17,6 @@ from app.db import create_tables, get_session  # noqa: E402
 from app.main import app  # noqa: E402
 from app.schemas import (  # noqa: E402
     AnalysisResult,
-    Coach,
     ComparedPlayer,
     Comparison,
     FightInfo,
@@ -82,7 +81,6 @@ def make_result(
             active_time_pct=98.6,
             top_active_time_pct=99.0,
         ),  # fmt: skip
-        coach=Coach(available=False),
         mistakes=[],
         rules=[],
         phases=[],

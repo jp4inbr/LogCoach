@@ -84,7 +84,7 @@ Levantadas no review técnico de 26–28/10. O detalhe (onde mexer e por quê) e
 | Jogador pelo id do ator do Warcraft Logs | Havia duas regras de nome + reino | **Feito** em 28/10 (`ed73177`, PR #25) | Arthur |
 | Código de erro próprio para "Warcraft Logs fora do ar" | Aparecia como "relatório privado" | **Feito** em 28/10: `wcl_unavailable` (503), com mensagem por causa (`4d1493c`, `4842aee`) | Arthur |
 | Testes T03–T05 e T11–T14 | Dependiam do motor | **Feito**: passam com o motor (`test_engine_base.py`, `test_engine_rules.py`) | Arthur |
-| Pacote da IA (Gemini) + resposta reserva | RF17, RF24 (passo 5 do `CLAUDE.md`); inclui o teste T07 (falha da IA) | Aberto. Hoje o relatório sai só com as regras (RF17) | |
+| Pacote da IA (Gemini) + resposta reserva | RF17, RF24 (passo 5 do `CLAUDE.md`); inclui o teste T07 | Cancelado em 21/11: o resultado fica só programático | |
 | Conferir no Wowhead todos os nomes em pt-BR (magias, buffs, talentos) | Há nomes divergentes entre guia, exemplo e cliente (ex.: Clearcasting = "Abstração" no Warcraft Logs em português; já alinhado em todo o código e nos guias) | Em andamento | |
 | Deploy no Cloud Run | Publicação para a banca (item 13): CPU sempre alocada, uma instância na alfa, IP real atrás do proxy | Aberto (backlog) | |
 | Teste de usabilidade + SUS | Roteiro e questionário prontos (item 8.3); falta aplicar com 5 pessoas | Aberto | |
@@ -94,7 +94,7 @@ Levantadas no review técnico de 26–28/10. O detalhe (onde mexer e por quê) e
 | Risco | Plano B |
 | --- | --- |
 | Arthur é o único que domina o jogo e o motor | Regras documentadas em linguagem simples (item 12) e código revisado por pelo menos mais um integrante |
-| Integração com IA atrasa | Relatório só com as regras (RF17), que é o estado atual: o resultado mostra erros, regras, tabelas e a diferença para os tops; o resumo do coach entra quando a IA estiver ligada |
+| Integração com IA atrasa | Relatório só com as regras (RF17), que é o estado atual: o resultado mostra erros, regras, tabelas e a diferença para os tops; a IA deixou de fazer parte do produto (21/11) |
 | Internet falha na apresentação | Rodar local com `DATA_SOURCE=exemplo`: o motor real roda sobre as cópias guardadas do kill de referência e dos 10 tops (`backend/app/samples/`) |
 | Warcraft Logs fora do ar | O sistema usa sozinho a cópia guardada dos tops (do banco ou de `app/samples/tops/`) e avisa que ela pode estar desatualizada; a lista de lutas já buscada aparece com aviso |
 | Não dá tempo dos 3 chefes | Alfa entrega só Nek'zali; os outros serão validados perante o tempo hábil |

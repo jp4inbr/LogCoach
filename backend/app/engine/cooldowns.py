@@ -6,7 +6,7 @@
   um Barrage ou um Bolt).
 - Surge segurado (03/11): mais de 10 s depois de pronto é atenção; mais de 15 s sem nada que
   case (poção, lust, Power Infusion, início de fase do `allowed_holds`) é erro. O motor lista
-  o que caiu junto e a IA julga se valeu a pena.
+  o que caiu junto, para o jogador julgar se valeu a pena.
 """
 
 import math
