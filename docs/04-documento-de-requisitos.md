@@ -104,9 +104,9 @@ O sistema deve calcular a diferença entre o jogador e a média dos melhores log
 
 <details>
 
-<summary><strong>RF09. Explicação por IA com contexto estruturado</strong></summary>
+<summary><strong>RF09. Explicação em português gerada pelo motor</strong></summary>
 
-O sistema deve enviar à IA, sem o log bruto: os fatos calculados pelas regras, o guia da luta e da especialização, a tabela comparativa por habilidade (RF22) e as perguntas de julgamento; e receber a explicação em português.
+O sistema deve explicar cada erro em português a partir dos fatos calculados pelas regras e da tabela comparativa por habilidade (RF22), sem usar IA generativa: todo número e todo texto do relatório vêm do código, e o log bruto não sai do backend.
 
 {% hint style="info" %}
 **Prioridade:** **Alta**
@@ -188,9 +188,9 @@ O sistema deve mostrar a tela de planos (sem pagamento real no MVP).
 
 <details>
 
-<summary><strong>RF16. Chat com o coach</strong></summary>
+<summary><strong>RF16. Chat com o coach (cancelado)</strong></summary>
 
-O usuário deve poder perguntar ao coach sobre um erro específico do relatório.
+Cancelado em 21/11/2026: dependia de IA, que deixou de fazer parte do produto. O número do requisito foi mantido para não quebrar as referências.
 
 {% hint style="info" %}
 **Prioridade:** **Baixa**
@@ -200,9 +200,9 @@ O usuário deve poder perguntar ao coach sobre um erro específico do relatório
 
 <details>
 
-<summary><strong>RF17. Fallback sem IA</strong></summary>
+<summary><strong>RF17. Relatório sem dependência de IA</strong></summary>
 
-Se a IA falhar, o sistema deve mostrar o relatório só com as regras.
+O relatório deve ser gerado só pelas regras e pelas tabelas do motor, sem depender de serviço externo de IA, então não há modo de falha por indisponibilidade de IA.
 
 {% hint style="info" %}
 **Prioridade:** **Alta**
@@ -274,7 +274,7 @@ O sistema deve montar, por fase, uma tabela com casts por minuto e % do dano de 
 
 <summary><strong>RF23. Diferença não explicada</strong></summary>
 
-O sistema deve marcar a diferença de dano por fase que as regras não explicam ("diferença não explicada"), para a IA investigar na tabela do RF22.
+O sistema deve marcar a diferença de dano por fase que as regras não explicam ("diferença não explicada"), para o jogador investigar na tabela do RF22.
 
 {% hint style="info" %}
 **Prioridade:** **Média**
@@ -284,9 +284,9 @@ O sistema deve marcar a diferença de dano por fase que as regras não explicam 
 
 <details>
 
-<summary><strong>RF24. Hipóteses da IA e revisão de regras</strong></summary>
+<summary><strong>RF24. Hipóteses do motor e revisão de regras</strong></summary>
 
-O que a IA apontar fora das regras deve aparecer no relatório como hipótese, com os números do código ao lado, e ficar registrado para revisão (possível regra nova).
+O que o motor apontar fora das regras (a diferença não explicada, RF23) deve aparecer no relatório como hipótese, com os números do código ao lado, para revisão do especialista (possível regra nova).
 
 {% hint style="info" %}
 **Prioridade:** **Média**
@@ -326,7 +326,7 @@ As páginas do sistema devem carregar em menos de 3 segundos.
 
 <summary><strong>RNF02. Análise completa em até 2 min, com progresso</strong></summary>
 
-Uma análise completa, que inclui a busca dos dados, a aplicação das regras e a geração da explicação pela IA, deve terminar em menos de 2 minutos. Enquanto a análise roda, o sistema deve mostrar ao usuário um indicador de progresso.
+Uma análise completa, que inclui a busca dos dados, a aplicação das regras e a montagem do relatório, deve terminar em menos de 2 minutos. Enquanto a análise roda, o sistema deve mostrar ao usuário um indicador de progresso.
 
 {% hint style="info" %}
 **Categoria: Desempenho**
@@ -432,9 +432,9 @@ No teste com usuários, o sistema deve alcançar nota de pelo menos 68 na escala
 
 <details>
 
-<summary><strong>RNF11. Interface e IA em português do Brasil</strong></summary>
+<summary><strong>RNF11. Interface em português do Brasil</strong></summary>
 
-Toda a interface do sistema e todas as respostas geradas pela IA devem estar em português do Brasil.
+Toda a interface do sistema e todos os textos do relatório devem estar em português do Brasil.
 
 {% hint style="info" %}
 **Categoria: Idioma**
@@ -456,9 +456,9 @@ As regras de análise devem ficar em arquivos de configuração: um arquivo para
 
 <details>
 
-<summary><strong>RNF13. Limite de uso de IA por análise</strong></summary>
+<summary><strong>RNF13. Limite de uso de IA por análise (cancelado)</strong></summary>
 
-O uso de IA em cada análise deve ser limitado, com um tamanho máximo para o conteúdo enviado e para a resposta recebida, para controlar o custo.
+Cancelado em 21/11/2026: o produto não usa IA, então não há custo por análise a limitar. O que continua limitado são as consultas ao Warcraft Logs (item 12.8).
 
 {% hint style="info" %}
 **Categoria: Custo**
@@ -475,5 +475,5 @@ O uso de IA em cada análise deve ser limitado, com um tamanho máximo para o co
 | Prevenção de erros                   | RF03, RF04 (lutas não suportadas em cinza)           |
 | Reconhecer em vez de lembrar         | RF10, RF11, RF19                                     |
 | Design estético e minimalista        | RF10 (erros de maior impacto primeiro)               |
-| Ajudar a reconhecer e corrigir erros | RF17 e mensagens de erro (item 10)                   |
+| Ajudar a reconhecer e corrigir erros | Mensagens de erro (item 10)                          |
 | Controle e liberdade do usuário      | RF25 (o usuário escolhe mostrar ou ocultar os nomes) |
