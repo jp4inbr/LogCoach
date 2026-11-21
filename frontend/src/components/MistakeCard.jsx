@@ -3,17 +3,27 @@ import { plainSpellText } from "../lib/spellText.js";
 import Icon from "./Icon.jsx";
 import SpellText from "./SpellText.jsx";
 
+// Remove o trecho "Detalhes: ..." que o motor anexa na explicação quando os mesmos detalhes
+// vão aparecer na seção expandível logo abaixo.
+function stripInlineDetails(explanation, details) {
+  if (!explanation || !details?.length) return explanation;
+  const inline = `Detalhes: ${details.join("; ")}.`;
+  if (!explanation.includes(inline)) return explanation;
+  return explanation.replace(inline, "").replace(/\s{2,}/g, " ").trim();
+}
+
 // Um erro do relatório: título, quanto custou, explicação, o que fazer e os números do código.
 // Na hipótese (RF23/RF24) não há custo confirmado: o número é a diferença que as regras não
 // explicam, e o card fica sem posição na lista (rank nulo).
 // id: âncora do trilho dos erros (MistakeRail); o cartão recebe o foco quando o link é usado.
-export default function MistakeCard({ mistake, rank, id }) {
+export default function MistakeCard({ mistake, rank, id, details }) {
   const impact =
     mistake.impact_pct === null
       ? "Sem custo em dano calculado (risco de morte ou efeito indireto)"
       : mistake.kind === "hipotese"
         ? `As regras não explicam cerca de ${formatNumber(mistake.impact_pct)} pontos da diferença`
         : `Custou cerca de ${formatNumber(mistake.impact_pct)}% do seu dano`;
+  const explanation = stripInlineDetails(mistake.explanation, details);
 
   return (
     <article
@@ -58,8 +68,20 @@ export default function MistakeCard({ mistake, rank, id }) {
 
       <p className="mistake-impact">{impact}</p>
       <p>
-        <SpellText text={mistake.explanation} />
+        <SpellText text={explanation} />
       </p>
+      {details?.length > 0 && (
+        <details className="mistake-details">
+          <summary>Ver detalhes ({details.length})</summary>
+          <ul>
+            {details.map((detail, index) => (
+              <li key={index}>
+                <SpellText text={detail} />
+              </li>
+            ))}
+          </ul>
+        </details>
+      )}
       <div className="mistake-todo">
         <strong>O que fazer</strong>
         <p>

@@ -261,6 +261,27 @@ describe("Result", () => {
       expect(linha).toHaveTextContent("2 de 5 (0, 20, 1, 18, 22)9 de 43");
     });
 
+    it("detalhes do erro ficam recolhidos por padrão e só aparecem quando a regra tem detalhes", async () => {
+      const user = userEvent.setup();
+      await aberta();
+
+      const cards = screen.getAllByRole("article");
+      // Primeiro erro (soul_entry) tem 2 detalhes em rules[].details.
+      const detalhes = cards[0].querySelector("details.mistake-details");
+      expect(detalhes).not.toBeNull();
+      expect(detalhes).not.toHaveAttribute("open");
+      expect(within(detalhes).getByText("Ver detalhes (2)")).toBeInTheDocument();
+
+      await user.click(within(detalhes).getByText("Ver detalhes (2)"));
+      expect(detalhes).toHaveAttribute("open");
+      expect(
+        within(detalhes).getByText(byPlainText("Entrada aos 3:28 com 1 de Saraivada")),
+      ).toBeInTheDocument();
+
+      // Terceiro erro (active_time) não tem detalhes: não renderiza a seção.
+      expect(cards[2].querySelector("details.mistake-details")).toBeNull();
+    });
+
     it("erro sem custo calculado diz isso em vez de inventar um número", async () => {
       await aberta();
 

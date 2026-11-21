@@ -1672,6 +1672,34 @@ label {
   margin-top: 2px;
 }
 
+.mistake-details {
+  max-width: var(--measure);
+  font-size: var(--size-small);
+  color: var(--muted);
+}
+
+.mistake-details summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 0;
+  cursor: pointer;
+  color: var(--accent-fg);
+  font-weight: 600;
+}
+
+.mistake-details summary:hover {
+  text-decoration: underline;
+}
+
+.mistake-details ul {
+  margin: 6px 0 0;
+  padding-left: 20px;
+  display: grid;
+  gap: 4px;
+  color: var(--text);
+}
+
 table {
   width: 100%;
   border-collapse: collapse;

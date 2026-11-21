@@ -27,6 +27,7 @@ async function checkIconsBesideText(page, scope, catalogIds) {
       const problems = [];
       let checked = 0;
       for (const ref of document.querySelectorAll(`${selector} .spell-ref`)) {
+        if (ref.closest("details:not([open])")) continue;
         const id = ref.getAttribute("data-spell-id");
         if (!catalogIds.includes(id)) {
           problems.push(`span sem ícone no catálogo: ${ref.textContent}`);
@@ -84,7 +85,10 @@ const horizontalOverflow = (page) =>
 
 const allImagesLoaded = (page) =>
   page.evaluate(async () => {
-    const imgs = [...document.querySelectorAll("img.spell-icon")];
+    // Ignora ícones dentro de <details> recolhidos (content-visibility: hidden não dispara lazy load).
+    const imgs = [...document.querySelectorAll("img.spell-icon")].filter(
+      (img) => !img.closest("details:not([open])") && img.getClientRects().length > 0,
+    );
     // Imagem preguiçosa só carrega perto da tela: rola até cada uma e espera ela chegar.
     for (const img of imgs) {
       img.scrollIntoView({ block: "center" });

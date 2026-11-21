@@ -198,6 +198,14 @@ function Summary({ result }) {
   // Primeiro os erros que as regras confirmam; as hipóteses vêm depois, separadas (RF23, RF24).
   const mistakes = result.mistakes.filter((mistake) => mistake.kind === "regra");
   const hypotheses = result.mistakes.filter((mistake) => mistake.kind === "hipotese");
+  // Detalhes de cada regra (por id) para a seção expandível de cada erro.
+  const detailsByRule = useMemo(() => {
+    const map = new Map();
+    for (const rule of result.rules ?? []) {
+      if (rule.details?.length > 0) map.set(rule.id, rule.details);
+    }
+    return map;
+  }, [result.rules]);
   // Trilho numerado: um link por erro, na ordem de custo (só com dois erros ou mais).
   const railItems = useMemo(
     () =>
@@ -251,6 +259,7 @@ function Summary({ result }) {
             mistake={mistake}
             rank={index + 1}
             id={`erro-${index + 1}`}
+            details={detailsByRule.get(mistake.id)}
           />
         ))
       )}

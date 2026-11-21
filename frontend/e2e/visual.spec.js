@@ -147,3 +147,23 @@ test.describe("trilho dos erros", () => {
     });
   });
 });
+
+test.describe("detalhes expandíveis dos erros", () => {
+  test("recolhidos por padrão, expandem ao clicar e não aparecem quando não há detalhes", async ({
+    page,
+  }) => {
+    await open(page, RESULT, "light");
+    const firstCard = page.locator("#erro-1");
+    const details = firstCard.locator("details.mistake-details");
+    await expect(details).toBeVisible();
+    await expect(details).not.toHaveAttribute("open", "");
+    await expect(details.locator("ul")).toBeHidden();
+
+    await details.locator("summary").click();
+    await expect(details).toHaveAttribute("open", "");
+    await expect(details.locator("ul")).toBeVisible();
+
+    // Terceiro erro (Tempo ativo) não tem detalhes na regra.
+    await expect(page.locator("#erro-3 details.mistake-details")).toHaveCount(0);
+  });
+});
