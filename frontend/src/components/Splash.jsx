@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 
-// Abertura ao entrar no site: a marca "Pulso" em tela cheia, o traço se desenha até o ponto
-// e o ponto é "clicado". Decorativa (aria-hidden) e sem bloquear cliques (pointer-events no
-// CSS). Quem pede menos movimento no sistema não vê a abertura.
-export const SPLASH_MS = 2900; // fim do clique + um respiro antes de sumir
-export const SPLASH_FADE_MS = 500; // saída (animação splash-out em index.css)
+// Abertura ao entrar no site ("A luz acende"): sobre o fundo do tema, a luz quente nasce no
+// centro, o traço "Pulso" se desenha até o ponto aceso e a marca LOGCOACH surge abaixo; depois
+// o véu some em fade deixando o cenário aparecer. Decorativa (aria-hidden) e sem bloquear
+// cliques (pointer-events no CSS). Quem pede menos movimento no sistema não vê a abertura.
+export const SPLASH_MS = 2300; // luz + traço + marca + respiro curto antes de sair
+export const SPLASH_FADE_MS = 550; // saída em fade (animação splash-out em index.css)
 
 function prefersReducedMotion() {
   return window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
@@ -34,25 +35,20 @@ export default function Splash() {
       aria-hidden="true"
       data-testid="splash"
     >
-      <svg className="splash-mark" viewBox="0 0 64 64" focusable="false">
-        <defs>
-          <linearGradient id="splash-gradient" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" className="splash-stop-a" />
-            <stop offset="1" className="splash-stop-b" />
-          </linearGradient>
-        </defs>
-        <g className="splash-square">
-          <rect x="2" y="2" width="60" height="60" rx="16" fill="url(#splash-gradient)" />
+      <div className="splash-light" />
+      <div className="splash-content">
+        <svg className="splash-mark" viewBox="0 0 64 64" focusable="false">
           <path
             className="splash-line"
             pathLength="100"
             d="M11 44 H19 L25 30 L32 46 L39 26 L45 34 L52 16"
           />
-          <circle className="splash-ripple splash-ripple-1" cx="52" cy="16" r="4.5" />
-          <circle className="splash-ripple splash-ripple-2" cx="52" cy="16" r="4.5" />
           <circle className="splash-dot" cx="52" cy="16" r="4.5" />
-        </g>
-      </svg>
+        </svg>
+        <span className="splash-word">
+          LOG<span className="brand-accent">COACH</span>
+        </span>
+      </div>
     </div>
   );
 }

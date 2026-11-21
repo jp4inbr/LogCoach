@@ -673,90 +673,87 @@ a {
   z-index: 100;
   display: grid;
   place-items: center;
+  padding: 24px;
+  overflow: hidden;
   background: var(--bg);
   pointer-events: none;
 }
 
 .splash-leaving {
-  animation: splash-out 500ms ease forwards;
+  animation: splash-out 550ms ease forwards;
+}
+
+/* Luz quente que nasce no centro, com o mesmo degradê radial de .lit. */
+.splash-light {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(960px, 170vw);
+  height: min(640px, 110vh);
+  background: radial-gradient(closest-side, var(--glow-1), var(--glow-2) 55%, transparent);
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.35);
+  animation: splash-light-in 800ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.splash-content {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 16px;
 }
 
 .splash-mark {
-  width: min(40vmin, 220px);
+  width: clamp(88px, 24vmin, 136px);
   height: auto;
   overflow: visible;
-}
-
-.splash-stop-a {
-  stop-color: var(--accent);
-}
-
-.splash-stop-b {
-  stop-color: var(--brand-2);
-}
-
-/* No SVG, transform-origin em coordenadas do viewBox (0 a 64). */
-.splash-square,
-.splash-dot,
-.splash-ripple {
-  transform-box: view-box;
-}
-
-.splash-square {
-  transform-origin: 32px 32px;
-  opacity: 0;
-  animation:
-    splash-square-in 450ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards,
-    splash-square-press 260ms ease 2050ms;
 }
 
 /* O traço se desenha do começo até o ponto (pathLength="100" no SVG). */
 .splash-line {
   fill: none;
-  stroke: var(--accent-ink);
-  stroke-width: 5;
+  stroke: var(--accent-fg);
+  stroke-width: 4.5;
   stroke-linecap: round;
   stroke-linejoin: round;
   stroke-dasharray: 100;
   stroke-dashoffset: 100;
-  animation: splash-draw 1200ms cubic-bezier(0.65, 0, 0.35, 1) 450ms forwards;
+  animation: splash-draw 950ms cubic-bezier(0.65, 0, 0.35, 1) 250ms forwards;
 }
 
+/* Ponto aceso no topo do traço; transform-origin em coordenadas do viewBox (0 a 64). */
 .splash-dot {
-  fill: var(--accent-ink);
+  fill: var(--accent-fg);
+  filter: drop-shadow(0 0 6px var(--accent-glow));
+  transform-box: view-box;
   transform-origin: 52px 16px;
   transform: scale(0);
-  animation:
-    splash-dot-in 280ms cubic-bezier(0.3, 1.6, 0.5, 1) 1600ms forwards,
-    splash-dot-press 300ms ease 2050ms;
+  animation: splash-dot-in 260ms cubic-bezier(0.3, 1.5, 0.5, 1) 1150ms forwards;
 }
 
-/* O "clique": duas ondas saindo do ponto. */
-.splash-ripple {
-  fill: none;
-  stroke: var(--accent-ink);
-  stroke-width: 2;
-  transform-origin: 52px 16px;
+/* Palavra da marca na mesma tipografia larga de .brand. */
+.splash-word {
+  font-family: var(--font-sans);
+  font-size: clamp(1.375rem, 6vw, 2.25rem);
+  font-stretch: var(--font-wider);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--text);
   opacity: 0;
-  animation: splash-ripple 650ms ease-out forwards;
+  transform: translateY(10px);
+  animation: splash-word-in 450ms cubic-bezier(0.16, 1, 0.3, 1) 1250ms forwards;
 }
 
-.splash-ripple-1 {
-  animation-delay: 2150ms;
-}
-
-.splash-ripple-2 {
-  animation-delay: 2270ms;
-}
-
-@keyframes splash-square-in {
+@keyframes splash-light-in {
   from {
     opacity: 0;
-    transform: scale(0.85);
+    transform: translate(-50%, -50%) scale(0.35);
   }
   to {
     opacity: 1;
-    transform: scale(1);
+    transform: translate(-50%, -50%) scale(1);
   }
 }
 
@@ -772,38 +769,10 @@ a {
   }
 }
 
-@keyframes splash-dot-press {
-  0% {
-    transform: scale(1);
-  }
-  35% {
-    transform: scale(0.6);
-  }
-  70% {
-    transform: scale(1.25);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-
-@keyframes splash-square-press {
-  40% {
-    transform: scale(0.96);
-  }
+@keyframes splash-word-in {
   to {
-    transform: scale(1);
-  }
-}
-
-@keyframes splash-ripple {
-  from {
-    opacity: 0.9;
-    transform: scale(1);
-  }
-  to {
-    opacity: 0;
-    transform: scale(3.6);
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 

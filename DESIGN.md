@@ -403,6 +403,7 @@ Avisos com fundo de informação, atenção ou erro e corpo em `--muted`; dados 
 ### Motion
 
 Funcional e curto: troca de tema em 0,2 s, deslize da chave em 0,25 s, seta de expansão em 0,15 s, rolagem suave do trilho e pulso só em espera real (etapa em andamento, luta subindo). Tudo desligado com `prefers-reduced-motion`.
+Abertura: a luz quente acende no centro, desenha o traço e revela a marca em ~2,3 s (saída em 0,55 s), uma vez por carregamento, desligada com `prefers-reduced-motion`.
 
 ## Do's and Don'ts
 
