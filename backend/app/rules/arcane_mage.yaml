@@ -73,7 +73,7 @@ barrage:
   pct_below_min_reserve: { warn: 5, error: 12 }
   # Tops soltam ~65% dos Barrages com Salvo no cap (25). Chegar no cap não é erro.
   # 1 Missiles + Prismatic Bolt antes do Barrage é o padrão sugerido pelo Arthur;
-  # nos tops os dois padrões (1 ou 2 Missiles + Bolt) aparecem, então fica para a IA julgar.
+  # nos tops os dois padrões (1 ou 2 Missiles + Bolt) aparecem, então não vira regra.
   clearcasting_max: 3         # com 3 cargas, gastar 2 Missiles antes do Barrage evita perder proc
   # Por que 12: snowball de procs. Todo hit de magia arcana (Missiles, Meteorite, Barrage...)
   # pode dar Clearcasting, e o Barrage derruba 1 Meteorite a cada 5 Salvo (15 → 3, 20 → 4,
@@ -183,8 +183,7 @@ consumables:
     # Harmonist) e DPS 37% maior nos 30 s pós-Surge → alinhar rende ~0,5% do dano da luta.
 
 # Segurar o Surge (03/11): mais de 10 s depois de pronto é atenção; mais de 15 s sem nada que
-# case (poção, lust, Power Infusion, fase do allowed_holds do encontro) é erro. A IA julga se a
-# espera valeu a pena. "Casar" = começar até `coincide_s` antes ou depois do Surge.
+# case (poção, lust, Power Infusion, fase do allowed_holds do encontro) é erro. "Casar" = começar até `coincide_s` antes ou depois do Surge.
 surge_hold: { warn_s: 10, error_s: 15, coincide_s: 5 }
 
 # Tempo ativo: com tops, erro só a partir destes pontos abaixo do pior deles (03/11, Arthur).

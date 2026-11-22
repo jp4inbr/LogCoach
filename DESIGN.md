@@ -1,6 +1,6 @@
 ---
 name: LogCoach
-description: Boletim em português do que cada Mago Arcano deve corrigir primeiro, comparado aos melhores do mesmo item level.
+description: Diagnóstico em português do que cada Mago Arcano deve corrigir primeiro, com a diferença para os melhores do mesmo item level sob a luz.
 colors:
   dark-accent: "#ff8906"
   dark-accent-strong: "#ff9f33"
@@ -54,67 +54,93 @@ colors:
   light-error-bg: "rgb(185 28 28 / 9%)"
   light-error-ink: "#fffffe"
   light-info-bg: "rgb(186 232 232 / 45%)"
+  dark-warn-fg: "#fde047"
+  light-warn-fg: "#8a5000"
+  dark-glow-1: "rgb(255 137 6 / 20%)"
+  dark-glow-2: "rgb(242 95 76 / 11%)"
+  light-glow-1: "rgb(255 216 3 / 36%)"
+  light-glow-2: "rgb(186 232 232 / 55%)"
+  dark-glass: "rgb(24 23 34 / 72%)"
+  dark-glass-2: "rgb(46 47 62 / 58%)"
+  dark-glass-border: "rgb(255 255 254 / 9%)"
+  light-glass: "rgb(227 246 245 / 74%)"
+  light-glass-2: "rgb(186 232 232 / 60%)"
+  light-glass-border: "rgb(39 35 67 / 12%)"
+  dark-veil-frame: "rgb(15 14 23 / 82%)"
+  dark-veil-center: "rgb(15 14 23 / 82%)"
+  dark-veil-edge: "rgb(15 14 23 / 22%)"
+  dark-veil-inner: "rgb(15 14 23 / 62%)"
+  light-veil-frame: "rgb(255 249 238 / 84%)"
+  light-veil-center: "rgb(255 249 238 / 78%)"
+  light-veil-edge: "rgb(255 249 238 / 0%)"
+  light-veil-inner: "rgb(255 249 238 / 68%)"
 typography:
   display:
-    fontFamily: "Inter, Segoe UI, system-ui, -apple-system, Roboto, Helvetica Neue, Arial, sans-serif"
-    fontSize: "3rem"
-    fontWeight: 700
-    lineHeight: 1.2
-    letterSpacing: "-0.01em"
+    fontFamily: '"Archivo Variable", Archivo Fallback, Segoe UI, system-ui, sans-serif'
+    fontSize: "clamp(2.25rem, 1.2rem + 4.4vw, 4rem)"
+    fontWeight: 800
+    fontStretch: "125%"
+    lineHeight: 1.02
+    letterSpacing: "-0.02em"
   headline:
-    fontFamily: "Inter, Segoe UI, system-ui, -apple-system, Roboto, Helvetica Neue, Arial, sans-serif"
-    fontSize: "2.2rem"
-    fontWeight: 700
-    lineHeight: 1.2
-    letterSpacing: "-0.01em"
+    fontFamily: '"Archivo Variable", Archivo Fallback, Segoe UI, system-ui, sans-serif'
+    fontSize: "2.125rem"
+    fontWeight: 800
+    fontStretch: "118%"
+    lineHeight: 1.08
+    letterSpacing: "-0.015em"
   title:
-    fontFamily: "Inter, Segoe UI, system-ui, -apple-system, Roboto, Helvetica Neue, Arial, sans-serif"
-    fontSize: "1.2rem"
-    fontWeight: 700
-    lineHeight: 1.2
+    fontFamily: '"Archivo Variable", Archivo Fallback, Segoe UI, system-ui, sans-serif'
+    fontSize: "1.375rem"
+    fontWeight: 750
+    fontStretch: "118%"
+    lineHeight: 1.15
   subtitle:
-    fontFamily: "Inter, Segoe UI, system-ui, -apple-system, Roboto, Helvetica Neue, Arial, sans-serif"
-    fontSize: "1.05rem"
+    fontFamily: '"Archivo Variable", Archivo Fallback, Segoe UI, system-ui, sans-serif'
+    fontSize: "1.125rem"
     fontWeight: 700
-    lineHeight: 1.2
-  lead:
-    fontFamily: "Inter, Segoe UI, system-ui, -apple-system, Roboto, Helvetica Neue, Arial, sans-serif"
-    fontSize: "1.1rem"
-    fontWeight: 400
-    lineHeight: 1.5
+    lineHeight: 1.3
   body:
-    fontFamily: "Inter, Segoe UI, system-ui, -apple-system, Roboto, Helvetica Neue, Arial, sans-serif"
+    fontFamily: '"Archivo Variable", Archivo Fallback, Segoe UI, system-ui, sans-serif'
     fontSize: "1rem"
     fontWeight: 400
-    lineHeight: 1.5
+    lineHeight: 1.55
   small:
-    fontFamily: "Inter, Segoe UI, system-ui, -apple-system, Roboto, Helvetica Neue, Arial, sans-serif"
-    fontSize: "0.85rem"
+    fontFamily: '"Archivo Variable", Archivo Fallback, Segoe UI, system-ui, sans-serif'
+    fontSize: "0.875rem"
     fontWeight: 400
-    lineHeight: 1.5
+    lineHeight: 1.55
   label:
-    fontFamily: "Inter, Segoe UI, system-ui, -apple-system, Roboto, Helvetica Neue, Arial, sans-serif"
-    fontSize: "0.8rem"
+    fontFamily: '"Archivo Variable", Archivo Fallback, Segoe UI, system-ui, sans-serif'
+    fontSize: "0.8125rem"
     fontWeight: 600
     lineHeight: 1.5
-    letterSpacing: "0.06em"
+    letterSpacing: "0.04em"
+  brand:
+    fontFamily: '"Archivo Variable", Archivo Fallback, Segoe UI, system-ui, sans-serif'
+    fontSize: "1.125rem"
+    fontWeight: 800
+    fontStretch: "125%"
+    lineHeight: 1
+    letterSpacing: "0.02em"
 rounded:
   sm: "8px"
-  md: "12px"
+  md: "16px"
   pill: "999px"
 spacing:
   xs: "4px"
   sm: "8px"
   md: "12px"
   gap: "16px"
-  lg: "20px"
+  lg: "24px"
   xl: "32px"
+  section: "72px"
 components:
   button-primary:
     backgroundColor: "{colors.dark-accent}"
     textColor: "{colors.dark-accent-ink}"
-    rounded: "{rounded.sm}"
-    padding: "0 18px"
+    rounded: "{rounded.pill}"
+    padding: "0 20px"
     height: "44px"
   button-primary-hover:
     backgroundColor: "{colors.dark-accent-strong}"
@@ -122,37 +148,47 @@ components:
   button-default:
     backgroundColor: "{colors.dark-surface-2}"
     textColor: "{colors.dark-text}"
-    rounded: "{rounded.sm}"
-    padding: "0 18px"
+    rounded: "{rounded.pill}"
+    padding: "0 20px"
     height: "44px"
-  button-small:
-    backgroundColor: "{colors.dark-surface-2}"
-    textColor: "{colors.dark-text}"
-    rounded: "{rounded.sm}"
-    padding: "0 14px"
-    height: "36px"
   button-danger:
     backgroundColor: "{colors.dark-error}"
     textColor: "{colors.dark-error-ink}"
-    rounded: "{rounded.sm}"
-    padding: "0 18px"
+    rounded: "{rounded.pill}"
+    padding: "0 20px"
     height: "44px"
   input:
     backgroundColor: "{colors.dark-bg}"
     textColor: "{colors.dark-text}"
-    rounded: "{rounded.sm}"
-    padding: "0 14px"
+    rounded: "{rounded.pill}"
+    padding: "0 18px"
     height: "44px"
-  card:
-    backgroundColor: "{colors.dark-surface}"
+  link-pill:
+    backgroundColor: "{colors.dark-glass}"
+    textColor: "{colors.dark-text}"
+    rounded: "{rounded.pill}"
+    padding: "5px"
+    height: "58px"
+  panel:
+    backgroundColor: "{colors.dark-glass}"
     textColor: "{colors.dark-text}"
     rounded: "{rounded.md}"
     padding: "20px"
   mistake-card:
-    backgroundColor: "{colors.dark-surface}"
+    backgroundColor: "{colors.dark-glass}"
     textColor: "{colors.dark-text}"
     rounded: "{rounded.md}"
-    padding: "18px"
+    padding: "22px 24px"
+  mistake-rail:
+    backgroundColor: "{colors.dark-glass-2}"
+    textColor: "{colors.dark-warn-fg}"
+    rounded: "28px"
+    padding: "6px"
+  theme-switch:
+    backgroundColor: "{colors.dark-glass-2}"
+    textColor: "{colors.dark-bg}"
+    rounded: "{rounded.pill}"
+    height: "30px"
   notice:
     backgroundColor: "{colors.dark-info-bg}"
     textColor: "{colors.dark-text}"
@@ -165,8 +201,8 @@ components:
     padding: "2px 10px"
     typography: "{typography.label}"
   badge-warn:
-    backgroundColor: "{colors.dark-warn-bg}"
-    textColor: "{colors.dark-warn}"
+    backgroundColor: "{colors.dark-warn-badge-bg}"
+    textColor: "{colors.dark-warn-badge-fg}"
     rounded: "{rounded.pill}"
     padding: "2px 10px"
   badge-error:
@@ -180,198 +216,220 @@ components:
 
 ## Overview
 
-**Creative North Star: "O Boletim do Coach"**
+**Creative North Star: "A Sala com uma Lâmpada"**
 
-O LogCoach se lê de cima para baixo, como um boletim comentado. Primeiro vem o tamanho da diferença para os melhores, depois cada erro em ordem de custo, com o motivo e o que fazer. Os dados completos ficam um passo abaixo, para quem quiser aprofundar.
+Cada tela é um quarto escuro (ou, no tema claro, uma sala ao sol) com uma única fonte de luz quente, e ela cai sobre o que importa ali. Na tela inicial, sobre o título e o campo do link. No resultado, sobre a frase da diferença para os tops ("Os tops fizeram 18% mais dano que você"), que acende antes de tudo; logo abaixo vêm os erros em ordem de custo, cada um com o número da posição grande, e um trilho numerado leva de um para o outro. O log do jogador é o objeto sob a luz.
 
-O tom é direto e sóbrio. A tela mostra o número e a correção, sem ilustração nem efeito, e a cor só aparece em ação ou em diagnóstico. A confiança vem de deixar claro o que é erro, o que é sorte e o que é hipótese.
+Atrás de tudo há um lugar: Silvermoon de dia no tema claro e Suramar à noite no escuro, pintadas com a mesma composição, como se fosse a mesma praça em duas horas do dia. A cidade aparece no início e no login e recua para um desfoque nas telas de uso, onde o assunto são os dados.
 
-A linha do tempo mostra quando cada coisa aconteceu, com o jogador e os tops no mesmo eixo. Ela fica em uma aba própria do resultado, a um clique do Resumo, para que os erros priorizados continuem em primeiro lugar.
+O resto fica quieto: um véu da cor do fundo sobre a cidade, painéis translúcidos por onde a luz passa, texto neutro, e a cor só aparece em ação ou em diagnóstico. A marca é tipográfica, "LOGCOACH" em caixa alta numa sans larga e pesada, e o cabeçalho tem três pontos: marca, contexto apagado no centro e a chave de tema em pílula. A confiança continua vindo de deixar claro o que é erro, o que é sorte e o que é hipótese.
 
-Referências rejeitadas: a planilha crua de log, o painel de IA genérico, o visual gamer agressivo e, do imaginário de fantasia, as fontes medievais e o pergaminho.
+O vocabulário veio da inspiração do usuário (o site "Five Years" do estúdio Porto Rocha): a luz única, a marca larga, o cabeçalho de três pontos, o trilho numerado translúcido e o vazio generoso. Ficou de fora a fotografia; o cenário pintado veio depois, por escolha do usuário, para dar lugar e clima ao produto sem competir com os dados.
+
+Referências rejeitadas: o painel de estatísticas em cartões iguais, a planilha crua de log, o painel de IA genérico (faíscas, degradês roxos), o visual gamer agressivo (neon, ângulos cortados, fontes de esport) e, do imaginário de fantasia, as fontes medievais e o pergaminho.
 
 **Key Characteristics:**
 
-- Uma coluna de leitura, com largura máxima de 960 px.
-- Dois temas, escuro e claro, com os mesmos papéis de cor.
-- Superfícies planas em camadas tonais, separadas por borda fina.
-- Um único destaque de ação por tema.
-- Verde, âmbar e vermelho reservados para situação.
+- Uma luz quente por tela (`.lit`), presa ao assunto dela.
+- Cenário pintado fixo atrás de todas as telas: Silvermoon (claro) e Suramar (escuro), sob um véu da cor do fundo.
+- Painéis e pílulas translúcidos com desfoque leve, e fundo sólido quando o navegador não tem `backdrop-filter`.
+- Uma família, a Archivo variável: larga para a marca, os títulos e os números; normal para a leitura.
+- Coluna de leitura de 960 px dentro de uma moldura de 1240 px (cabeçalho e rodapé).
+- Controles em pílula, contêineres com cantos de 16 px.
+- Verde, âmbar e vermelho reservados para situação; jogador laranja, tops ciano.
 
 ## Colors
 
-Fundo neutro e silencioso, um destaque de ação e três cores de situação que nunca mudam de sentido. Os valores dos dois temas estão no topo deste arquivo. A origem, os desvios por contraste e a lista completa, com os tokens decorativos, estão em `docs/15-padrao-de-cores.md`.
+As duas paletas do Happy Hues continuam (decisão do usuário): a 13 no escuro e a 14 no claro, com os valores-base travados pelo teste. A luz é feita das cores da própria paleta: laranja `#ff8906` e coral `#f25f4c` no escuro, amarelo `#ffd803` e água-marinha `#bae8e8` no claro, como luz do dia. Os valores dos dois temas estão no topo deste arquivo; a origem, os desvios por contraste e o contraste medido de cada par estão em `docs/15-padrao-de-cores.md`.
 
 ### Primary
 
-- **Laranja Âmbar, no escuro, e Amarelo Sinal, no claro** (`--accent`): preenchimento do botão principal e do avatar do coach.
-- **Destaque como traço** (`--accent-fg`): texto de destaque, borda de seleção e linha do gráfico. No escuro repete o Laranja Âmbar; no claro vira a Tinta Índigo, porque o amarelo não tem contraste sobre fundo claro.
+- **Laranja Âmbar, no escuro, e Amarelo Sinal, no claro** (`--accent`): preenchimento do botão principal, do avatar do coach e da seleção de texto.
+- **Destaque como traço** (`--accent-fg`): texto de destaque, borda de seleção, número dos passos e linha do gráfico. No escuro repete o laranja; no claro vira a Tinta Índigo.
 
 ### Secondary
 
-- **Ciano dos Tops** (`--top`): tudo o que representa os melhores na comparação.
-- **Laranja do Jogador** (`--player`): a marca do jogador na linha do tempo, laranja nos dois temas para contrastar com o ciano dos tops.
+- **Ciano dos Tops** (`--top`) e **Laranja do Jogador** (`--player`): a comparação na linha do tempo.
 
 ### Tertiary
 
-- **Rosa Elétrico, no escuro, e Tinta Índigo sublinhada, no claro** (`--link`): links no texto e botões com cara de link.
-- **Segunda cor da marca** (`--brand-2`): só no degradê do selo da marca.
+- **Rosa Elétrico, no escuro, e Tinta Índigo sublinhada, no claro** (`--link`): links no texto.
+- **Segunda cor da marca** (`--brand-2`): reserva da paleta; a marca agora é só tipográfica.
 
 ### Neutral
 
-- **Noite Azulada, no escuro, e Branco Quente, no claro** (`--bg`): fundo da página e dos campos.
-- **Superfície de cartão** (`--surface`): cartões e painéis. Grafite Azulado no escuro, Menta Clara no claro.
-- **Superfície elevada** (`--surface-2`): botões comuns, abas, blocos "O que fazer" e seleção. Ardósia no escuro, Água-Marinha no claro.
-- **Borda** (`--border`) e **borda de controle** (`--border-control`): a primeira é decorativa, a segunda delimita campos e tem contraste de 3:1.
-- **Texto** (`--text`) e **texto de apoio** (`--muted`): títulos e leitura principal; rótulos, dicas e informação secundária.
+- **Noite Azulada / Branco Quente** (`--bg`): fundo da página e dos campos, e o que aparece enquanto a cidade carrega. O `body` é sempre só este token.
+- **Véu** (`--veil-frame`, `--veil-center`, `--veil-edge`, `--veil-inner`): a cor do fundo por cima da cidade, no escuro a Noite Azulada e no claro um branco quente (`rgb(255 249 238)`), que mantém o sol de Silvermoon em vez de virar neblina. Forte atrás do cabeçalho, do rodapé e do assunto da tela; transparente ou quase nas bordas; `--veil-inner` nas telas de uso.
+- **Luz** (`--glow-1` no centro, `--glow-2` na borda): degradê radial atrás do assunto da tela. A opacidade é a mais alta que mantém o texto AA por cima (o link rosa no centro da luz mede 4,77:1).
+- **Vidro** (`--glass`, `--glass-2`, `--glass-border`): painéis (cartões, erros, tabelas, lutas) e pílulas (navegação, chave de tema, trilho). Sem `backdrop-filter`, o painel cai para `--surface`.
+- **Superfície** (`--surface`, `--surface-2`): reserva sólida do vidro, botões comuns, bloco "O que fazer" e realces.
+- **Borda** (`--border`, decorativa) e **borda de controle** (`--border-control`, 3:1, campos e o trilho da chave de tema).
+- **Texto** (`--text`) e **texto de apoio** (`--muted`).
 
 ### Situação
 
-- **Ok** (`--ok`), **Atenção** (`--warn`) e **Erro** (`--error`), cada uma com o fundo translúcido correspondente. O tom muda por tema para passar no contraste, mas o sentido não muda.
-- **Luck** (`--luck`): série do azar (RNG) na decomposição da diferença. Azar não é situação e nunca é cobrado como erro, por isso não usa `--warn`. Azul nos dois temas, com o tom ajustado ao contraste de cada um, para ficar distinto de `--error` e de `--muted` também com daltonismo. Séries vizinhas de um gráfico precisam se distinguir entre si, não só do fundo.
+- **Ok** (`--ok`), **Atenção** (`--warn` para preencher, `--warn-fg` para texto, `--warn-badge-*` para o selo) e **Erro** (`--error`), cada uma com o fundo translúcido correspondente.
+- **Azar** (`--luck`): série do RNG na decomposição; azul nos dois temas, nunca situação.
 
 **Regra da Situação Fixa.** Verde é ok, âmbar é atenção e vermelho é erro, em qualquer tema e em qualquer tela. Essas cores não servem de decoração.
 
-**Regra da Situação Inconfundível.** Ok, atenção e erro precisam se distinguir entre si e das outras cores do sistema, em cada tema, com distância medida pelo teste de cores. Com daltonismo, quem garante a leitura é o símbolo e a palavra do selo. As exceções aceitas estão no item 15.4 de `docs/15-padrao-de-cores.md`.
+**Regra da Situação Inconfundível.** Ok, atenção e erro se distinguem entre si e das outras cores do sistema, com distância medida pelo teste. Com daltonismo, quem garante a leitura é o símbolo e a palavra do selo.
 
 **Regra do Destaque que Preenche.** `--accent` só preenche. Quando o destaque vira texto, borda ou traço, usa-se `--accent-fg`.
 
-**Regra do Você e dos Tops.** O jogador é sempre laranja e os melhores são sempre ciano, para que a comparação se leia sem legenda depois da primeira vez.
+**Regra do Você e dos Tops.** O jogador é sempre laranja e os melhores são sempre ciano.
+
+**Regra da Lâmpada Única.** Uma `.lit` por tela, no assunto dela. Duas luzes viram decoração; luz atrás de texto nunca passa de `--glow-1`.
 
 ## Typography
 
-**Display Font:** Inter (com Segoe UI, system-ui e demais fontes do sistema)
-**Body Font:** a mesma família
-**Label/Mono Font:** não há fonte separada
+**Display Font:** Archivo variável (`"Archivo Variable"`), auto-hospedada pelo npm (`@fontsource-variable/archivo`, OFL), só o subconjunto latin: um arquivo de ~90 kB com os eixos de peso (100–900) e largura (62–125%).
+**Body Font:** a mesma família, na largura normal.
+**Label/Mono Font:** não há; números usam `tabular-nums`.
 
-**Character:** uma família só, neutra e legível, em que a hierarquia vem do peso e do tamanho. Nenhuma fonte web é carregada, então Inter só aparece onde estiver instalada; nos demais casos vale a fonte do sistema.
+**Character:** um grotesco com eixo de largura. Esticado a 118–125% e em peso 800, vira a voz da marca e dos títulos, larga e pesada como a da inspiração; na largura normal, é uma fonte de leitura sóbria. A reserva (`Archivo Fallback`) é a Arial com métricas ajustadas para a troca não pular a página.
 
 ### Hierarchy
 
-- **Display** (700, de 1,9rem a 3rem com `clamp`, altura 1,2, no máximo 18ch): só o título da tela inicial.
-- **Headline** (700, de 1,6rem a 2,2rem com `clamp`, altura 1,2): título principal de cada tela.
-- **Title** (700, 1,2rem, altura 1,2): seções, como "Como funciona" e "Erros do maior para o menor impacto".
-- **Subtitle** (700, 1,05rem, altura 1,2): título de cada erro e de blocos internos.
-- **Lead** (400, 1,1rem, altura 1,5, no máximo 60ch): frase de abertura em `--muted`.
-- **Body** (400, 1rem, altura 1,5): explicações e texto corrido. Tabelas usam 0,92rem.
-- **Small** (400, 0,85rem): metadados, motivos, dicas e referência das regras.
-- **Label** (600, 0,8rem, maiúsculas): cabeçalho de tabela, com espaçamento de 0,04em, e sobretítulo de tela, com 0,06em. Selos usam o mesmo tamanho e peso, sem maiúsculas.
+- **Brand** (800, 1,125rem, largura 125%, caixa alta, +0,02em): só "LOGCOACH" no cabeçalho.
+- **Display** (800, de 2,25rem a 4rem com `clamp`, largura 125%, altura 1,02, até 15ch): só o título da tela inicial.
+- **Headline** (800, 2,125rem, largura 118%; 1,75rem no celular): título de cada tela e a frase da diferença para os tops.
+- **Title** (750, 1,375rem, largura 118%): seções e os números das estatísticas.
+- **Subtitle** (700, 1,125rem): título de cada erro, passos, frase de apoio.
+- **Body** (400, 1rem, altura 1,55, até 68ch): explicações e texto corrido.
+- **Small** (400, 0,875rem): metadados, motivos, dicas, tabelas.
+- **Label** (600, 0,8125rem): cabeçalho de tabela (maiúsculas, +0,04em) e selos.
+- **Número de posição** (800, 2,75rem, largura 125%; 2rem no celular): o número de cada erro, na cor da situação.
+
+Títulos usam `text-wrap: balance`, parágrafos `text-wrap: pretty`. Tamanhos vivem em tokens (`--size-*`) no `:root`.
 
 **Regra do Número em Negrito.** O custo e a diferença aparecem em peso forte, dentro de uma frase em português. O número nunca fica solto sem dizer o que significa.
 
 ## Layout
 
-Coluna única centralizada de até 960 px, com margem lateral de 16 px e 48 px de respiro no fim do conteúdo. Blocos vizinhos usam 16 px a 20 px entre si, e a tela inicial separa seções com 32 px. Formulários de conta usam um cartão de até 440 px, e a tela de andamento, até 560 px.
+Cabeçalho e rodapé numa moldura de até 1240 px; o conteúdo numa coluna de até 960 px, com 16 px de margem lateral. O cabeçalho é uma grade de três pontos: marca à esquerda, contexto ("Coach de logs para Mago Arcano") centralizado em `--muted`, navegação e chave de tema à direita. Até 860 px o contexto desce para baixo da marca; até 560 px fica à direita da marca e a navegação ocupa a linha de baixo, podendo quebrar.
 
-Grupos repetidos, como estatísticas, passos e planos, usam grade automática que se ajusta sozinha à largura, sem pontos de quebra próprios. Tabelas largas rolam dentro do próprio contêiner, para a página não rolar na horizontal.
+**Início.** Primeira dobra centralizada sob a luz: título display, frase de apoio e o campo do link numa pílula larga (até 720 px) com o botão Analisar dentro. "Como funciona" fica abaixo da dobra, como uma linha de três passos com número na fonte larga e um fio fino em cima; o que já é suportado é uma linha discreta no fim.
 
-No resultado, a ordem é: cabeçalho da luta, estatísticas, avisos, com quem foi comparado, abas, decomposição da diferença, erros em ordem de custo e hipóteses à parte.
+**Resultado.** Título do chefe, linha de dados (jogador · spec · item level, e dificuldade · Kill em tempo, verde quando é kill), estatísticas numa linha compacta separada por fios, avisos, com quem foi comparado, abas, a diferença sob a luz, os erros por custo e as hipóteses à parte. O trilho dos erros fica fixo à esquerda, fora da coluna, a partir de 1100 px; abaixo disso é uma faixa no topo da lista.
 
-Abaixo de 560 px, a navegação ocupa a linha inteira, o campo do link empilha com o botão e a linha do tempo perde a coluna de rótulos. O piso de largura é 360 px.
+**Demais telas.** Escolher luta: título do relatório com o código embaixo, lista de lutas e de personagens em painéis sob a luz. Conta: cartão de 440 px centralizado sob a luz. Perfil e planos: painéis.
 
-**Regra do Boletim.** Diagnóstico primeiro, erros por custo depois, dados completos por último. Nenhuma informação nova entra acima da decomposição da diferença sem mudar o que a pessoa precisa corrigir.
+Tabelas largas rolam dentro do próprio contêiner. Nenhuma tela rola de lado em 360 px (testado no e2e, nas sete telas, nos dois temas).
+
+**Regra do Boletim.** Diagnóstico primeiro, erros por custo depois, dados completos por último. Nada novo entra acima da decomposição da diferença.
+
+## Cenário
+
+`components/Backdrop.jsx`, uma vez só no `App`, fixo na viewport, `aria-hidden` e sem eventos de ponteiro.
+
+- **As cidades.** Silvermoon de dia (claro) e Suramar à noite (escuro), as duas na mesma composição (poste à esquerda, elfa no canto, faixas atravessando, árvore à direita, arco ao fundo). Arquivos em `public/cenario/`: WebP de 1440 e 2400 px de largura e um corte 9:16 para celular em pé (centrado na cúpula em Silvermoon e na torre com o raio em Suramar), de 69 a 232 kB.
+- **Dois modos.** `pleno` no início e no login: a cidade nítida, com véu forte atrás do cabeçalho, do rodapé e do centro (elipse), e transparente nas bordas. `fundo` nas telas de uso (escolher luta, resultado, perfil, planos): a cidade desfocada (`blur(14px)`, escala 1,08 para esconder a borda do desfoque) sob `--veil-inner`. A troca entre os modos é uma transição de 0,4 s.
+- **Rolagem do início.** O véu de uso sobe com a rolagem até metade da tela (`animation-timeline: scroll(root)`): a cidade recua quando "Como funciona" chega. Sem suporte, o véu fica em 60%.
+- **Troca de tema.** A cidade nova acende por cima da antiga em 0,5 s (`@starting-style` e `display` com `allow-discrete`); nenhum fade com `prefers-reduced-motion`.
+- **Carga.** As duas imagens nascem com `loading="lazy"`; a do tema inativo está em `display: none` e não baixa. Depois que a página carrega e o navegador fica ocioso, as duas viram `eager` e a outra vem em segundo plano.
+- **Luz sobre o cenário.** No início e no login, a `.lit` usa só `--glow-1` (a borda água-marinha do claro embaçava a cidade quente).
+- **Crédito.** O rodapé diz de onde vêm os cenários (World of Warcraft © Blizzard Entertainment) e que o projeto é acadêmico, sem fins comerciais. Se o LogCoach virar produto pago, as imagens saem.
+
+**Regra do Texto sobre a Cidade.** Nenhum texto fica direto sobre a cidade sem véu. O contraste é medido nos pixels de verdade (`e2e/contrast.js`: a tela é desenhada sem o texto e cada texto é comparado com o que fica atrás dele), nas cinco telas, nos dois temas, no desktop e no celular, e no início em três pontos da rolagem. Mudou o véu ou a imagem, roda `e2e/backdrop.spec.js`.
 
 ## Elevation & Depth
 
-O sistema é plano. A profundidade vem de camadas tonais, do fundo para `--surface` e depois para `--surface-2`, com borda fina de 1 px. Atrás de tudo há um brilho radial suave no canto superior direito da página.
+A profundidade vem da luz e do vidro, não de sombra. A luz é uma camada atrás de todo o conteúdo da tela (o `.app` isola a camada); os painéis deixam a luz passar com `backdrop-filter: blur(14px)` e um contorno fino em `--glass-border`. Painel sob o mouse ou o foco sobe de camada, para a dica de um termo não ficar por baixo do painel seguinte.
 
 ### Shadow Vocabulary
 
-- **Dica flutuante** (`box-shadow: 0 8px 24px var(--shadow)`): a única sombra real, usada na explicação de termos.
+- **Dica flutuante** (`box-shadow: 0 8px 24px var(--shadow)`): a única sombra real, na explicação de termos.
 - **Anel de seleção** (`box-shadow: inset 0 0 0 1px var(--accent-fg)`): reforça a borda da luta escolhida.
+- **Anel do trilho** (`box-shadow: inset 0 0 0 2px currentcolor`): marca o erro que está sendo lido, na cor da situação.
 
-**Regra do Plano por Padrão.** Cartões não ganham sombra. Só o que flutua sobre o conteúdo projeta sombra.
+**Regra do Vidro com Reserva.** Fundo translúcido só dentro de `@supports (backdrop-filter: ...)`; fora dele, o painel é sólido.
 
 ## Shapes
 
-Cantos suaves e consistentes. Contêineres usam a curva maior e controles usam a menor. Status, contadores e barras são totalmente arredondados. Borda tracejada indica estado provisório, como luta ainda subindo, upload pausado ou recurso que ainda vai chegar.
-
-**Regra das Duas Curvas.** 12 px para o que contém e 8 px para o que se aciona. Valores novos precisam de motivo.
+**Regra da Pílula e do Painel.** O que se aciona é pílula (botões, campos, navegação, chave de tema, selos, trilho); o que contém tem cantos de 16 px (painéis, cartões de erro, avisos, tabelas). Borda tracejada continua indicando estado provisório: luta subindo, upload pausado, recurso que ainda vai chegar.
 
 ## Components
 
 ### Buttons
 
-Sólidos e sem efeito, com alvo de toque confortável.
+- **Shape:** pílula, altura mínima de 44 px (36 px na versão pequena, só dentro de painéis e avisos).
+- **Primary:** `--accent` com texto `--accent-ink`, peso 600. Só a ação principal da tela.
+- **Default / Ghost:** `--surface-2` ou transparente, borda fina; ao passar o mouse a borda assume `--accent-fg`.
+- **Danger:** `--error` preenchido; vazado antes de confirmar a exclusão.
+- **Focus:** contorno de 2 px em `--focus`, afastado 2 px, em tudo o que é interativo.
+- **Disabled:** opacidade 0,5 (0,6 com `aria-disabled`, que continua focável).
 
-- **Shape:** curva de controle (8 px), altura mínima de 44 px, ou 36 px na versão pequena.
-- **Primary:** preenchido com `--accent` e texto em `--accent-ink`, peso 600. Reservado à ação principal da tela.
-- **Default:** `--surface-2` com borda fina. Ao passar o mouse, a borda assume `--accent-fg`.
-- **Ghost:** a versão transparente do padrão, para ações secundárias.
-- **Danger:** preenchido com `--error`; a versão vazada é usada antes de confirmar uma exclusão.
-- **Focus:** contorno de 2 px em `--focus`, afastado 2 px, em todos os elementos interativos.
-- **Disabled:** opacidade 0,5. Com `aria-disabled` continua focável e usa opacidade 0,6.
+### Theme Switch
+
+Chave em pílula de 52 × 30 px dentro de um botão de 56 × 44 px: trilho translúcido com borda de controle e uma bolinha em `--text` com o ícone do tema que o clique ativa. No escuro a bolinha fica à esquerda, no claro à direita, com 0,25 s de deslize (nenhum com `prefers-reduced-motion`). O contrato é de botão: nome "Ativar tema claro" / "Ativar tema escuro".
+
+### Link Pill
+
+O campo do link da tela inicial: pílula com o campo transparente e o botão Analisar dentro. O anel de foco vale para a pílula inteira; link inválido pinta a borda de `--error` e a mensagem aparece logo abaixo. No celular, campo e botão viram duas pílulas empilhadas.
+
+### Icons
+
+`components/Icon.jsx`: um só conjunto desenhado em SVG, grade de 24, traço de 2, pontas redondas, cor do texto, `aria-hidden` (com `label` vira `role="img"`). Nenhum glifo Unicode faz papel de ícone.
 
 ### Chips
 
-- **Style:** selos totalmente arredondados, 0,8rem e peso 600, com fundo claro e texto na cor da situação. O selo de Atenção usa tokens próprios (`--warn-badge-bg` e `--warn-badge-fg`): no tema claro, fundo amarelo clarinho e texto laranja, porque o amarelo da barra não tem contraste como texto.
-- **State:** erro e atenção sempre trazem símbolo e palavra ("✕ Erro", "! Atenção"). "Hipótese" usa o tom de destaque. Kill é verde e wipe é neutro. "Subindo" tem um ponto pulsante, e "Pausado" tem duas barras estáticas.
+Selos em pílula, 0,8125rem, peso 600. Erro e atenção sempre com símbolo desenhado e palavra ("Erro", "Atenção"); "Hipótese" no tom de destaque; kill verde, wipe neutro; "Subindo…" com ponto pulsante, "Upload pausado" com duas barras.
 
-### Cards / Containers
+### Stats Line
 
-- **Corner Style:** curva de contêiner (12 px).
-- **Background:** `--surface`.
-- **Shadow Strategy:** nenhuma, conforme Elevation & Depth.
-- **Border:** 1 px em `--border`.
-- **Internal Padding:** 20 px no cartão padrão; de 14 a 18 px nos blocos do resultado.
-
-### Inputs / Fields
-
-- **Style:** fundo `--bg`, borda `--border-control` de 1 px, curva de controle e altura de 44 px. O rótulo fica acima, em peso 600.
-- **Focus:** contorno padrão em `--focus`.
-- **Error / Disabled:** borda em `--error` e mensagem logo abaixo do campo, em `--error`, dizendo o que fazer. Desabilitado usa opacidade 0,5.
-
-### Navigation
-
-Marca à esquerda e links à direita, em `--muted`. O item ativo e o item sob o mouse ganham fundo `--surface-2` e texto `--text`. As abas do resultado são sublinhadas em 2 px com `--accent-fg` quando ativas e rolam na horizontal se faltar espaço. O botão de tema tem alvo de 40 px.
-
-### Notice
-
-Aviso em largura cheia, com título em destaque e corpo em `--muted`. Informativo usa o fundo de informação; atenção e erro usam o fundo e a borda da situação. Dados de exemplo sempre aparecem com aviso.
-
-### Mistake Card
-
-O componente central do boletim. Tem posição na lista, título, selo de severidade, custo em peso 600, explicação, bloco "O que fazer" em `--surface-2` e a tabela Você × Melhores. Uma barra de 4 px no lado esquerdo indica a severidade, em `--warn` ou `--error`. Hipóteses não têm posição na lista e ficam em seção separada.
+As quatro estatísticas do resultado numa linha só, entre dois fios: rótulo pequeno em `--muted` em cima, número na fonte larga embaixo, fios verticais entre elas. No celular, 2 × 2.
 
 ### Gap Breakdown
 
-Frase com a diferença total, barra de 12 px totalmente arredondada, dividida em erros (`--error`), azar (`--luck`) e não explicado (`--muted`), com 2 px de respiro entre os segmentos, e lista com os valores. A barra soma só as partes positivas; valores a favor do jogador aparecem apenas no texto.
+Sem painel, sob a luz da tela: a frase da diferença em headline larga, com o número em `--error` (ou `--ok` a favor), "De onde vem essa diferença" logo abaixo, a barra de 14 px (erros, azar, não explicado, com 2 px de respiro) e a lista das três partes lado a lado.
 
-### Timeline
+### Mistake Card
 
-Uma faixa de 44 px por trilha sobre `--bg`, com uma linha central. As marcas do jogador ficam acima da linha, em `--player`, e as dos tops abaixo, em `--top`. A intermissão aparece hachurada, e as fases, por divisórias finas. Abaixo de 560 px, os rótulos passam para cima da trilha.
-### Fight List Item
+Painel translúcido com o número da posição grande à esquerda, na fonte larga e na cor da situação (`--error` ou `--warn-fg`), título, selo, custo em peso 650, explicação até 68ch, bloco "O que fazer" em `--surface-2` e a tabela Você × Melhores. Sem faixa colorida lateral. Cada cartão tem `id="erro-N"` e recebe o foco quando o trilho leva até ele. Hipóteses não têm número e ficam em seção à parte.
 
-Linha inteira clicável, com o nome da luta à esquerda e o selo à direita. Selecionada, ganha borda e anel de destaque sobre `--surface-2`. Indisponível, fica em cinza, com opacidade reduzida e o motivo escrito. Subindo ou pausada, usa borda tracejada.
+### Mistake Rail
 
-### Term
+`nav` "Erros por custo": um link de 44 px por erro, na ordem de custo, com o número na cor da situação e o nome acessível "N. título". A partir de 1100 px é uma pílula vertical translúcida fixa à esquerda; abaixo, uma faixa que rola com a lista. O erro no meio da tela fica marcado com `aria-current` e um anel (IntersectionObserver; sem suporte, nenhum). O clique rola até o cartão (suave só sem `prefers-reduced-motion`) e não troca o hash da rota. Só na aba Resumo e com dois erros ou mais.
 
-Palavra com sublinhado pontilhado que revela uma dica curta ao passar o mouse ou focar. Largura máxima de 280 px.
+### Navigation
+
+Links do cabeçalho em pílula de 44 px, em `--muted`; o item atual e o item sob o mouse ganham `--glass-2` e `--text`. Abas do resultado sublinhadas em 2 px com `--accent-fg`.
+
+### Notice, Fight List Item, Term, Timeline
+
+Avisos com fundo de informação, atenção ou erro e corpo em `--muted`; dados de exemplo sempre com aviso. Luta como painel clicável inteiro com selo à direita; escolhida com borda e anel de destaque, indisponível em cinza com o motivo escrito, subindo e pausada com borda tracejada. Termo com sublinhado pontilhado e dica de até 280 px. Linha do tempo com o jogador acima e os tops abaixo no mesmo eixo.
 
 ### Motion
 
-Movimento funcional e discreto: troca de tema em 0,2 s, seta de expansão em 0,15 s e pulso só em estado de espera real, como etapa em andamento e luta subindo. Tudo isso é desligado com `prefers-reduced-motion`.
+Funcional e curto: troca de tema em 0,2 s, deslize da chave em 0,25 s, seta de expansão em 0,15 s, rolagem suave do trilho e pulso só em espera real (etapa em andamento, luta subindo). Tudo desligado com `prefers-reduced-motion`.
+Abertura: a luz quente acende no centro, desenha o traço e revela a marca em ~2,3 s (saída em 0,55 s), uma vez por carregamento, desligada com `prefers-reduced-motion`.
 
 ## Do's and Don'ts
 
 ### Do:
 
-- **Do** usar sempre `var(--token)` para cor; o teste `src/theme-contrast.test.js` falha com cor fixa.
-- **Do** criar todo token novo nos dois temas e nos dois blocos do tema claro.
-- **Do** usar `--accent-fg` quando o destaque virar texto, borda ou traço.
-- **Do** manter contraste WCAG AA: 4,5:1 para texto e 3:1 para elementos gráficos.
+- **Do** usar sempre `var(--token)` para cor, inclusive dentro de `radial-gradient(...)`; o teste `src/theme-contrast.test.js` falha com cor fixa.
+- **Do** criar todo token novo nos três blocos (`:root`, a media query clara e `[data-theme="light"]`), com os dois blocos claros idênticos.
+- **Do** pôr uma `.lit` por tela, no assunto dela.
+- **Do** dar reserva sólida a todo vidro.
+- **Do** usar `--accent-fg` quando o destaque virar texto, borda ou traço, e `--warn-fg` quando a atenção virar texto.
+- **Do** manter contraste WCAG AA nos dois temas, também sobre a luz e o vidro.
 - **Do** acompanhar toda cor de situação com texto, ícone ou selo.
-- **Do** manter alvos de toque de pelo menos 44 px em ações principais.
+- **Do** manter alvos de 44 px nas ações principais e no trilho.
 - **Do** escrever o número dentro de uma frase em português que diga o que ele significa.
-- **Do** conferir os dois temas e a largura de 360 px depois de qualquer mudança visual.
+- **Do** conferir os dois temas e 360 px depois de qualquer mudança visual.
+- **Do** manter as duas cidades na mesma composição, se uma for trocada.
 
 ### Don't:
 
-- **Don't** usar fontes medievais ou textura de pergaminho.
-- **Don't** montar tela como planilha crua de log, com tabelas e gráficos sem hierarquia ou sem dizer o que corrigir.
-- **Don't** usar a estética de painel de IA genérico: brilhos, degradês roxos, ícones de faísca por toda parte e tom de mágica.
-- **Don't** usar o visual gamer agressivo: neon, ângulos cortados, fontes de esport e RGB.
-- **Don't** usar verde, âmbar ou vermelho como decoração.
-- **Don't** usar `--accent` como cor de texto ou de borda.
+- **Don't** usar sobretítulo (rótulo pequeno acima do título); a informação vai para a linha de dados ou para o cabeçalho.
+- **Don't** usar faixa colorida lateral (mais de 1 px) em cartões, avisos ou itens de lista.
+- **Don't** montar estatísticas como cartões iguais lado a lado.
+- **Don't** usar glifo Unicode ou emoji como ícone.
+- **Don't** espalhar luz, brilho ou degradê como decoração; nada de degradê roxo, faíscas ou neon na interface (o roxo de Suramar é do cenário, não dos componentes).
+- **Don't** pôr texto sobre a cidade sem véu, nem afinar o véu sem rodar a medida de contraste do cenário.
+- **Don't** usar fontes medievais, pergaminho ou o visual gamer agressivo.
+- **Don't** usar verde, âmbar ou vermelho como decoração, nem `--accent` como texto ou borda.
 - **Don't** colocar sombra em cartões.
-- **Don't** apresentar azar como erro nem hipótese como fato; cada um tem seu selo e seu lugar.
+- **Don't** apresentar azar como erro nem hipótese como fato.

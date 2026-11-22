@@ -88,7 +88,7 @@ describe("Result", () => {
 
     it("o link 'Escolher outra luta' volta para o relatório da análise", async () => {
       await aberta();
-      expect(screen.getByRole("link", { name: "← Escolher outra luta" })).toHaveAttribute(
+      expect(screen.getByRole("link", { name: "Escolher outra luta" })).toHaveAttribute(
         "href",
         "#/relatorio/XhrmBaYkGCAQjH2D",
       );
@@ -154,45 +154,7 @@ describe("Result", () => {
     });
   });
 
-  describe("coach e erros (aba Resumo)", () => {
-    it("motor sem IA: avisa que o coach vem na próxima versão", async () => {
-      await aberta();
-      expect(screen.getByText("Explicação do coach em breve")).toBeInTheDocument();
-      expect(screen.queryByText("Resumo do coach")).not.toBeInTheDocument();
-    });
-
-    it("com o coach disponível mostra o resumo dele", async () => {
-      await aberta(
-        variacao((a) => {
-          a.result.coach = {
-            available: true,
-            headline:
-              "Priorize chegar na {{spell:451038|Alma Arcana}} com {{spell:1242974|Saraivada}} alta.",
-          };
-        }),
-      );
-
-      expect(screen.getByText("Resumo do coach")).toBeInTheDocument();
-      const resumo = screen.getByText("Resumo do coach").parentElement;
-      expect(resumo).toHaveTextContent("Priorize chegar na Alma Arcana com Saraivada alta.");
-      expect(resumo).not.toHaveTextContent("{{");
-      expect(resumo.querySelectorAll(".spell-ref img")).toHaveLength(2);
-      expect(screen.queryByText("Explicação do coach em breve")).not.toBeInTheDocument();
-    });
-
-    it("IA fora do ar em análise de exemplo: avisa que só valem as regras", async () => {
-      await aberta(
-        variacao((a) => {
-          a.result.source = "exemplo";
-        }),
-      );
-
-      expect(screen.getByText("Explicação do coach indisponível agora")).toBeInTheDocument();
-      expect(
-        screen.getByText(/Os erros abaixo vêm só das regras, que são calculadas direto do log/),
-      ).toBeInTheDocument();
-    });
-
+  describe("erros (aba Resumo)", () => {
     it("lista os erros das regras do maior para o menor impacto, numerados", async () => {
       await aberta();
 
@@ -211,16 +173,75 @@ describe("Result", () => {
       expect(within(cards[1]).getByText("2")).toBeInTheDocument();
     });
 
+    it("trilho 'Erros por custo': um link por erro, na ordem e com a âncora de cada cartão", async () => {
+      await aberta();
+
+      const trilho = screen.getByRole("navigation", { name: "Erros por custo" });
+      const links = within(trilho).getAllByRole("link");
+      const cartoes = screen.getAllByRole("article").filter((card) => card.id.startsWith("erro-"));
+      expect(links).toHaveLength(cartoes.length);
+      expect(links.map((link) => link.getAttribute("href"))).toEqual(
+        cartoes.map((card) => `#${card.id}`),
+      );
+      cartoes.forEach((card, index) => {
+        const titulo = within(card).getByRole("heading", { level: 3 }).textContent;
+        expect(links[index]).toHaveAccessibleName(`${index + 1}. ${titulo}`);
+      });
+      // A hipótese não tem posição na lista, então não entra no trilho.
+      expect(screen.getAllByRole("article")).toHaveLength(cartoes.length + 1);
+    });
+
+    it("o trilho só aparece no Resumo e com dois erros ou mais", async () => {
+      const user = userEvent.setup();
+      await aberta();
+      await user.click(aba("Todas as regras"));
+      expect(screen.queryByRole("navigation", { name: "Erros por custo" })).toBeNull();
+      await user.click(aba("Resumo"));
+      expect(screen.getByRole("navigation", { name: "Erros por custo" })).toBeInTheDocument();
+    });
+
+    it("com um erro só não há trilho", async () => {
+      await aberta(
+        variacao((a) => {
+          const primeiro = a.result.mistakes.find((m) => m.kind === "regra");
+          a.result.mistakes = a.result.mistakes.filter((m) => m === primeiro || m.kind !== "regra");
+        }),
+      );
+      expect(screen.queryByRole("navigation", { name: "Erros por custo" })).toBeNull();
+    });
+
     it("cada erro mostra gravidade, custo, o que fazer e os números", async () => {
       await aberta();
 
       const [primeiro] = screen.getAllByRole("article");
-      expect(primeiro).toHaveTextContent("✕ Erro");
+      expect(within(primeiro).getByText("Erro")).toHaveClass("badge-erro");
+      expect(primeiro.querySelector(".badge-erro [data-icon='x']")).not.toBeNull();
       expect(primeiro).toHaveTextContent("Custou cerca de 2,7% do seu dano");
       expect(within(primeiro).getByText("O que fazer")).toBeInTheDocument();
       expect(primeiro).toHaveTextContent("Chegue à Alma Arcana com 20 de Saraivada ou mais.");
       const linha = within(primeiro).getByRole("row", { name: /Entradas na Alma Arcana/ });
       expect(linha).toHaveTextContent("2 de 5 (0, 20, 1, 18, 22)9 de 43");
+    });
+
+    it("detalhes do erro ficam recolhidos por padrão e só aparecem quando a regra tem detalhes", async () => {
+      const user = userEvent.setup();
+      await aberta();
+
+      const cards = screen.getAllByRole("article");
+      // Primeiro erro (soul_entry) tem 2 detalhes em rules[].details.
+      const detalhes = cards[0].querySelector("details.mistake-details");
+      expect(detalhes).not.toBeNull();
+      expect(detalhes).not.toHaveAttribute("open");
+      expect(within(detalhes).getByText("Ver detalhes (2)")).toBeInTheDocument();
+
+      await user.click(within(detalhes).getByText("Ver detalhes (2)"));
+      expect(detalhes).toHaveAttribute("open");
+      expect(
+        within(detalhes).getByText(byPlainText("Entrada aos 3:28 com 1 de Saraivada")),
+      ).toBeInTheDocument();
+
+      // Terceiro erro (active_time) não tem detalhes: não renderiza a seção.
+      expect(cards[2].querySelector("details.mistake-details")).toBeNull();
     });
 
     it("erro sem custo calculado diz isso em vez de inventar um número", async () => {
@@ -241,7 +262,8 @@ describe("Result", () => {
       const cards = screen.getAllByRole("article");
       expect(cards[0]).toHaveClass("mistake-erro");
       expect(cards[1]).toHaveClass("mistake-atencao");
-      expect(cards[1]).toHaveTextContent("! Atenção");
+      expect(within(cards[1]).getByText("Atenção")).toHaveClass("badge-atencao");
+      expect(cards[1].querySelector(".badge-atencao [data-icon='alert']")).not.toBeNull();
     });
 
     it("a hipótese fica numa seção própria, marcada como não confirmada", async () => {
@@ -270,14 +292,6 @@ describe("Result", () => {
       expect(screen.getByText("Sua luta bateu com os melhores em todas as regras.")).toBeVisible();
       expect(screen.queryByRole("article")).not.toBeInTheDocument();
       expect(screen.queryByText("O que as regras não explicam")).not.toBeInTheDocument();
-    });
-
-    it("a pergunta ao coach aparece desabilitada, como recurso do plano Pro", async () => {
-      await aberta();
-
-      expect(screen.getByLabelText("Pergunte ao coach sobre um erro")).toBeDisabled();
-      expect(screen.getByRole("button", { name: "Perguntar" })).toBeDisabled();
-      expect(screen.getByText("Em breve, no plano Pro.")).toBeInTheDocument();
     });
   });
 
@@ -501,7 +515,8 @@ describe("Result", () => {
         .closest("tr");
       expect(linha).toHaveTextContent("2 de 5 (0, 20, 1, 18, 22)");
       expect(linha).toHaveTextContent("9 de 43");
-      expect(linha).toHaveTextContent("✕ Erro");
+      expect(within(linha).getByText("Erro")).toHaveClass("badge-erro");
+      expect(linha.querySelector(".badge-erro [data-icon='x']")).not.toBeNull();
       expect(linha).toHaveTextContent("custou ~2,7% do dano");
       expect(linha).toHaveTextContent("Ideal: 20 ou mais (você: 2 de 5).");
       expect(within(linha).getByText("2 detalhes")).toBeInTheDocument();
@@ -520,7 +535,8 @@ describe("Result", () => {
         .closest("tr");
       expect(within(combo).getByText("1 detalhe")).toBeInTheDocument();
       const usos = screen.getByRole("rowheader", { name: /Usos de Toque dos Magos/ }).closest("tr");
-      expect(usos).toHaveTextContent("✓ OK");
+      expect(within(usos).getByText("OK")).toHaveClass("badge-ok");
+      expect(usos.querySelector(".badge-ok [data-icon='check']")).not.toBeNull();
       expect(usos).not.toHaveTextContent("custou");
       expect(usos).toHaveTextContent(
         "Possível: quantos usos caberiam se fosse usado na recarga, do pull ao fim da luta.",
@@ -590,7 +606,7 @@ describe("Result", () => {
       const aviso = await screen.findByRole("alert");
       expect(aviso).toHaveTextContent("Não deu para abrir essa análise");
       expect(aviso).toHaveTextContent("Não encontramos essa análise.");
-      expect(screen.getByRole("link", { name: "← Fazer uma nova análise" })).toHaveAttribute(
+      expect(screen.getByRole("link", { name: "Fazer uma nova análise" })).toHaveAttribute(
         "href",
         "#/",
       );

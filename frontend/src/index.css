@@ -26,7 +26,7 @@
   --accent-glow: rgb(255 137 6 / 25%);
   --focus: #ff8906;
   --brand-2: #e53170;
-  --brand-highlight: rgb(255 137 6 / 0%);
+  --brand-text: #ff8906;
   --top: #22d3ee;
   --player: #ff8906;
   --luck: #3b82f6;
@@ -38,35 +38,60 @@
   --warn-badge-bg: rgb(253 224 71 / 12%);
   --warn-badge-fg: #fde047;
   --warn-border: rgb(253 224 71 / 40%);
+  --warn-fg: #fde047;
   --error: #f87171;
   --error-bg: rgb(248 113 113 / 12%);
   --error-border: rgb(248 113 113 / 35%);
   --error-ink: #0f0e17;
   --info-bg: rgb(255 137 6 / 10%);
 
-  --glow: rgb(255 137 6 / 12%);
-  --coach-bg-1: rgb(255 137 6 / 16%);
-  --coach-bg-2: rgb(255 137 6 / 5%);
+  --glow-1: rgb(255 137 6 / 20%);
+  --glow-2: rgb(242 95 76 / 11%);
+  --glass: rgb(24 23 34 / 72%);
+  --glass-2: rgb(46 47 62 / 58%);
+  --glass-border: rgb(255 255 254 / 9%);
   --hatch: rgb(255 137 6 / 14%);
   --hatch-strong: rgb(255 137 6 / 40%);
   --shadow: rgb(0 0 0 / 45%);
 
-  --radius: 12px;
+  /* Véu do cenário (Backdrop): a cor do fundo por cima da cidade. --veil-frame atrás do
+     cabeçalho e do rodapé, --veil-center atrás do assunto da tela no modo pleno, --veil-edge
+     nas bordas (onde a cidade aparece) e --veil-inner nas telas de uso, com a cidade desfocada. */
+  --veil-frame: rgb(15 14 23 / 82%);
+  --veil-center: rgb(15 14 23 / 82%);
+  --veil-edge: rgb(15 14 23 / 22%);
+  --veil-inner: rgb(15 14 23 / 62%);
+
+  --radius: 16px;
   --radius-sm: 8px;
   --gap: 16px;
   --max: 960px;
+  --max-frame: 1240px;
 
-  font-family:
-    Inter,
-    "Segoe UI",
-    system-ui,
-    -apple-system,
-    Roboto,
-    "Helvetica Neue",
-    Arial,
-    sans-serif;
+  /* Tipografia (não são cores; o teste de contraste pula os prefixos --font, --size e
+     --measure). Uma família só, a Archivo variável: a largura (font-stretch) separa a voz da
+     marca e dos títulos (larga) da leitura (normal). Escala fixa em rem, razão ~1,2 nas telas
+     de uso; só o título da tela inicial cresce com a largura. */
+  --font-sans: "Archivo Variable", "Archivo Fallback", "Segoe UI", system-ui, sans-serif;
+  --font-wide: 118%;
+  --font-wider: 125%;
+  --size-display: clamp(2.25rem, 1.2rem + 4.4vw, 4rem);
+  --size-headline: 2.125rem;
+  --size-title: 1.375rem;
+  --size-subtitle: 1.125rem;
+  --size-body: 1rem;
+  --size-small: 0.875rem;
+  --size-label: 0.8125rem;
+  --size-micro: 0.75rem;
+  --size-headline-compact: 1.75rem;
+  --size-veil-frame: 80px; /* altura do véu atrás do cabeçalho (cenário) */
+  --measure: 68ch;
+
+  font-family: var(--font-sans);
   font-size: 16px;
-  line-height: 1.5;
+  line-height: 1.55;
+  font-synthesis: none;
+  text-rendering: optimizelegibility;
   color: var(--text);
   background: var(--bg);
 }
@@ -92,7 +117,7 @@
     --accent-glow: rgb(39 35 67 / 20%);
     --focus: #272343;
     --brand-2: #bae8e8;
-    --brand-highlight: #ffd803;
+    --brand-text: #8a5000;
     --top: #0c7c9c;
     --player: #dd6b00;
     --luck: #2563eb;
@@ -104,18 +129,25 @@
     --warn-badge-bg: #ffefa8;
     --warn-badge-fg: #9a5b00;
     --warn-border: rgb(128 86 0 / 45%);
+    --warn-fg: #8a5000;
     --error: #b91c1c;
     --error-bg: rgb(185 28 28 / 9%);
     --error-border: rgb(185 28 28 / 40%);
     --error-ink: #fffffe;
     --info-bg: rgb(186 232 232 / 45%);
 
-    --glow: rgb(255 216 3 / 22%);
-    --coach-bg-1: rgb(255 216 3 / 28%);
-    --coach-bg-2: rgb(186 232 232 / 40%);
+    --glow-1: rgb(255 216 3 / 36%);
+    --glow-2: rgb(186 232 232 / 55%);
+    --glass: rgb(227 246 245 / 74%);
+    --glass-2: rgb(186 232 232 / 60%);
+    --glass-border: rgb(39 35 67 / 12%);
     --hatch: rgb(39 35 67 / 12%);
     --hatch-strong: rgb(39 35 67 / 40%);
     --shadow: rgb(39 35 67 / 25%);
+    --veil-frame: rgb(255 249 238 / 84%);
+    --veil-center: rgb(255 249 238 / 78%);
+    --veil-edge: rgb(255 249 238 / 0%);
+    --veil-inner: rgb(255 249 238 / 68%);
   }
 }
 
@@ -139,7 +171,7 @@
   --accent-glow: rgb(39 35 67 / 20%);
   --focus: #272343;
   --brand-2: #bae8e8;
-  --brand-highlight: #ffd803;
+  --brand-text: #8a5000;
   --top: #0c7c9c;
   --player: #dd6b00;
   --luck: #2563eb;
@@ -151,18 +183,25 @@
   --warn-badge-bg: #ffefa8;
   --warn-badge-fg: #9a5b00;
   --warn-border: rgb(128 86 0 / 45%);
+  --warn-fg: #8a5000;
   --error: #b91c1c;
   --error-bg: rgb(185 28 28 / 9%);
   --error-border: rgb(185 28 28 / 40%);
   --error-ink: #fffffe;
   --info-bg: rgb(186 232 232 / 45%);
 
-  --glow: rgb(255 216 3 / 22%);
-  --coach-bg-1: rgb(255 216 3 / 28%);
-  --coach-bg-2: rgb(186 232 232 / 40%);
+  --glow-1: rgb(255 216 3 / 36%);
+  --glow-2: rgb(186 232 232 / 55%);
+  --glass: rgb(227 246 245 / 74%);
+  --glass-2: rgb(186 232 232 / 60%);
+  --glass-border: rgb(39 35 67 / 12%);
   --hatch: rgb(39 35 67 / 12%);
   --hatch-strong: rgb(39 35 67 / 40%);
   --shadow: rgb(39 35 67 / 25%);
+  --veil-frame: rgb(255 249 238 / 84%);
+  --veil-center: rgb(255 249 238 / 78%);
+  --veil-edge: rgb(255 249 238 / 0%);
+  --veil-inner: rgb(255 249 238 / 68%);
 }
 
 :root[data-theme="dark"] {
@@ -175,32 +214,76 @@
 
 body {
   margin: 0;
-  background: radial-gradient(1200px 500px at 80% -10%, var(--glow), transparent 60%), var(--bg);
+  background: var(--bg);
   min-height: 100vh;
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+/* ---------- Luz ----------
+   Cada tela tem uma fonte de luz quente só, presa ao que importa nela (classe .lit): o campo
+   do link no início, a diferença para os tops no resultado. Laranja e coral da paleta 13 no
+   escuro; amarelo e água-marinha da paleta 14 no claro, como luz do dia. A intensidade fica
+   baixa o bastante para o texto por cima manter o contraste AA (pares --glow-1 no teste). */
+.lit {
+  position: relative;
+}
+
+.lit::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  left: 50%;
+  top: 45%;
+  width: min(1100px, 170vw);
+  height: 680px;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(closest-side, var(--glow-1), var(--glow-2) 55%, transparent);
+  pointer-events: none;
 }
 
 h1,
 h2,
 h3 {
-  line-height: 1.2;
   margin: 0;
+  line-height: 1.15;
+  font-weight: 750;
+  text-wrap: balance;
 }
 
+/* Títulos na largura larga da Archivo: a mesma voz da marca, mais contida. */
 h1 {
-  font-size: clamp(1.6rem, 4vw, 2.2rem);
-  letter-spacing: -0.01em;
+  font-size: var(--size-headline);
+  font-stretch: var(--font-wide);
+  font-weight: 800;
+  letter-spacing: -0.015em;
+  line-height: 1.08;
 }
 
 h2 {
-  font-size: 1.2rem;
+  font-size: var(--size-title);
+  font-stretch: var(--font-wide);
+  letter-spacing: -0.005em;
 }
 
 h3 {
-  font-size: 1.05rem;
+  font-size: var(--size-subtitle);
+  font-weight: 700;
+  line-height: 1.3;
 }
 
 p {
   margin: 0;
+  text-wrap: pretty;
+}
+
+/* Números alinhados em tabelas, estatísticas e contagens. */
+table,
+.stat {
+  font-variant-numeric: tabular-nums;
 }
 
 a {
@@ -240,6 +323,174 @@ a {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  /* A luz (.lit::before) é maior que a tela: corta sem criar rolagem. A camada própria
+     (isolation) deixa a luz atrás de todo o conteúdo da tela, e não só do bloco iluminado. */
+  overflow: clip;
+  isolation: isolate;
+}
+
+/* ---------- Cenário ----------
+   Silvermoon de dia (claro) e Suramar à noite (escuro), fixo atrás de todas as telas
+   (components/Backdrop.jsx). O véu é a cor do fundo por cima da cidade: forte atrás do
+   cabeçalho, do rodapé e do assunto da tela; fraco nas bordas, onde a cidade aparece. Nas telas
+   de uso a cidade fica desfocada sob --veil-inner. No início, o véu de uso sobe junto com a
+   rolagem: a cidade recua quando o conteúdo de leitura chega. */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  background: var(--bg);
+  pointer-events: none;
+  user-select: none;
+}
+
+.backdrop-city {
+  position: absolute;
+  inset: 0;
+  display: none;
+  opacity: 0;
+}
+
+.backdrop-city img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 50%;
+  transition:
+    filter 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Escuro é o padrão; o claro vem da preferência do sistema (sem JS) ou do data-theme. */
+.backdrop-night {
+  display: block;
+  opacity: 1;
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) .backdrop-day {
+    display: block;
+    opacity: 1;
+  }
+
+  :root:not([data-theme="dark"]) .backdrop-night {
+    display: none;
+    opacity: 0;
+  }
+}
+
+:root[data-theme="light"] .backdrop-day {
+  display: block;
+  opacity: 1;
+}
+
+:root[data-theme="light"] .backdrop-night {
+  display: none;
+  opacity: 0;
+}
+
+.backdrop-veil,
+.backdrop-veil::after {
+  position: absolute;
+  inset: 0;
+}
+
+.backdrop-veil {
+  background:
+    linear-gradient(
+      to bottom,
+      var(--veil-frame) var(--size-veil-frame),
+      transparent calc(var(--size-veil-frame) + 140px),
+      transparent calc(100% - 180px),
+      var(--veil-frame) calc(100% - 64px)
+    ),
+    radial-gradient(ellipse 62% 58% at 50% 52%, var(--veil-center) 52%, var(--veil-edge) 100%);
+}
+
+.backdrop-veil::after {
+  content: "";
+  background: var(--veil-inner);
+  opacity: 0;
+}
+
+/* Telas de uso: a cidade desfocada (a escala esconde a borda clara do desfoque). */
+.backdrop[data-cenario="fundo"] .backdrop-city img {
+  filter: blur(14px) saturate(0.9);
+  transform: scale(1.08);
+}
+
+.backdrop[data-cenario="fundo"] .backdrop-veil::after {
+  opacity: 1;
+}
+
+/* Início: o véu de uso acompanha a rolagem até metade da tela. Sem scroll-timeline, fica no
+   meio do caminho, o bastante para a leitura abaixo da dobra. */
+.backdrop[data-cenario="pleno"] .backdrop-veil::after {
+  opacity: 0.6;
+}
+
+@supports (animation-timeline: scroll()) {
+  .backdrop[data-cenario="pleno"] .backdrop-veil::after {
+    opacity: 0;
+    animation: veil-rise linear both;
+    animation-timeline: scroll(root);
+    animation-range: 0 50vh;
+  }
+}
+
+@keyframes veil-rise {
+  to {
+    opacity: 1;
+  }
+}
+
+/* Troca de tema: a cidade nova acende por cima da antiga, num fade curto. */
+@media (prefers-reduced-motion: no-preference) {
+  .backdrop-city {
+    transition:
+      opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+      display 0.5s allow-discrete;
+  }
+
+  @starting-style {
+    .backdrop-city {
+      opacity: 0;
+    }
+  }
+
+  .backdrop-veil::after {
+    transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .backdrop-city img {
+    transition: none;
+  }
+}
+
+/* O cabeçalho quebra em duas linhas: o véu de cima acompanha. */
+@media (max-width: 860px) {
+  .backdrop-veil {
+    --size-veil-frame: 132px;
+  }
+}
+
+/* Celular em pé: o assunto ocupa quase toda a largura, e a elipse do véu também. */
+@media (max-width: 700px) {
+  .backdrop-veil {
+    background:
+      linear-gradient(
+        to bottom,
+        var(--veil-frame) var(--size-veil-frame),
+        transparent calc(var(--size-veil-frame) + 120px),
+        transparent calc(100% - 160px),
+        var(--veil-frame) calc(100% - 56px)
+      ),
+      radial-gradient(ellipse 100% 62% at 50% 54%, var(--veil-center) 60%, var(--veil-edge) 100%);
+  }
 }
 
 .skip {
@@ -256,26 +507,40 @@ a {
   z-index: 10;
 }
 
+/* Cabeçalho de três pontos: marca larga à esquerda, contexto apagado no centro, navegação e
+   chave de tema à direita. Mais largo que a coluna de leitura, como uma moldura. */
 .topbar {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  gap: 12px 20px;
   width: 100%;
-  max-width: var(--max);
+  max-width: var(--max-frame);
   margin: 0 auto;
-  padding: 16px;
+  padding: 18px 24px;
 }
 
 .brand {
+  justify-self: start;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  min-height: 44px;
   color: var(--text);
+  gap: 8px;
+  font-size: var(--size-subtitle);
+  font-stretch: var(--font-wider);
   font-weight: 800;
-  font-size: 1.15rem;
-  letter-spacing: -0.02em;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  text-transform: uppercase;
   text-decoration: none;
+}
+
+.topbar-context {
+  color: var(--muted);
+  font-size: var(--size-small);
+  text-align: center;
+  white-space: nowrap;
 }
 
 .brand-mark {
@@ -298,33 +563,40 @@ a {
   stroke-linejoin: round;
 }
 
-/* "Coach" da marca: laranja no escuro; no claro, texto escuro com marca-texto amarelo. */
+/* "Coach" da marca: laranja no escuro e âmbar escuro (--warn-fg) no claro, sempre como cor do
+   texto e com contraste alto; amarelo puro como texto não passa sobre o fundo claro. */
 .brand-accent {
-  color: var(--accent-fg);
-  background: linear-gradient(transparent 62%, var(--brand-highlight) 62%);
+  color: var(--brand-text);
 }
 
 .topbar nav {
+  justify-self: end;
   display: flex;
   align-items: center;
   gap: 4px;
 }
 
 .topbar nav a:not(.button),
-.topbar nav .link-button,
-.topbar nav .theme-toggle {
+.topbar nav .link-button {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: 999px;
   color: var(--muted);
   text-decoration: none;
-  padding: 6px 10px;
-  border-radius: var(--radius-sm);
 }
 
 .topbar nav a:not(.button):hover,
 .topbar nav .link-button:hover,
-.topbar nav .theme-toggle:hover,
 .topbar nav a[aria-current="page"] {
   color: var(--text);
-  background: var(--surface-2);
+  background: var(--glass-2);
+}
+
+.topbar nav .button {
+  margin-left: 4px;
+  min-height: 44px;
 }
 
 .content {
@@ -332,23 +604,25 @@ a {
   width: 100%;
   max-width: var(--max);
   margin: 0 auto;
-  padding: 8px 16px 48px;
+  padding: 8px 16px 64px;
 }
 
 .footer {
-  max-width: var(--max);
   width: 100%;
+  max-width: var(--max-frame);
   margin: 0 auto;
-  padding: 24px 16px;
+  padding: 20px 24px 28px;
   color: var(--muted);
-  font-size: 0.85rem;
-  border-top: 1px solid var(--border);
+  font-size: var(--size-label);
+  text-align: center;
+  display: grid;
+  gap: 2px;
 }
 
 .page-head {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: flex-end;
   gap: var(--gap);
   flex-wrap: wrap;
   margin-bottom: 8px;
@@ -356,15 +630,24 @@ a {
 
 .page-head > div {
   display: grid;
-  gap: 4px;
+  gap: 8px;
 }
 
-.eyebrow {
-  color: var(--accent-fg);
-  font-size: 0.8rem;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+/* Linha de dados abaixo do título: itens separados por um ponto discreto, que quebram juntos. */
+.page-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 14px;
+  color: var(--muted);
+}
+
+.page-meta-lead {
+  color: var(--text);
+}
+
+.page-meta-fight.is-kill {
+  color: var(--ok);
 }
 
 .loading {
@@ -374,8 +657,7 @@ a {
 }
 
 .card {
-  background: var(--surface);
-  border: 1px solid var(--border);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius);
   padding: 20px;
   display: grid;
@@ -391,90 +673,87 @@ a {
   z-index: 100;
   display: grid;
   place-items: center;
+  padding: 24px;
+  overflow: hidden;
   background: var(--bg);
   pointer-events: none;
 }
 
 .splash-leaving {
-  animation: splash-out 500ms ease forwards;
+  animation: splash-out 550ms ease forwards;
+}
+
+/* Luz quente que nasce no centro, com o mesmo degradê radial de .lit. */
+.splash-light {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(960px, 170vw);
+  height: min(640px, 110vh);
+  background: radial-gradient(closest-side, var(--glow-1), var(--glow-2) 55%, transparent);
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.35);
+  animation: splash-light-in 800ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.splash-content {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 16px;
 }
 
 .splash-mark {
-  width: min(40vmin, 220px);
+  width: clamp(88px, 24vmin, 136px);
   height: auto;
   overflow: visible;
-}
-
-.splash-stop-a {
-  stop-color: var(--accent);
-}
-
-.splash-stop-b {
-  stop-color: var(--brand-2);
-}
-
-/* No SVG, transform-origin em coordenadas do viewBox (0 a 64). */
-.splash-square,
-.splash-dot,
-.splash-ripple {
-  transform-box: view-box;
-}
-
-.splash-square {
-  transform-origin: 32px 32px;
-  opacity: 0;
-  animation:
-    splash-square-in 450ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards,
-    splash-square-press 260ms ease 2050ms;
 }
 
 /* O traço se desenha do começo até o ponto (pathLength="100" no SVG). */
 .splash-line {
   fill: none;
-  stroke: var(--accent-ink);
-  stroke-width: 5;
+  stroke: var(--accent-fg);
+  stroke-width: 4.5;
   stroke-linecap: round;
   stroke-linejoin: round;
   stroke-dasharray: 100;
   stroke-dashoffset: 100;
-  animation: splash-draw 1200ms cubic-bezier(0.65, 0, 0.35, 1) 450ms forwards;
+  animation: splash-draw 950ms cubic-bezier(0.65, 0, 0.35, 1) 250ms forwards;
 }
 
+/* Ponto aceso no topo do traço; transform-origin em coordenadas do viewBox (0 a 64). */
 .splash-dot {
-  fill: var(--accent-ink);
+  fill: var(--accent-fg);
+  filter: drop-shadow(0 0 6px var(--accent-glow));
+  transform-box: view-box;
   transform-origin: 52px 16px;
   transform: scale(0);
-  animation:
-    splash-dot-in 280ms cubic-bezier(0.3, 1.6, 0.5, 1) 1600ms forwards,
-    splash-dot-press 300ms ease 2050ms;
+  animation: splash-dot-in 260ms cubic-bezier(0.3, 1.5, 0.5, 1) 1150ms forwards;
 }
 
-/* O "clique": duas ondas saindo do ponto. */
-.splash-ripple {
-  fill: none;
-  stroke: var(--accent-ink);
-  stroke-width: 2;
-  transform-origin: 52px 16px;
+/* Palavra da marca na mesma tipografia larga de .brand. */
+.splash-word {
+  font-family: var(--font-sans);
+  font-size: clamp(1.375rem, 6vw, 2.25rem);
+  font-stretch: var(--font-wider);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--text);
   opacity: 0;
-  animation: splash-ripple 650ms ease-out forwards;
+  transform: translateY(10px);
+  animation: splash-word-in 450ms cubic-bezier(0.16, 1, 0.3, 1) 1250ms forwards;
 }
 
-.splash-ripple-1 {
-  animation-delay: 2150ms;
-}
-
-.splash-ripple-2 {
-  animation-delay: 2270ms;
-}
-
-@keyframes splash-square-in {
+@keyframes splash-light-in {
   from {
     opacity: 0;
-    transform: scale(0.85);
+    transform: translate(-50%, -50%) scale(0.35);
   }
   to {
     opacity: 1;
-    transform: scale(1);
+    transform: translate(-50%, -50%) scale(1);
   }
 }
 
@@ -490,38 +769,10 @@ a {
   }
 }
 
-@keyframes splash-dot-press {
-  0% {
-    transform: scale(1);
-  }
-  35% {
-    transform: scale(0.6);
-  }
-  70% {
-    transform: scale(1.25);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-
-@keyframes splash-square-press {
-  40% {
-    transform: scale(0.96);
-  }
+@keyframes splash-word-in {
   to {
-    transform: scale(1);
-  }
-}
-
-@keyframes splash-ripple {
-  from {
-    opacity: 0.9;
-    transform: scale(1);
-  }
-  to {
-    opacity: 0;
-    transform: scale(3.6);
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
@@ -538,10 +789,10 @@ a {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 8px;
   min-height: 44px;
-  padding: 0 18px;
-  border-radius: var(--radius-sm);
+  padding: 0 20px;
+  border-radius: 999px;
   border: 1px solid var(--border);
   background: var(--surface-2);
   color: var(--text);
@@ -616,20 +867,49 @@ a {
   text-decoration: underline;
 }
 
-/* Botão de tema (☀/☾) no cabeçalho: ícone sozinho, alvo de toque de 40 px. */
+/* Chave de tema em pílula: trilho translúcido com a bolinha clara; no escuro ela fica à esquerda,
+   no claro à direita. Alvo de toque de 44 px, maior que o desenho. */
 .theme-toggle {
   display: inline-grid;
   place-items: center;
-  min-width: 40px;
-  min-height: 40px;
-  padding: 0;
+  min-width: 56px;
+  min-height: 44px;
+  padding: 0 2px;
   border: 0;
   background: none;
-  color: var(--muted);
+  color: var(--bg);
   font: inherit;
-  font-size: 1.15rem;
   line-height: 1;
   cursor: pointer;
+}
+
+.theme-toggle-track {
+  display: flex;
+  align-items: center;
+  width: 52px;
+  height: 30px;
+  padding: 3px;
+  border-radius: 999px;
+  background: var(--glass-2);
+  border: 1px solid var(--border-control);
+}
+
+.theme-toggle-knob {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--text);
+  font-size: 14px;
+}
+
+.theme-toggle[data-theme-state="light"] .theme-toggle-knob {
+  transform: translateX(22px);
+}
+
+.theme-toggle:hover .theme-toggle-track {
+  border-color: var(--accent-fg);
 }
 
 /* Troca de tema suave; sem animação para quem pede menos movimento. */
@@ -638,12 +918,18 @@ a {
   .card,
   .button,
   .topbar nav a,
-  .theme-toggle,
+  .theme-toggle-track,
   input {
     transition:
       background-color 0.2s ease,
       color 0.2s ease,
       border-color 0.2s ease;
+  }
+
+  .theme-toggle-knob {
+    transition:
+      transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+      background-color 0.2s ease;
   }
 }
 
@@ -653,8 +939,8 @@ input[type="email"],
 input[type="password"] {
   width: 100%;
   min-height: 44px;
-  padding: 0 14px;
-  border-radius: var(--radius-sm);
+  padding: 0 18px;
+  border-radius: 999px;
   border: 1px solid var(--border-control);
   background: var(--bg);
   color: var(--text);
@@ -690,17 +976,17 @@ label {
 
 .field-hint {
   color: var(--muted);
-  font-size: 0.9rem;
+  font-size: var(--size-small);
 }
 
 .field-error {
   color: var(--error);
-  font-size: 0.9rem;
+  font-size: var(--size-small);
 }
 
 .field-ok {
   color: var(--ok);
-  font-size: 0.9rem;
+  font-size: var(--size-small);
 }
 
 .actions {
@@ -708,6 +994,12 @@ label {
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
+}
+
+/* Ícones desenhados (components/Icon.jsx): alinhados ao texto, sem mexer na altura da linha. */
+.icon {
+  flex: none;
+  vertical-align: -0.125em;
 }
 
 /* ---------- Avisos, selos e dicas ---------- */
@@ -746,7 +1038,7 @@ label {
   gap: 4px;
   padding: 2px 10px;
   border-radius: 999px;
-  font-size: 0.8rem;
+  font-size: var(--size-label);
   font-weight: 600;
   white-space: nowrap;
   background: var(--surface-2);
@@ -803,7 +1095,7 @@ label {
   background: var(--surface-2);
   border: 1px solid var(--border);
   color: var(--text);
-  font-size: 0.85rem;
+  font-size: var(--size-small);
   font-weight: 400;
   line-height: 1.4;
   text-transform: none;
@@ -842,34 +1134,120 @@ label {
   border-bottom-color: var(--accent-fg);
 }
 
-/* ---------- Tela 1: início ---------- */
+/* ---------- Tela 1: início ----------
+   O título e o campo do link no centro, sob a luz; "Como funciona" abaixo da dobra, como uma
+   linha de três passos, e o que já é suportado numa linha discreta no fim. */
 
 .home {
   display: grid;
-  gap: 32px;
+  gap: 72px;
 }
 
 .hero {
   display: grid;
-  gap: 16px;
-  padding: 32px 0 8px;
+  justify-items: center;
+  align-content: center;
+  gap: 20px;
+  min-height: min(calc(100svh - 120px), 720px);
+  padding: 24px 0 40px;
+  text-align: center;
+}
+
+.hero.lit::before {
+  top: 58%;
+}
+
+/* Sobre o cenário, a luz é só o centro (--glow-1): a borda em água-marinha do claro embaçava a
+   cidade quente. */
+.hero.lit::before,
+.auth.lit::before {
+  background: radial-gradient(closest-side, var(--glow-1), transparent);
 }
 
 .hero h1 {
-  font-size: clamp(1.9rem, 6vw, 3rem);
-  max-width: 18ch;
+  font-size: var(--size-display);
+  font-stretch: var(--font-wider);
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  max-width: 15ch;
 }
 
 .lead {
   color: var(--muted);
-  font-size: 1.1rem;
-  max-width: 60ch;
+  font-size: var(--size-subtitle);
+  max-width: var(--measure);
+}
+
+.hero .lead {
+  max-width: 52ch;
 }
 
 .link-form {
   display: grid;
+  justify-items: center;
+  gap: 10px;
+  width: min(720px, 100%);
+  margin-top: 16px;
+}
+
+.link-form label {
+  font-size: var(--size-small);
+}
+
+.link-form .field-hint,
+.link-form .field-error {
+  text-align: center;
+}
+
+/* Campo do link em pílula larga, com o botão Analisar dentro dela. */
+.link-pill {
+  display: flex;
+  align-items: center;
   gap: 8px;
-  margin-top: 8px;
+  width: 100%;
+  padding: 5px;
+  border-radius: 999px;
+  border: 1px solid var(--border-control);
+  background: var(--surface);
+}
+
+.link-pill input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  padding: 0 18px;
+  border-radius: 999px;
+}
+
+.link-pill .button {
+  min-height: 48px;
+  padding: 0 28px;
+  border-radius: 999px;
+}
+
+.link-pill:has(input[aria-invalid="true"]) {
+  border-color: var(--error);
+}
+
+/* O anel de foco vai na pílula inteira; o campo dentro dela não desenha outro. */
+.link-pill:has(input:focus-visible) {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+}
+
+@supports selector(:has(*)) {
+  .link-pill input:focus-visible {
+    outline: none;
+  }
+}
+
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  .link-pill {
+    background: var(--glass);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+  }
 }
 
 .link-row {
@@ -885,45 +1263,67 @@ label {
 .hero-actions {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 12px;
   flex-wrap: wrap;
   color: var(--muted);
+}
+
+/* Como funciona: uma linha de três passos, sem cartões. O número na fonte larga carrega a
+   ordem; a linha fina em cima amarra os três. */
+.how {
+  display: grid;
+  gap: 24px;
 }
 
 .how-list {
   list-style: none;
   counter-reset: how;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 32px;
   padding: 0;
-  margin: 12px 0 0;
+  margin: 0;
 }
 
 .how-list li {
   counter-increment: how;
   display: grid;
-  gap: 4px;
-  padding: 16px;
-  border-radius: var(--radius);
-  background: var(--surface);
-  border: 1px solid var(--border);
+  align-content: start;
+  gap: 6px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
 }
 
 .how-list li::before {
   content: counter(how);
-  display: grid;
-  place-items: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: var(--info-bg);
+  margin-bottom: 8px;
   color: var(--accent-fg);
-  font-weight: 700;
+  font-size: var(--size-headline);
+  font-stretch: var(--font-wider);
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.how-list strong {
+  font-size: var(--size-subtitle);
 }
 
 .how-list span {
   color: var(--muted);
+}
+
+.supported {
+  color: var(--muted);
+  font-size: var(--size-small);
+  text-align: center;
+  max-width: 72ch;
+  margin: 0 auto;
+}
+
+.supported strong {
+  color: var(--text);
 }
 
 /* ---------- Login ---------- */
@@ -931,12 +1331,17 @@ label {
 .auth {
   display: grid;
   place-items: center;
-  padding: 24px 0;
+  padding: 40px 0 24px;
+}
+
+.auth.lit::before {
+  top: 40%;
 }
 
 .auth-card {
   width: min(440px, 100%);
-  gap: 16px;
+  gap: 18px;
+  padding: 28px;
 }
 
 /* ---------- Tela 2: escolher a luta ---------- */
@@ -984,8 +1389,7 @@ label {
   padding: 14px 16px;
   text-align: left;
   border-radius: var(--radius);
-  border: 1px solid var(--border);
-  background: var(--surface);
+  border: 1px solid var(--glass-border);
   color: var(--text);
   font: inherit;
   cursor: pointer;
@@ -1154,7 +1558,7 @@ label {
 .fight-reason {
   grid-column: 1 / -1;
   color: var(--muted);
-  font-size: 0.85rem;
+  font-size: var(--size-small);
 }
 
 .player-list {
@@ -1168,8 +1572,7 @@ label {
   gap: 12px;
   padding: 12px 16px;
   border-radius: var(--radius);
-  border: 1px solid var(--border);
-  background: var(--surface);
+  border: 1px solid var(--glass-border);
   font-weight: 400;
   cursor: pointer;
 }
@@ -1193,7 +1596,7 @@ label {
 }
 
 .player-name .muted {
-  font-size: 0.85rem;
+  font-size: var(--size-small);
 }
 
 .player input {
@@ -1232,7 +1635,7 @@ label {
   height: 30px;
   border-radius: 50%;
   border: 2px solid var(--border);
-  font-size: 0.85rem;
+  font-size: var(--size-small);
   font-weight: 700;
 }
 
@@ -1276,33 +1679,45 @@ label {
   gap: 20px;
 }
 
+/* Estatísticas numa linha compacta: rótulo pequeno em cima, número na fonte larga embaixo,
+   separados por fios finos. Não são cartões. */
 .stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(150px, 100%), 1fr));
-  gap: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 0;
+  padding: 14px 0;
+  border-block: 1px solid var(--border);
 }
 
 .stat {
   display: grid;
-  gap: 4px;
-  padding: 14px 16px;
-  border-radius: var(--radius);
-  background: var(--surface);
-  border: 1px solid var(--border);
+  align-content: start;
+  gap: 2px;
+  padding: 0 24px;
+  border-left: 1px solid var(--border);
+}
+
+.stat:first-child {
+  padding-left: 0;
+  border-left: 0;
 }
 
 .stat-label {
   color: var(--muted);
-  font-size: 0.85rem;
+  font-size: var(--size-small);
 }
 
 .stat strong {
-  font-size: 1.35rem;
+  font-size: var(--size-title);
+  font-stretch: var(--font-wide);
+  font-weight: 750;
+  line-height: 1.25;
 }
 
 .stat small {
-  font-size: 0.8rem;
+  font-size: var(--size-label);
   font-weight: 400;
+  font-stretch: 100%;
 }
 
 .stat-down strong,
@@ -1315,61 +1730,41 @@ label {
   color: var(--ok);
 }
 
-.coach {
-  display: flex;
-  gap: 14px;
-  align-items: flex-start;
-  padding: 16px;
-  border-radius: var(--radius);
-  background: linear-gradient(135deg, var(--coach-bg-1), var(--coach-bg-2));
-  border: 1px solid var(--accent-border);
-}
-
-.coach p {
-  margin-top: 4px;
-}
-
-.coach-avatar {
-  flex: none;
-  display: grid;
-  place-items: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: var(--accent);
-  color: var(--accent-ink);
-}
-
+/* Cartão de erro: o número da posição grande, na fonte larga e na cor da situação, ocupa a
+   coluna da esquerda; a gravidade também vem escrita no selo. */
 .mistake {
   display: grid;
-  gap: 10px;
-  padding: 18px;
+  gap: 12px;
+  padding: 22px 24px;
   border-radius: var(--radius);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-left: 4px solid var(--warn);
+  border: 1px solid var(--glass-border);
+  scroll-margin-top: 24px;
 }
 
-.mistake-erro {
-  border-left-color: var(--error);
+.mistake:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
 }
 
 .mistake-head {
   display: flex;
-  gap: 12px;
+  gap: 16px;
   align-items: flex-start;
 }
 
 .mistake-rank {
   flex: none;
-  display: grid;
-  place-items: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: var(--surface-2);
-  font-weight: 700;
-  font-size: 0.9rem;
+  min-width: 1.1em;
+  color: var(--warn-fg);
+  font-size: 2.75rem;
+  font-stretch: var(--font-wider);
+  font-weight: 800;
+  line-height: 0.9;
+  font-variant-numeric: tabular-nums;
+}
+
+.mistake-erro .mistake-rank {
+  color: var(--error);
 }
 
 .mistake-meta {
@@ -1377,12 +1772,12 @@ label {
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
-  margin-top: 6px;
-  font-size: 0.85rem;
+  margin-top: 8px;
+  font-size: var(--size-small);
 }
 
 .mistake-impact {
-  font-weight: 600;
+  font-weight: 650;
 }
 
 .mistake-todo {
@@ -1395,10 +1790,52 @@ label {
   margin-top: 2px;
 }
 
+.mistake-details {
+  max-width: var(--measure);
+  font-size: var(--size-small);
+  color: var(--muted);
+}
+
+.mistake-details summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 0;
+  cursor: pointer;
+  list-style: none;
+  color: var(--accent-fg);
+  font-weight: 600;
+}
+
+.mistake-details summary::-webkit-details-marker {
+  display: none;
+}
+
+.mistake-details-chevron {
+  flex: none;
+  transition: transform 0.15s;
+}
+
+.mistake-details[open] .mistake-details-chevron {
+  transform: rotate(90deg);
+}
+
+.mistake-details summary:hover {
+  text-decoration: underline;
+}
+
+.mistake-details ul {
+  margin: 6px 0 0;
+  padding-left: 20px;
+  display: grid;
+  gap: 4px;
+  color: var(--text);
+}
+
 table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.92rem;
+  font-size: var(--size-small);
 }
 
 th,
@@ -1411,7 +1848,7 @@ td {
 
 thead th {
   color: var(--muted);
-  font-size: 0.8rem;
+  font-size: var(--size-label);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -1435,15 +1872,14 @@ caption {
 .table-wrap {
   overflow-x: auto;
   border-radius: var(--radius);
-  background: var(--surface);
-  border: 1px solid var(--border);
+  border: 1px solid var(--glass-border);
   padding: 8px 12px;
 }
 
 .rule-note {
   display: block;
   color: var(--muted);
-  font-size: 0.8rem;
+  font-size: var(--size-label);
   font-weight: 400;
 }
 
@@ -1451,8 +1887,7 @@ caption {
 
 .compared {
   border-radius: var(--radius);
-  background: var(--surface);
-  border: 1px solid var(--border);
+  border: 1px solid var(--glass-border);
 }
 
 .compared summary {
@@ -1469,15 +1904,14 @@ caption {
   display: none;
 }
 
-.compared summary::before {
-  content: "▸";
-  /* Texto alternativo vazio: a seta é decorativa e não deve ser lida pelo leitor de tela. */
-  content: "▸" / "";
+.compared-chevron {
+  flex: none;
+  align-self: center;
   color: var(--accent-fg);
   transition: transform 0.15s;
 }
 
-.compared[open] summary::before {
+.compared[open] .compared-chevron {
   transform: rotate(90deg);
 }
 
@@ -1486,7 +1920,7 @@ caption {
 }
 
 .compared summary .muted {
-  font-size: 0.9rem;
+  font-size: var(--size-small);
 }
 
 .compared-body {
@@ -1509,11 +1943,6 @@ caption {
 
 .eye-icon {
   flex: none;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
 }
 
 /* Ligado: mesmo destaque de seleção usado nas lutas (heurística "consistência"). */
@@ -1536,14 +1965,6 @@ caption {
   overflow-wrap: anywhere;
 }
 
-.ask {
-  display: grid;
-  gap: 8px;
-  padding: 16px;
-  border-radius: var(--radius);
-  border: 1px dashed var(--border);
-}
-
 /* Linha do tempo (RF11) */
 
 .timeline {
@@ -1551,8 +1972,7 @@ caption {
   gap: 12px;
   padding: 16px;
   border-radius: var(--radius);
-  background: var(--surface);
-  border: 1px solid var(--border);
+  border: 1px solid var(--glass-border);
 }
 
 .timeline-legend {
@@ -1560,7 +1980,7 @@ caption {
   flex-wrap: wrap;
   gap: 16px;
   color: var(--muted);
-  font-size: 0.85rem;
+  font-size: var(--size-small);
 }
 
 .timeline-legend span {
@@ -1577,7 +1997,7 @@ caption {
 }
 
 .timeline-label {
-  font-size: 0.85rem;
+  font-size: var(--size-small);
   font-weight: 600;
 }
 
@@ -1591,7 +2011,7 @@ caption {
   top: 0;
   padding-left: 4px;
   color: var(--muted);
-  font-size: 0.75rem;
+  font-size: var(--size-micro);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1601,7 +2021,7 @@ caption {
   position: absolute;
   transform: translateX(-50%);
   color: var(--muted);
-  font-size: 0.72rem;
+  font-size: var(--size-micro);
 }
 
 .timeline-ticks span:first-child {
@@ -1720,7 +2140,7 @@ caption {
 
 .history-numbers {
   text-align: right;
-  font-size: 0.9rem;
+  font-size: var(--size-small);
 }
 
 .chart {
@@ -1775,8 +2195,10 @@ caption {
 }
 
 .plan-price {
-  font-size: 1.6rem;
-  font-weight: 700;
+  font-size: var(--size-headline);
+  font-stretch: var(--font-wide);
+  font-weight: 800;
+  line-height: 1.1;
 }
 
 .plan-pro {
@@ -1785,18 +2207,98 @@ caption {
 
 /* ---------- Celular (RNF08: a partir de 360 px) ---------- */
 
-@media (max-width: 560px) {
+/* Tela média: o contexto desce para baixo da marca, a navegação fica à direita. */
+@media (max-width: 860px) {
   .topbar {
-    flex-wrap: wrap;
+    grid-template-columns: auto 1fr;
+  }
+
+  .topbar-context {
+    grid-row: 2;
+    grid-column: 1 / -1;
+    text-align: left;
+    margin-top: -8px;
+  }
+}
+
+@media (max-width: 560px) {
+  /* Celular: marca e contexto na primeira linha, navegação inteira na segunda. */
+  .topbar {
+    grid-template-columns: auto 1fr;
+    padding: 12px 16px;
+  }
+
+  .topbar-context {
+    grid-row: 1;
+    grid-column: 2;
+    justify-self: end;
+    margin-top: 0;
+    font-size: var(--size-label);
+    white-space: normal;
+    text-align: right;
   }
 
   .topbar nav {
-    width: 100%;
+    grid-row: 2;
+    grid-column: 1 / -1;
+    justify-self: stretch;
+    flex-wrap: wrap;
     justify-content: space-between;
+  }
+
+  .topbar nav a:not(.button),
+  .topbar nav .link-button {
+    padding: 0 10px;
   }
 
   .link-row {
     flex-direction: column;
+  }
+
+  /* No celular o campo e o botão viram duas pílulas, uma embaixo da outra. */
+  .link-pill {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 0;
+    border: 0;
+    background: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  .link-pill input {
+    min-height: 52px;
+    border: 1px solid var(--border-control);
+    background: var(--surface);
+  }
+
+  .link-pill:has(input[aria-invalid="true"]) input {
+    border-color: var(--error);
+  }
+
+  .link-pill:has(input:focus-visible) {
+    outline: none;
+  }
+
+  @supports selector(:has(*)) {
+    .link-pill input:focus-visible {
+      outline: 2px solid var(--focus);
+      outline-offset: 2px;
+    }
+  }
+
+  .home {
+    gap: 48px;
+  }
+
+  .hero {
+    min-height: 0;
+    padding-top: 32px;
+  }
+
+  .how-list {
+    grid-template-columns: 1fr;
+    gap: 20px;
   }
 
   .timeline-grid {
@@ -1820,8 +2322,49 @@ caption {
     padding: 10px;
   }
 
+  h1 {
+    font-size: var(--size-headline-compact);
+  }
+
+  .stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px 0;
+  }
+
+  .stat {
+    padding: 0 12px;
+  }
+
+  .stat:nth-child(odd) {
+    padding-left: 0;
+    border-left: 0;
+  }
+
   .stat strong {
-    font-size: 1.15rem;
+    font-size: var(--size-subtitle);
+  }
+
+  .gap-headline {
+    font-size: var(--size-headline-compact);
+  }
+
+  .mistake {
+    padding: 18px 16px;
+  }
+
+  .mistake-head {
+    gap: 12px;
+  }
+
+  .mistake-rank {
+    font-size: 2rem;
+  }
+
+  /* Faixa do trilho: sete números cabem numa linha de 360 px. */
+  .rail ol {
+    gap: 0;
+    padding: 2px;
   }
 
   .compared-head .button {
@@ -1834,24 +2377,46 @@ caption {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .compared summary::before {
+  .compared-chevron,
+  .mistake-details-chevron {
     transition: none;
   }
 }
 
 /* Diferença para os tops: erros + sorte + não explicado (decisão de 03/11) */
 
+/* A diferença para os tops: a frase em destaque, sob a luz da tela, sem painel. */
 .gap {
   display: grid;
-  gap: 12px;
-  padding: 16px;
-  border-radius: var(--radius);
-  background: var(--surface);
-  border: 1px solid var(--border);
+  gap: 16px;
+  padding: 28px 0 8px;
+}
+
+.gap.lit::before {
+  top: 38%;
 }
 
 .gap-headline {
   color: var(--text);
+  font-size: var(--size-headline);
+  font-stretch: var(--font-wide);
+  font-weight: 750;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+.gap-headline strong {
+  font-weight: 800;
+}
+
+.gap-headline .muted {
+  display: block;
+  margin-top: 10px;
+  font-size: var(--size-body);
+  font-stretch: 100%;
+  font-weight: 400;
+  letter-spacing: 0;
 }
 
 .gap-headline.text-down strong {
@@ -1864,7 +2429,7 @@ caption {
 
 .gap-bar {
   display: flex;
-  height: 12px;
+  height: 14px;
   border-radius: 999px;
   gap: 2px;
   overflow: hidden;
@@ -1873,10 +2438,12 @@ caption {
 
 .gap-list {
   display: grid;
-  gap: 6px;
+  grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
+  gap: 8px 32px;
   margin: 0;
   padding: 0;
   list-style: none;
+  font-variant-numeric: tabular-nums;
 }
 
 .gap-list li {
@@ -1913,12 +2480,12 @@ caption {
 
 .rule-reference {
   color: var(--muted);
-  font-size: 0.85rem;
+  font-size: var(--size-small);
 }
 
 .rule-details {
   margin-top: 4px;
-  font-size: 0.8rem;
+  font-size: var(--size-label);
   font-weight: 400;
   color: var(--muted);
 }
@@ -1964,4 +2531,110 @@ caption {
   border: 1px solid var(--border-control);
   background: var(--surface-2);
   object-fit: cover;
+}
+
+/* Medida de leitura: texto corrido não passa de ~68 caracteres por linha. */
+.notice-body,
+.lead,
+.page-head p {
+  max-width: var(--measure);
+}
+
+/* ---------- Vidro ---------- */
+
+/* Superfícies translúcidas: a luz passa por trás, com desfoque leve. Sem suporte a
+   backdrop-filter, o fundo fica sólido (--surface), como antes. */
+:where(.glass, .card, .mistake, .compared, .timeline, .table-wrap, .fight, .player) {
+  background: var(--surface);
+}
+
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  :where(.glass, .card, .mistake, .compared, .timeline, .table-wrap, .fight, .player) {
+    background: var(--glass);
+    -webkit-backdrop-filter: blur(14px) saturate(1.15);
+    backdrop-filter: blur(14px) saturate(1.15);
+  }
+}
+
+/* O desfoque cria camada própria: o painel sob o mouse ou o foco sobe, para a dica de um termo
+   (.term) não ficar por baixo do painel seguinte. */
+:is(.card, .mistake, .compared, .timeline, .table-wrap):is(:hover, :focus-within) {
+  position: relative;
+  z-index: 2;
+}
+
+/* ---------- Trilho dos erros (resultado) ----------
+   Abaixo de 1100 px: faixa no topo da lista de erros, que rola junto e quebra linha. A partir
+   de 1100 px: pílula vertical translúcida, fixa à esquerda, fora da coluna de leitura. */
+
+.rail ol {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  width: fit-content;
+  max-width: 100%;
+  border-radius: 28px;
+  border: 1px solid var(--glass-border);
+  background: var(--surface-2);
+}
+
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  .rail ol {
+    background: var(--glass-2);
+    -webkit-backdrop-filter: blur(16px) saturate(1.2);
+    backdrop-filter: blur(16px) saturate(1.2);
+  }
+}
+
+.rail-link {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  color: var(--warn-fg);
+  font-weight: 800;
+  font-stretch: var(--font-wide);
+  font-variant-numeric: tabular-nums;
+  text-decoration: none;
+}
+
+.rail-erro {
+  color: var(--error);
+}
+
+.rail-link:hover {
+  background: var(--glass);
+}
+
+.rail-link[aria-current="true"] {
+  background: var(--bg);
+  box-shadow: inset 0 0 0 2px currentcolor;
+}
+
+@media (min-width: 1100px) {
+  .rail {
+    position: fixed;
+    z-index: 5;
+    left: max(16px, calc((100vw - var(--max)) / 2 - 88px));
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+  .rail ol {
+    flex-direction: column;
+    flex-wrap: nowrap;
+    padding: 6px;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .rail-link {
+    transition:
+      background-color 0.2s ease,
+      box-shadow 0.2s ease;
+  }
 }

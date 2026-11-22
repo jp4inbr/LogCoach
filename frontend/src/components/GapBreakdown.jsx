@@ -37,7 +37,7 @@ export default function GapBreakdown({ gap }) {
   const barTotal = positive.reduce((sum, part) => sum + gap[part.key], 0);
 
   return (
-    <section className="gap" aria-label="De onde vem a diferença para os tops">
+    <section className="gap lit" aria-label="De onde vem a diferença para os tops">
       <p className={`gap-headline ${total > 0 ? "text-down" : "text-up"}`}>
         {total > 0 ? (
           <>

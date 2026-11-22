@@ -3,6 +3,9 @@ import { defineConfig, devices } from "@playwright/test";
 // Testes ponta a ponta (e2e/): o site de verdade no Chromium, com a API do backend simulada
 // por page.route (não precisa do backend nem do Warcraft Logs).
 const PORT = 4173;
+// Navegador já instalado fora do cache do Playwright (ex.: ambiente sem download): caminho do
+// executável em PW_CHROMIUM_PATH. Sem a variável (CI), vale o navegador do próprio Playwright.
+const executablePath = process.env.PW_CHROMIUM_PATH || undefined;
 
 export default defineConfig({
   testDir: "e2e",
@@ -14,7 +17,15 @@ export default defineConfig({
     baseURL: `http://localhost:${PORT}`,
     trace: "retain-on-failure",
   },
-  projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
+  projects: [
+    {
+      name: "chromium",
+      use: {
+        ...devices["Desktop Chrome"],
+        ...(executablePath ? { launchOptions: { executablePath } } : {}),
+      },
+    },
+  ],
   webServer: {
     command: `npm run build && npm run preview -- --port ${PORT} --strictPort`,
     url: `http://localhost:${PORT}`,

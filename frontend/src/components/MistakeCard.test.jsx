@@ -1,4 +1,5 @@
 import { render, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import { axeViolations } from "../test/axe.js";
 import { byMarkedText } from "../test/plainText.js";
@@ -16,7 +17,10 @@ describe("MistakeCard", () => {
       screen.getByRole("heading", { level: 3, name: "Entrada na Alma Arcana com pouca Saraivada" }),
     ).toBeInTheDocument();
     expect(screen.getByText("Custou cerca de 2,7% do seu dano")).toBeInTheDocument();
-    expect(screen.getByText("✕ Erro")).toHaveClass("badge-erro");
+    expect(screen.getByText("Erro")).toHaveClass("badge-erro");
+    expect(
+      screen.getByText("Erro").querySelector("[data-icon='x'][aria-hidden='true']"),
+    ).not.toBeNull();
     expect(screen.getByText(byMarkedText(soulEntry.explanation))).toBeInTheDocument();
     expect(screen.getByText("O que fazer")).toBeInTheDocument();
     expect(screen.getByText(byMarkedText(soulEntry.what_to_do))).toBeInTheDocument();
@@ -34,12 +38,15 @@ describe("MistakeCard", () => {
     expect(rowEl).toHaveTextContent("9 de 43");
   });
 
-  it("usa a gravidade como classe e mostra ‘! Atenção’", () => {
+  it("usa a gravidade como classe e mostra o selo de Atenção com o símbolo", () => {
     const { container } = render(
       <MistakeCard mistake={{ ...soulEntry, severity: "atencao" }} rank={2} />,
     );
     expect(container.querySelector("article")).toHaveClass("mistake-atencao");
-    expect(screen.getByText("! Atenção")).toHaveClass("badge-atencao");
+    expect(screen.getByText("Atenção")).toHaveClass("badge-atencao");
+    expect(
+      screen.getByText("Atenção").querySelector("[data-icon='alert'][aria-hidden='true']"),
+    ).not.toBeNull();
   });
 
   it("mostra a posição na lista, escondida do leitor de tela", () => {
@@ -108,5 +115,39 @@ describe("MistakeCard", () => {
     expect(container.textContent).not.toMatch(/\{\{|spell:/);
     expect(container.querySelectorAll("h3 .spell-ref img.spell-icon").length).toBeGreaterThan(0);
     expect(container.querySelectorAll(".numbers .spell-ref").length).toBeGreaterThan(0);
+  });
+
+  it("coloca os detalhes numa seção expandível recolhida por padrão e remove o trecho inline", async () => {
+    const user = userEvent.setup();
+    const details = [
+      "Entrada aos 0:20 com 0 de {{spell:1242974|Saraivada}} ({{spell:44425|Salva}} nos 2 últimos GCDs)",
+      "Entrada aos 3:28 com 1 de {{spell:1242974|Saraivada}}",
+    ];
+    const { container } = render(<MistakeCard mistake={soulEntry} rank={1} details={details} />);
+
+    const section = container.querySelector("details.mistake-details");
+    const todo = container.querySelector(".mistake-todo");
+    expect(section).not.toBeNull();
+    expect(todo).not.toBeNull();
+    expect(todo.compareDocumentPosition(section) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(section).not.toHaveAttribute("open");
+    expect(within(section).getByText("Ver detalhes (2)")).toBeInTheDocument();
+    expect(
+      section.querySelector("summary [data-icon='chevron-right'][aria-hidden='true']"),
+    ).not.toBeNull();
+    // O parágrafo de explicação não repete "Detalhes: ..." inline.
+    expect(container.querySelector("p:not(.mistake-meta):not(.mistake-impact)")).not.toHaveTextContent(
+      "Detalhes:",
+    );
+
+    await user.click(within(section).getByText("Ver detalhes (2)"));
+    expect(section).toHaveAttribute("open");
+    expect(within(section).getAllByRole("listitem")).toHaveLength(2);
+    expect(await axeViolations(container)).toEqual([]);
+  });
+
+  it("sem detalhes não renderiza a seção expandível", () => {
+    const { container } = render(<MistakeCard mistake={soulEntry} rank={1} details={[]} />);
+    expect(container.querySelector("details.mistake-details")).toBeNull();
   });
 });

@@ -8,11 +8,10 @@ export default function Plans() {
     <div className="stack">
       <div className="page-head">
         <div>
-          <p className="eyebrow">Planos</p>
           <h1>Escolha como quer evoluir</h1>
         </div>
       </div>
-      <div className="plans">
+      <div className="plans lit">
         <section className="card plan">
           <h2>Grátis</h2>
           <p className="plan-price">R$ 0</p>
@@ -34,7 +33,6 @@ export default function Plans() {
           <p className="plan-price">Em breve</p>
           <ul>
             <li>Análises ilimitadas</li>
-            <li>Pergunte ao coach sobre cada erro</li>
             <li>Comparação entre duas análises suas</li>
           </ul>
           <button type="button" className="button ghost block" disabled>

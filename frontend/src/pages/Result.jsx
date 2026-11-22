@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import ComparedPlayers from "../components/ComparedPlayers.jsx";
 import GapBreakdown from "../components/GapBreakdown.jsx";
+import Icon from "../components/Icon.jsx";
 import MistakeCard from "../components/MistakeCard.jsx";
+import MistakeRail from "../components/MistakeRail.jsx";
 import Notice from "../components/Notice.jsx";
 import StatusBadge from "../components/StatusBadge.jsx";
 import TargetsTable from "../components/TargetsTable.jsx";
@@ -11,6 +13,7 @@ import SpellText, { SpellName } from "../components/SpellText.jsx";
 import { useAuth } from "../lib/auth-context.js";
 import { formatClock, formatDps, formatNumber, formatSignedPct } from "../lib/format.js";
 import { href } from "../lib/router.js";
+import { plainSpellText } from "../lib/spellText.js";
 import { useRequest } from "../lib/useRequest.js";
 
 const TABS = [
@@ -19,7 +22,7 @@ const TABS = [
   { id: "regras", label: "Todas as regras" },
 ];
 
-// Telas 3 e 5: resumo do coach e resultado completo em abas (RF10, RF11, RF17, RF22).
+// Telas 3 e 5: resumo e resultado completo em abas (RF10, RF11, RF17, RF22).
 export default function Result({ id }) {
   const { token } = useAuth();
   const request = useRequest(`/analyses/${id}`, token);
@@ -48,7 +51,7 @@ export default function Result({ id }) {
           {!token && " Se ela é da sua conta, entre para abrir."}
         </Notice>
         <a className="button ghost" href={href("/")}>
-          ← Fazer uma nova análise
+          <Icon name="arrow-left" /> Fazer uma nova análise
         </a>
       </div>
     );
@@ -61,18 +64,20 @@ export default function Result({ id }) {
     <div className="result">
       <div className="page-head">
         <div>
-          <p className="eyebrow">
-            {fight.difficulty} · {fight.kill ? "Kill" : "Wipe"} em {formatClock(fight.duration_s)}
-          </p>
           <h1>{fight.boss}</h1>
-          <p className="muted">
-            {player.name}
-            {player.server && ` (${player.server})`} · {player.spec} · item level{" "}
-            {player.item_level}
+          <p className="page-meta">
+            <span className="page-meta-lead">
+              {player.name}
+              {player.server && ` (${player.server})`} · {player.spec} · item level{" "}
+              {player.item_level}
+            </span>
+            <span className={`page-meta-fight ${fight.kill ? "is-kill" : ""}`}>
+              {fight.difficulty} · {fight.kill ? "Kill" : "Wipe"} em {formatClock(fight.duration_s)}
+            </span>
           </p>
         </div>
         <a className="button ghost" href={href(`/relatorio/${result.report_code}`)}>
-          ← Escolher outra luta
+          <Icon name="arrow-left" /> Escolher outra luta
         </a>
       </div>
 
@@ -189,45 +194,49 @@ export default function Result({ id }) {
 }
 
 function Summary({ result }) {
-  const { coach } = result;
   // Primeiro os erros que as regras confirmam; as hipóteses vêm depois, separadas (RF23, RF24).
   const mistakes = result.mistakes.filter((mistake) => mistake.kind === "regra");
   const hypotheses = result.mistakes.filter((mistake) => mistake.kind === "hipotese");
+  // Detalhes de cada regra (por id) para a seção expandível de cada erro.
+  const detailsByRule = useMemo(() => {
+    const map = new Map();
+    for (const rule of result.rules ?? []) {
+      if (rule.details?.length > 0) map.set(rule.id, rule.details);
+    }
+    return map;
+  }, [result.rules]);
+  // Trilho numerado: um link por erro, na ordem de custo (só com dois erros ou mais).
+  const railItems = useMemo(
+    () =>
+      result.mistakes
+        .filter((mistake) => mistake.kind === "regra")
+        .map((mistake, index) => ({
+          id: `erro-${index + 1}`,
+          rank: index + 1,
+          title: plainSpellText(mistake.title),
+          severity: mistake.severity,
+        })),
+    [result.mistakes],
+  );
   return (
     <div className="stack">
-      {coach.available ? (
-        <div className="coach">
-          <span className="coach-avatar" aria-hidden="true">
-            ✦
-          </span>
-          <div>
-            <strong>Resumo do coach</strong>
-            <p>
-              <SpellText text={coach.headline} />
-            </p>
-          </div>
-        </div>
-      ) : result.source === "motor" ? (
-        <Notice title="Explicação do coach em breve">
-          Por enquanto o relatório sai só das regras, calculadas direto do seu log. O coach vai
-          explicar e ordenar os erros na próxima versão.
-        </Notice>
-      ) : (
-        <Notice tone="atencao" title="Explicação do coach indisponível agora">
-          Os erros abaixo vêm só das regras, que são calculadas direto do log e continuam valendo.
-        </Notice>
-      )}
-
       <GapBreakdown gap={result.gap} />
 
       <h2>Erros do maior para o menor impacto</h2>
+      {railItems.length >= 2 && <MistakeRail items={railItems} />}
       {mistakes.length === 0 ? (
         <Notice title="Nenhum erro encontrado">
           Sua luta bateu com os melhores em todas as regras.
         </Notice>
       ) : (
         mistakes.map((mistake, index) => (
-          <MistakeCard key={mistake.id} mistake={mistake} rank={index + 1} />
+          <MistakeCard
+            key={mistake.id}
+            mistake={mistake}
+            rank={index + 1}
+            id={`erro-${index + 1}`}
+            details={detailsByRule.get(mistake.id)}
+          />
         ))
       )}
 
@@ -243,17 +252,6 @@ function Summary({ result }) {
           ))}
         </>
       )}
-
-      <div className="ask">
-        <label htmlFor="ask">Pergunte ao coach sobre um erro</label>
-        <div className="link-row">
-          <input id="ask" type="text" placeholder="Ex.: por que segurar a Salva Arcana?" disabled />
-          <button type="button" className="button ghost" disabled>
-            Perguntar
-          </button>
-        </div>
-        <p className="field-hint">Em breve, no plano Pro.</p>
-      </div>
     </div>
   );
 }

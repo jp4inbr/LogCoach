@@ -1,4 +1,6 @@
 import AuthProvider from "./components/AuthProvider.jsx";
+import Backdrop from "./components/Backdrop.jsx";
+import Icon from "./components/Icon.jsx";
 import Splash from "./components/Splash.jsx";
 import ThemeToggle from "./components/ThemeToggle.jsx";
 import { useAuth } from "./lib/auth-context.js";
@@ -27,6 +29,7 @@ function Layout() {
 
   return (
     <div className="app">
+      <Backdrop mode={!section || section === "entrar" ? "pleno" : "fundo"} />
       <a className="skip" href="#conteudo">
         Pular para o conteúdo
       </a>
@@ -43,6 +46,7 @@ function Layout() {
             Log<span className="brand-accent">Coach</span>
           </span>
         </a>
+        <p className="topbar-context">Coach de logs para Mago Arcano</p>
         <nav aria-label="Principal">
           <a href={href("/")} aria-current={!section ? "page" : undefined}>
             Analisar
@@ -85,7 +89,11 @@ function Layout() {
       </main>
 
       <footer className="footer">
-        LogCoach · Trabalho A3 de Usabilidade de Software · UNA · Dados do Warcraft Logs
+        <p>LogCoach · Trabalho A3 de Usabilidade de Software · UNA · Dados do Warcraft Logs</p>
+        <p>
+          Cenários de Silvermoon e Suramar, de World of Warcraft © Blizzard Entertainment. Projeto
+          acadêmico, sem fins comerciais.
+        </p>
       </footer>
     </div>
   );
@@ -118,7 +126,7 @@ function Page({ route }) {
         <div className="stack">
           <h1>Página não encontrada</h1>
           <a className="button ghost" href={href("/")}>
-            ← Voltar ao início
+            <Icon name="arrow-left" /> Voltar ao início
           </a>
         </div>
       );

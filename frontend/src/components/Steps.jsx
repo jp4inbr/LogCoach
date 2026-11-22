@@ -1,5 +1,6 @@
 // Barra de progresso em etapas durante a análise (RNF02, heurística "visibilidade do status").
 import { ANALYSIS_STEPS } from "../lib/steps.js";
+import Icon from "./Icon.jsx";
 
 export default function Steps({ current }) {
   return (
@@ -9,7 +10,7 @@ export default function Steps({ current }) {
         return (
           <li key={label} className={`step step-${state}`} aria-current={state === "active"}>
             <span className="step-dot" aria-hidden="true">
-              {state === "done" ? "✓" : index + 1}
+              {state === "done" ? <Icon name="check" /> : index + 1}
             </span>
             <span>{label}</span>
           </li>

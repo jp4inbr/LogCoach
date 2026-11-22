@@ -230,13 +230,7 @@ class Gap(BaseModel):
     total_pct: float  # DPS médio dos tops ÷ DPS do jogador − 1, em %
     mistakes_pct: float  # soma dos impact_pct das regras
     luck_pct: float  # procs de Prismatic Bolt abaixo do esperado (negativo = teve sorte)
-    unexplained_pct: float  # o resto (RF23), para a IA investigar
-
-
-class Coach(BaseModel):
-    # Falso quando a IA falhou: o relatório sai só com as regras (RF17).
-    available: bool
-    headline: str | None = None
+    unexplained_pct: float  # o resto (RF23), para o jogador investigar
 
 
 class Number(BaseModel):
@@ -252,7 +246,7 @@ class Mistake(BaseModel):
     impact_pct: float | None
     severity: Literal["atencao", "erro"]
     # "regra" = fato calculado pelo código; "hipotese" = o que as regras não explicam (RF23),
-    # com as pistas do coach (RF24). Na hipótese, impact_pct é a diferença sem regra que a explique.
+    # com as pistas das tabelas (RF24). Na hipótese, impact_pct é a diferença sem regra que a explique.
     kind: Literal["regra", "hipotese"]
     phase: str | None = None
     explanation: str
@@ -330,7 +324,6 @@ class AnalysisResult(BaseModel):
     player: PlayerInfo
     comparison: Comparison
     summary: Summary
-    coach: Coach
     # Regras do maior para o menor impacto (risco, sem impacto, no fim); hipóteses depois (RF10).
     mistakes: list[Mistake]
     rules: list[RuleCheck]

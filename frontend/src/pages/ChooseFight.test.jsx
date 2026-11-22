@@ -180,7 +180,7 @@ describe("ChooseFight: abrir o relatório", () => {
     expect(api.calls("POST /reports/resolve")[0].body).toEqual({
       url: `https://www.warcraftlogs.com/reports/${CODE}`,
     });
-    expect(screen.getByRole("link", { name: "← Trocar o link" })).toHaveAttribute("href", "#/");
+    expect(screen.getByRole("link", { name: "Trocar o link" })).toHaveAttribute("href", "#/");
   });
 
   it("lista as lutas com chefe, dificuldade, duração e kill ou wipe", async () => {
@@ -265,7 +265,7 @@ describe("ChooseFight: abrir o relatório", () => {
         expect(aviso).toHaveTextContent("Não deu para abrir esse relatório");
         expect(aviso).toHaveTextContent(mensagem);
         expect(screen.queryByRole("button", { name: "Tentar de novo" })).not.toBeInTheDocument();
-        expect(screen.getByRole("link", { name: "← Trocar o link" })).toHaveAttribute("href", "#/");
+        expect(screen.getByRole("link", { name: "Trocar o link" })).toHaveAttribute("href", "#/");
         expect(chamadasResolve(api)).toBe(1);
       },
     );

@@ -1,0 +1,28 @@
+/* Archivo (variável: peso 100–900 e largura 62–125%), auto-hospedada pelo npm
+   (@fontsource-variable/archivo, licença OFL). Só o subconjunto latin, que cobre o português
+   inteiro (acentos, ç, travessão, sinal de menos e reticências): ~90 kB, um arquivo só para
+   todos os pesos e larguras. Outros alfabetos (nomes de jogador em latin-ext) caem na fonte
+   reserva, com as métricas ajustadas abaixo para a troca não pular a página. */
+@font-face {
+  font-family: "Archivo Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  font-stretch: 62% 125%;
+  src: url("@fontsource-variable/archivo/files/archivo-latin-wdth-normal.woff2")
+    format("woff2-variations");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* Reserva enquanto a Archivo carrega (ou sem ela): Arial com a altura e a largura aproximadas
+   da Archivo (ascendente 0,878 e descendente 0,210 por em, letra mais larga). */
+@font-face {
+  font-family: "Archivo Fallback";
+  src: local("Arial"), local("Helvetica Neue"), local("Helvetica");
+  size-adjust: 106%;
+  ascent-override: 83%;
+  descent-override: 20%;
+  line-gap-override: 0%;
+}

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-09T23:51:23+00:00",
+  "generatedAt": "2026-11-17T00:21:49+00:00",
   "title": "Design System: LogCoach",
   "extensions": {
     "colorMeta": {
@@ -783,40 +783,220 @@
           "#b7cfcf",
           "#e9f0f0"
         ]
+      },
+      "dark-warn-fg": {
+        "role": "status",
+        "displayName": "Atenção como texto (escuro)",
+        "canonical": "#fde047",
+        "tonalRamp": [
+          "#120d00",
+          "#2b2400",
+          "#483d00",
+          "#665807",
+          "#857419",
+          "#ab9518",
+          "#cebf74",
+          "#f5ecc0"
+        ]
+      },
+      "light-warn-fg": {
+        "role": "status",
+        "displayName": "Atenção como texto (claro)",
+        "canonical": "#8a5000",
+        "tonalRamp": [
+          "#180900",
+          "#371d01",
+          "#583308",
+          "#7c4b14",
+          "#a06525",
+          "#bb8a5a",
+          "#dcb693",
+          "#fee6d1"
+        ]
+      },
+      "dark-glow-1": {
+        "role": "neutral",
+        "displayName": "Centro da luz (escuro)",
+        "canonical": "rgb(255 137 6 / 20%)",
+        "tonalRamp": [
+          "#1d0600",
+          "#3c1900",
+          "#5f2e00",
+          "#854400",
+          "#ac5d13",
+          "#d67b2c",
+          "#f2ac7a",
+          "#fee6d6"
+        ]
+      },
+      "dark-glow-2": {
+        "role": "neutral",
+        "displayName": "Borda da luz (escuro)",
+        "canonical": "rgb(242 95 76 / 11%)",
+        "tonalRamp": [
+          "#220000",
+          "#480703",
+          "#71160d",
+          "#9d261a",
+          "#c93b2b",
+          "#e16e5d",
+          "#fba394",
+          "#fde5e0"
+        ]
+      },
+      "light-glow-1": {
+        "role": "neutral",
+        "displayName": "Centro da luz (claro)",
+        "canonical": "rgb(255 216 3 / 36%)",
+        "tonalRamp": [
+          "#130d00",
+          "#2c2300",
+          "#493c01",
+          "#685707",
+          "#87731a",
+          "#ae941a",
+          "#d2be6a",
+          "#f8ecbb"
+        ]
+      },
+      "light-glow-2": {
+        "role": "neutral",
+        "displayName": "Borda da luz (claro)",
+        "canonical": "rgb(186 232 232 / 55%)",
+        "tonalRamp": [
+          "#050f10",
+          "#152828",
+          "#284343",
+          "#3c5f5f",
+          "#537d7e",
+          "#7b9d9d",
+          "#aac4c4",
+          "#dfefef"
+        ]
+      },
+      "dark-glass": {
+        "role": "neutral",
+        "displayName": "Vidro dos painéis (escuro)",
+        "canonical": "rgb(24 23 34 / 72%)",
+        "tonalRamp": [
+          "#0d0d10",
+          "#242329",
+          "#3d3c45",
+          "#575762",
+          "#747381",
+          "#9494a0",
+          "#bdbdc6",
+          "#ebeaf0"
+        ]
+      },
+      "dark-glass-2": {
+        "role": "neutral",
+        "displayName": "Vidro das pílulas (escuro)",
+        "canonical": "rgb(46 47 62 / 58%)",
+        "tonalRamp": [
+          "#0c0d11",
+          "#23232b",
+          "#3b3c47",
+          "#565765",
+          "#717384",
+          "#9394a3",
+          "#bcbdc8",
+          "#eaeaf1"
+        ]
+      },
+      "dark-glass-border": {
+        "role": "neutral",
+        "displayName": "Contorno do vidro (escuro)",
+        "canonical": "rgb(255 255 254 / 9%)",
+        "tonalRamp": [
+          "#0d0d0d",
+          "#242424",
+          "#3d3d3d",
+          "#585857",
+          "#747474",
+          "#959594",
+          "#bebebd",
+          "#ebebeb"
+        ]
+      },
+      "light-glass": {
+        "role": "neutral",
+        "displayName": "Vidro dos painéis (claro)",
+        "canonical": "rgb(227 246 245 / 74%)",
+        "tonalRamp": [
+          "#0a0e0e",
+          "#1e2625",
+          "#353f3f",
+          "#4e5b5b",
+          "#687878",
+          "#8b9998",
+          "#b6c0c0",
+          "#e6edec"
+        ]
+      },
+      "light-glass-2": {
+        "role": "neutral",
+        "displayName": "Vidro das pílulas (claro)",
+        "canonical": "rgb(186 232 232 / 60%)",
+        "tonalRamp": [
+          "#050f10",
+          "#152828",
+          "#284343",
+          "#3c5f5f",
+          "#537d7e",
+          "#7b9d9d",
+          "#aac4c4",
+          "#dfefef"
+        ]
+      },
+      "light-glass-border": {
+        "role": "neutral",
+        "displayName": "Contorno do vidro (claro)",
+        "canonical": "rgb(39 35 67 / 12%)",
+        "tonalRamp": [
+          "#0d0c16",
+          "#232232",
+          "#3c3a51",
+          "#565472",
+          "#727095",
+          "#9391b1",
+          "#bcbbd3",
+          "#eae9f8"
+        ]
       }
     },
     "typographyMeta": {
+      "brand": {
+        "displayName": "Brand",
+        "purpose": "Só \"LOGCOACH\" no cabeçalho: Archivo larga (125%), 800, caixa alta."
+      },
       "display": {
         "displayName": "Display",
-        "purpose": "Só o título da tela inicial."
+        "purpose": "Só o título da tela inicial, na largura 125%."
       },
       "headline": {
         "displayName": "Headline",
-        "purpose": "Título principal de cada tela."
+        "purpose": "Título de cada tela e a frase da diferença para os tops."
       },
       "title": {
         "displayName": "Title",
-        "purpose": "Títulos de seção."
+        "purpose": "Títulos de seção e números das estatísticas."
       },
       "subtitle": {
         "displayName": "Subtitle",
-        "purpose": "Título de cada erro e de blocos internos."
-      },
-      "lead": {
-        "displayName": "Lead",
-        "purpose": "Frase de abertura em texto de apoio."
+        "purpose": "Título de cada erro, passos e frase de apoio."
       },
       "body": {
         "displayName": "Body",
-        "purpose": "Explicações e texto corrido."
+        "purpose": "Explicações e texto corrido, até 68ch."
       },
       "small": {
         "displayName": "Small",
-        "purpose": "Metadados, motivos, dicas e referência das regras."
+        "purpose": "Metadados, motivos, dicas, tabelas e referência das regras."
       },
       "label": {
         "displayName": "Label",
-        "purpose": "Cabeçalho de tabela, sobretítulo e selos."
+        "purpose": "Cabeçalho de tabela e selos."
       }
     },
     "shadows": [
@@ -829,6 +1009,11 @@
         "name": "anel-de-selecao",
         "value": "inset 0 0 0 1px var(--accent-fg)",
         "purpose": "Reforça a borda da luta escolhida."
+      },
+      {
+        "name": "anel-do-trilho",
+        "value": "inset 0 0 0 2px currentcolor",
+        "purpose": "Marca no trilho o erro que está sendo lido, na cor da situação."
       }
     ],
     "motion": [
@@ -838,9 +1023,19 @@
         "purpose": "Fundo, cor e borda ao trocar de tema."
       },
       {
+        "name": "chave-de-tema",
+        "value": "0.25s cubic-bezier(0.22, 1, 0.36, 1)",
+        "purpose": "Deslize da bolinha da chave de tema."
+      },
+      {
         "name": "seta-de-expansao",
         "value": "0.15s",
         "purpose": "Rotação da seta de 'Com quem você foi comparado'."
+      },
+      {
+        "name": "rolagem-do-trilho",
+        "value": "scrollIntoView smooth",
+        "purpose": "Ir ao cartão do erro pelo trilho; instantânea com prefers-reduced-motion."
       },
       {
         "name": "pulso-de-etapa",
@@ -857,6 +1052,14 @@
       {
         "name": "celular",
         "value": "560px"
+      },
+      {
+        "name": "cabecalho-medio",
+        "value": "860px"
+      },
+      {
+        "name": "trilho-fixo",
+        "value": "1100px"
       }
     ]
   },
@@ -865,9 +1068,9 @@
       "name": "Botão principal",
       "kind": "button",
       "refersTo": "button-primary",
-      "description": "A ação principal de cada tela.",
+      "description": "A ação principal de cada tela, em pílula.",
       "html": "<button class=\"ds-btn-primary\">Analisar</button>",
-      "css": ".ds-btn-primary{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 18px;border-radius:var(--radius-sm,8px);font:inherit;font-weight:600;cursor:pointer;transition:background-color .2s ease,border-color .2s ease;background:var(--accent);border:1px solid var(--accent);color:var(--accent-ink);}.ds-btn-primary:hover{background:var(--accent-strong);border-color:var(--accent-strong);}.ds-btn-primary:focus-visible{outline:2px solid var(--focus);outline-offset:2px;}"
+      "css": ".ds-btn-primary{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 20px;border-radius:999px;font:inherit;font-family:\"Archivo Variable\",\"Archivo Fallback\",system-ui,sans-serif;font-weight:600;cursor:pointer;transition:background-color .2s ease,border-color .2s ease;background:var(--accent);border:1px solid var(--accent);color:var(--accent-ink);}.ds-btn-primary:hover{background:var(--accent-strong);border-color:var(--accent-strong);}.ds-btn-primary:focus-visible{outline:2px solid var(--focus);outline-offset:2px;}"
     },
     {
       "name": "Botão padrão",
@@ -875,7 +1078,7 @@
       "refersTo": "button-default",
       "description": "Ações comuns; a borda assume o destaque ao passar o mouse.",
       "html": "<button class=\"ds-btn\">Escolher outra luta</button>",
-      "css": ".ds-btn{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 18px;border-radius:var(--radius-sm,8px);font:inherit;font-weight:600;cursor:pointer;transition:background-color .2s ease,border-color .2s ease;background:var(--surface-2);border:1px solid var(--border);color:var(--text);}.ds-btn:hover{border-color:var(--accent-fg);}.ds-btn:focus-visible{outline:2px solid var(--focus);outline-offset:2px;}"
+      "css": ".ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 20px;border-radius:999px;font:inherit;font-family:\"Archivo Variable\",\"Archivo Fallback\",system-ui,sans-serif;font-weight:600;cursor:pointer;transition:background-color .2s ease,border-color .2s ease;background:var(--surface-2);border:1px solid var(--border);color:var(--text);}.ds-btn:hover{border-color:var(--accent-fg);}.ds-btn:focus-visible{outline:2px solid var(--focus);outline-offset:2px;}"
     },
     {
       "name": "Botão vazado",
@@ -883,55 +1086,71 @@
       "refersTo": "button-default",
       "description": "Ações secundárias sobre o fundo.",
       "html": "<button class=\"ds-btn-ghost\">Criar conta grátis</button>",
-      "css": ".ds-btn-ghost{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 18px;border-radius:var(--radius-sm,8px);font:inherit;font-weight:600;cursor:pointer;transition:background-color .2s ease,border-color .2s ease;background:transparent;border:1px solid var(--border);color:var(--text);}.ds-btn-ghost:hover{border-color:var(--accent-fg);}.ds-btn-ghost:focus-visible{outline:2px solid var(--focus);outline-offset:2px;}"
+      "css": ".ds-btn-ghost{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 20px;border-radius:999px;font:inherit;font-family:\"Archivo Variable\",\"Archivo Fallback\",system-ui,sans-serif;font-weight:600;cursor:pointer;transition:background-color .2s ease,border-color .2s ease;background:transparent;border:1px solid var(--border);color:var(--text);}.ds-btn-ghost:hover{border-color:var(--accent-fg);}.ds-btn-ghost:focus-visible{outline:2px solid var(--focus);outline-offset:2px;}"
+    },
+    {
+      "name": "Campo do link em pílula",
+      "kind": "input",
+      "refersTo": "link-pill",
+      "description": "Campo do link com o botão Analisar dentro; o foco contorna a pílula inteira.",
+      "html": "<div class=\"ds-linkpill\"><input type=\"url\" aria-label=\"Link do relatório no Warcraft Logs\" placeholder=\"https://www.warcraftlogs.com/reports/...\" /><button>Analisar</button></div>",
+      "css": ".ds-linkpill{display:flex;align-items:center;gap:8px;max-width:720px;padding:5px;border-radius:999px;border:1px solid var(--border-control);background:var(--glass);backdrop-filter:blur(14px);}.ds-linkpill:has(input:focus-visible){outline:2px solid var(--focus);outline-offset:3px;}.ds-linkpill input{flex:1;min-width:0;min-height:44px;padding:0 18px;border:0;border-radius:999px;background:transparent;color:var(--text);font:inherit;font-family:\"Archivo Variable\",\"Archivo Fallback\",system-ui,sans-serif;outline:none;}.ds-linkpill button{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 20px;border-radius:999px;font:inherit;font-family:\"Archivo Variable\",\"Archivo Fallback\",system-ui,sans-serif;font-weight:600;cursor:pointer;transition:background-color .2s ease,border-color .2s ease;min-height:48px;padding:0 28px;background:var(--accent);border:1px solid var(--accent);color:var(--accent-ink);}"
     },
     {
       "name": "Campo de texto",
       "kind": "input",
       "refersTo": "input",
-      "description": "Campo com rótulo acima e erro abaixo.",
-      "html": "<input class=\"ds-input\" type=\"url\" placeholder=\"https://www.warcraftlogs.com/reports/...\" />",
-      "css": ".ds-input{width:100%;min-height:44px;padding:0 14px;border-radius:8px;border:1px solid var(--border-control);background:var(--bg);color:var(--text);font:inherit;}.ds-input:focus-visible{outline:2px solid var(--focus);outline-offset:2px;}"
+      "description": "Campo em pílula com rótulo acima e erro abaixo.",
+      "html": "<input class=\"ds-input\" type=\"email\" aria-label=\"E-mail\" />",
+      "css": ".ds-input{width:100%;min-height:44px;padding:0 18px;border-radius:999px;border:1px solid var(--border-control);background:var(--bg);color:var(--text);font:inherit;font-family:\"Archivo Variable\",\"Archivo Fallback\",system-ui,sans-serif;}.ds-input:focus-visible{outline:2px solid var(--focus);outline-offset:2px;}"
     },
     {
-      "name": "Navegação",
+      "name": "Cabeçalho de três pontos",
       "kind": "nav",
       "refersTo": "",
-      "description": "Links do cabeçalho com item ativo em superfície elevada.",
-      "html": "<nav class=\"ds-nav\"><a class=\"ds-nav-on\" href=\"#\">Analisar</a><a href=\"#\">Planos</a></nav>",
-      "css": ".ds-nav{display:flex;gap:4px;}.ds-nav a{color:var(--muted);text-decoration:none;padding:6px 10px;border-radius:8px;}.ds-nav a:hover,.ds-nav .ds-nav-on{color:var(--text);background:var(--surface-2);}.ds-nav a:focus-visible{outline:2px solid var(--focus);outline-offset:2px;}"
+      "description": "Marca larga, contexto apagado no centro, navegação em pílulas e chave de tema.",
+      "html": "<header class=\"ds-top\"><a class=\"ds-brand\" href=\"#\">LogCoach</a><p class=\"ds-ctx\">Coach de logs para Mago Arcano</p><nav class=\"ds-nav\"><a class=\"ds-nav-on\" href=\"#\">Analisar</a><a href=\"#\">Planos</a><button class=\"ds-switch\" aria-label=\"Ativar tema claro\"><span><i></i></span></button></nav></header>",
+      "css": ".ds-top{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:20px;font-family:\"Archivo Variable\",\"Archivo Fallback\",system-ui,sans-serif;}.ds-brand{color:var(--text);font-size:1.125rem;font-stretch:125%;font-weight:800;letter-spacing:.02em;text-transform:uppercase;text-decoration:none;}.ds-ctx{margin:0;color:var(--muted);font-size:.875rem;}.ds-nav{justify-self:end;display:flex;align-items:center;gap:4px;}.ds-nav a{display:inline-flex;align-items:center;min-height:44px;padding:0 14px;border-radius:999px;color:var(--muted);text-decoration:none;}.ds-nav a:hover,.ds-nav .ds-nav-on{color:var(--text);background:var(--glass-2);}.ds-switch{display:grid;place-items:center;min-width:56px;min-height:44px;border:0;background:none;cursor:pointer;}.ds-switch span{display:flex;align-items:center;width:52px;height:30px;padding:3px;box-sizing:border-box;border-radius:999px;background:var(--glass-2);border:1px solid var(--border-control);}.ds-switch i{width:22px;height:22px;border-radius:50%;background:var(--text);}"
     },
     {
       "name": "Selos de situação",
       "kind": "chip",
       "refersTo": "badge-error",
-      "description": "Situação sempre com símbolo e palavra.",
-      "html": "<span class=\"ds-badge ds-erro\">✕ Erro</span> <span class=\"ds-badge ds-atencao\">! Atenção</span> <span class=\"ds-badge ds-ok\">Kill</span>",
-      "css": ".ds-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 10px;border-radius:999px;font-size:.8rem;font-weight:600;white-space:nowrap;}.ds-erro{background:var(--error-bg);color:var(--error);}.ds-atencao{background:var(--warn-badge-bg);color:var(--warn-badge-fg);}.ds-ok{background:var(--ok-bg);color:var(--ok);}"
+      "description": "Situação sempre com símbolo desenhado e palavra.",
+      "html": "<span class=\"ds-badge ds-erro\"><svg viewBox=\"0 0 24 24\" width=\"1em\" height=\"1em\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" aria-hidden=\"true\"><path d=\"M6.5 6.5 17.5 17.5\"/><path d=\"M17.5 6.5 6.5 17.5\"/></svg> Erro</span> <span class=\"ds-badge ds-atencao\"><svg viewBox=\"0 0 24 24\" width=\"1em\" height=\"1em\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" aria-hidden=\"true\"><path d=\"M12 5v9\"/><path d=\"M12 19h.01\"/></svg> Atenção</span> <span class=\"ds-badge ds-ok\">Kill</span>",
+      "css": ".ds-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 10px;border-radius:999px;font-size:.8125rem;font-weight:600;white-space:nowrap;}.ds-erro{background:var(--error-bg);color:var(--error);}.ds-atencao{background:var(--warn-badge-bg);color:var(--warn-badge-fg);}.ds-ok{background:var(--ok-bg);color:var(--ok);}"
     },
     {
-      "name": "Cartão",
+      "name": "Painel de vidro",
       "kind": "card",
-      "refersTo": "card",
-      "description": "Contêiner plano em superfície tonal.",
-      "html": "<section class=\"ds-card\"><h3>Grátis</h3><p>5 análises por mês</p></section>",
-      "css": ".ds-card{display:grid;gap:12px;padding:20px;border-radius:12px;background:var(--surface);border:1px solid var(--border);color:var(--text);}.ds-card h3,.ds-card p{margin:0;}"
+      "refersTo": "panel",
+      "description": "Contêiner translúcido com desfoque leve; sólido sem suporte.",
+      "html": "<section class=\"ds-panel\"><h3>Grátis</h3><p>5 análises por mês</p></section>",
+      "css": ".ds-panel{display:grid;gap:12px;padding:20px;border-radius:16px;background:var(--surface);border:1px solid var(--glass-border);color:var(--text);}@supports (backdrop-filter:blur(1px)){.ds-panel{background:var(--glass);backdrop-filter:blur(14px) saturate(1.15);}}.ds-panel h3,.ds-panel p{margin:0;}"
     },
     {
       "name": "Cartão de erro",
       "kind": "custom",
       "refersTo": "mistake-card",
-      "description": "A entrada do boletim: severidade, custo, motivo e o que fazer.",
-      "html": "<article class=\"ds-mistake\"><h3>Entrada na Alma Arcana com pouco Salvo</h3><p class=\"ds-impact\">Custou cerca de 2,7% do seu dano</p><div class=\"ds-todo\"><strong>O que fazer</strong><p>Chegue na Alma Arcana com 20 de Salvo ou mais.</p></div></article>",
-      "css": ".ds-mistake{display:grid;gap:10px;padding:18px;border-radius:12px;background:var(--surface);border:1px solid var(--border);border-left:4px solid var(--error);color:var(--text);}.ds-mistake h3,.ds-mistake p{margin:0;}.ds-impact{font-weight:600;}.ds-todo{padding:12px 14px;border-radius:8px;background:var(--surface-2);}"
+      "description": "Número da posição grande na cor da situação, título, custo e o que fazer; sem faixa lateral.",
+      "html": "<article class=\"ds-mistake\" id=\"erro-1\"><span class=\"ds-rank\" aria-hidden=\"true\">1</span><div><h3>Entrada na Alma Arcana com pouca Saraivada</h3><p class=\"ds-impact\">Custou cerca de 2,7% do seu dano</p><div class=\"ds-todo\"><strong>O que fazer</strong><p>Chegue à Alma Arcana com 20 de Saraivada ou mais.</p></div></div></article>",
+      "css": ".ds-mistake{display:flex;gap:16px;padding:22px 24px;border-radius:16px;background:var(--glass);border:1px solid var(--glass-border);color:var(--text);font-family:\"Archivo Variable\",\"Archivo Fallback\",system-ui,sans-serif;}.ds-rank{color:var(--error);font-size:2.75rem;font-stretch:125%;font-weight:800;line-height:.9;}.ds-mistake h3,.ds-mistake p{margin:0;}.ds-impact{font-weight:650;margin:8px 0!important;}.ds-todo{padding:12px 14px;border-radius:8px;background:var(--surface-2);}"
+    },
+    {
+      "name": "Trilho dos erros",
+      "kind": "nav",
+      "refersTo": "mistake-rail",
+      "description": "Pílula vertical translúcida com um link por erro, na ordem de custo.",
+      "html": "<nav class=\"ds-rail\" aria-label=\"Erros por custo\"><a href=\"#erro-1\" class=\"ds-r-erro\" aria-current=\"true\" aria-label=\"1. Entrada na Alma Arcana com pouca Saraivada\">1</a><a href=\"#erro-2\" class=\"ds-r-atencao\" aria-label=\"2. Impactos Arcanos demais dentro do Surto\">2</a><a href=\"#erro-3\" class=\"ds-r-atencao\" aria-label=\"3. Tempo ativo abaixo dos tops\">3</a></nav>",
+      "css": ".ds-rail{display:inline-flex;flex-direction:column;gap:4px;padding:6px;border-radius:28px;background:var(--glass-2);border:1px solid var(--glass-border);backdrop-filter:blur(16px);font-family:\"Archivo Variable\",\"Archivo Fallback\",system-ui,sans-serif;}.ds-rail a{display:grid;place-items:center;width:44px;height:44px;border-radius:50%;font-weight:800;font-stretch:118%;text-decoration:none;}.ds-r-erro{color:var(--error);}.ds-r-atencao{color:var(--warn-fg);}.ds-rail a[aria-current=\"true\"]{background:var(--bg);box-shadow:inset 0 0 0 2px currentcolor;}"
     },
     {
       "name": "Decomposição da diferença",
       "kind": "custom",
       "refersTo": "",
-      "description": "Barra de erros, sorte e não explicado.",
-      "html": "<div class=\"ds-gapbar\"><span style=\"width:36%;background:var(--error)\"></span><span style=\"width:53%;background:var(--warn)\"></span><span style=\"width:11%;background:var(--muted)\"></span></div>",
-      "css": ".ds-gapbar{display:flex;height:12px;border-radius:999px;overflow:hidden;background:var(--surface-2);}"
+      "description": "A frase sob a luz e a barra de erros, azar e não explicado.",
+      "html": "<div class=\"ds-gap\"><p>Os tops fizeram <strong>18% mais dano</strong> que você.</p><div class=\"ds-gapbar\"><span style=\"width:37%;background:var(--error)\"></span><span style=\"width:53%;background:var(--luck)\"></span><span style=\"width:10%;background:var(--muted)\"></span></div></div>",
+      "css": ".ds-gap{display:grid;gap:16px;font-family:\"Archivo Variable\",\"Archivo Fallback\",system-ui,sans-serif;}.ds-gap p{margin:0;color:var(--text);font-size:2.125rem;font-stretch:118%;font-weight:750;line-height:1.15;}.ds-gap strong{color:var(--error);font-weight:800;}.ds-gapbar{display:flex;gap:2px;height:14px;border-radius:999px;overflow:hidden;background:var(--surface-2);}"
     },
     {
       "name": "Trilha da linha do tempo",
@@ -943,14 +1162,15 @@
     }
   ],
   "narrative": {
-    "northStar": "O Boletim do Coach",
-    "overview": "O LogCoach se lê de cima para baixo, como um boletim comentado. Primeiro vem o tamanho da diferença para os melhores, depois cada erro em ordem de custo, com o motivo e o que fazer. Os dados completos ficam um passo abaixo, para quem quiser aprofundar.\n\nO tom é direto e sóbrio. A tela mostra o número e a correção, sem ilustração nem efeito, e a cor só aparece em ação ou em diagnóstico. A confiança vem de deixar claro o que é erro, o que é sorte e o que é hipótese.\n\nA linha do tempo mostra quando cada coisa aconteceu, com o jogador e os tops no mesmo eixo. Ela fica em uma aba própria do resultado, a um clique do Resumo, para que os erros priorizados continuem em primeiro lugar.\n\nReferências rejeitadas: a planilha crua de log, o painel de IA genérico, o visual gamer agressivo e, do imaginário de fantasia, as fontes medievais e o pergaminho.",
+    "northStar": "A Sala com uma Lâmpada",
+    "overview": "Cada tela é um quarto escuro (ou, no tema claro, uma sala ao sol) com uma única fonte de luz quente, e ela cai sobre o que importa ali. Na tela inicial, sobre o título e o campo do link. No resultado, sobre a frase da diferença para os tops (\"Os tops fizeram 18% mais dano que você\"), que acende antes de tudo; logo abaixo vêm os erros em ordem de custo, cada um com o número da posição grande, e um trilho numerado leva de um para o outro. O log do jogador é o objeto sob a luz.\n\nO resto fica quieto: fundo liso, painéis translúcidos por onde a luz passa, texto neutro, e a cor só aparece em ação ou em diagnóstico. A marca é tipográfica, \"LOGCOACH\" em caixa alta numa sans larga e pesada, e o cabeçalho tem três pontos: marca, contexto apagado no centro e a chave de tema em pílula. A confiança continua vindo de deixar claro o que é erro, o que é sorte e o que é hipótese.\n\nO vocabulário veio da inspiração do usuário (o site \"Five Years\" do estúdio Porto Rocha): a luz única, a marca larga, o cabeçalho de três pontos, o trilho numerado translúcido e o vazio generoso. Ficaram de fora a fotografia e tudo o que não é dado do produto.\n\nReferências rejeitadas: o painel de estatísticas em cartões iguais, a planilha crua de log, o painel de IA genérico (faíscas, degradês roxos), o visual gamer agressivo (neon, ângulos cortados, fontes de esport) e, do imaginário de fantasia, as fontes medievais e o pergaminho.",
     "keyCharacteristics": [
-      "Uma coluna de leitura, com largura máxima de 960 px.",
-      "Dois temas, escuro e claro, com os mesmos papéis de cor.",
-      "Superfícies planas em camadas tonais, separadas por borda fina.",
-      "Um único destaque de ação por tema.",
-      "Verde, âmbar e vermelho reservados para situação."
+      "Uma luz quente por tela (`.lit`), presa ao assunto dela; fundo da página liso em `--bg`.",
+      "Painéis e pílulas translúcidos com desfoque leve, e fundo sólido quando o navegador não tem `backdrop-filter`.",
+      "Uma família, a Archivo variável: larga para a marca, os títulos e os números; normal para a leitura.",
+      "Coluna de leitura de 960 px dentro de uma moldura de 1240 px (cabeçalho e rodapé).",
+      "Controles em pílula, contêineres com cantos de 16 px.",
+      "Verde, âmbar e vermelho reservados para situação; jogador laranja, tops ciano."
     ],
     "rules": [
       {
@@ -960,7 +1180,7 @@
       },
       {
         "name": "Regra da Situação Inconfundível",
-        "body": "Ok, atenção e erro precisam se distinguir entre si e das outras cores do sistema, em cada tema, com distância medida pelo teste de cores. Com daltonismo, quem garante a leitura é o símbolo e a palavra do selo. As exceções aceitas estão no item 15.4 de `docs/15-padrao-de-cores.md`.",
+        "body": "Ok, atenção e erro se distinguem entre si e das outras cores do sistema, com distância medida pelo teste. Com daltonismo, quem garante a leitura é o símbolo e a palavra do selo.",
         "section": "colors"
       },
       {
@@ -970,7 +1190,12 @@
       },
       {
         "name": "Regra do Você e dos Tops",
-        "body": "O jogador é sempre laranja e os melhores são sempre ciano, para que a comparação se leia sem legenda depois da primeira vez.",
+        "body": "O jogador é sempre laranja e os melhores são sempre ciano.",
+        "section": "colors"
+      },
+      {
+        "name": "Regra da Lâmpada Única",
+        "body": "Uma `.lit` por tela, no assunto dela. Duas luzes viram decoração; luz atrás de texto nunca passa de `--glow-1`.",
         "section": "colors"
       },
       {
@@ -980,39 +1205,42 @@
       },
       {
         "name": "Regra do Boletim",
-        "body": "Diagnóstico primeiro, erros por custo depois, dados completos por último. Nenhuma informação nova entra acima da decomposição da diferença sem mudar o que a pessoa precisa corrigir.",
+        "body": "Diagnóstico primeiro, erros por custo depois, dados completos por último. Nada novo entra acima da decomposição da diferença.",
         "section": "layout"
       },
       {
-        "name": "Regra do Plano por Padrão",
-        "body": "Cartões não ganham sombra. Só o que flutua sobre o conteúdo projeta sombra.",
+        "name": "Regra do Vidro com Reserva",
+        "body": "Fundo translúcido só dentro de `@supports (backdrop-filter: ...)`; fora dele, o painel é sólido.",
         "section": "elevation"
       },
       {
-        "name": "Regra das Duas Curvas",
-        "body": "12 px para o que contém e 8 px para o que se aciona. Valores novos precisam de motivo.",
+        "name": "Regra da Pílula e do Painel",
+        "body": "O que se aciona é pílula (botões, campos, navegação, chave de tema, selos, trilho); o que contém tem cantos de 16 px (painéis, cartões de erro, avisos, tabelas). Borda tracejada continua indicando estado provisório: luta subindo, upload pausado, recurso que ainda vai chegar.",
         "section": "shapes"
       }
     ],
     "dos": [
-      "Do usar sempre `var(--token)` para cor; o teste `src/theme-contrast.test.js` falha com cor fixa.",
-      "Do criar todo token novo nos dois temas e nos dois blocos do tema claro.",
-      "Do usar `--accent-fg` quando o destaque virar texto, borda ou traço.",
-      "Do manter contraste WCAG AA: 4,5:1 para texto e 3:1 para elementos gráficos.",
+      "Do usar sempre `var(--token)` para cor, inclusive dentro de `radial-gradient(...)`; o teste `src/theme-contrast.test.js` falha com cor fixa.",
+      "Do criar todo token novo nos três blocos (`:root`, a media query clara e `[data-theme=\"light\"]`), com os dois blocos claros idênticos.",
+      "Do pôr uma `.lit` por tela, no assunto dela.",
+      "Do dar reserva sólida a todo vidro.",
+      "Do usar `--accent-fg` quando o destaque virar texto, borda ou traço, e `--warn-fg` quando a atenção virar texto.",
+      "Do manter contraste WCAG AA nos dois temas, também sobre a luz e o vidro.",
       "Do acompanhar toda cor de situação com texto, ícone ou selo.",
-      "Do manter alvos de toque de pelo menos 44 px em ações principais.",
+      "Do manter alvos de 44 px nas ações principais e no trilho.",
       "Do escrever o número dentro de uma frase em português que diga o que ele significa.",
-      "Do conferir os dois temas e a largura de 360 px depois de qualquer mudança visual."
+      "Do conferir os dois temas e 360 px depois de qualquer mudança visual."
     ],
     "donts": [
-      "Don't usar fontes medievais ou textura de pergaminho.",
-      "Don't montar tela como planilha crua de log, com tabelas e gráficos sem hierarquia ou sem dizer o que corrigir.",
-      "Don't usar a estética de painel de IA genérico: brilhos, degradês roxos, ícones de faísca por toda parte e tom de mágica.",
-      "Don't usar o visual gamer agressivo: neon, ângulos cortados, fontes de esport e RGB.",
-      "Don't usar verde, âmbar ou vermelho como decoração.",
-      "Don't usar `--accent` como cor de texto ou de borda.",
+      "Don't usar sobretítulo (rótulo pequeno acima do título); a informação vai para a linha de dados ou para o cabeçalho.",
+      "Don't usar faixa colorida lateral (mais de 1 px) em cartões, avisos ou itens de lista.",
+      "Don't montar estatísticas como cartões iguais lado a lado.",
+      "Don't usar glifo Unicode ou emoji como ícone.",
+      "Don't espalhar luz, brilho ou degradê como decoração; nada de degradê roxo, faíscas ou neon.",
+      "Don't usar fontes medievais, pergaminho ou o visual gamer agressivo.",
+      "Don't usar verde, âmbar ou vermelho como decoração, nem `--accent` como texto ou borda.",
       "Don't colocar sombra em cartões.",
-      "Don't apresentar azar como erro nem hipótese como fato; cada um tem seu selo e seu lugar."
+      "Don't apresentar azar como erro nem hipótese como fato."
     ]
   }
 }

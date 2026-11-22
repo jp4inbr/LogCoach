@@ -20,6 +20,9 @@ function block(selector) {
   throw new Error(`bloco sem fim: ${selector}`);
 }
 
+// Tokens que não são cor (medidas e tipografia): ficam fora das checagens de cor.
+const NOT_COLOR = /^--(radius|gap|max|font|size|measure)/;
+
 function tokens(body) {
   const out = {};
   for (const [, name, value] of body.matchAll(/(--[\w-]+):\s*([^;]+);/g)) out[name] = value.trim();
@@ -84,8 +87,8 @@ const pairs = [
   ]),
   // Destaque como texto em realces: aba ativa, botão de olho ligado, luta selecionada.
   ["--accent-fg", "--surface-2", TEXT],
-  // "Coach" da marca no cabeçalho, sobre o marca-texto (transparente no escuro).
-  ["--accent-fg", "--brand-highlight", TEXT],
+  // "Coach" da marca (cabeçalho e abertura): cor do próprio texto, sobre o fundo e o cartão.
+  ...["--bg", "--surface"].map((bg) => ["--brand-text", bg, TEXT]),
   ...["--bg", "--surface"].flatMap((bg) => [
     ["--accent-fg", bg, TEXT],
     ["--ok", bg, TEXT],
@@ -102,6 +105,21 @@ const pairs = [
   ["--accent-ink", "--accent-strong", TEXT],
   ["--error-ink", "--error", TEXT],
   // Situação sobre o próprio fundo de realce (translúcido, composto sobre bg e surface).
+  // Painéis e pílulas translúcidos (vidro) sobre o fundo, e o ponto mais forte da luz (.lit):
+  // o texto que fica direto sob o brilho mantém o contraste.
+  ...["--glass", "--glass-2", "--glow-1"].flatMap((bg) => [
+    ["--text", bg, TEXT, "--bg"],
+    ["--muted", bg, TEXT, "--bg"],
+    ["--link", bg, TEXT, "--bg"],
+    ["--accent-fg", bg, TEXT, "--bg"],
+    ["--error", bg, TEXT, "--bg"],
+    ["--ok", bg, TEXT, "--bg"],
+    ["--focus", bg, GRAPHIC, "--bg"],
+    ["--border-control", bg, GRAPHIC, "--bg"],
+  ]),
+  // Atenção como texto (número do cartão e do trilho dos erros) sobre fundo, cartão e vidro.
+  ...["--bg", "--surface", "--surface-2"].map((bg) => ["--warn-fg", bg, TEXT]),
+  ...["--glass", "--glass-2"].map((bg) => ["--warn-fg", bg, TEXT, "--bg"]),
   ...["--bg", "--surface"].flatMap((base) => [
     ["--ok", "--ok-bg", TEXT, base],
     ["--warn-badge-fg", "--warn-badge-bg", TEXT, base],
@@ -124,7 +142,7 @@ describe("tokens dos temas", () => {
   });
 
   it("os mesmos tokens de cor existem nos dois temas", () => {
-    const colorNames = (t) => Object.keys(t).filter((n) => /^--(?!radius|gap|max)/.test(n));
+    const colorNames = (t) => Object.keys(t).filter((n) => !NOT_COLOR.test(n));
     expect(colorNames(light).sort()).toEqual(colorNames(dark).sort());
   });
 
@@ -138,7 +156,7 @@ describe("tokens dos temas", () => {
       // Um token que referencia a si mesmo (ex.: --error-border: var(--error-border)) vira
       // valor inválido no navegador sem nenhum aviso; aqui ele não passa no parseColor.
       for (const [name, value] of Object.entries(t)) {
-        if (/^--(radius|gap|max)/.test(name)) continue;
+        if (NOT_COLOR.test(name)) continue;
         expect(() => parseColor(value), `${name}: ${value}`).not.toThrow();
       }
     },
@@ -260,6 +278,10 @@ describe.each(Object.entries(themes))("cores de situação, tema %s", (name, the
 
   it("o texto do selo de atenção não se confunde com o erro", () => {
     expect(distance(theme["--warn-badge-fg"], theme["--error"])).toBeGreaterThanOrEqual(0.12);
+  });
+
+  it("o número de atenção (cartão e trilho) não se confunde com o erro", () => {
+    expect(distance(theme["--warn-fg"], theme["--error"])).toBeGreaterThanOrEqual(0.12);
   });
 });
 

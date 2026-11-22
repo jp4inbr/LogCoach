@@ -70,6 +70,6 @@ class TopsLog(SQLModel, table=True):
         )
     )
     rank: int = Field(primary_key=True)
-    # Nome real, reino, item level, DPS, report e luta: nunca vai para a IA (RF25).
+    # Nome real, reino, item level, DPS, report e luta: nunca vai para fora do LogCoach (RF25).
     meta: dict = Field(sa_column=Column(JSON, nullable=False))
     fight_gz: bytes = Field(sa_column=Column(LargeBinary, nullable=False))

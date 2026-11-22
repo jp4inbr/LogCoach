@@ -50,7 +50,7 @@ export default function Login({ mode, next }) {
   const nextQuery = next ? `&depois=${encodeURIComponent(next)}` : "";
 
   return (
-    <div className="auth">
+    <div className="auth lit">
       <div className="card auth-card">
         <div className="tabs" role="tablist" aria-label="Entrar ou criar conta">
           <a

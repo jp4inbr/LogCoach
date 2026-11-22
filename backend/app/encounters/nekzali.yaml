@@ -117,7 +117,7 @@ mechanics:
   - { name: Slithering Flame, ability_id: 1294933, class: raid }      # DoT de quem não fez o soak
   - { name: Cremation, ability_id: 1289875, class: raid }
 
-# Combinações que costumam somar (descritivo, para a IA; o motor acha os picos sozinho).
+# Combinações que costumam somar (descritivo; o motor acha os picos sozinho).
 overlaps:
   - name: Possession Barrage + Grasping Depths (Stage Two)
     phase: 3

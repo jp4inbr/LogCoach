@@ -71,7 +71,6 @@ def reference() -> AnalysisResult:
 def test_reference_kill_result_validates_and_has_the_gap():
     result = AnalysisResult.model_validate(reference().model_dump())
     assert result.source == "motor"
-    assert result.coach.available is False
     gap = result.gap
     assert gap.total_pct == pytest.approx(18.0, abs=0.1)
     assert gap.mistakes_pct == pytest.approx(6.6, abs=0.1)

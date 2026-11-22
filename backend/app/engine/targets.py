@@ -1,7 +1,7 @@
 """Dano por alvo e por fase, em %: quanto foi no chefe e quanto em cada add, jogador × tops.
 
 Bater em add não é erro (eles têm de morrer), mas o ideal é o máximo no chefe. A tabela
-mostra ao usuário onde ele concentrou o dano e serve à IA para apontar padding (largar o
+mostra ao usuário onde ele concentrou o dano e deixa ver padding (largar o
 chefe mais que os tops). Os alvos são agrupados pelo NPC (`gameID`): todos os Restless Amani
 viram uma linha só.
 """

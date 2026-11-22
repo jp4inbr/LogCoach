@@ -1,5 +1,6 @@
 import { useEffect, useEffectEvent, useRef, useState } from "react";
 import AutoRefreshNotice from "../components/AutoRefreshNotice.jsx";
+import Icon from "../components/Icon.jsx";
 import Notice from "../components/Notice.jsx";
 import Steps from "../components/Steps.jsx";
 import { api } from "../lib/api.js";
@@ -376,7 +377,7 @@ export default function ChooseFight({ code }) {
             </button>
           )}
           <a className="button ghost" href={href("/")}>
-            ← Trocar o link
+            <Icon name="arrow-left" /> Trocar o link
           </a>
         </div>
       </div>
@@ -459,11 +460,11 @@ export default function ChooseFight({ code }) {
     <div className="choose">
       <div className="page-head">
         <div>
-          <p className="eyebrow">Relatório {data.code}</p>
           <h1>{data.title}</h1>
+          <p className="muted">Relatório {data.code}</p>
         </div>
         <a className="button ghost" href={href("/")}>
-          ← Trocar o link
+          <Icon name="arrow-left" /> Trocar o link
         </a>
       </div>
 
@@ -474,7 +475,7 @@ export default function ChooseFight({ code }) {
         </Notice>
       )}
 
-      <section aria-labelledby="fights-title">
+      <section className="lit" aria-labelledby="fights-title">
         <div className="fights-head">
           <h2 id="fights-title">1. Escolha a luta</h2>
           <div className="fights-refresh">

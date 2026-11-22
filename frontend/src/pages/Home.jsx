@@ -1,5 +1,4 @@
 import { useState } from "react";
-import Notice from "../components/Notice.jsx";
 import { useAuth } from "../lib/auth-context.js";
 import { parseReportCode, SAMPLE_LINK } from "../lib/links.js";
 import { href, navigate } from "../lib/router.js";
@@ -26,8 +25,7 @@ export default function Home() {
 
   return (
     <div className="home">
-      <section className="hero">
-        <p className="eyebrow">Coach de logs para Mago Arcano</p>
+      <section className="hero lit">
         <h1>Descubra os erros que mais custam seu dano</h1>
         <p className="lead">
           Cole o link do seu log. O LogCoach compara sua luta com os 10 melhores do seu item level e
@@ -36,7 +34,7 @@ export default function Home() {
 
         <form className="link-form" onSubmit={submit} noValidate>
           <label htmlFor="link">Link do relatório no Warcraft Logs</label>
-          <div className="link-row">
+          <div className="link-pill">
             <input
               id="link"
               type="url"
@@ -98,16 +96,19 @@ export default function Home() {
             <span>E o seu Mago Arcano naquela tentativa.</span>
           </li>
           <li>
-            <strong>Leia o coach</strong>
+            <strong>Leia o relatório</strong>
             <span>Os erros do maior para o menor impacto, com o que fazer.</span>
           </li>
         </ol>
       </section>
 
-      <Notice title="O que já é suportado">
-        Mago Arcano · Nek&apos;zali, a Enrosca-almas (The Venomous Abyss) · Mítico. Outros chefes
-        aparecem na lista, mas ainda não podem ser analisados.
-      </Notice>
+      <p className="supported">
+        <strong>O que já é suportado</strong>{" "}
+        <span>
+          Mago Arcano · Nek&apos;zali, a Enrosca-almas (The Venomous Abyss) · Mítico. Outros chefes
+          aparecem na lista, mas ainda não podem ser analisados.
+        </span>
+      </p>
     </div>
   );
 }

@@ -22,7 +22,7 @@ afterEach(() => {
 });
 
 describe("Splash", () => {
-  it("mostra a marca em tela cheia e some depois da animação", () => {
+  it("mostra a abertura em tela cheia e some depois da animação", () => {
     vi.useFakeTimers();
     stubReducedMotion(false);
     render(<Splash />);
@@ -30,8 +30,10 @@ describe("Splash", () => {
     const splash = screen.getByTestId("splash");
     expect(splash).toHaveClass("splash");
     expect(splash).not.toHaveClass("splash-leaving");
+    expect(splash.querySelector(".splash-light")).toBeInTheDocument();
     expect(splash.querySelector(".splash-line")).toHaveAttribute("pathLength", "100");
     expect(splash.querySelector(".splash-dot")).toBeInTheDocument();
+    expect(splash).toHaveTextContent("LOGCOACH");
 
     act(() => vi.advanceTimersByTime(SPLASH_MS));
     expect(screen.getByTestId("splash")).toHaveClass("splash-leaving");
@@ -40,10 +42,12 @@ describe("Splash", () => {
     expect(screen.queryByTestId("splash")).not.toBeInTheDocument();
   });
 
-  it("fica escondida dos leitores de tela", () => {
+  it("exibe o texto LOGCOACH escondido dos leitores de tela", () => {
     stubReducedMotion(false);
     render(<Splash />);
-    expect(screen.getByTestId("splash")).toHaveAttribute("aria-hidden", "true");
+    const splash = screen.getByTestId("splash");
+    expect(splash).toHaveAttribute("aria-hidden", "true");
+    expect(splash).toHaveTextContent("LOGCOACH");
   });
 
   it("não aparece para quem pede menos movimento", () => {

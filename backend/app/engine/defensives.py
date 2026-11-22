@@ -12,8 +12,7 @@ O motor acha os picos no próprio log em vez de procurar combinações fixas de 
   `cura` (vida baixa por vários segundos com pouca cura: o problema é da cura, não do Mago)
   ou `ok` (inclusive quando a cura segurou o pico: nas fixtures de 03/11 a vida mínima ficou
   acima de 50% na maioria dos picos, e os tops quase não usam defensivo).
-É risco, não perda de dano: não tem `impact_pct`. A explicação ao jogador fica com a IA, a
-partir destes fatos.
+É risco, não perda de dano: não tem `impact_pct`. O texto ao jogador sai destes fatos.
 
 Vida: `hitPoints`/`maxHitPoints` de cada golpe (o WCL manda com `includeResources`). Entre um
 golpe e outro, a cura recebida (só `heal`; escudo absorvido já sai do dano) soma à vida, até a
