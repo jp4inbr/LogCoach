@@ -52,7 +52,6 @@ def test_relativo_vindo_do_ambiente(monkeypatch):
         "sqlite:////tmp/logcoach.db",
         "sqlite:///C:/LogCoach/logcoach.db",
         "sqlite:///C:\\LogCoach\\logcoach.db",
-        "postgresql://user:senha@localhost:5432/logcoach",
         "postgresql+psycopg://user@db/logcoach?sslmode=require",
     ],
 )
@@ -72,3 +71,12 @@ def test_uri_file_fica_intacta():
 def test_query_string_preservada():
     assert database_url("sqlite:///./logcoach.db?timeout=10") == f"sqlite:///{DB}?timeout=10"
     assert database_url("sqlite:///:memory:?cache=shared") == "sqlite:///:memory:?cache=shared"
+
+
+@pytest.mark.parametrize(
+    "url",
+    ["postgresql://user:senha@db:5432/logcoach", "postgres://user:senha@db:5432/logcoach"],
+)
+def test_postgres_sem_driver_usa_psycopg(url):
+    # Formato do DATABASE_URL da Railway (e do Render/Heroku).
+    assert database_url(url) == "postgresql+psycopg://user:senha@db:5432/logcoach"
