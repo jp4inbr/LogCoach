@@ -13,6 +13,7 @@ dependencies = [
     "email-validator",
     "argon2-cffi",
     "pyjwt",
+    "psycopg[binary]",
 ]
 
 [project.optional-dependencies]

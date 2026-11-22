@@ -45,6 +45,18 @@ def resolve_sqlite_url(url: str) -> str:
     return rendered.replace(":///", f":///{absolute}", 1)
 
 
+def use_psycopg(url: str) -> str:
+    """Aponta o PostgreSQL para o driver instalado (psycopg 3).
+
+    Railway, Render e Heroku entregam `postgresql://` ou `postgres://`, que o SQLAlchemy
+    leria com o psycopg2 (não instalado). Com driver explícito, a URL fica como está.
+    """
+    for prefix in ("postgresql://", "postgres://"):
+        if url.startswith(prefix):
+            return "postgresql+psycopg://" + url.removeprefix(prefix)
+    return url
+
+
 class Settings(BaseSettings):
     # env_ignore_empty: "DATA_SOURCE=" no .env vale como não definida.
     model_config = SettingsConfigDict(env_file=ENV_FILE, extra="ignore", env_ignore_empty=True)
@@ -56,6 +68,7 @@ class Settings(BaseSettings):
     jwt_expire_days: int = 7
     # RF14: limite de análises por mês no plano grátis.
     free_monthly_limit: int = 5
+    # Em produção, a URL do frontend. No ambiente, em JSON: ["https://logcoach.vercel.app"].
     cors_origins: list[str] = ["http://localhost:5173"]
 
     wcl_client_id: str = ""
@@ -69,8 +82,8 @@ class Settings(BaseSettings):
 
     @field_validator("database_url")
     @classmethod
-    def _absolute_sqlite(cls, url: str) -> str:
-        return resolve_sqlite_url(url)
+    def _normalize_url(cls, url: str) -> str:
+        return use_psycopg(resolve_sqlite_url(url))
 
     @model_validator(mode="after")
     def _default_data_source(self) -> "Settings":
