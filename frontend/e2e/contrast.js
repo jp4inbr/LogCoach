@@ -4,6 +4,10 @@
 
 /** Espera a cidade do tema ativo carregar e as transições do cenário terminarem. */
 export async function waitForBackdrop(page) {
+  // A abertura (Splash, "A luz acende") cobre a tela com o fundo do tema por ~2,9 s e some do DOM
+  // ao terminar. Medir com ela por cima compararia o texto com o véu (contraste ~1), não com a
+  // cidade: espera sair, sem desligar o movimento.
+  await page.waitForSelector('[data-testid="splash"]', { state: "detached", timeout: 10_000 });
   await page.waitForFunction(() =>
     [...document.querySelectorAll(".backdrop-city")].some(
       (pic) =>
