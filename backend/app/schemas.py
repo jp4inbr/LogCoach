@@ -246,7 +246,8 @@ class Mistake(BaseModel):
     impact_pct: float | None
     severity: Literal["atencao", "erro"]
     # "regra" = fato calculado pelo código; "hipotese" = o que as regras não explicam (RF23),
-    # com as pistas das tabelas (RF24). Na hipótese, impact_pct é a diferença sem regra que a explique.
+    # com as pistas das tabelas (RF24). Na hipótese, impact_pct é a diferença sem regra
+    # que a explique.
     kind: Literal["regra", "hipotese"]
     phase: str | None = None
     explanation: str
