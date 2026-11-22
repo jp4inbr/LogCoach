@@ -1,0 +1,15 @@
+# Configuração como código do serviço do backend na Railway.
+# Root Directory do serviço = backend (Settings do serviço). Os segredos ficam nas
+# Variables do painel (DATABASE_URL, JWT_SECRET, WCL_*, CORS_ORIGINS), nunca aqui.
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+# A Railway só troca a versão quando /health responde.
+healthcheckPath = "/health"
+healthcheckTimeout = 60
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 5
+# Uma réplica só: caches, limites e pausa do WCL vivem na memória do processo (CLAUDE.md).
+numReplicas = 1
