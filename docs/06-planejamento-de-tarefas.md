@@ -4,13 +4,11 @@ description: Organização das tarefas e prazos do time.
 
 # 6. Planejamento de Tarefas (Cronograma)
 
-**Planilha de entregas:** controle de prazos mantido pelo Luiz.
+**Cronograma:** planilha em Excel mantida pelo Luiz, com as entregas e os prazos.
 
 {% embed url="https://docs.google.com/spreadsheets/d/1usVGNxfKOdTOzPsQEzIczHR9qQlqXamn/edit?gid=2102548923#gid=2102548923" %}
 
-**Quadro oficial:** [LogCoach — A3 no GitHub Projects](https://github.com/users/pedroasnogueira/projects/2) (público), com colunas *A fazer → Fazendo → Revisão → Feito*. Cada cartão é uma issue de frente; *Revisão* é a frente pronta num PR esperando revisão ou merge, e o cartão vai sozinho para *Feito* quando a issue é fechada.
-
-**Tarefas:** cada frente de trabalho é uma issue no GitHub, de #3 a #17, com responsável, situação e dependências: [issues com o rótulo `frente`](https://github.com/jp4inbr/LogCoach/issues?q=label%3Afrente). As concluídas ficam fechadas. O rótulo `RT03` marca o que é da entrega de 28/10 e `banca`, o que fica para o fim de novembro.
+**O que falta fazer:** controlado pelas [issues abertas no GitHub](https://github.com/jp4inbr/LogCoach/issues?q=is%3Aissue%20state%3Aopen). Cada frente de trabalho é uma issue, de #3 a #17, com responsável, situação e dependências: [issues com o rótulo `frente`](https://github.com/jp4inbr/LogCoach/issues?q=label%3Afrente). As concluídas ficam fechadas. O rótulo `RT03` marca o que é da entrega de 28/10 e `banca`, o que fica para o fim de novembro.
 
 **Meta da RT03 (28/10/2026):** versão alfa rodando com o 1º chefe (Nek'zali), documentação consolidada, relatório de IA, testes e roteiro da banca.
 
@@ -23,7 +21,7 @@ description: Organização das tarefas e prazos do time.
 | **Arthur** | Líder técnico + especialista do jogo | Motor de análise, regras do Mago Arcano e do encontro (mapa do Nek'zali), integração com Warcraft Logs, validação de todo conteúdo de WoW |
 | **Pedro** | Frontend, backend de contas e qualidade | Base técnica (linters, CI), telas em React ligadas ao backend, contas, histórico e limite do plano; evidências de usabilidade (8.1) e métricas (11) |
 | **João** | GitBook | Organização e revisão das páginas no GitBook |
-| **Luiz** | Gestão | Planilha de entregas, quadro no GitHub Projects, checagem de prazos |
+| **Luiz** | Gestão | Cronograma na planilha (Excel), acompanhamento das issues abertas, checagem de prazos |
 | **Danilo** | Design | Mockups das telas no Figma (item 3) |
 | **Matheus Damasceno** | Planejamento estratégico | Product Vision Board (item 2.B) |
 | **Matheus Morgado** | Qualidade da Apresentação | Elaborar os slides e garantir que o material estará disponível e correto na hora da apresentação à banca |
@@ -42,7 +40,7 @@ gantt
     title RT03 — LogCoach
     section Base
     Repositório, linters, CI          :2026-10-13, 2d
-    GitHub Projects                   :2026-10-13, 2d
+    Planilha do cronograma (Excel)    :2026-10-13, 2d
     Docs RT01/RT02 no GitBook         :2026-10-14, 3d
     Chaves WCL + Google Cloud         :2026-10-13, 2d
     Dados de exemplo do Nek'zali      :2026-10-14, 3d
@@ -66,7 +64,7 @@ gantt
 
 | Fase | Período | Principais tarefas |
 |---|---|---|
-| Base | 13/10 – 16/10 | Repositório e CI, quadro, docs no GitBook, chaves de API, dados de exemplo, mapa do encontro Nek'zali, formulário, mockups 1–2 |
+| Base | 13/10 – 16/10 | Repositório e CI, planilha do cronograma, docs no GitBook, chaves de API, dados de exemplo, mapa do encontro Nek'zali, formulário, mockups 1–2 |
 | Construção | 17/10 – 23/10 | Regras da spec e do encontro, correlação, comparador por fase, telas React, mockups 3–5, testes, diagramas apresentáveis, rascunho do relatório de IA |
 | Validação | 24/10 – 27/10 | Teste de usabilidade, roteiro da banca, documentação consolidada, ensaio |
 | Entrega | 28/10 | RT03 |
@@ -95,7 +93,7 @@ Levantadas no review técnico de 26–28/10. O detalhe (onde mexer e por quê) e
 | Internet falha na apresentação | Rodar local com `DATA_SOURCE=exemplo`: o motor real roda sobre as cópias guardadas do kill de referência e dos 10 tops (`backend/app/samples/`) |
 | Warcraft Logs fora do ar | O sistema usa sozinho a cópia guardada dos tops (do banco ou de `app/samples/tops/`) e avisa que ela pode estar desatualizada; a lista de lutas já buscada aparece com aviso |
 | Não dá tempo dos 3 chefes | Alfa entrega só Nek'zali; os outros serão validados perante o tempo hábil |
-| Membros sem entregar | Luiz cobra no quadro; tarefas sem dono até 16/10 são redistribuídas |
+| Membros sem entregar | Luiz cobra pela planilha e pelas issues abertas; tarefas sem dono até 16/10 são redistribuídas |
 
 ## 6.5 O que foi feito entre a RT03 e a banca
 
