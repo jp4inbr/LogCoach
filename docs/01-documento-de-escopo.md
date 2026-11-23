@@ -373,6 +373,12 @@ Os dados de raide mostram onde o jogador brasileiro está. Das 804 guildas do mu
 
 Fonte: Raider.IO, consultado em 17/11/2026.
 {% endstep %}
+
+{% step %}
+#### Pesquisa com jogadores (em andamento)
+
+Formulário com jogadores brasileiros sobre o tempo gasto analisando logs, as ferramentas usadas, a dificuldade com o inglês e o interesse no produto. A pesquisa está em andamento; o resumo das respostas entra aqui quando ela for concluída.
+{% endstep %}
 {% endstepper %}
 
 ***
@@ -528,8 +534,6 @@ Dados de mercado e da cena competitiva
 BLIZZARD ENTERTAINMENT. **The Mythic Dungeon International returns!** 2026. Disponível em: [https://worldofwarcraft.blizzard.com/news/24276958](https://worldofwarcraft.blizzard.com/news/24276958). Acesso em: 12 out. 2026.
 
 BLIZZARD ENTERTAINMENT. **Curse of Ula'tek: The Venomous Abyss raid goes live August 18**. 2026. Disponível em: [https://worldofwarcraft.blizzard.com/news/24294062](https://worldofwarcraft.blizzard.com/news/24294062). Acesso em: 12 out. 2026.
-
-BROOKE, J. SUS: a quick and dirty usability scale. _In_: JORDAN, P. W. _et al_. (ed.). **Usability evaluation in industry**. London: Taylor & Francis, 1996. p. 189-194.
 
 INTERNATIONAL ORGANIZATION FOR STANDARDIZATION. **ISO 9241-11:2018**: ergonomics of human-system interaction — part 11: usability: definitions and concepts. Genebra: ISO, 2018.
 

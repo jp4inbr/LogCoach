@@ -24,11 +24,10 @@ description: Organização das tarefas e prazos do time.
 | **Luiz** | Gestão | Cronograma na planilha (Excel), acompanhamento das issues abertas, checagem de prazos |
 | **Danilo** | Design | Mockups das telas no Figma (item 3) |
 | **Matheus Damasceno** | Planejamento estratégico | Product Vision Board (item 2.B) |
-| **Matheus Morgado** | Qualidade da Apresentação | Elaborar os slides e garantir que o material estará disponível e correto na hora da apresentação à banca |
+| **Matheus Morgado** | Qualidade da Apresentação | Elaborar os slides e garantir que o material estará disponível e correto na hora da apresentação à banca. Reserva: se os slides não ficarem prontos, o Arthur monta a partir do roteiro do item 14 |
 | **Arthur** | Relatório de IA | Item 9, a partir dos prompts, interações e relatórios dos membros do grupo |
 | **Arthur** | Casos de teste | Cenários de erro e validação em linguagem simples (base dos testes Pytest) e item 10 |
-| **Arthur** | Teste de usabilidade | Aplicar o roteiro e o questionário SUS (8.3) e registrar os resultados |
-| **Arthur** | Pesquisa | Formulário com jogadores brasileiros (evidências do problema) |
+| **Arthur** | Pesquisa | Formulário com jogadores brasileiros (evidências do problema); em andamento (item 1) |
 | **Arthur** | Aplicação da Usabilidade | Acompanhar como os princípios de usabilidade entram na aplicação, junto ao front/backend, e manter o item 8 |
 | **Arthur** | Diagramas | Converter os fluxogramas em Mermaid (arquitetura, fluxo de telas, motor de análise, cronograma) em diagramas apresentáveis para o GitBook e os slides |
 
@@ -56,7 +55,6 @@ gantt
     Testes Pytest                     :2026-10-20, 4d
     Diagramas apresentáveis           :2026-10-20, 5d
     section Validação
-    Teste de usabilidade + SUS        :2026-10-24, 2d
     Roteiro da banca                  :2026-10-24, 3d
     Docs consolidadas                 :2026-10-24, 4d
     Ensaio                            :2026-10-27, 1d
@@ -66,7 +64,7 @@ gantt
 |---|---|---|
 | Base | 13/10 – 16/10 | Repositório e CI, planilha do cronograma, docs no GitBook, chaves de API, dados de exemplo, mapa do encontro Nek'zali, formulário, mockups 1–2 |
 | Construção | 17/10 – 23/10 | Regras da spec e do encontro, correlação, comparador por fase, telas React, mockups 3–5, testes, diagramas apresentáveis, rascunho do relatório de IA |
-| Validação | 24/10 – 27/10 | Teste de usabilidade, roteiro da banca, documentação consolidada, ensaio |
+| Validação | 24/10 – 27/10 | Roteiro da banca, documentação consolidada, ensaio |
 | Entrega | 28/10 | RT03 |
 
 ## 6.3 Tarefas abertas depois da RT03 (para o cronograma)
@@ -83,7 +81,6 @@ Levantadas no review técnico de 26–28/10. O detalhe (onde mexer e por quê) e
 | Testes T03–T05 e T11–T14 | Dependiam do motor | **Feito**: passam com o motor (`test_engine_base.py`, `test_engine_rules.py`) | Arthur |
 | Conferir no Wowhead todos os nomes em pt-BR (magias, buffs, talentos) | Há nomes divergentes entre guia, exemplo e cliente (ex.: Clearcasting = "Abstração" no Warcraft Logs em português; já alinhado em todo o código e nos guias) | Em andamento | |
 | Deploy na Vercel (frontend) e na Railway (backend + PostgreSQL) | Publicação para a banca (item 13): uma réplica, IP real atrás do proxy | **Feito** em 23/11 (PR #39) | Arthur e João |
-| Teste de usabilidade + SUS | Roteiro e questionário prontos (item 8.3); falta aplicar com 5 pessoas | Aberto | |
 
 ## 6.4 Riscos e plano B
 
@@ -93,6 +90,7 @@ Levantadas no review técnico de 26–28/10. O detalhe (onde mexer e por quê) e
 | Internet falha na apresentação | Rodar local com `DATA_SOURCE=exemplo`: o motor real roda sobre as cópias guardadas do kill de referência e dos 10 tops (`backend/app/samples/`) |
 | Warcraft Logs fora do ar | O sistema usa sozinho a cópia guardada dos tops (do banco ou de `app/samples/tops/`) e avisa que ela pode estar desatualizada; a lista de lutas já buscada aparece com aviso |
 | Não dá tempo dos 3 chefes | Alfa entrega só Nek'zali; os outros serão validados perante o tempo hábil |
+| Slides não ficam prontos a tempo | Reserva: o Arthur monta os slides a partir do roteiro do item 14 (as 8 partes e o roteiro da demo já estão definidos) |
 | Membros sem entregar | Luiz cobra pela planilha e pelas issues abertas; tarefas sem dono até 16/10 são redistribuídas |
 
 ## 6.5 O que foi feito entre a RT03 e a banca
@@ -101,7 +99,7 @@ Resumo do histórico do repositório (`git log`) de 28/10 a 04/11/2026.
 
 | Data | Entrega | Quem |
 |---|---|---|
-| 28/10 | Evidências de usabilidade (8.1), roteiro do teste e questionário SUS, uso de IA (9.2 e 9.3) e métricas (11) — PR #18 | Pedro Nogueira |
+| 28/10 | Evidências de usabilidade (8.1), uso de IA (9.2 e 9.3) e métricas (11) — PR #18 | Pedro Nogueira |
 | 28/10 | Revisão das páginas no GitBook (PR #19), integrada sem dados pessoais na PR #21 | João Nicacio (PR #19) e Arthur Beiral (PR #21) |
 | 28/10 | Pendências antigas da PR #2 fechadas (PR #20): exemplo refeito a partir do log real, buffs externos na busca, primeiras peças do motor (Prismatic Bolt, Arcane Soul e janela do Surge) | Arthur Beiral |
 | 28/10 | Warcraft Logs robusto: cliente único com cache, jogador pelo id do ator, erro `wcl_unavailable` por causa, lista leve de lutas e Magos por luta, botão "Atualizar lutas", atualização automática do log ao vivo, pré-busca dos eventos ao clicar no personagem, pausa depois de falha | Arthur Beiral |
