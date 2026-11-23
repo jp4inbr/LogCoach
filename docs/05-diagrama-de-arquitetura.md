@@ -50,10 +50,10 @@ flowchart LR
 | Frontend         | React + Vite                                                  | Telas, validação de entrada, exibição do relatório                                                                             |
 | Backend          | FastAPI (Python)                                              | Rotas, autenticação, orquestração da análise                                                                                   |
 | Motor de análise | Python (`backend/app/engine/`)                                | Medidas por fase, regras com limites tirados dos tops, diferença para os tops, tabelas por habilidade e por alvo (ver item 12) |
-| Banco            | PostgreSQL (Cloud SQL) / SQLite em dev                        | Usuários, análises, cópia dos tops por 24 h                                                                                    |
+| Banco            | PostgreSQL (Railway) / SQLite em dev                          | Usuários, análises, cópia dos tops por 24 h                                                                                    |
 | Fonte de dados   | API Warcraft Logs v2 (GraphQL), cliente em `backend/app/wcl/` | Lutas, eventos da luta e rankings; no modo exemplo, arquivos de `app/samples/`                                                 |
 
 ## Ambientes
 
 * **Desenvolvimento:** SQLite local (`backend/logcoach.db`). Com `DATA_SOURCE=exemplo`, relatório, eventos e tops vêm dos arquivos de `app/samples/` (kill de referência do Harmonist e top 10 do bracket), sem internet; é também o que o CI usa. Com `DATA_SOURCE=wcl`, a API real.
-* **Apresentação:** backend no Cloud Run e banco no Cloud SQL, com um log de exemplo já processado como reserva caso a internet falhe.
+* **Produção e apresentação:** frontend na Vercel (https://logcoach.vercel.app), backend e PostgreSQL na Railway (item 13). Se a internet falhar, a reserva é rodar local com `DATA_SOURCE=exemplo`.
