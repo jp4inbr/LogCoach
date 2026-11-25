@@ -85,6 +85,8 @@
   --size-body: 1rem;
   --size-small: 0.9375rem;
   --size-label: 0.875rem;
+  /* Deslocamento da dica de um termo (.term), ajustado pelo Term.jsx perto da borda da tela. */
+  --gap-tip-x: 0px;
   --size-micro: 0.8125rem;
   --size-headline-compact: 1.85rem;
   --size-mistake-title: 1.55rem;
@@ -1106,7 +1108,8 @@ label {
 .term:focus::after {
   content: attr(data-tip);
   position: absolute;
-  left: 0;
+  /* --gap-tip-x: deslocamento calculado no Term.jsx para a dica não sair da tela. */
+  left: var(--gap-tip-x);
   top: calc(100% + 6px);
   z-index: 5;
   width: min(280px, 80vw);
@@ -1762,6 +1765,8 @@ label {
    cor da situação, ocupa a coluna da esquerda; a gravidade também vem escrita no selo. */
 .mistake {
   display: grid;
+  /* Coluna nunca mais larga que o cartão (ver .result). */
+  grid-template-columns: minmax(0, 1fr);
   gap: 16px;
   padding: 26px 28px;
   border-radius: var(--radius);
@@ -2447,6 +2452,32 @@ caption {
 
   .mistake-rank {
     font-size: 2.25rem;
+  }
+
+  /* As três abas do resultado cabem inteiras na largura do celular. */
+  .tabs {
+    gap: 0;
+  }
+
+  .tab {
+    flex: 1 1 0;
+    padding: 10px 4px;
+    font-size: var(--size-label);
+    line-height: 1.2;
+    text-align: center;
+    white-space: normal;
+  }
+
+  /* Tabela de números do cartão de erro: no celular, letra um passo menor e quebra dentro da
+     célula, para as três colunas caberem na largura do cartão. */
+  .mistake .numbers {
+    font-size: var(--size-small);
+  }
+
+  .mistake .numbers th,
+  .mistake .numbers td {
+    padding: 6px 4px;
+    overflow-wrap: anywhere;
   }
 
   /* Faixa do trilho: sete números cabem numa linha de 360 px. */
