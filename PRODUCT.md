@@ -20,7 +20,7 @@ O LogCoach transforma o log de combate do World of Warcraft, um dado bruto, téc
 
 O jogador cola o link público do relatório, escolhe a luta e o personagem e recebe o resultado. O sucesso é o jogador chegar à primeira correção útil sem horas de análise manual e confiar no que leu.
 
-Metas registradas: primeira análise em até 5 minutos (RNF09), análise completa em até 2 minutos com progresso visível (RNF02), satisfação de pelo menos 4 de 5 no teste com usuários (RNF10) e taxa de sucesso nas tarefas de pelo menos 80%.
+Metas registradas: primeira análise em até 5 minutos (RNF09), análise completa em até 2 minutos com progresso visível (RNF02), nota SUS de pelo menos 68 no teste com usuários (RNF10) e taxa de sucesso nas tarefas de pelo menos 80%.
 
 ## Positioning
 
@@ -69,7 +69,7 @@ Referências de mercado registradas: Warcraft Logs e Raider.IO guardam e ranquei
 - Relato do especialista do grupo, no 1% melhor de Mago Arcano, sobre alertas falsos do WoWAnalyzer e falta de conteúdo avançado (`docs/01-documento-de-escopo.md`).
 - Prints da versão alfa em `docs/08-principios-de-usabilidade.md`.
 
-**Ausências que não podem ser inventadas:** não há depoimentos, clientes, números de uso, preço nem benchmarks de melhora dos jogadores. Os resultados do teste de usabilidade (tarefas e formulário) ainda não foram preenchidos.
+**Ausências que não podem ser inventadas:** não há depoimentos, clientes, números de uso, preço nem benchmarks de melhora dos jogadores. Os resultados do teste de usabilidade (tarefas e SUS) ainda não foram preenchidos.
 
 ## Product Principles
 

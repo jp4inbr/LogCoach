@@ -79,68 +79,86 @@ O resumo mostra só quatro números, de onde vem a diferença para os tops (erro
 
 ## 8.3 Teste de usabilidade com usuários
 
-Teste curto, com pessoas reais, no site publicado. Mede as três dimensões de usabilidade: eficácia (concluiu a tarefa?), eficiência (em quanto tempo?) e satisfação (questionário curto no Google Forms).
+Teste com pessoas reais no site publicado, por um formulário no Google Forms que a pessoa responde sozinha, sem aplicador. Mede as três dimensões da ISO 9241-11: eficácia (concluiu a tarefa?), eficiência (em quanto tempo?) e satisfação (questionário SUS).
 
-* **Participantes:** 3 a 5 pessoas, de preferência jogadores de WoW e pelo menos 1 leigo. Podem ser colegas da turma, familiares ou jogadores da guilda do Arthur.
-* **Formato:** presencial ou por chamada (Discord ou Meet) com a tela do participante compartilhada. Cerca de 15 min por pessoa.
-* **Tarefas:** 1) analisar um log a partir do link; 2) achar o erro mais grave; 3) achar a evolução no histórico.
-* **Medidas:** tempo de cada tarefa, se concluiu sozinho, onde hesitou e as notas do questionário. Metas: 1ª análise em até 5 min (RNF09), taxa de sucesso ≥ 80% e satisfação média ≥ 4 de 5 (RNF10).
+* **Participantes:** 3 a 5 pessoas que não conheçam as telas do LogCoach. Podem ser integrantes do grupo que não trabalharam nas telas (registrado no resultado, porque conhecem o projeto) e, de preferência, 1 ou 2 pessoas de fora do grupo.
+* **Tarefas:** 1) analisar um log a partir do link; 2) achar o erro mais grave e o que fazer; 3) achar a evolução no histórico.
+* **Medidas:** conclusão e tempo de cada tarefa (informados pelo participante), a resposta das tarefas 2 e 3 (conferida) e a nota SUS. Metas: 1ª análise em até 5 min (RNF09), taxa de sucesso ≥ 80% e SUS ≥ 68 (RNF10).
+* **Evidência:** a planilha de respostas do Forms fica guardada com o grupo.
 
-### 8.3.1 Roteiro (para quem aplica)
+### 8.3.1 Formulário (Google Forms)
 
-**Antes de cada sessão (5 min)**
+**Título:** Teste de usabilidade do LogCoach
 
-1. Abrir https://logcoach.vercel.app numa janela anônima, para não haver sessão nem histórico de outro participante.
-2. Criar uma conta de teste (ex.: `teste1@logcoach.dev`) e fazer **duas análises** da luta de exemplo com ela. Sair da conta. Isso deixa um histórico pronto para a tarefa 3.
-3. Ter à mão: o link de exemplo (no chat), um cronômetro e a tabela do 8.3.3.
+**Descrição:** Obrigado por ajudar! Vamos testar o site, não você: se algo ficar difícil, é o site que precisa melhorar. São 3 tarefas rápidas e um questionário de 10 frases, uns 15 minutos no total. Faça as tarefas sozinho, sem pedir ajuda.
 
-**Abertura (ler para o participante)**
+**Seção 1 – Sobre você**
 
-> Obrigado por ajudar. Vamos testar o site, não você: se algo ficar difícil, é o site que precisa melhorar. Vou pedir três tarefas. Tente fazer sozinho e vá falando em voz alta o que está pensando. Eu não vou ajudar durante as tarefas, só se você travar de vez. No final tem um formulário rápido. Leva uns 15 minutos.
+1. Você joga World of Warcraft? (Sim, raide Mítica / Sim, raide Heroica ou Normal / Sim, de forma casual / Não jogo)
+2. Você já tinha usado o LogCoach antes? (Sim / Não)
+3. Em que aparelho você vai fazer o teste? (Computador / Celular)
 
-**Tarefas (ler uma por vez; cronometrar do fim da leitura até concluir)**
+**Seção 2 – Tarefa 1.** *Abra https://logcoach.vercel.app. Um amigo te mandou este link do log dele: https://www.warcraftlogs.com/reports/XhrmBaYkGCAQjH2D. Descubra o que o LogCoach diz sobre a luta do personagem Harmonist. Marque o horário antes de começar.*
 
-| Tarefa | O que ler para o participante                                                                                                     | Concluída quando                                          | Tempo-limite |
-| ------ | --------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- | ------------ |
-| 1      | "Um amigo te mandou este link do log dele. Descubra o que o LogCoach diz sobre a luta do personagem Harmonist." (entregar o link) | Chega à tela de resultado                                 | 5 min        |
-| 2      | "Pelo relatório, qual foi o erro que mais custou dano nessa luta? E o que o site sugere fazer?"                                   | Aponta o 1º erro da lista e lê o "O que fazer"            | 3 min        |
-| 3      | "Entre com a conta `teste1@logcoach.dev` (senha na folha) e descubra se o DPS desse jogador melhorou entre as análises."          | Abre o Perfil e responde olhando o gráfico ou o histórico | 3 min        |
+4. Você conseguiu chegar ao resultado? (Sim, sozinho / Sim, mas com dificuldade / Não consegui)
+5. Quanto tempo levou, mais ou menos? (Menos de 1 min / 1 a 2 min / 2 a 5 min / Mais de 5 min)
+6. Onde você travou ou ficou em dúvida? (resposta curta, opcional)
 
-Na tarefa 3, com o log de exemplo, as duas análises são da mesma luta: a resposta certa é que o DPS **ficou igual**. O que se mede é se a pessoa acha o Perfil e lê o histórico.
+**Seção 3 – Tarefa 2.** *No resultado, descubra qual foi o erro que mais custou dano nessa luta e o que o site sugere fazer.*
 
-Para cada tarefa, anotar: **tempo**, **concluiu? (sim / com ajuda / não)** e **onde hesitou** (o que procurou, onde clicou errado, o que disse).
+7. Qual foi o erro mais grave, segundo o site? (resposta curta)
+8. Você conseguiu achar o que o site sugere fazer? (Sim, sozinho / Sim, mas com dificuldade / Não consegui)
+9. Quanto tempo levou, mais ou menos? (mesmas opções da pergunta 5)
 
-**Encerramento:** enviar o link do formulário (8.3.2) e pedir que a pessoa responda sem o aplicador olhando.
+**Seção 4 – Tarefa 3.** *Crie uma conta no LogCoach e faça a análise do mesmo personagem de novo. Depois descubra, pelo site, se o DPS desse jogador mudou entre as duas análises.*
 
-### 8.3.2 Formulário pós-teste (Google Forms)
+10. O DPS mudou? (Melhorou / Piorou / Ficou igual / Não consegui descobrir)
+11. Quanto tempo levou, mais ou menos? (mesmas opções da pergunta 5)
 
-Perguntas 1 a 4 em escala de 1 (discordo totalmente) a 5 (concordo totalmente); 5 e 6 abertas.
+**Seção 5 – Questionário SUS** (escala de 1 = discordo totalmente a 5 = concordo totalmente; todas obrigatórias)
 
-| # | Pergunta |
-| - | -------- |
-| 1 | Foi fácil fazer a análise a partir do link. |
-| 2 | Entendi qual foi o erro mais grave e o que fazer para corrigir. |
-| 3 | Os termos e textos do relatório foram claros. |
-| 4 | Eu usaria o LogCoach para analisar as minhas lutas (leigos: recomendaria a quem joga). |
-| 5 | O que foi mais confuso? |
-| 6 | O que você mudaria? |
+12. Eu acho que gostaria de usar este sistema com frequência.
+13. Eu achei o sistema desnecessariamente complexo.
+14. Eu achei o sistema fácil de usar.
+15. Eu acho que precisaria da ajuda de uma pessoa com conhecimento técnico para usar o sistema.
+16. Eu achei que as várias funções do sistema estão bem integradas.
+17. Eu achei que o sistema apresenta muita inconsistência.
+18. Eu imagino que as pessoas aprenderão a usar este sistema rapidamente.
+19. Eu achei o sistema muito complicado de usar.
+20. Eu me senti confiante ao usar o sistema.
+21. Eu precisei aprender várias coisas antes de conseguir usar o sistema.
 
-**Satisfação** = média das perguntas 1 a 4 de todos os participantes. Exportar as respostas do Forms (planilha) e guardar junto das anotações.
+**Seção 6 – Comentários**
+
+22. O que foi mais confuso? (parágrafo)
+23. O que você mudaria? (parágrafo)
+
+**Respostas certas:** pergunta 7, o primeiro erro da lista do resultado; pergunta 10, "Ficou igual" (é a mesma luta).
+
+### 8.3.2 Como calcular a nota SUS
+
+1. Frases ímpares do questionário (perguntas 12, 14, 16, 18 e 20): resposta − 1.
+2. Frases pares (perguntas 13, 15, 17, 19 e 21): 5 − resposta.
+3. Somar os 10 valores e multiplicar por 2,5. A nota vai de 0 a 100.
+
+Exemplo: respostas 4, 2, 4, 1, 4, 2, 5, 1, 4, 2 → ímpares (3+3+3+4+3) = 16; pares (3+4+3+4+3) = 17; (16 + 17) × 2,5 = **82,5**.
+
+A nota do sistema é a média dos participantes. Acima de 68 é considerada acima da média (meta do RNF10).
 
 ### 8.3.3 Resultados
 
-| Participante | Perfil | Tarefa 1 | Tarefa 2 | Tarefa 3 | Satisfação (1–5) |
-| ------------ | ------ | -------- | -------- | -------- | ---------------- |
-| P1           |        |          |          |          |                  |
-| P2           |        |          |          |          |                  |
-| P3           |        |          |          |          |                  |
-| **Média**    |        |          |          |          |                  |
+| Participante | Perfil | Tarefa 1 | Tarefa 2 | Tarefa 3 | SUS |
+| ------------ | ------ | -------- | -------- | -------- | --- |
+| P1           |        |          |          |          |     |
+| P2           |        |          |          |          |     |
+| P3           |        |          |          |          |     |
+| **Média**    |        |          |          |          |     |
 
-Em cada tarefa, anotar o tempo e o resultado (ex.: "2:10, sim" ou "4:30, com ajuda"). Com mais participantes, acrescentar linhas.
+Em cada tarefa, a conclusão e a faixa de tempo informadas (ex.: "1 a 2 min, sozinho"); nas tarefas 2 e 3, se a resposta está certa. Com mais participantes, acrescentar linhas.
 
-**Taxa de sucesso:** tarefas concluídas sem ajuda ÷ (participantes × 3). Meta ≥ 80% (item 11).
+**Taxa de sucesso:** tarefas concluídas sozinho e com resposta certa ÷ (participantes × 3). Meta ≥ 80% (item 11).
 
-**Problemas encontrados e correções:** _a preencher após o teste_.
+**Problemas encontrados e correções:** _a preencher após o teste_, a partir das perguntas 6, 22 e 23.
 
 Problema já observado num teste informal, antes do roteiro: o atalho "Usar o log de exemplo" some quando a mensagem de erro do link aparece no lugar dele.
 

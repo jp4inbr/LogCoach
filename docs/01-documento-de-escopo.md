@@ -529,6 +529,8 @@ BLIZZARD ENTERTAINMENT. **The Mythic Dungeon International returns!** 2026. Disp
 
 BLIZZARD ENTERTAINMENT. **Curse of Ula'tek: The Venomous Abyss raid goes live August 18**. 2026. Disponível em: [https://worldofwarcraft.blizzard.com/news/24294062](https://worldofwarcraft.blizzard.com/news/24294062). Acesso em: 12 out. 2026.
 
+BROOKE, J. SUS: a quick and dirty usability scale. _In_: JORDAN, P. W. _et al_. (ed.). **Usability evaluation in industry**. London: Taylor & Francis, 1996. p. 189-194.
+
 INTERNATIONAL ORGANIZATION FOR STANDARDIZATION. **ISO 9241-11:2018**: ergonomics of human-system interaction — part 11: usability: definitions and concepts. Genebra: ISO, 2018.
 
 KRUG, S. **Não me faça pensar**: atualizado. Rio de Janeiro: Alta Books, 2014.
