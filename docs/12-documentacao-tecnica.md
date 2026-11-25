@@ -1,7 +1,5 @@
 # 12. Documentação de Desenvolvimento (Técnica)
 
-> Em construção junto com o código.
-
 ## 12.1 Como rodar localmente
 
 ```bash

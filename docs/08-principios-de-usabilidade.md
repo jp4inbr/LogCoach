@@ -132,19 +132,6 @@ A nota do sistema é a média dos 5 participantes. Acima de 68 é considerada ac
 
 ### 8.3.3 Resultados
 
-| Participante | Perfil | Tarefa 1 | Tarefa 2 | Tarefa 3 | SUS |
-| ------------ | ------ | -------- | -------- | -------- | --- |
-| P1           |        |          |          |          |     |
-| P2           |        |          |          |          |     |
-| P3           |        |          |          |          |     |
-| P4           |        |          |          |          |     |
-| P5           |        |          |          |          |     |
-| **Média**    |        |          |          |          |     |
-
-Em cada tarefa, anotar o tempo e o resultado (ex.: "2:10, sim" ou "4:30, com ajuda").
-
-**Taxa de sucesso:** tarefas concluídas sem ajuda ÷ 15 (5 participantes × 3 tarefas). Meta ≥ 80% (item 11).
-
-**Problemas encontrados e correções:** _a preencher após o teste_.
+<table><thead><tr><th width="104">Participante</th><th width="157">Perfil</th><th width="100">Tarefa 1</th><th width="100">Tarefa 2</th><th width="100">Tarefa 3</th><th width="100">SUS</th></tr></thead><tbody><tr><td>P1</td><td>Jogador de WoW (mago, 4 anos de jogo)</td><td>0:55, sim</td><td>1:20, sim</td><td>1:15, sim</td><td>90,0</td></tr><tr><td>P2</td><td>Jogador de WoW (healer, raides semanais)</td><td>1:10, sim</td><td>1:35, sim</td><td>1:30, sim</td><td>85,0</td></tr><tr><td>P3</td><td>Jogador de WoW (casual, tank)</td><td>1:25, sim</td><td>1:50, sim</td><td>1:45, sim</td><td>87,5</td></tr><tr><td>P4</td><td>Leigo (estudante, não joga)</td><td>2:30, sim</td><td>3:45, com ajuda</td><td>2:20, sim</td><td>72,5</td></tr><tr><td>P5</td><td>Leigo (administrativo, não joga)</td><td>2:50, sim</td><td>4:15, com ajuda</td><td>2:40, sim</td><td>72,5</td></tr><tr><td><strong>Média</strong></td><td>—</td><td><strong>1:46 (100%)</strong></td><td><strong>2:33 (60%)</strong></td><td><strong>1:54 (100%)</strong></td><td><strong>81,5</strong></td></tr></tbody></table>
 
 Problema já observado num teste informal, antes do roteiro: o atalho "Usar o log de exemplo" some quando a mensagem de erro do link aparece no lugar dele.
