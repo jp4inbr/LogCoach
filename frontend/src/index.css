@@ -258,7 +258,7 @@ h3 {
   margin: 0;
   line-height: 1.15;
   font-weight: var(--font-weight-heading);
-  text-wrap: balance;
+  text-wrap: pretty;
 }
 
 /* Títulos na largura larga da Archivo: a mesma voz da marca, mais contida. */
@@ -1182,6 +1182,7 @@ label {
   line-height: 1.02;
   letter-spacing: -0.02em;
   max-width: 15ch;
+  text-wrap: balance;
 }
 
 .lead {
@@ -1770,12 +1771,23 @@ label {
   align-items: flex-start;
 }
 
+.mistake-head > div {
+  flex: 1;
+  min-width: 0;
+}
+
 .mistake-head h3 {
   font-size: var(--size-mistake-title);
   font-stretch: var(--font-wide);
   font-weight: var(--font-weight-heading);
-  line-height: 1.2;
+  line-height: 1.32;
   letter-spacing: -0.01em;
+}
+
+.mistake-head h3 .spell-icon {
+  width: 1.15em;
+  height: 1.15em;
+  vertical-align: -0.18em;
 }
 
 .mistake-rank {
@@ -2468,7 +2480,7 @@ caption {
   font-weight: var(--font-weight-strong);
   line-height: 1.15;
   letter-spacing: -0.01em;
-  text-wrap: balance;
+  text-wrap: pretty;
 }
 
 .gap-headline strong {
