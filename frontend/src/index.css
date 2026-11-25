@@ -1180,6 +1180,9 @@ label {
 
 .hero .lead {
   max-width: 52ch;
+  /* Sobre a cidade do cenário, o --muted puro ficava no limite do AA no celular (4,49 no
+     escuro). Um quarto da cor do texto dá folga nos dois temas sem perder a hierarquia. */
+  color: color-mix(in srgb, var(--muted) 75%, var(--text));
 }
 
 .link-form {
