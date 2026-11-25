@@ -107,8 +107,8 @@ export default function MistakeCard({ mistake, rank, id, details }) {
                 <th scope="row">
                   <SpellText text={row.label} />
                 </th>
-                <td>{row.player}</td>
-                <td>{row.top}</td>
+                <td data-label="Você">{row.player}</td>
+                <td data-label="Melhores">{row.top}</td>
               </tr>
             ))}
           </tbody>

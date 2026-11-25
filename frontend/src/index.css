@@ -2462,22 +2462,50 @@ caption {
   .tab {
     flex: 1 1 0;
     padding: 10px 4px;
-    font-size: var(--size-label);
     line-height: 1.2;
     text-align: center;
     white-space: normal;
   }
 
-  /* Tabela de números do cartão de erro: no celular, letra um passo menor e quebra dentro da
-     célula, para as três colunas caberem na largura do cartão. */
-  .mistake .numbers {
-    font-size: var(--size-small);
+  /* Tabela de números do cartão de erro: no celular as três colunas não cabem sem quebrar
+     palavras, então cada linha empilha: a medida em cima, "Você" e "Melhores" lado a lado
+     embaixo, com o nome da coluna (data-label) sobre cada número. O cabeçalho fica só para
+     leitores de tela. */
+  .mistake .numbers,
+  .mistake .numbers tbody {
+    display: block;
   }
 
-  .mistake .numbers th,
-  .mistake .numbers td {
-    padding: 6px 4px;
-    overflow-wrap: anywhere;
+  .mistake .numbers thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .mistake .numbers tr {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 2px 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .mistake .numbers tr > * {
+    padding: 0;
+    border: 0;
+  }
+
+  .mistake .numbers tbody th {
+    grid-column: 1 / -1;
+  }
+
+  .mistake .numbers td::before {
+    content: attr(data-label);
+    display: block;
+    color: var(--muted);
   }
 
   /* Faixa do trilho: sete números cabem numa linha de 360 px. */
