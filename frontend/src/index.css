@@ -75,7 +75,7 @@
   --font-sans: "Archivo Variable", "Archivo Fallback", "Segoe UI", system-ui, sans-serif;
   --font-wide: 118%;
   --font-wider: 125%;
-  --font-weight-body: 700;
+  --font-weight-body: 550;
   --font-weight-strong: 800;
   --font-weight-heading: 850;
   --size-display: clamp(2.4rem, 1.4rem + 4.4vw, 4.25rem);
@@ -87,7 +87,7 @@
   --size-label: 0.875rem;
   --size-micro: 0.8125rem;
   --size-headline-compact: 1.85rem;
-  --size-mistake-title: 1.75rem;
+  --size-mistake-title: 1.55rem;
   --size-mistake-emphasis: 1.375rem;
   --size-mistake-body: 1.15rem;
   --size-veil-frame: 80px; /* altura do véu atrás do cabeçalho (cenário) */
@@ -1778,10 +1778,13 @@ label {
 
 .mistake-head h3 {
   font-size: var(--size-mistake-title);
-  font-stretch: var(--font-wide);
+  font-stretch: 108%;
   font-weight: var(--font-weight-heading);
   line-height: 1.32;
   letter-spacing: -0.01em;
+  text-align: left;
+  /* Quebra normal (sem balance/pretty): o título preenche toda a largura até o fim do cartão. */
+  text-wrap: wrap;
 }
 
 .mistake-head h3 .spell-icon {
