@@ -2,7 +2,7 @@ import { formatDate, formatDps } from "../lib/format.js";
 
 const W = 600;
 const H = 180;
-const PAD = { top: 16, right: 16, bottom: 28, left: 64 };
+const PAD = { top: 18, right: 18, bottom: 32, left: 76 };
 
 // Evolução do DPS entre análises do mesmo chefe (RF13). `points` em ordem de data.
 export default function EvolutionChart({ points }) {
@@ -32,7 +32,7 @@ export default function EvolutionChart({ points }) {
         ))}
         <path className="chart-line" d={line} />
         {points.map((p, i) => (
-          <circle key={p.id} className="chart-dot" cx={x(i)} cy={y(p.dps)} r="5">
+          <circle key={p.id} className="chart-dot" cx={x(i)} cy={y(p.dps)} r="6">
             <title>{`${formatDate(p.created_at)}: ${formatDps(p.dps)}`}</title>
           </circle>
         ))}
