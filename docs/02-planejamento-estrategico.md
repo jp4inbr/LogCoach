@@ -22,7 +22,7 @@ Esta página registra como o LogCoach evoluiu depois da RT01: o feedback recebid
 
 Para que a análise seja realmente especializada já na primeira versão, o MVP foi recortado em uma especialização, uma raide, três chefes e duas dificuldades:
 
-<table data-search="false"><thead><tr><th width="192.75">Item</th><th width="545.25">Decisão</th></tr></thead><tbody><tr><td><strong>Especialização</strong></td><td>Mago Arcano</td></tr><tr><td><strong>Conteúdo</strong></td><td>Raide The Venomous Abyss (Midnight, Temporada 2)</td></tr><tr><td><strong>Chefes</strong></td><td>1º Nek'zali the Soulcoiler, 2º Entombed Sentinels, 3º The Lost Explorers</td></tr><tr><td><strong>Dificuldade</strong></td><td>Mítico</td></tr><tr><td><strong>Entrada</strong></td><td>Link do relatório no Warcraft Logs</td></tr><tr><td><strong>Comparação</strong></td><td>Média dos 10 melhores logs de Mago Arcano no mesmo chefe e dificuldade, na mesma faixa de item level do jogador</td></tr><tr><td><strong>Idioma</strong></td><td>Português</td></tr><tr><td><strong>Camada de IA</strong></td><td>Fora do MVP. O plano era usar o Gemini (Vertex AI) para transformar os números em orientações; saiu em 21/11 pelo custo financeiro da API, sem verba no projeto. Os erros e o que fazer vêm em textos prontos em português, montados pelo motor</td></tr></tbody></table>
+<table data-search="false"><thead><tr><th width="192.75">Item</th><th width="545.25">Decisão</th></tr></thead><tbody><tr><td><strong>Especialização</strong></td><td>Mago Arcano</td></tr><tr><td><strong>Conteúdo</strong></td><td>Raide The Venomous Abyss (Midnight, Temporada 2)</td></tr><tr><td><strong>Chefes</strong></td><td>1º Nek'zali the Soulcoiler, 2º Entombed Sentinels, 3º The Lost Explorers</td></tr><tr><td><strong>Dificuldade</strong></td><td>Mítico</td></tr><tr><td><strong>Entrada</strong></td><td>Link do relatório no Warcraft Logs</td></tr><tr><td><strong>Comparação</strong></td><td>Média dos 10 melhores logs de Mago Arcano no mesmo chefe e dificuldade, na mesma faixa de item level do jogador</td></tr><tr><td><strong>Idioma</strong></td><td>Português</td></tr><tr><td><strong>Camada de IA</strong></td><td>Fora da versão beta; fica para o plano Pro. O plano era usar o Gemini (Vertex AI) para transformar os números em orientações; saiu do MVP em 21/11 pelo custo financeiro da API, sem verba no projeto. Na beta, a IA entra no desenvolvimento (item 9). Os erros e o que fazer vêm em textos prontos em português, montados pelo motor</td></tr></tbody></table>
 
 #### Ordem dos chefes
 
@@ -83,7 +83,7 @@ Inclusão dos chefes Entombed Sentinels e The Lost Explorers e teste com jogador
 {% step %}
 #### Pós-MVP · 2027
 
-Mais especializações, Mítica+, versão em inglês e pagamento real.
+Mais especializações, Mítica+, versão em inglês e pagamento real. O plano Pro traz o coach com IA, que responde perguntas sobre a análise, pago pela receita do plano.
 
 A versão em inglês tem um público medido: só na temporada atual, 1.696 guildas fazem raide Mítica na região americana e 2.459 na Europa, contra 51 no Brasil (Raider.IO, 17/11/2026). Com o método validado em português, abrir o produto para esses jogadores multiplica o mercado sem mudar o motor.
 {% endstep %}

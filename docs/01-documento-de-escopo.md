@@ -284,7 +284,7 @@ Fonte: Raider.IO, rankings de The Venomous Abyss no Mítico (Brasil, EUA/Oceania
 
 O LogCoach é uma ferramenta de análise de desempenho criada para jogadores brasileiros profissionais de World of Warcraft. Ela usa os dados do Warcraft Logs, a plataforma de registro de combate que a comunidade competitiva já adota, para comparar a execução de cada jogador com a da elite mundial e apontar em português, de forma clara e objetiva, onde ele está perdendo desempenho e o que precisa ajustar.
 
-O diagnóstico vem de regras de análise determinísticas, que garantem precisão e transparência, e de textos prontos em português que explicam cada erro e o que fazer. A camada de inteligência artificial prevista no início saiu do MVP em 21/11, pelo custo financeiro (item 2.2). O MVP começa pelo Mago Arcano no chefe Nek’zali, um encontro em que a diferença entre os jogadores está na execução individual.
+O diagnóstico vem de regras de análise determinísticas, que garantem precisão e transparência, e de textos prontos em português que explicam cada erro e o que fazer. A camada de inteligência artificial prevista no início saiu do MVP em 21/11, pelo custo financeiro, e fica para o plano Pro (item 2.2). O MVP começa pelo Mago Arcano no chefe Nek’zali, um encontro em que a diferença entre os jogadores está na execução individual.
 
 O objetivo é encurtar a distância entre a cena brasileira e o topo mundial: hoje só 51 guildas do Brasil derrotaram ao menos um chefe Mítico na raide atual, e a melhor delas está na 218ª posição do mundo.
 
@@ -459,7 +459,7 @@ O sistema aplica regras fixas da especialização e avalia quatro pontos: tempo 
 {% column %}
 **Pago**
 
-Análises ilimitadas.
+Análises ilimitadas e coach com IA.
 {% endcolumn %}
 {% endcolumns %}
 
@@ -528,8 +528,6 @@ Dados de mercado e da cena competitiva
 BLIZZARD ENTERTAINMENT. **The Mythic Dungeon International returns!** 2026. Disponível em: [https://worldofwarcraft.blizzard.com/news/24276958](https://worldofwarcraft.blizzard.com/news/24276958). Acesso em: 12 out. 2026.
 
 BLIZZARD ENTERTAINMENT. **Curse of Ula'tek: The Venomous Abyss raid goes live August 18**. 2026. Disponível em: [https://worldofwarcraft.blizzard.com/news/24294062](https://worldofwarcraft.blizzard.com/news/24294062). Acesso em: 12 out. 2026.
-
-BROOKE, J. SUS: a quick and dirty usability scale. _In_: JORDAN, P. W. _et al_. (ed.). **Usability evaluation in industry**. London: Taylor & Francis, 1996. p. 189-194.
 
 INTERNATIONAL ORGANIZATION FOR STANDARDIZATION. **ISO 9241-11:2018**: ergonomics of human-system interaction — part 11: usability: definitions and concepts. Genebra: ISO, 2018.
 

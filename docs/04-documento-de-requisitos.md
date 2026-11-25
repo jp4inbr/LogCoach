@@ -372,9 +372,9 @@ Um jogador que nunca recebeu treinamento no sistema deve conseguir concluir a pr
 
 <details>
 
-<summary><strong>RNF10. Nota SUS mínima de 68</strong></summary>
+<summary><strong>RNF10. Satisfação mínima de 4 de 5 no teste com usuários</strong></summary>
 
-No teste com usuários, o sistema deve alcançar nota de pelo menos 68 na escala SUS (System Usability Scale).
+No teste com usuários (item 8.3), a média das perguntas de satisfação do formulário pós-teste (escala de 1 a 5) deve ser de pelo menos 4.
 
 {% hint style="info" %}
 **Categoria: Usabilidade**

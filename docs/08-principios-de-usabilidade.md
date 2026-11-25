@@ -77,24 +77,26 @@ O resumo mostra só quatro números, de onde vem a diferença para os tops (erro
 | API do Warcraft Logs fora do ar  | "O Warcraft Logs não respondeu. Tente de novo em alguns minutos"                            |
 | E-mail ou senha inválidos        | Aviso no próprio campo, antes de enviar                                                     |
 
-## 8.3 Teste de usabilidade
+## 8.3 Teste de usabilidade com usuários
 
-* **Participantes:** 5 pessoas — 3 jogadores de WoW e 2 leigos.
+Teste curto, com pessoas reais, no site publicado. Mede as três dimensões de usabilidade: eficácia (concluiu a tarefa?), eficiência (em quanto tempo?) e satisfação (questionário curto no Google Forms).
+
+* **Participantes:** 3 a 5 pessoas, de preferência jogadores de WoW e pelo menos 1 leigo. Podem ser colegas da turma, familiares ou jogadores da guilda do Arthur.
+* **Formato:** presencial ou por chamada (Discord ou Meet) com a tela do participante compartilhada. Cerca de 15 min por pessoa.
 * **Tarefas:** 1) analisar um log a partir do link; 2) achar o erro mais grave; 3) achar a evolução no histórico.
-* **Medidas:** tempo para concluir, se precisou de ajuda, nota SUS (meta ≥ 68), tempo da 1ª análise (meta ≤ 5 min, RNF09) e taxa de sucesso (meta ≥ 80%).
+* **Medidas:** tempo de cada tarefa, se concluiu sozinho, onde hesitou e as notas do questionário. Metas: 1ª análise em até 5 min (RNF09), taxa de sucesso ≥ 80% e satisfação média ≥ 4 de 5 (RNF10).
 
 ### 8.3.1 Roteiro (para quem aplica)
 
 **Antes de cada sessão (5 min)**
 
-1. Backend e frontend rodando, com o motor na versão da entrega. Abrir http://localhost:5173 numa janela anônima, para não haver sessão nem histórico de outro participante.
+1. Abrir https://logcoach.vercel.app numa janela anônima, para não haver sessão nem histórico de outro participante.
 2. Criar uma conta de teste (ex.: `teste1@logcoach.dev`) e fazer **duas análises** da luta de exemplo com ela. Sair da conta. Isso deixa um histórico pronto para a tarefa 3.
-3. Ter à mão: o link de exemplo (em papel ou no chat), um cronômetro e esta tabela.
-4. Sessão remota: o participante usa o próprio navegador se o sistema estiver publicado; senão, compartilha-se a tela e ele diz onde clicar.
+3. Ter à mão: o link de exemplo (no chat), um cronômetro e a tabela do 8.3.3.
 
 **Abertura (ler para o participante)**
 
-> Obrigado por ajudar. Vamos testar o site, não você: se algo ficar difícil, é o site que precisa melhorar. Vou pedir três tarefas. Tente fazer sozinho e vá falando em voz alta o que está pensando. Eu não vou ajudar durante as tarefas, só se você travar de vez. No final tem um questionário rápido de 10 perguntas. Leva uns 15 minutos.
+> Obrigado por ajudar. Vamos testar o site, não você: se algo ficar difícil, é o site que precisa melhorar. Vou pedir três tarefas. Tente fazer sozinho e vá falando em voz alta o que está pensando. Eu não vou ajudar durante as tarefas, só se você travar de vez. No final tem um formulário rápido. Leva uns 15 minutos.
 
 **Tarefas (ler uma por vez; cronometrar do fim da leitura até concluir)**
 
@@ -108,43 +110,48 @@ Na tarefa 3, com o log de exemplo, as duas análises são da mesma luta: a respo
 
 Para cada tarefa, anotar: **tempo**, **concluiu? (sim / com ajuda / não)** e **onde hesitou** (o que procurou, onde clicou errado, o que disse).
 
-**Encerramento**
+**Encerramento:** enviar o link do formulário (8.3.2) e pedir que a pessoa responda sem o aplicador olhando.
 
-1. Aplicar o questionário SUS (8.3.2), de preferência sem o aplicador olhando as respostas.
-2. Perguntar: "O que foi mais confuso?" e "O que você mudaria?". Anotar as frases como foram ditas.
-3. Para os leigos, a tarefa 2 mede se o relatório se entende sem conhecer o jogo; é normal levarem mais tempo.
+### 8.3.2 Formulário pós-teste (Google Forms)
 
-### 8.3.2 Questionário SUS
+Perguntas 1 a 4 em escala de 1 (discordo totalmente) a 5 (concordo totalmente); 5 e 6 abertas.
 
-Cada frase é respondida de 1 (discordo totalmente) a 5 (concordo totalmente).
+| # | Pergunta |
+| - | -------- |
+| 1 | Foi fácil fazer a análise a partir do link. |
+| 2 | Entendi qual foi o erro mais grave e o que fazer para corrigir. |
+| 3 | Os termos e textos do relatório foram claros. |
+| 4 | Eu usaria o LogCoach para analisar as minhas lutas (leigos: recomendaria a quem joga). |
+| 5 | O que foi mais confuso? |
+| 6 | O que você mudaria? |
 
-<table data-search="false"><thead><tr><th>#</th><th>Frase</th></tr></thead><tbody><tr><td>1</td><td>Eu acho que gostaria de usar este sistema com frequência.</td></tr><tr><td>2</td><td>Eu achei o sistema desnecessariamente complexo.</td></tr><tr><td>3</td><td>Eu achei o sistema fácil de usar.</td></tr><tr><td>4</td><td>Eu acho que precisaria da ajuda de uma pessoa com conhecimento técnico para usar o sistema.</td></tr><tr><td>5</td><td>Eu achei que as várias funções do sistema estão bem integradas.</td></tr><tr><td>6</td><td>Eu achei que o sistema apresenta muita inconsistência.</td></tr><tr><td>7</td><td>Eu imagino que as pessoas aprenderão a usar este sistema rapidamente.</td></tr><tr><td>8</td><td>Eu achei o sistema muito complicado de usar.</td></tr><tr><td>9</td><td>Eu me senti confiante ao usar o sistema.</td></tr><tr><td>10</td><td>Eu precisei aprender várias coisas antes de conseguir usar o sistema.</td></tr></tbody></table>
-
-**Como calcular a nota de cada participante (0 a 100)**
-
-1. Frases ímpares (1, 3, 5, 7, 9): resposta − 1.
-2. Frases pares (2, 4, 6, 8, 10): 5 − resposta.
-3. Somar os 10 valores e multiplicar por 2,5.
-
-Exemplo: respostas 4, 2, 4, 1, 4, 2, 5, 1, 4, 2 → ímpares (3+3+3+4+3) = 16; pares (3+4+3+4+3) = 17; (16 + 17) × 2,5 = **82,5**.
-
-A nota do sistema é a média dos 5 participantes. Acima de 68 é considerada acima da média (meta do RNF10).
+**Satisfação** = média das perguntas 1 a 4 de todos os participantes. Exportar as respostas do Forms (planilha) e guardar junto das anotações.
 
 ### 8.3.3 Resultados
 
-| Participante | Perfil | Tarefa 1 | Tarefa 2 | Tarefa 3 | SUS |
-| ------------ | ------ | -------- | -------- | -------- | --- |
-| P1           |        |          |          |          |     |
-| P2           |        |          |          |          |     |
-| P3           |        |          |          |          |     |
-| P4           |        |          |          |          |     |
-| P5           |        |          |          |          |     |
-| **Média**    |        |          |          |          |     |
+| Participante | Perfil | Tarefa 1 | Tarefa 2 | Tarefa 3 | Satisfação (1–5) |
+| ------------ | ------ | -------- | -------- | -------- | ---------------- |
+| P1           |        |          |          |          |                  |
+| P2           |        |          |          |          |                  |
+| P3           |        |          |          |          |                  |
+| **Média**    |        |          |          |          |                  |
 
-Em cada tarefa, anotar o tempo e o resultado (ex.: "2:10, sim" ou "4:30, com ajuda").
+Em cada tarefa, anotar o tempo e o resultado (ex.: "2:10, sim" ou "4:30, com ajuda"). Com mais participantes, acrescentar linhas.
 
-**Taxa de sucesso:** tarefas concluídas sem ajuda ÷ 15 (5 participantes × 3 tarefas). Meta ≥ 80% (item 11).
+**Taxa de sucesso:** tarefas concluídas sem ajuda ÷ (participantes × 3). Meta ≥ 80% (item 11).
 
 **Problemas encontrados e correções:** _a preencher após o teste_.
 
 Problema já observado num teste informal, antes do roteiro: o atalho "Usar o log de exemplo" some quando a mensagem de erro do link aparece no lugar dele.
+
+## 8.4 Avaliação heurística
+
+Avaliação sem usuários, feita por 2 ou 3 integrantes que não desenharam as telas. Complementa o teste com usuários (8.3) e não o substitui.
+
+1. Cada avaliador percorre sozinho o fluxo completo no site publicado: início → link → luta → personagem → resultado (as três abas) → perfil → planos, nos dois temas e no celular.
+2. Para cada problema, anota a tela, a heurística de Nielsen violada e a gravidade (0 = não é problema, 1 = cosmético, 2 = pequeno, 3 = grande, 4 = catástrofe).
+3. Os avaliadores juntam as listas, tiram os repetidos e o grupo decide o que corrigir.
+
+| # | Tela | Problema | Heurística | Gravidade (0–4) | Avaliadores | Correção |
+| - | ---- | -------- | ---------- | --------------- | ----------- | -------- |
+|   |      |          |            |                 |             |          |
