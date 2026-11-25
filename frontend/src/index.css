@@ -326,6 +326,8 @@ a {
 
 .stack {
   display: grid;
+  /* Coluna nunca mais larga que o espaço disponível (ver .result). */
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--gap);
 }
 
@@ -877,6 +879,12 @@ a {
   font: inherit;
   cursor: pointer;
   text-decoration: underline;
+}
+
+/* Sobre a cidade do cenário, o --link puro ficava abaixo do AA (4,43 no escuro) com a fonte
+   maior do projetor. Um quinto da cor do texto dá folga nos dois temas. */
+.hero .link-button {
+  color: color-mix(in srgb, var(--link) 80%, var(--text));
 }
 
 /* Chave de tema em pílula: trilho translúcido com a bolinha clara; no escuro ela fica à esquerda,
@@ -1692,6 +1700,9 @@ label {
 
 .result {
   display: grid;
+  /* minmax(0, 1fr): a coluna nunca passa da largura da tela; sem isso, o conteúdo mais largo
+     (abas e números na fonte maior do projetor) esticava o resultado para 428 px no celular. */
+  grid-template-columns: minmax(0, 1fr);
   gap: 20px;
 }
 
@@ -2392,7 +2403,9 @@ caption {
 
   .stats {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    /* minmax(0, …): com a fonte maior do projetor, o número mais largo esticava a coluna e
+       empurrava a página para além de 360 px. */
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 16px 0;
   }
 
@@ -2442,7 +2455,8 @@ caption {
     padding: 2px;
   }
 
-  .rail-link {
+  /* Mais específico que o .rail-link de base (48 px), que vem depois no arquivo. */
+  .rail .rail-link {
     width: 44px;
     height: 44px;
   }
