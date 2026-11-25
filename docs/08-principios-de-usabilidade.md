@@ -147,18 +147,35 @@ A nota do sistema é a média dos participantes. Acima de 68 é considerada acim
 
 ### 8.3.3 Resultados
 
-| Participante | Perfil | Tarefa 1 | Tarefa 2 | Tarefa 3 | SUS |
-| ------------ | ------ | -------- | -------- | -------- | --- |
-| P1           |        |          |          |          |     |
-| P2           |        |          |          |          |     |
-| P3           |        |          |          |          |     |
-| **Média**    |        |          |          |          |     |
+Teste aplicado em 25/11/2026 pelo formulário do 8.3.1, com 9 participantes: 5 que não jogam WoW e 4 que jogam (3 em raide e 1 de forma casual); 6 no computador e 3 no celular. As respostas ficam guardadas na planilha do formulário, com o grupo.
 
-Em cada tarefa, a conclusão e a faixa de tempo informadas (ex.: "1 a 2 min, sozinho"); nas tarefas 2 e 3, se a resposta está certa. Com mais participantes, acrescentar linhas.
+| Participante | Perfil | Aparelho | Tarefa 1 | Tarefa 2 | Tarefa 3 | SUS |
+| --- | --- | --- | --- | --- | --- | --- |
+| P1 | Não joga | Computador | < 1 min, sozinho | < 1 min, sozinho, errada | anulada | 60,0 |
+| P2 | Joga, casual | Computador | 1 a 2 min, sozinho | 1 a 2 min, sozinho, certa | anulada | 65,0 |
+| P3 | Não joga | Computador | < 1 min, sozinho | < 1 min, sozinho, certa | anulada | 92,5 |
+| P4 | Não joga | Celular | < 1 min, sozinho | < 1 min, sozinho, certa | anulada | 90,0 |
+| P5 | Não joga | Celular | < 1 min, sozinho | < 1 min, sozinho, certa | anulada | 92,5 |
+| P6 | Não joga | Celular | 1 a 2 min, sozinho | < 1 min, sozinho, certa | anulada | 97,5 |
+| P7 | Joga raide | Computador | 1 a 2 min, sozinho | > 5 min, sozinho, errada | anulada | 75,0 |
+| P8 | Joga raide | Computador | 2 a 5 min, sozinho | > 5 min, sozinho, certa | anulada | 80,0 |
+| P9 | Joga raide | Computador | 1 a 2 min, sozinho | > 5 min, sozinho, errada | anulada | 72,5 |
+| **Média** | 5 não jogam, 4 jogam | 6 computador, 3 celular | **9 de 9 sozinhos, todos em até 5 min** | **6 de 9 certas** | — | **80,6** |
 
-**Taxa de sucesso:** tarefas concluídas sozinho e com resposta certa ÷ (participantes × 3). Meta ≥ 80% (item 11).
+Na tarefa 2, a resposta certa é "Entrada na Alma Arcana com pouca Saraivada", o primeiro erro da lista do kill de referência. Dois participantes apontaram outra regra da lista e um respondeu "Limite de usos diários".
 
-**Problemas encontrados e correções:** _a preencher após o teste_, a partir das perguntas 6, 22 e 23.
+**Tarefa 3 anulada.** O enunciado pedia para comparar o DPS entre duas análises no Perfil, mas a análise feita sem conta (tarefa 1) não entra no histórico (RF01). Quem criou a conta na tarefa 3 ficou com uma análise só e não tinha o que comparar: as respostas se dividiram entre "Ficou igual" (5), "Melhorou" (2) e "Não consegui descobrir" (2). A falha é do enunciado, não do site, e a tarefa foi desconsiderada para todos. Num próximo teste, a tarefa deve começar já com uma conta que tenha duas análises (como no roteiro com aplicador).
+
+**Resultado:** SUS médio de 80,6 (de 60,0 a 97,5), acima da meta de 68; todos chegaram ao resultado sozinhos em até 5 minutos (4 em menos de 1 min, 4 de 1 a 2 min e 1 de 2 a 5 min); taxa de sucesso de 83% (15 de 18 nas tarefas 1 e 2), acima da meta de 80%.
+
+**Problemas encontrados:**
+
+* Um participante que não joga achou o resultado com informação demais e termos difíceis, e sugeriu um resumo com a opção de ver os detalhes.
+* Um jogador não entendeu a coluna "melhores" na aba Todas as regras.
+* Um participante hesitou na criação de conta, mas concluiu.
+* Um participante respondeu "Limite de usos diários" como o erro mais grave: provavelmente esbarrou no limite da análise sem conta antes de chegar ao resultado.
+
+Os dois primeiros reforçam o que o resumo já faz (erros de maior impacto primeiro, detalhes nas abas) e pedem uma explicação melhor dos termos; ficam registrados para a próxima versão.
 
 Problema já observado num teste informal, antes do roteiro: o atalho "Usar o log de exemplo" some quando a mensagem de erro do link aparece no lugar dele.
 
