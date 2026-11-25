@@ -4,8 +4,6 @@ description: Testes unitários, de integração e de usabilidade realizados.
 
 # 10. Relatório de Testes
 
-> Entrega da RT03. Resultados do backend de 16/11/2026 (CI do PR #31, com a `main` de 15/11 e o motor de análise); do frontend, de 07/11 (item 10.4).
-
 ## 10.1 Ferramenta
 
 **Pytest** (backend em Python). Todos os testes usam dados salvos em arquivo, sem depender da internet.
