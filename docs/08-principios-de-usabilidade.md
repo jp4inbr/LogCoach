@@ -178,15 +178,3 @@ Na tarefa 2, a resposta certa é "Entrada na Alma Arcana com pouca Saraivada", o
 Os dois primeiros reforçam o que o resumo já faz (erros de maior impacto primeiro, detalhes nas abas) e pedem uma explicação melhor dos termos; ficam registrados para a próxima versão.
 
 Problema já observado num teste informal, antes do roteiro: o atalho "Usar o log de exemplo" some quando a mensagem de erro do link aparece no lugar dele.
-
-## 8.4 Avaliação heurística
-
-Avaliação sem usuários, feita por 2 ou 3 integrantes que não desenharam as telas. Complementa o teste com usuários (8.3) e não o substitui.
-
-1. Cada avaliador percorre sozinho o fluxo completo no site publicado: início → link → luta → personagem → resultado (as três abas) → perfil → planos, nos dois temas e no celular.
-2. Para cada problema, anota a tela, a heurística de Nielsen violada e a gravidade (0 = não é problema, 1 = cosmético, 2 = pequeno, 3 = grande, 4 = catástrofe).
-3. Os avaliadores juntam as listas, tiram os repetidos e o grupo decide o que corrigir.
-
-| # | Tela | Problema | Heurística | Gravidade (0–4) | Avaliadores | Correção |
-| - | ---- | -------- | ---------- | --------------- | ----------- | -------- |
-|   |      |          |            |                 |             |          |
