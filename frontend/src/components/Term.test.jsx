@@ -29,3 +29,26 @@ describe("Term", () => {
     expect(await axeViolations(container)).toEqual([]);
   });
 });
+
+describe("tipShift", () => {
+  it("não desloca quando a dica cabe à direita do termo", async () => {
+    const { tipShift } = await import("../lib/tip.js");
+    expect(tipShift(16, 390)).toBe(0);
+  });
+
+  it("desloca para a esquerda perto da borda direita, sem sair pela esquerda", async () => {
+    const { tipShift } = await import("../lib/tip.js");
+    // 390 px: dica de 280 px; termo em 243 iria até 523.
+    const shift = tipShift(243, 390);
+    expect(243 + shift).toBeGreaterThanOrEqual(12);
+    expect(243 + shift + 280).toBeLessThanOrEqual(390 - 12);
+  });
+
+  it("em tela estreita, a dica fica entre as duas margens", async () => {
+    const { tipShift } = await import("../lib/tip.js");
+    // 320 px: dica de 256 px (80vw); termo quase na borda direita.
+    const left = 300 + tipShift(300, 320);
+    expect(left).toBeGreaterThanOrEqual(12);
+    expect(left + 256).toBeLessThanOrEqual(320 - 12);
+  });
+});
