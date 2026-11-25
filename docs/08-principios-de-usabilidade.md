@@ -14,7 +14,7 @@ As evidências são prints da alfa rodando, com o relatório de exemplo do Nek'z
 
 ### Figura 1: andamento em etapas
 
-![Tela "Analisando sua luta" com três etapas: a primeira concluída, a segunda em andamento e a terceira por fazer](.gitbook/assets/8-1-visibilidade-etapas.png)
+![Tela "Analisando sua luta" com três etapas: "Buscando sua luta" e "Comparando com os melhores" concluídas e "Montando o relatório" em andamento](.gitbook/assets/8-1-visibilidade-etapas.png)
 
 ### Figura 2: escolher a luta
 
