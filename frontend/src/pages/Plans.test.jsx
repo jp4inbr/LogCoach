@@ -41,7 +41,6 @@ describe("Plans", () => {
     expect(pro.getAllByRole("listitem").map((item) => item.textContent)).toEqual([
       "Análises ilimitadas",
       "Comparação entre duas análises suas",
-      "Coach com IA: perguntas sobre a sua análise",
     ]);
     expect(pro.getByRole("button", { name: "Disponível depois da versão beta" })).toBeDisabled();
   });

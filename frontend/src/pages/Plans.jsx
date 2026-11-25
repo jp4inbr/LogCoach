@@ -34,7 +34,6 @@ export default function Plans() {
           <ul>
             <li>Análises ilimitadas</li>
             <li>Comparação entre duas análises suas</li>
-            <li>Coach com IA: perguntas sobre a sua análise</li>
           </ul>
           <button type="button" className="button ghost block" disabled>
             Disponível depois da versão beta

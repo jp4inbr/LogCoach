@@ -203,7 +203,6 @@ Dois cartões, lado a lado:
 
 * Análises ilimitadas
 * Comparação entre análises
-* Coach com IA (perguntas sobre a análise)
 
 {% hint style="warning" %}
 **Sem pagamento real no MVP.** Os planos são demonstrados, mas a cobrança fica para o pós-MVP.
