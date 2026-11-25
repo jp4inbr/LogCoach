@@ -32,7 +32,7 @@ export default function EvolutionChart({ points }) {
         ))}
         <path className="chart-line" d={line} />
         {points.map((p, i) => (
-          <circle key={p.id} className="chart-dot" cx={x(i)} cy={y(p.dps)} r="5">
+          <circle key={p.id} className="chart-dot" cx={x(i)} cy={y(p.dps)} r="6">
             <title>{`${formatDate(p.created_at)}: ${formatDps(p.dps)}`}</title>
           </circle>
         ))}

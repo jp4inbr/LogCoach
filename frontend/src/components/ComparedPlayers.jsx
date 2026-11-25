@@ -54,7 +54,7 @@ export default function ComparedPlayers({ comparison }) {
             title={hasNames ? undefined : "Nomes reais indisponíveis nos dados de exemplo"}
             onClick={toggle}
           >
-            <Icon name={revealed ? "eye" : "eye-off"} className="eye-icon" size={18} />
+            <Icon name={revealed ? "eye" : "eye-off"} className="eye-icon" size={22} />
             Mostrar nomes
           </button>
         </div>

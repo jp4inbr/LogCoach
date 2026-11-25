@@ -49,7 +49,7 @@ const PATHS = {
   ),
 };
 
-export default function Icon({ name, size = "1em", className, label }) {
+export default function Icon({ name, size = "1.15em", className, label }) {
   const paths = PATHS[name];
   if (!paths) throw new Error(`Ícone desconhecido: ${name}`);
   return (
@@ -61,7 +61,7 @@ export default function Icon({ name, size = "1em", className, label }) {
       height={size}
       fill="none"
       stroke="currentColor"
-      strokeWidth="2"
+      strokeWidth="2.25"
       strokeLinecap="round"
       strokeLinejoin="round"
       focusable="false"

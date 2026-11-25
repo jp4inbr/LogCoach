@@ -14,8 +14,8 @@ export default function SpellIcon({ id }) {
       alt=""
       aria-hidden="true"
       loading="lazy"
-      width="18"
-      height="18"
+      width="24"
+      height="24"
       onError={() => setFailed(true)}
     />
   );

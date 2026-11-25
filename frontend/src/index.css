@@ -65,30 +65,37 @@
   --radius: 16px;
   --radius-sm: 8px;
   --gap: 16px;
-  --max: 960px;
-  --max-frame: 1240px;
+  --max: 1040px;
+  --max-frame: 1320px;
 
   /* Tipografia (não são cores; o teste de contraste pula os prefixos --font, --size e
      --measure). Uma família só, a Archivo variável: a largura (font-stretch) separa a voz da
-     marca e dos títulos (larga) da leitura (normal). Escala fixa em rem, razão ~1,2 nas telas
-     de uso; só o título da tela inicial cresce com a largura. */
+     marca e dos títulos (larga) da leitura (normal). Escala em rem ampliada para leitura em
+     projetor; só o título da tela inicial cresce com a largura. */
   --font-sans: "Archivo Variable", "Archivo Fallback", "Segoe UI", system-ui, sans-serif;
   --font-wide: 118%;
   --font-wider: 125%;
-  --size-display: clamp(2.25rem, 1.2rem + 4.4vw, 4rem);
-  --size-headline: 2.125rem;
-  --size-title: 1.375rem;
-  --size-subtitle: 1.125rem;
+  --font-weight-body: 550;
+  --font-weight-strong: 800;
+  --font-weight-heading: 850;
+  --size-display: clamp(2.4rem, 1.4rem + 4.4vw, 4.25rem);
+  --size-headline: 2.25rem;
+  --size-title: 1.5rem;
+  --size-subtitle: 1.2rem;
   --size-body: 1rem;
-  --size-small: 0.875rem;
-  --size-label: 0.8125rem;
-  --size-micro: 0.75rem;
-  --size-headline-compact: 1.75rem;
+  --size-small: 0.9375rem;
+  --size-label: 0.875rem;
+  --size-micro: 0.8125rem;
+  --size-headline-compact: 1.85rem;
+  --size-mistake-title: 1.55rem;
+  --size-mistake-emphasis: 1.375rem;
+  --size-mistake-body: 1.15rem;
   --size-veil-frame: 80px; /* altura do véu atrás do cabeçalho (cenário) */
   --measure: 68ch;
 
   font-family: var(--font-sans);
-  font-size: 16px;
+  font-size: 19px;
+  font-weight: var(--font-weight-body);
   line-height: 1.55;
   font-synthesis: none;
   text-rendering: optimizelegibility;
@@ -250,15 +257,15 @@ h2,
 h3 {
   margin: 0;
   line-height: 1.15;
-  font-weight: 750;
-  text-wrap: balance;
+  font-weight: var(--font-weight-heading);
+  text-wrap: pretty;
 }
 
 /* Títulos na largura larga da Archivo: a mesma voz da marca, mais contida. */
 h1 {
   font-size: var(--size-headline);
   font-stretch: var(--font-wide);
-  font-weight: 800;
+  font-weight: var(--font-weight-heading);
   letter-spacing: -0.015em;
   line-height: 1.08;
 }
@@ -271,8 +278,13 @@ h2 {
 
 h3 {
   font-size: var(--size-subtitle);
-  font-weight: 700;
+  font-weight: var(--font-weight-strong);
   line-height: 1.3;
+}
+
+strong,
+b {
+  font-weight: var(--font-weight-strong);
 }
 
 p {
@@ -546,9 +558,9 @@ a {
 .brand-mark {
   display: grid;
   place-items: center;
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
   background: linear-gradient(135deg, var(--accent), var(--brand-2));
   color: var(--accent-ink);
 }
@@ -797,7 +809,7 @@ a {
   background: var(--surface-2);
   color: var(--text);
   font: inherit;
-  font-weight: 600;
+  font-weight: var(--font-weight-strong);
   text-decoration: none;
   cursor: pointer;
   white-space: nowrap;
@@ -886,8 +898,8 @@ a {
 .theme-toggle-track {
   display: flex;
   align-items: center;
-  width: 52px;
-  height: 30px;
+  width: 58px;
+  height: 34px;
   padding: 3px;
   border-radius: 999px;
   background: var(--glass-2);
@@ -897,15 +909,15 @@ a {
 .theme-toggle-knob {
   display: grid;
   place-items: center;
-  width: 22px;
-  height: 22px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   background: var(--text);
-  font-size: 14px;
+  font-size: 17px;
 }
 
 .theme-toggle[data-theme-state="light"] .theme-toggle-knob {
-  transform: translateX(22px);
+  transform: translateX(24px);
 }
 
 .theme-toggle:hover .theme-toggle-track {
@@ -956,7 +968,7 @@ input[aria-invalid="true"] {
 }
 
 label {
-  font-weight: 600;
+  font-weight: var(--font-weight-strong);
 }
 
 .form {
@@ -1039,7 +1051,7 @@ label {
   padding: 2px 10px;
   border-radius: 999px;
   font-size: var(--size-label);
-  font-weight: 600;
+  font-weight: 750;
   white-space: nowrap;
   background: var(--surface-2);
   color: var(--muted);
@@ -1096,7 +1108,7 @@ label {
   border: 1px solid var(--border);
   color: var(--text);
   font-size: var(--size-small);
-  font-weight: 400;
+  font-weight: var(--font-weight-body);
   line-height: 1.4;
   text-transform: none;
   letter-spacing: 0;
@@ -1119,7 +1131,7 @@ label {
   padding: 10px 14px;
   color: var(--muted);
   font: inherit;
-  font-weight: 600;
+  font-weight: var(--font-weight-strong);
   text-decoration: none;
   cursor: pointer;
   white-space: nowrap;
@@ -1170,6 +1182,7 @@ label {
   line-height: 1.02;
   letter-spacing: -0.02em;
   max-width: 15ch;
+  text-wrap: balance;
 }
 
 .lead {
@@ -1576,7 +1589,7 @@ label {
   padding: 12px 16px;
   border-radius: var(--radius);
   border: 1px solid var(--glass-border);
-  font-weight: 400;
+  font-weight: var(--font-weight-body);
   cursor: pointer;
 }
 
@@ -1604,8 +1617,8 @@ label {
 
 .player input {
   accent-color: var(--accent-fg);
-  width: 18px;
-  height: 18px;
+  width: 22px;
+  height: 22px;
 }
 
 /* ---------- Tela 3: andamento ---------- */
@@ -1634,8 +1647,8 @@ label {
 .step-dot {
   display: grid;
   place-items: center;
-  width: 30px;
-  height: 30px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   border: 2px solid var(--border);
   font-size: var(--size-small);
@@ -1644,7 +1657,7 @@ label {
 
 .step-active {
   color: var(--text);
-  font-weight: 600;
+  font-weight: var(--font-weight-strong);
 }
 
 .step-active .step-dot {
@@ -1696,7 +1709,7 @@ label {
   display: grid;
   align-content: start;
   gap: 2px;
-  padding: 0 24px;
+  padding: 0 20px;
   border-left: 1px solid var(--border);
 }
 
@@ -1713,13 +1726,13 @@ label {
 .stat strong {
   font-size: var(--size-title);
   font-stretch: var(--font-wide);
-  font-weight: 750;
+  font-weight: var(--font-weight-heading);
   line-height: 1.25;
 }
 
 .stat small {
   font-size: var(--size-label);
-  font-weight: 400;
+  font-weight: var(--font-weight-body);
   font-stretch: 100%;
 }
 
@@ -1733,14 +1746,17 @@ label {
   color: var(--ok);
 }
 
-/* Cartão de erro: o número da posição grande, na fonte larga e na cor da situação, ocupa a
-   coluna da esquerda; a gravidade também vem escrita no selo. */
+/* Cartão de erro: proporção ampliada para leitura em projetor, com hierarquia clara entre
+   título, destaque em negrito e texto comum. O número da posição grande, na fonte larga e na
+   cor da situação, ocupa a coluna da esquerda; a gravidade também vem escrita no selo. */
 .mistake {
   display: grid;
-  gap: 12px;
-  padding: 22px 24px;
+  gap: 16px;
+  padding: 26px 28px;
   border-radius: var(--radius);
   border: 1px solid var(--glass-border);
+  font-size: var(--size-mistake-body);
+  line-height: 1.5;
   scroll-margin-top: 24px;
 }
 
@@ -1751,15 +1767,37 @@ label {
 
 .mistake-head {
   display: flex;
-  gap: 16px;
+  gap: 18px;
   align-items: flex-start;
+}
+
+.mistake-head > div {
+  flex: 1;
+  min-width: 0;
+}
+
+.mistake-head h3 {
+  font-size: var(--size-mistake-title);
+  font-stretch: 108%;
+  font-weight: var(--font-weight-heading);
+  line-height: 1.32;
+  letter-spacing: -0.01em;
+  text-align: left;
+  /* Quebra normal (sem balance/pretty): o título preenche toda a largura até o fim do cartão. */
+  text-wrap: wrap;
+}
+
+.mistake-head h3 .spell-icon {
+  width: 1.15em;
+  height: 1.15em;
+  vertical-align: -0.18em;
 }
 
 .mistake-rank {
   flex: none;
   min-width: 1.1em;
   color: var(--warn-fg);
-  font-size: 2.75rem;
+  font-size: 3.25rem;
   font-stretch: var(--font-wider);
   font-weight: 800;
   line-height: 0.9;
@@ -1775,18 +1813,33 @@ label {
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
-  margin-top: 8px;
+  margin-top: 10px;
   font-size: var(--size-small);
 }
 
 .mistake-impact {
-  font-weight: 650;
+  font-size: var(--size-mistake-emphasis);
+  font-weight: var(--font-weight-heading);
+  line-height: 1.3;
+  color: var(--text);
+}
+
+.mistake strong,
+.mistake b {
+  font-size: var(--size-mistake-emphasis);
+  font-weight: var(--font-weight-heading);
+  color: var(--text);
 }
 
 .mistake-todo {
-  padding: 12px 14px;
+  padding: 16px 18px;
   border-radius: var(--radius-sm);
   background: var(--surface-2);
+}
+
+.mistake-todo strong {
+  display: block;
+  margin-bottom: 4px;
 }
 
 .mistake-todo p {
@@ -1795,7 +1848,7 @@ label {
 
 .mistake-details {
   max-width: var(--measure);
-  font-size: var(--size-small);
+  font-size: var(--size-body);
   color: var(--muted);
 }
 
@@ -1807,7 +1860,7 @@ label {
   cursor: pointer;
   list-style: none;
   color: var(--accent-fg);
-  font-weight: 600;
+  font-weight: var(--font-weight-strong);
 }
 
 .mistake-details summary::-webkit-details-marker {
@@ -1852,24 +1905,32 @@ td {
 thead th {
   color: var(--muted);
   font-size: var(--size-label);
-  font-weight: 600;
+  font-weight: var(--font-weight-strong);
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
 
 tbody th {
-  font-weight: 500;
+  font-weight: var(--font-weight-body);
 }
 
 caption {
   text-align: left;
-  font-weight: 600;
+  font-weight: var(--font-weight-strong);
   padding: 0 0 8px;
 }
 
 .numbers th,
 .numbers td {
   padding: 6px 8px;
+}
+
+.mistake .numbers {
+  font-size: var(--size-body);
+}
+
+.mistake .numbers thead th {
+  font-size: var(--size-small);
 }
 
 .table-wrap {
@@ -1883,7 +1944,7 @@ caption {
   display: block;
   color: var(--muted);
   font-size: var(--size-label);
-  font-weight: 400;
+  font-weight: var(--font-weight-body);
 }
 
 /* Com quem foi comparado + botão de olho (RF21, RF25) */
@@ -1919,7 +1980,7 @@ caption {
 }
 
 .compared-title {
-  font-weight: 600;
+  font-weight: var(--font-weight-strong);
 }
 
 .compared summary .muted {
@@ -1994,19 +2055,19 @@ caption {
 
 .timeline-grid {
   display: grid;
-  grid-template-columns: minmax(90px, 160px) 1fr;
+  grid-template-columns: minmax(120px, 210px) 1fr;
   gap: 10px 12px;
   align-items: center;
 }
 
 .timeline-label {
   font-size: var(--size-small);
-  font-weight: 600;
+  font-weight: var(--font-weight-strong);
 }
 
 .timeline-axis {
   position: relative;
-  height: 20px;
+  height: 24px;
 }
 
 .timeline-phase-name {
@@ -2086,8 +2147,8 @@ caption {
 
 .swatch {
   display: inline-block;
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
   border-radius: 3px;
 }
 
@@ -2162,7 +2223,7 @@ caption {
 
 .chart-tick {
   fill: var(--muted);
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .chart-line {
@@ -2353,21 +2414,37 @@ caption {
   }
 
   .mistake {
-    padding: 18px 16px;
+    padding: 20px 18px;
+    font-size: var(--size-body);
   }
 
   .mistake-head {
     gap: 12px;
   }
 
+  .mistake-head h3 {
+    font-size: 1.45rem;
+  }
+
+  .mistake-impact,
+  .mistake strong,
+  .mistake b {
+    font-size: 1.2rem;
+  }
+
   .mistake-rank {
-    font-size: 2rem;
+    font-size: 2.25rem;
   }
 
   /* Faixa do trilho: sete números cabem numa linha de 360 px. */
   .rail ol {
     gap: 0;
     padding: 2px;
+  }
+
+  .rail-link {
+    width: 44px;
+    height: 44px;
   }
 
   .compared-head .button {
@@ -2403,14 +2480,14 @@ caption {
   color: var(--text);
   font-size: var(--size-headline);
   font-stretch: var(--font-wide);
-  font-weight: 750;
+  font-weight: var(--font-weight-strong);
   line-height: 1.15;
   letter-spacing: -0.01em;
-  text-wrap: balance;
+  text-wrap: pretty;
 }
 
 .gap-headline strong {
-  font-weight: 800;
+  font-weight: var(--font-weight-heading);
 }
 
 .gap-headline .muted {
@@ -2418,7 +2495,7 @@ caption {
   margin-top: 10px;
   font-size: var(--size-body);
   font-stretch: 100%;
-  font-weight: 400;
+  font-weight: var(--font-weight-body);
   letter-spacing: 0;
 }
 
@@ -2461,8 +2538,8 @@ caption {
 
 .gap-dot {
   flex: none;
-  width: 10px;
-  height: 10px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
   background: var(--ok);
 }
@@ -2489,7 +2566,7 @@ caption {
 .rule-details {
   margin-top: 4px;
   font-size: var(--size-label);
-  font-weight: 400;
+  font-weight: var(--font-weight-body);
   color: var(--muted);
 }
 
@@ -2508,7 +2585,7 @@ caption {
 .target-boss th,
 .target-boss td {
   color: var(--text);
-  font-weight: 600;
+  font-weight: var(--font-weight-strong);
 }
 
 .badge-boss {
@@ -2525,11 +2602,11 @@ caption {
 
 .spell-icon {
   display: inline-block;
-  width: 1.15em;
-  height: 1.15em;
+  width: 1.3em;
+  height: 1.3em;
   /* Sobe o ícone para o centro da altura das letras sem aumentar a altura da linha. */
-  vertical-align: -0.2em;
-  margin: -0.1em 0.3em 0 0;
+  vertical-align: -0.24em;
+  margin: -0.15em 0.32em 0 0;
   border-radius: 0.2em;
   border: 1px solid var(--border-control);
   background: var(--surface-2);
@@ -2595,8 +2672,8 @@ caption {
 .rail-link {
   display: grid;
   place-items: center;
-  width: 44px;
-  height: 44px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   color: var(--warn-fg);
   font-weight: 800;
@@ -2618,7 +2695,7 @@ caption {
   box-shadow: inset 0 0 0 2px currentcolor;
 }
 
-@media (min-width: 1100px) {
+@media (min-width: 1200px) {
   .rail {
     position: fixed;
     z-index: 5;
