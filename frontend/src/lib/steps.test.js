@@ -6,7 +6,7 @@ describe("ANALYSIS_STEPS", () => {
     expect(ANALYSIS_STEPS).toEqual([
       "Buscando sua luta",
       "Comparando com os melhores",
-      "Coach analisando",
+      "Montando o relatório",
     ]);
   });
 });

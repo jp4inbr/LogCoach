@@ -374,7 +374,7 @@ Um jogador que nunca recebeu treinamento no sistema deve conseguir concluir a pr
 
 <summary><strong>RNF10. Nota SUS mínima de 68</strong></summary>
 
-No teste com usuários, o sistema deve alcançar nota de pelo menos 68 na escala SUS (System Usability Scale).
+No teste com usuários (item 8.3), o sistema deve alcançar nota média de pelo menos 68 na escala SUS (System Usability Scale).
 
 {% hint style="info" %}
 **Categoria: Usabilidade**

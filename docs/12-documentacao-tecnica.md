@@ -260,3 +260,25 @@ Código em `backend/app/services/tops.py` (passo 4.2). Entrega ao motor (`Engine
 ## 12.14 Tema claro e escuro (frontend)
 
 As cores do frontend são tokens CSS em `frontend/src/index.css` (escuro = paleta 13 e claro = paleta 14 do Happy Hues). O tema vem do sistema até a pessoa clicar no botão do cabeçalho; a escolha fica em `localStorage` (`logcoach.theme`) e um script inline no `index.html` aplica o `data-theme` antes da primeira pintura. Lógica em `src/lib/theme.js` e `src/components/ThemeToggle.jsx`; testes em `theme.test.js`, `ThemeToggle.test.jsx`, `App.test.jsx` e `theme-contrast.test.js` (contraste WCAG AA dos tokens, blocos do claro iguais, sem cor fixa). Tokens, desvios da paleta e regras para mexer: [item 15](15-padrao-de-cores.md).
+
+## 12.15 Como usar o LogCoach
+
+Endereço: [https://logcoach.vercel.app](https://logcoach.vercel.app). Funciona no navegador do computador e do celular, sem instalar nada.
+
+1. **Início:** cole o link público do relatório no Warcraft Logs (ex.: `https://www.warcraftlogs.com/reports/XhrmBaYkGCAQjH2D`) e clique em "Analisar". Sem um log à mão, use "Usar o log de exemplo".
+2. **Escolher a luta:** aparecem as lutas de chefe do relatório. As que não podem ser analisadas ficam em cinza, com o motivo. Hoje o LogCoach analisa o Nek'zali no Mítico.
+3. **Escolher o personagem:** clique no seu Mago Arcano. Se ele for o único da luta, ou o da sua última análise, já vem marcado.
+4. **Resultado:** a aba **Resumo** mostra o DPS, a diferença para os 10 melhores do seu item level e os erros do maior para o menor impacto, cada um com "O que fazer". As abas **Linha do tempo** e **Todas as regras** trazem os detalhes. Os nomes dos outros jogadores ficam ocultos; o botão de olho os mostra.
+5. **Conta (opcional):** sem conta, você faz 1 análise de demonstração. Com conta grátis, 5 por mês, e as análises ficam no **Perfil**, com o histórico e o gráfico de evolução. No Perfil também dá para trocar a senha e excluir a conta.
+6. **Tema:** o botão ☀/☾ no cabeçalho troca entre claro e escuro.
+
+## 12.16 Como relatar problemas
+
+Abra uma issue em [github.com/jp4inbr/LogCoach/issues/new](https://github.com/jp4inbr/LogCoach/issues/new) com:
+
+* o link do relatório, a luta e o personagem;
+* o que você fez e o que esperava acontecer;
+* a mensagem de erro exatamente como apareceu (as mensagens dizem a causa: link inválido, relatório privado, Warcraft Logs fora do ar, limite de consultas…);
+* um print da tela e o navegador usado.
+
+Erro com a mensagem "Erro inesperado no LogCoach" é bug nosso: o detalhe fica no log do backend (Railway) e a issue ajuda a achá-lo.

@@ -28,6 +28,8 @@ T03–T05 e T11–T14 passam com o motor de análise. O T13 mudou junto com a de
 
 Execução no CI do GitHub em 16/11/2026, com `pytest -v --cov=app` (PR #31, com a `main` de 15/11; Python 3.12, pytest 9.2; cerca de 50 s, sem internet). No Windows o resultado foi o mesmo.
 
+**Atualização de 25/11/2026** (`main` de 23/11, depois do deploy, rodada local no Linux): 632 testes, 631 passaram, 1 pulado (o mesmo), 0 falharam; cobertura de 98% do backend (3.514 linhas, 61 sem teste) e 99% do motor (1.462 linhas, 11 sem teste). Os prints abaixo são da execução de 16/11.
+
 <table><thead><tr><th width="71.7166748046875">Total</th><th width="90.60003662109375">Passaram</th><th width="80.75">Pulados</th><th width="87.2667236328125">Falharam</th><th width="384.11651611328125">Cobertura</th></tr></thead><tbody><tr><td>631</td><td>630</td><td>1</td><td>0</td><td>98% do backend (3.513 linhas, 61 sem teste); 99% do motor (<code>app/engine/</code>: 1.462 linhas, 11 sem teste)</td></tr></tbody></table>
 
 O teste pulado é de propósito: `test_sample_copies_have_no_real_names` confere as cópias de exemplo contra o arquivo de nomes reais (`names.local.json`), que só existe na máquina de quem baixou as fixtures e nunca vai para o repositório (RF25). O único aviso ("1 warning") vem de uma biblioteca de teste e não é falha.
@@ -76,6 +78,8 @@ npm run lint
 <table><thead><tr><th width="263.583251953125">Suíte</th><th width="86.683349609375">Arquivos</th><th width="71.4666748046875">Testes</th><th width="89.8167724609375">Passaram</th><th width="89.60009765625">Falharam</th><th width="95.4163818359375">Duração</th></tr></thead><tbody><tr><td>Vitest (<code>npm test</code>)</td><td>30</td><td>520</td><td>520</td><td>0</td><td>~10 s</td></tr><tr><td>Playwright (<code>npm run test:e2e</code>)</td><td>2</td><td>43</td><td>43</td><td>0</td><td>~15 s</td></tr></tbody></table>
 
 No CI de 16/11/2026 (PR #31, com a `main` de 15/11, já com os ícones das magias): Vitest com 32 arquivos e 601 testes, todos passando; Playwright com 47 testes, todos passando (\~23 s).
+
+**Atualização de 25/11/2026** (`main` de 23/11, rodada local no Linux): Vitest com 35 arquivos e 693 testes, todos passando; Playwright com 116 testes em 5 arquivos (`flows`, `theme`, `visual`, `spell-icons` e `backdrop`), todos passando (\~1,5 min).
 
 Vitest por pasta: `src/lib` (9 arquivos), `src/components` (13), `src/pages` (6) e `src/` (2: `App.test.jsx`, `theme-contrast.test.js`). O Playwright rodou verde e estável em 3 rodadas seguidas. O Vitest roda com fuso fixo (`TZ=America/Sao_Paulo`, em `vite.config.js`), para datas e horas saírem iguais em qualquer máquina e no CI.
 

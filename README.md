@@ -1,6 +1,8 @@
 # LogCoach - Coach de Desempenho para World of Warcraft
 
-> **Status do Projeto:** Versão Alfa (Entrega RT03 - Consolidação, Usabilidade, IA e Testes). O motor de análise já roda com dados reais do Warcraft Logs e compara com os top 10 do bracket.
+> **Acesse:** [https://logcoach.vercel.app](https://logcoach.vercel.app) · **Documentação:** pasta [`docs/`](docs/) (GitBook) · **Problemas:** [abra uma issue](https://github.com/jp4inbr/LogCoach/issues/new)
+>
+> **Status do Projeto:** Versão Beta publicada (Vercel + Railway). O motor de análise roda com dados reais do Warcraft Logs e compara com os top 10 do bracket.
 
 ## 1. Sobre o Projeto (Escopo RT01)
 
