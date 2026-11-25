@@ -2,7 +2,7 @@ import { formatDate, formatDps } from "../lib/format.js";
 
 const W = 600;
 const H = 180;
-const PAD = { top: 18, right: 18, bottom: 32, left: 76 };
+const PAD = { top: 16, right: 16, bottom: 28, left: 64 };
 
 // Evolução do DPS entre análises do mesmo chefe (RF13). `points` em ordem de data.
 export default function EvolutionChart({ points }) {
