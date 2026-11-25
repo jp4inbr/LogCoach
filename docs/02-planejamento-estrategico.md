@@ -22,7 +22,7 @@ Esta página registra como o LogCoach evoluiu depois da RT01: o feedback recebid
 
 Para que a análise seja realmente especializada já na primeira versão, o MVP foi recortado em uma especialização, uma raide, três chefes e duas dificuldades:
 
-<table data-search="false"><thead><tr><th width="192.75">Item</th><th width="545.25">Decisão</th></tr></thead><tbody><tr><td><strong>Especialização</strong></td><td>Mago Arcano</td></tr><tr><td><strong>Conteúdo</strong></td><td>Raide The Venomous Abyss (Midnight, Temporada 2)</td></tr><tr><td><strong>Chefes</strong></td><td>1º Nek'zali the Soulcoiler, 2º Entombed Sentinels, 3º The Lost Explorers</td></tr><tr><td><strong>Dificuldade</strong></td><td>Mítico</td></tr><tr><td><strong>Entrada</strong></td><td>Link do relatório no Warcraft Logs</td></tr><tr><td><strong>Comparação</strong></td><td>Média dos 10 melhores logs de Mago Arcano no mesmo chefe e dificuldade, na mesma faixa de item level do jogador</td></tr><tr><td><strong>Idioma</strong></td><td>Português</td></tr></tbody></table>
+<table data-search="false"><thead><tr><th width="192.75">Item</th><th width="545.25">Decisão</th></tr></thead><tbody><tr><td><strong>Especialização</strong></td><td>Mago Arcano</td></tr><tr><td><strong>Conteúdo</strong></td><td>Raide The Venomous Abyss (Midnight, Temporada 2)</td></tr><tr><td><strong>Chefes</strong></td><td>1º Nek'zali the Soulcoiler, 2º Entombed Sentinels, 3º The Lost Explorers</td></tr><tr><td><strong>Dificuldade</strong></td><td>Mítico</td></tr><tr><td><strong>Entrada</strong></td><td>Link do relatório no Warcraft Logs</td></tr><tr><td><strong>Comparação</strong></td><td>Média dos 10 melhores logs de Mago Arcano no mesmo chefe e dificuldade, na mesma faixa de item level do jogador</td></tr><tr><td><strong>Idioma</strong></td><td>Português</td></tr><tr><td><strong>Camada de IA</strong></td><td>Fora do MVP. O plano era usar o Gemini (Vertex AI) para transformar os números em orientações; saiu em 21/11 pelo custo financeiro da API, sem verba no projeto. Os erros e o que fazer vêm em textos prontos em português, montados pelo motor</td></tr></tbody></table>
 
 #### Ordem dos chefes
 
@@ -67,15 +67,17 @@ Fonte: MythicStats, seção "Average stats" (dados do Warcraft Logs), consultado
 
 {% stepper %}
 {% step %}
-#### Alfa · RT03 (28/10/2026)
+#### Alfa · RT03 (04/11/2026, adiada de 28/10 pelo professor)
 
-Análise elaborada da luta contra Nek'zali e histórico de análises.
+Análise elaborada da luta contra Nek'zali e histórico de análises. **Entregue:** o motor de análise real entrou na `main` em 04/11 (PR #27).
 {% endstep %}
 
 {% step %}
 #### Beta · Banca / Expo Una (nov/2026)
 
 Inclusão dos chefes Entombed Sentinels e The Lost Explorers e teste com jogadores.
+
+**Situação na banca:** entra o Nek'zali completo, com o motor real e o site publicado (item 13). Os outros dois chefes ficaram para depois do MVP: o tempo foi para a precisão do primeiro chefe (DPS oficial do Warcraft Logs, desconto do Evocador Aumentação, defensivo pelos picos de dano), que é o que separa o LogCoach das ferramentas genéricas. Era o plano B previsto no item 6.4. Cada chefe é um arquivo YAML em `backend/app/encounters/`, então um chefe novo pede escrever e validar as regras nos logs, sem mudar o motor (RNF12).
 {% endstep %}
 
 {% step %}

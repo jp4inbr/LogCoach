@@ -10,7 +10,7 @@ description: Organização das tarefas e prazos do time.
 
 **O que falta fazer:** controlado pelas [issues abertas no GitHub](https://github.com/jp4inbr/LogCoach/issues?q=is%3Aissue%20state%3Aopen). Cada frente de trabalho é uma issue, de #3 a #17, com responsável, situação e dependências: [issues com o rótulo `frente`](https://github.com/jp4inbr/LogCoach/issues?q=label%3Afrente). As concluídas ficam fechadas. O rótulo `RT03` marca o que é da entrega de 28/10 e `banca`, o que fica para o fim de novembro.
 
-**Meta da RT03 (28/10/2026):** versão alfa rodando com o 1º chefe (Nek'zali), documentação consolidada, relatório de IA, testes e roteiro da banca.
+**Meta da RT03 (04/11/2026, adiada de 28/10 pelo professor):** versão alfa rodando com o 1º chefe (Nek'zali), documentação consolidada, relatório de IA, testes e roteiro da banca.
 
 ## 6.1 Papéis
 
@@ -67,7 +67,7 @@ gantt
 | Base | 13/10 – 16/10 | Repositório e CI, planilha do cronograma, docs no GitBook, chaves de API, dados de exemplo, mapa do encontro Nek'zali, formulário, mockups 1–2 |
 | Construção | 17/10 – 23/10 | Regras da spec e do encontro, correlação, comparador por fase, telas React, mockups 3–5, testes, diagramas apresentáveis, rascunho do relatório de IA |
 | Validação | 24/10 – 27/10 | Teste de usabilidade, roteiro da banca, documentação consolidada, ensaio |
-| Entrega | 28/10 | RT03 |
+| Entrega | 28/10 (adiada pelo professor para 04/11) | RT03 |
 
 ## 6.3 Tarefas abertas depois da RT03 (para o cronograma)
 

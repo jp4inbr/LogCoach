@@ -15,7 +15,7 @@ describe("Steps", () => {
     expect(items().map((li) => li.textContent.replace(/^\d/, ""))).toEqual([
       "Buscando sua luta",
       "Comparando com os melhores",
-      "Coach analisando",
+      "Montando o relatório",
     ]);
   });
 
