@@ -75,6 +75,9 @@
   --font-sans: "Archivo Variable", "Archivo Fallback", "Segoe UI", system-ui, sans-serif;
   --font-wide: 118%;
   --font-wider: 125%;
+  --font-weight-body: 700;
+  --font-weight-strong: 800;
+  --font-weight-heading: 850;
   --size-display: clamp(2.4rem, 1.4rem + 4.4vw, 4.25rem);
   --size-headline: 2.25rem;
   --size-title: 1.5rem;
@@ -89,6 +92,7 @@
 
   font-family: var(--font-sans);
   font-size: 19px;
+  font-weight: var(--font-weight-body);
   line-height: 1.55;
   font-synthesis: none;
   text-rendering: optimizelegibility;
@@ -250,7 +254,7 @@ h2,
 h3 {
   margin: 0;
   line-height: 1.15;
-  font-weight: 750;
+  font-weight: var(--font-weight-heading);
   text-wrap: balance;
 }
 
@@ -258,7 +262,7 @@ h3 {
 h1 {
   font-size: var(--size-headline);
   font-stretch: var(--font-wide);
-  font-weight: 800;
+  font-weight: var(--font-weight-heading);
   letter-spacing: -0.015em;
   line-height: 1.08;
 }
@@ -271,8 +275,13 @@ h2 {
 
 h3 {
   font-size: var(--size-subtitle);
-  font-weight: 700;
+  font-weight: var(--font-weight-strong);
   line-height: 1.3;
+}
+
+strong,
+b {
+  font-weight: var(--font-weight-strong);
 }
 
 p {
@@ -797,7 +806,7 @@ a {
   background: var(--surface-2);
   color: var(--text);
   font: inherit;
-  font-weight: 600;
+  font-weight: var(--font-weight-strong);
   text-decoration: none;
   cursor: pointer;
   white-space: nowrap;
@@ -956,7 +965,7 @@ input[aria-invalid="true"] {
 }
 
 label {
-  font-weight: 600;
+  font-weight: var(--font-weight-strong);
 }
 
 .form {
@@ -1039,7 +1048,7 @@ label {
   padding: 2px 10px;
   border-radius: 999px;
   font-size: var(--size-label);
-  font-weight: 600;
+  font-weight: 750;
   white-space: nowrap;
   background: var(--surface-2);
   color: var(--muted);
@@ -1096,7 +1105,7 @@ label {
   border: 1px solid var(--border);
   color: var(--text);
   font-size: var(--size-small);
-  font-weight: 400;
+  font-weight: var(--font-weight-body);
   line-height: 1.4;
   text-transform: none;
   letter-spacing: 0;
@@ -1119,7 +1128,7 @@ label {
   padding: 10px 14px;
   color: var(--muted);
   font: inherit;
-  font-weight: 600;
+  font-weight: var(--font-weight-strong);
   text-decoration: none;
   cursor: pointer;
   white-space: nowrap;
@@ -1576,7 +1585,7 @@ label {
   padding: 12px 16px;
   border-radius: var(--radius);
   border: 1px solid var(--glass-border);
-  font-weight: 400;
+  font-weight: var(--font-weight-body);
   cursor: pointer;
 }
 
@@ -1644,7 +1653,7 @@ label {
 
 .step-active {
   color: var(--text);
-  font-weight: 600;
+  font-weight: var(--font-weight-strong);
 }
 
 .step-active .step-dot {
@@ -1713,13 +1722,13 @@ label {
 .stat strong {
   font-size: var(--size-title);
   font-stretch: var(--font-wide);
-  font-weight: 750;
+  font-weight: var(--font-weight-heading);
   line-height: 1.25;
 }
 
 .stat small {
   font-size: var(--size-label);
-  font-weight: 400;
+  font-weight: var(--font-weight-body);
   font-stretch: 100%;
 }
 
@@ -1807,7 +1816,7 @@ label {
   cursor: pointer;
   list-style: none;
   color: var(--accent-fg);
-  font-weight: 600;
+  font-weight: var(--font-weight-strong);
 }
 
 .mistake-details summary::-webkit-details-marker {
@@ -1852,18 +1861,18 @@ td {
 thead th {
   color: var(--muted);
   font-size: var(--size-label);
-  font-weight: 600;
+  font-weight: var(--font-weight-strong);
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
 
 tbody th {
-  font-weight: 500;
+  font-weight: var(--font-weight-body);
 }
 
 caption {
   text-align: left;
-  font-weight: 600;
+  font-weight: var(--font-weight-strong);
   padding: 0 0 8px;
 }
 
@@ -1883,7 +1892,7 @@ caption {
   display: block;
   color: var(--muted);
   font-size: var(--size-label);
-  font-weight: 400;
+  font-weight: var(--font-weight-body);
 }
 
 /* Com quem foi comparado + botão de olho (RF21, RF25) */
@@ -1919,7 +1928,7 @@ caption {
 }
 
 .compared-title {
-  font-weight: 600;
+  font-weight: var(--font-weight-strong);
 }
 
 .compared summary .muted {
@@ -2001,7 +2010,7 @@ caption {
 
 .timeline-label {
   font-size: var(--size-small);
-  font-weight: 600;
+  font-weight: var(--font-weight-strong);
 }
 
 .timeline-axis {
@@ -2408,14 +2417,14 @@ caption {
   color: var(--text);
   font-size: var(--size-headline);
   font-stretch: var(--font-wide);
-  font-weight: 750;
+  font-weight: var(--font-weight-strong);
   line-height: 1.15;
   letter-spacing: -0.01em;
   text-wrap: balance;
 }
 
 .gap-headline strong {
-  font-weight: 800;
+  font-weight: var(--font-weight-heading);
 }
 
 .gap-headline .muted {
@@ -2423,7 +2432,7 @@ caption {
   margin-top: 10px;
   font-size: var(--size-body);
   font-stretch: 100%;
-  font-weight: 400;
+  font-weight: var(--font-weight-body);
   letter-spacing: 0;
 }
 
@@ -2494,7 +2503,7 @@ caption {
 .rule-details {
   margin-top: 4px;
   font-size: var(--size-label);
-  font-weight: 400;
+  font-weight: var(--font-weight-body);
   color: var(--muted);
 }
 
@@ -2513,7 +2522,7 @@ caption {
 .target-boss th,
 .target-boss td {
   color: var(--text);
-  font-weight: 600;
+  font-weight: var(--font-weight-strong);
 }
 
 .badge-boss {
