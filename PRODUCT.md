@@ -12,7 +12,7 @@ web
 
 **Também precisam conseguir usar:** jogadores que querem melhorar, mas ainda não estão nesse nível, ou que jogam de forma mais relaxada. O produto serve a eles sem baixar a precisão que o público principal exige.
 
-**Quem avalia o trabalho acadêmico:** a banca da UNA e os participantes do teste de usabilidade (3 jogadores e 2 leigos). Precisam conseguir acompanhar o fluxo e o relatório, mas não definem o nível de detalhe do produto.
+**Quem avalia o trabalho acadêmico:** a banca da UNA e os participantes do teste de usabilidade (9 pessoas em 25/11: 4 jogadores e 5 que não jogam; item 8.3.3). Precisam conseguir acompanhar o fluxo e o relatório, mas não definem o nível de detalhe do produto.
 
 ## Product Purpose
 
